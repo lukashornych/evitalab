@@ -2,11 +2,11 @@
 import { VDataTable } from 'vuetify/labs/VDataTable'
 
 import { defineProps, ref, onMounted } from 'vue'
-import { getEntities } from '@/services/evitadb.service'
-import { Connection } from '@/model/connection'
+import { getEntities } from '@/services/lab.service'
+import { EvitaDBConnection } from '@/model/lab'
 
 const props = defineProps<{
-    connection: Connection
+    connection: EvitaDBConnection
 }>()
 
 const filterBy = ref<string>('')

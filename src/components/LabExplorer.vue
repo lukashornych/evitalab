@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import LabExplorerConnectionItem from '@/components/LabExplorerConnectionItem.vue'
+import { LabService, useLabService } from '@/services/lab.service'
+import { computed } from 'vue'
+import { EvitaDBConnection } from '@/model/lab'
 
-import { Connection } from '@/model/connection'
+const labService: LabService = useLabService()
 
 const props = defineProps<{
-    connections: Connection[],
     modelValue: boolean
 }>()
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void
 }>()
+
+const connections = computed<EvitaDBConnection[]>(() => labService.getConnections())
 </script>
 
 <template>
@@ -21,6 +25,7 @@ const emit = defineEmits<{
     >
         <VList
             density="compact"
+            nav
         >
             <LabExplorerConnectionItem
                 v-for="connection in connections"
@@ -28,6 +33,20 @@ const emit = defineEmits<{
                 :connection="connection"
             />
         </VList>
+
+        <template #append>
+            <div
+                class="pa-2"
+            >
+                <VBtn
+                    prepend-icon="mdi-plus"
+                    block
+                    variant="tonal"
+                >
+                    Add connection
+                </VBtn>
+            </div>
+        </template>
     </VNavigationDrawer>
 </template>
 

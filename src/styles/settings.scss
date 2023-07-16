@@ -8,3 +8,27 @@
 // @use 'vuetify/settings' with (
 //   $color-pack: false
 // );
+
+.v-tab {
+  text-transform: none !important;
+}
+
+.splitpanes {
+  background: transparent;
+}
+
+.splitpanes__pane {
+  background: transparent;
+}
+
+.splitpanes--vertical > .splitpanes__splitter {
+  min-width: 0.125rem;
+  background-color: white;
+  opacity: var(--v-border-opacity)
+}
+
+.splitpanes--horizontal > .splitpanes__splitter {
+  min-height: 0.125rem;
+  background-color: white;
+  opacity: var(--v-border-opacity)
+}

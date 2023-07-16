@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { PanelType } from '@/model/lab'
 
 const props = defineProps<{
     panel?: string
 }>()
 
 const emit = defineEmits<{
-    (e: 'update:panel', value: boolean): void
+    (e: 'update:panel', value: string | null): void
 }>()
 
 const mainItems = ref([
     {
         title: 'Explorer',
-        value: 'explorer',
+        value: PanelType.Explorer,
         props: {
             prependIcon: 'mdi-compass'
         }
@@ -21,7 +22,7 @@ const mainItems = ref([
 const secondaryItems = ref([
     {
         title: 'Info',
-        value: 'info',
+        value: PanelType.Info,
         props: {
             prependIcon: 'mdi-information',
         }

@@ -3,8 +3,6 @@
 
 <template>
     <VApp>
-        <VMain>
-            <RouterView/>
-        </VMain>
+        <RouterView/>
     </VApp>
 </template>

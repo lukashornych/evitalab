@@ -1,28 +1,95 @@
 <script setup lang="ts">
-// import LabWindowDataGrid from '@/components/LabWindowDataGrid.vue'
 
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { TabRequest } from '@/model/editor'
+import { EditorService, useEditorService } from '@/services/editor.service'
 
-const currentTab = ref<number>(0)
+const editorService: EditorService = useEditorService()
+
+const tabs = computed<TabRequest[]>(() => {
+    return editorService.getTabRequests()
+})
+const currentTabId = ref<string>()
+const currentTab = computed(() => {
+    if (!currentTabId.value) {
+        return null
+    }
+    return editorService.getTabRequest(currentTabId.value) as TabRequest
+})
+
+function closeTab(tabId: string) {
+    editorService.destroyTabRequest(tabId)
+}
 </script>
 
 <template>
-    <VTabs
-        v-model="currentTab"
+    <VAppBar
+        density="compact"
     >
-        <VTab
-            density="compact"
-            append-icon="mdi-close"
+        <VTabs
+            v-model="currentTabId"
+            show-arrows
         >
-            Product
-        </VTab>
-    </VTabs>
+            <VTab
+                v-for="tab in tabs"
+                :key="tab.id"
+                :value="tab.id"
+                :prepend-icon="tab.icon"
+            >
+                <span>
+                    {{ tab.title }}
+                </span>
 
-<!--    <LabWindowDataGrid-->
-<!--        :connection="connections[0]"-->
-<!--    />-->
+                <VBtn
+                    icon
+                    variant="plain"
+                    density="compact"
+                    class="ml-3"
+                    @click.stop="closeTab(tab.id)"
+                >
+                    <VIcon>mdi-close</VIcon>
+                    <VTooltip
+                        activator="parent"
+                    >
+                        Close tab
+                    </VTooltip>
+                </VBtn>
+            </VTab>
+        </VTabs>
+    </VAppBar>
+
+    <VMain
+        :scrollable="false"
+        class="lab-editor"
+    >
+        <VWindow
+            v-if="tabs.length > 0"
+            v-model="currentTabId"
+        >
+            <VWindowItem
+                v-for="tab in tabs"
+                :key="tab.id"
+                :value="tab.id"
+            >
+                <Component
+                    v-if="currentTab"
+                    :is="currentTab.component"
+                    v-bind="currentTab.componentProps"
+                />
+            </VWindowItem>
+        </VWindow>
+        <div v-else>
+            No tabs are open
+        </div>
+    </VMain>
 </template>
 
 <style scoped>
-
+.lab-editor {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    justify-items: stretch;
+    align-items: stretch;
+}
 </style>

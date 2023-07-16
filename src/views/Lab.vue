@@ -4,16 +4,9 @@ import LabExplorer from '@/components/LabExplorer.vue'
 import LabEditor from '@/components/LabEditor.vue'
 
 import { ref } from 'vue'
-import { Connection } from '@/model/connection'
+import { PanelType } from '@/model/lab'
 
-const panel = ref<string>('explorer')
-
-const connections = ref<Connection[]>([
-    {
-        name: 'evita local',
-        restUrl: 'https://localhost:5555/rest'
-    }
-])
+const panel = ref<string>(PanelType.Explorer)
 
 </script>
 
@@ -23,8 +16,7 @@ const connections = ref<Connection[]>([
     />
 
     <LabExplorer
-        :connections="connections"
-        :model-value="panel === 'explorer'"
+        :model-value="panel === PanelType.Explorer"
     />
 
     <LabEditor />
