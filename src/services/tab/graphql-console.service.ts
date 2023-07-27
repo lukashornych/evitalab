@@ -1,8 +1,9 @@
-import ky from 'ky'
 import { buildClientSchema, getIntrospectionQuery, GraphQLSchema } from 'graphql'
-import { acceptHeader, contentTypeHeader, GraphQLInstancePointer } from '@/model/graphql-console'
-import { KyInstance } from 'ky/distribution/types/ky'
+import { GraphQLInstancePointer } from '@/model/tab/graphql-console'
 import { inject, InjectionKey } from 'vue'
+import { fetchGraphQL } from '@/services/graphql-client'
+import { GraphQLResponse } from '@/model/graphql'
+import { LabService } from '@/services/lab.service'
 
 export const key: InjectionKey<GraphQLConsoleService> = Symbol()
 
@@ -10,22 +11,17 @@ export const key: InjectionKey<GraphQLConsoleService> = Symbol()
  * Service for running GraphQL console component.
  */
 export class GraphQLConsoleService {
-    readonly graphQLClient: KyInstance
+    readonly labService: LabService
 
-    constructor() {
-        this.graphQLClient = ky.create({
-            headers: {
-                "Content-Type": contentTypeHeader,
-                "Accept": acceptHeader
-            }
-        })
+    constructor(labService: LabService) {
+        this.labService = labService
     }
 
     /**
      * Fetches and parses a GraphQL schema from a given evitaDB server and catalog.
      */
     getGraphQLSchema = async (instancePointer: GraphQLInstancePointer): Promise<GraphQLSchema> => {
-        const introspectionSchema: any = await this.callGraphQLApi(
+        const introspectionSchema: GraphQLResponse = await this.callGraphQLApi(
             instancePointer,
             getIntrospectionQuery()
         )
@@ -37,7 +33,7 @@ export class GraphQLConsoleService {
      * Executes user GraphQL query against a given evitaDB server and catalog.
      */
     executeGraphQLQuery = async (instancePointer: GraphQLInstancePointer, query: string, variables?: object): Promise<string> => {
-        const result: object = await this.callGraphQLApi(
+        const result: GraphQLResponse = await this.callGraphQLApi(
             instancePointer,
             query,
             variables
@@ -48,17 +44,13 @@ export class GraphQLConsoleService {
     /**
      * Executes query against evitaDB GraphQL API.
      */
-    private callGraphQLApi<T>(instancePointer: GraphQLInstancePointer, query: string, variables: object = {}): Promise<T> {
-        return this.graphQLClient.post(
-            instancePointer.url(),
-            {
-                body: JSON.stringify({
-                    query,
-                    variables
-                })
-            }
-        )
-            .json()
+    private async callGraphQLApi(instancePointer: GraphQLInstancePointer, query: string, variables: object = {}): Promise<GraphQLResponse> {
+        const urlCatalogName: string = (await this.labService.getCatalogSchema(instancePointer.connection, instancePointer.catalogName))
+            .nameVariants
+            .kebabCase
+        const url = `${instancePointer.connection.gqlUrl}/${urlCatalogName}${instancePointer.instanceTypeSuffix()}`
+
+        return await fetchGraphQL(url, query, variables)
     }
 }
 

@@ -1,12 +1,11 @@
 import { EvitaDBConnection } from '@/model/lab'
-
-export const contentTypeHeader = 'application/json'
-export const acceptHeader = 'application/graphql-response+json'
+import { TabRequestComponentProps } from '@/model/editor'
+import { CatalogSchema } from '@/model/evitadb/schema'
 
 /**
  * Points to concrete evitaDB GraphQL instance
  */
-export class GraphQLInstancePointer {
+export class GraphQLInstancePointer  {
     readonly connection: EvitaDBConnection
     readonly catalogName: string
     readonly instanceType: GraphQLInstanceType
@@ -17,12 +16,7 @@ export class GraphQLInstancePointer {
         this.instanceType = instanceType
     }
 
-    url(): string {
-        // todo lho proper catalog name notation
-        return `${this.connection.gqlUrl}/${this.catalogName}${this.instanceTypeSuffix()}`
-    }
-
-    private instanceTypeSuffix(): string {
+    instanceTypeSuffix(): string {
         switch (this.instanceType) {
             case GraphQLInstanceType.DATA:
                 return ''
@@ -32,7 +26,14 @@ export class GraphQLInstancePointer {
     }
 }
 
-export enum GraphQLInstanceType{
+export enum GraphQLInstanceType {
     DATA = 'data',
     SCHEMA = 'schema'
+}
+
+/**
+ * Represents props of the LabEditorConsoleGraphQL component.
+ */
+export interface GraphQLConsoleProps extends TabRequestComponentProps {
+    readonly instancePointer: GraphQLInstancePointer
 }

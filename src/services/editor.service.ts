@@ -5,6 +5,9 @@ import { inject, InjectionKey } from 'vue'
 
 export const key: InjectionKey<EditorService> = Symbol()
 
+/**
+ * Handles lifecycle of editor. Mainly, it handles creation and destruction of tabs.
+ */
 export class EditorService {
     readonly store: Store<State>
 
@@ -12,15 +15,15 @@ export class EditorService {
         this.store = store
     }
 
-    getTabRequests(): TabRequest[] {
+    getTabRequests(): TabRequest<any>[] {
         return this.store.state.editor.tabsRequests
     }
 
-    getTabRequest(id: string): TabRequest | null {
+    getTabRequest(id: string): TabRequest<any> | null {
         return this.getTabRequests().find(it => it.id === id) || null
     }
 
-    createTabRequest(tabRequest: TabRequest): void {
+    createTabRequest(tabRequest: TabRequest<any>): void {
         this.store.commit('editor/addTabRequest', tabRequest)
     }
 

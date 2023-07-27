@@ -21,7 +21,7 @@ const connections = computed<EvitaDBConnection[]>(() => labService.getConnection
     <VNavigationDrawer
         permanent
         :model-value="modelValue"
-        @update:model-value="$emit('modelValue', $event)"
+        @update:model-value="$emit('update:modelValue', $event)"
     >
         <VList
             density="compact"

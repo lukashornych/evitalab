@@ -2,20 +2,19 @@
 import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 
-import { Codemirror } from 'vue-codemirror'
+import { Extension } from '@codemirror/state';
 import { graphql } from 'cm6-graphql';
 import { json } from '@codemirror/lang-json'
 
 import { onMounted, ref } from 'vue'
-import { GraphQLConsoleService, useGraphQLConsoleService } from '@/services/graphql-console.service'
+import { GraphQLConsoleService, useGraphQLConsoleService } from '@/services/tab/graphql-console.service'
 import { GraphQLSchema, printSchema } from 'graphql'
-import { GraphQLInstancePointer } from '@/model/graphql-console'
+import { GraphQLConsoleProps } from '@/model/tab/graphql-console'
+import CodemirrorFull from '@/components/CodemirrorFull.vue'
 
 const graphQLConsoleService: GraphQLConsoleService = useGraphQLConsoleService()
 
-const props = defineProps<{
-    instancePointer: GraphQLInstancePointer
-}>()
+const props = defineProps<GraphQLConsoleProps>()
 
 const path = ref<string[]>([
     props.instancePointer.catalogName,
@@ -25,27 +24,23 @@ const editorTab = ref<string>('query')
 
 const graphQLSchema = ref<GraphQLSchema>()
 
-const queryCode = ref<string>(
-`{
-\t# Write your evitaDB GraphQL query here...
-\t
-}`
-)
+const queryCode = ref<string>(`# Write your GraphQL query for catalog ${props.instancePointer.catalogName} here.`)
 const queryExtensions = ref<any[]>([])
 
 const variablesCode = ref<string>('{\n  \n}')
-const variablesExtensions = ref<any[]>([json()])
+const variablesExtensions = ref<Extension[]>([json()])
 
 const schemaEditorInitialized = ref<boolean>(false)
 const schemaCode = ref<string>('')
-const schemaExtensions = ref<any[]>([])
+const schemaExtensions = ref<Extension[]>([])
 
 const resultCode = ref<string>('')
-const resultExtensions = ref<any[]>([json()])
+const resultExtensions = ref<Extension[]>([json()])
 
 onMounted(async () => {
     graphQLSchema.value = await graphQLConsoleService.getGraphQLSchema(props.instancePointer)
-    queryExtensions.value.push(graphql(graphQLSchema.value))
+    // todo lho update schema on load
+    queryExtensions.value.push(graphql())
     schemaExtensions.value.push(graphql())
 })
 
@@ -56,7 +51,7 @@ async function executeQuery(): Promise<void> {
 function initializeSchemaEditor(): void {
     if (!schemaEditorInitialized.value) {
         if (graphQLSchema.value) {
-            schemaCode.value = printSchema(graphQLSchema.value)
+            schemaCode.value = printSchema(graphQLSchema.value as GraphQLSchema)
             schemaEditorInitialized.value = true
         } else {
             schemaCode.value = ''
@@ -87,7 +82,6 @@ function initializeSchemaEditor(): void {
 
             <VBtn
                 icon
-                class="mr-3"
             >
                 <VIcon>mdi-information</VIcon>
 
@@ -100,11 +94,17 @@ function initializeSchemaEditor(): void {
 
             <!-- todo lho primary color? -->
             <VBtn
-                prepend-icon="mdi-send"
-                variant="tonal"
+                icon
+                variant="elevated"
                 @click="executeQuery"
             >
-                Execute query
+                <VIcon>mdi-play</VIcon>
+
+                <VTooltip
+                    activator="parent"
+                >
+                    Execute query
+                </VTooltip>
             </VBtn>
         </VToolbar>
 
@@ -168,10 +168,9 @@ function initializeSchemaEditor(): void {
                             value="query"
                             style="height: 100%"
                         >
-                            <Codemirror
+                            <CodemirrorFull
                                 v-model="queryCode"
-                                :extensions="queryExtensions"
-                                style="height: 100%"
+                                :additional-extensions="queryExtensions"
                             />
                         </VWindowItem>
 
@@ -179,10 +178,9 @@ function initializeSchemaEditor(): void {
                             value="variables"
                             style="height: 100%"
                         >
-                            <Codemirror
+                            <CodemirrorFull
                                 v-model="variablesCode"
-                                :extensions="variablesExtensions"
-                                style="height: 100%"
+                                :additional-extensions="variablesExtensions"
                             />
                         </VWindowItem>
 
@@ -191,21 +189,20 @@ function initializeSchemaEditor(): void {
                             style="height: 100%"
                             @group:selected="initializeSchemaEditor"
                         >
-                            <Codemirror
+                            <CodemirrorFull
                                 v-model="schemaCode"
-                                :extensions="schemaExtensions"
-                                style="height: 100%"
+                                :additional-extensions="schemaExtensions"
+                                style=": 100%"
                             />
                         </VWindowItem>
                     </VWindow>
                 </Pane>
                 <Pane>
-                    <Codemirror
+                    <CodemirrorFull
                         v-model="resultCode"
                         placeholder="Results will be displayed here..."
                         disabled
-                        :extensions="resultExtensions"
-                        style="height: 100%"
+                        :additional-extensions="resultExtensions"
                     />
                 </Pane>
             </Splitpanes>

@@ -1,10 +1,13 @@
 import { TabRequest } from '@/model/editor'
 import { EvitaDBConnection } from '@/model/lab'
 import LabEditorConsoleGraphQL from '@/components/LabEditorConsoleGraphQL.vue'
-import { GraphQLInstancePointer, GraphQLInstanceType } from '@/model/graphql-console'
+import { GraphQLConsoleProps, GraphQLInstancePointer, GraphQLInstanceType } from '@/model/tab/graphql-console'
 import { markRaw } from 'vue'
 
-export class GraphqlConsoleRequest extends TabRequest {
+/**
+ * Creates new GraphQL tab.
+ */
+export class GraphQLConsoleRequest extends TabRequest<GraphQLConsoleProps> {
     constructor(connection: EvitaDBConnection, catalogName: string, instanceType: GraphQLInstanceType) {
         super(
             `${catalogName} - ${instanceType} [${connection.name}]`,
@@ -16,3 +19,4 @@ export class GraphqlConsoleRequest extends TabRequest {
         )
     }
 }
+

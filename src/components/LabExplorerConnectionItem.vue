@@ -2,9 +2,10 @@
 import LabExplorerCatalogItem from '@/components/LabExplorerCatalogItem.vue'
 
 import { EvitaDBConnection } from '@/model/lab'
-import { onMounted, provide, readonly, ref } from 'vue'
+import { provide, readonly, ref } from 'vue'
 import { LabService, useLabService } from '@/services/lab.service'
 import TreeViewItem from '@/components/TreeViewItem.vue'
+import { Catalog } from '@/model/evitadb/system'
 
 enum ActionType {
     Edit = 'edit',
@@ -37,11 +38,14 @@ const props = defineProps<{
 
 provide('connection', readonly(props.connection))
 
-const catalogs = ref([])
+const catalogs = ref<Catalog[]>()
 
-onMounted(async () => {
+async function loadCatalogs(): Promise<void> {
+    if (catalogs.value !== undefined) {
+        return
+    }
     catalogs.value = await labService.getCatalogs(props.connection)
-})
+}
 
 function handleAction(action: string, payload?: any) {
     switch (action) {
@@ -65,17 +69,22 @@ function handleAction(action: string, payload?: any) {
                 :is-open="isOpen"
                 prepend-icon="mdi-server"
                 :actions="actions"
+                @click="loadCatalogs"
                 @click:action="handleAction"
             >
                 {{ connection.name }}
             </TreeViewItem>
         </template>
 
-        <LabExplorerCatalogItem
-            v-for="catalog in catalogs"
-            :key="catalog.name"
-            :catalog="catalog"
-        />
+        <div
+            v-if="catalogs !== undefined"
+        >
+            <LabExplorerCatalogItem
+                v-for="catalog in catalogs"
+                :key="catalog.name"
+                :catalog="catalog"
+            />
+        </div>
     </VListGroup>
 </template>
 

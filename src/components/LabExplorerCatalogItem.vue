@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { inject, onMounted, provide, readonly, ref } from 'vue'
+import { inject, provide, readonly, ref } from 'vue'
 import { LabService, useLabService } from '@/services/lab.service'
 import { EvitaDBConnection } from '@/model/lab'
 import TreeViewItem from '@/components/TreeViewItem.vue'
 import LabExplorerCollectionItem from '@/components/LabExplorerCollectionItem.vue'
-import { GraphqlConsoleRequest } from '@/model/graphql-console-request'
-import { GraphQLInstanceType } from '@/model/graphql-console'
+import { GraphQLConsoleRequest } from '@/model/tab/graphql-console-request'
+import { GraphQLInstanceType } from '@/model/tab/graphql-console'
 import { EditorService, useEditorService } from '@/services/editor.service'
+import { Catalog } from '@/model/evitadb/system'
+import { CatalogSchema } from '@/model/evitadb/schema'
 
 enum ActionType {
     OpenEvitaQLConsole = 'open-evitaql-console',
@@ -58,19 +60,20 @@ const labService: LabService = useLabService()
 const editorService: EditorService = useEditorService()
 
 const props = defineProps<{
-    catalog: any
+    catalog: Catalog
 }>()
 
 const connection = inject('connection') as EvitaDBConnection
 
-const catalogSchema = ref({})
+const catalogSchema = ref<CatalogSchema>()
 provide('catalogSchema', readonly(catalogSchema))
 
-onMounted(async () => {
-    if (!props.catalog.corrupted) {
-        catalogSchema.value = await labService.getCatalogSchema(connection, props.catalog.name)
+async function loadCatalogSchema(): Promise<void> {
+    if (catalogSchema.value !== undefined || props.catalog.corrupted) {
+        return
     }
-})
+    catalogSchema.value = await labService.getCatalogSchema(connection, props.catalog.name)
+}
 
 function handleAction(action: string) {
     switch (action) {
@@ -78,7 +81,7 @@ function handleAction(action: string) {
             throw new Error('Not implemented yet.')
         case ActionType.OpenGraphQLDataAPIConsole:
             editorService.createTabRequest(
-                new GraphqlConsoleRequest(
+                new GraphQLConsoleRequest(
                     connection,
                     props.catalog.name,
                     GraphQLInstanceType.DATA
@@ -87,7 +90,7 @@ function handleAction(action: string) {
             break
         case ActionType.OpenGraphQLSchemaAPIConsole:
             editorService.createTabRequest(
-                new GraphqlConsoleRequest(
+                new GraphQLConsoleRequest(
                     connection,
                     props.catalog.name,
                     GraphQLInstanceType.SCHEMA
@@ -108,22 +111,38 @@ function handleAction(action: string) {
     >
         <template v-slot:activator="{ isOpen, props }">
             <TreeViewItem
+                v-if="!catalog.corrupted"
                 v-bind="props"
                 openable
                 :is-open="isOpen"
                 prepend-icon="mdi-book-open"
                 :actions="actions"
+                @click="loadCatalogSchema"
                 @click:action="handleAction"
             >
                 {{ catalog.name }}
             </TreeViewItem>
+
+            <TreeViewItem
+                v-else
+                v-bind="props"
+                prepend-icon="mdi-book-open"
+                class="text-red"
+            >
+                {{ catalog.name }}
+                <VTooltip
+                    activator="parent"
+                >
+                    This catalog couldn't be loaded because it's corrupted.
+                </VTooltip>
+            </TreeViewItem>
         </template>
 
         <div
-            v-if="!catalog.corrupted"
+            v-if="!catalog.corrupted && catalogSchema !== undefined"
         >
             <LabExplorerCollectionItem
-                v-for="entitySchema in catalogSchema.entitySchemas"
+                v-for="entitySchema in catalogSchema.allEntitySchemas"
                 :key="entitySchema.name"
                 :entity-schema="entitySchema"
             />
