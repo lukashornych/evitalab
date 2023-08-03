@@ -24,9 +24,22 @@ export interface DataGridConsoleProps extends TabRequestComponentProps {
 }
 
 /**
- * Holds query result of data grid console query.
+ * Types of entity properties with their prefixes
  */
-export type DataGridQueryResult = {
-    readonly entities: any[],
-    readonly totalEntitiesCount: number
+export enum EntityPropertyType {
+    Entity = '',
+    Attributes = 'attributes',
+    AssociatedData = 'associatedData',
+    References = 'references'
+}
+
+/**
+ * Set of statically defined entity properties.
+ */
+export enum StaticEntityProperties {
+    PrimaryKey = 'primaryKey',
+    Parent = 'parent',
+    Locales = 'locales',
+    AllLocales = 'allLocales',
+    PriceInnerRecordHandling = 'priceInnerRecordHandling'
 }

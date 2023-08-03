@@ -83,11 +83,17 @@ function closeTab(tabId: string) {
                 :key="tab.id"
                 :value="tab.id"
             >
-                <Component
-                    v-if="currentTab"
-                    :is="currentTab.component"
-                    v-bind="currentTab.componentProps"
-                />
+                <Suspense>
+                    <Component
+                        v-if="currentTab"
+                        :is="currentTab.component"
+                        v-bind="currentTab.componentProps"
+                    />
+
+                    <template #fallback>
+                        Loading ...
+                    </template>
+                </Suspense>
             </VWindowItem>
         </VWindow>
         <div v-else>

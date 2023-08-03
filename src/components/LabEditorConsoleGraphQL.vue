@@ -37,6 +37,7 @@ const schemaExtensions = ref<Extension[]>([])
 const resultCode = ref<string>('')
 const resultExtensions = ref<Extension[]>([json()])
 
+// todo lho remove this hook
 onMounted(async () => {
     graphQLSchema.value = await graphQLConsoleService.getGraphQLSchema(props.instancePointer)
     // todo lho update schema on load
@@ -116,7 +117,6 @@ function initializeSchemaEditor(): void {
             >
                 <VTabs
                     v-model="editorTab"
-                    density="compact"
                     direction="vertical"
                     class="editors__tab"
                 >

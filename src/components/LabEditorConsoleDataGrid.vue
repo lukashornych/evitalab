@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { VDataTableServer } from 'vuetify/labs/VDataTable'
 
-import { onMounted, ref, watch } from 'vue'
-import { DataGridConsoleProps, DataGridQueryResult } from '@/model/tab/data-grid-console'
+import { ref, watch } from 'vue'
+import { DataGridConsoleProps } from '@/model/tab/data-grid-console'
 import { Extension } from '@codemirror/state'
 import { DataGridConsoleService, useDataGridConsoleService } from '@/services/tab/data-grid-console.service'
-import { LabService, useLabService } from '@/services/lab.service'
 import { EntitySchema } from '@/model/evitadb/schema'
 import CodemirrorOneLine from '@/components/CodemirrorOneLine.vue'
 import { QueryLanguage } from '@/model/lab'
+import { DataGridQueryResult } from '@/services/tab/data-grid-console/query-executor'
 
-const labService: LabService = useLabService()
 const dataGridConsoleService: DataGridConsoleService = useDataGridConsoleService()
 
 const props = defineProps<DataGridConsoleProps>()
@@ -52,56 +51,50 @@ const filterByExtensions: Extension[] = []
 const orderByCode = ref<string>('')
 const orderByExtensions: Extension[] = []
 
-const dataLanguages = ref<string[]>([])
-const selectedDataLanguage = ref<string[]>(['none'])
+const dataLocales = ref<string[]>([])
+const selectedDataLocales = ref<string[]>(['none'])
+watch(selectedDataLocales, () => executeQuery())
 
 const displayedData = ref<string[]>([])
+watch(displayedData, (newValue, oldValue) => {
+    updateGridHeaders()
 
-const resultHeaders = ref<any[]>([])
+    // re-fetch entities only if new properties were added, only in such case there could be missing data when displaying
+    // the new properties
+    if (newValue.length > oldValue.length) {
+        executeQuery()
+    }
+})
+
+const gridHeaders = ref<any[]>([])
 const resultEntities = ref<any[]>([])
 const totalResultCount = ref<number>(0)
 
-onMounted(async () => {
-    const entitySchema: EntitySchema = await labService.getEntitySchema(props.dataPointer.connection, props.dataPointer.catalogName, props.dataPointer.entityType)
-
-    dataLanguages.value = entitySchema.locales
-
-    await buildEntityProperties(entitySchema)
+async function initializeConsole(): Promise<void> {
+    dataLocales.value = await dataGridConsoleService.getDataLocales(props.dataPointer)
+    entityProperties.value = await dataGridConsoleService.getEntityProperties(props.dataPointer)
 
     // preselect all properties
     toggleAllEntityProperties()
-    // build data table headers from properties
-    resultHeaders.value = entityProperties.value.map(property => {
-        return {
+    // pre-build grid headers from initial properties
+    updateGridHeaders()
+}
+
+async function updateGridHeaders(): Promise<void> {
+    gridHeaders.value = []
+    for (const property of displayedData.value) {
+        // todo lho more toplevel header
+        gridHeaders.value.push({
             key: property,
-            title: property
-        }
+            title: property,
+            sortable: await dataGridConsoleService.isEntityPropertySortable(props.dataPointer, property)
+        })
+    }
+
+    // sort grid headers by entity properties order
+    gridHeaders.value.sort((a, b) => {
+        return entityProperties.value.indexOf(a.key) - entityProperties.value.indexOf(b.key)
     })
-
-    await executeQuery()
-})
-
-async function buildEntityProperties(entitySchema: EntitySchema): Promise<void> {
-    entityProperties.value = ['primaryKey']
-    if (entitySchema.withHierarchy) {
-        entityProperties.value.push('parent')
-    }
-    if (entitySchema.locales.length > 0) {
-        entityProperties.value.push('locales')
-        entityProperties.value.push('allLocales')
-    }
-    if (entitySchema.withPrice) {
-        entityProperties.value.push('priceInnerRecordHandling')
-    }
-    for (const attributeSchema of entitySchema.allAttributes) {
-        entityProperties.value.push(`attributes.${attributeSchema.nameVariants.camelCase}`)
-    }
-    for (const associatedDataSchema of entitySchema.allAssociatedData) {
-        entityProperties.value.push(`associatedData.${associatedDataSchema.nameVariants.camelCase}`)
-    }
-    for (const referenceSchema of entitySchema.allReferences) {
-        entityProperties.value.push(`references.${referenceSchema.nameVariants.camelCase}`)
-    }
 }
 
 function toggleAllEntityProperties(): void {
@@ -115,7 +108,7 @@ function toggleAllEntityProperties(): void {
 async function gridUpdated({ page, itemsPerPage, sortBy }): Promise<void> {
     pageNumber.value = page
     pageSize.value = itemsPerPage
-    // todo lho translate sortBy column to orderBy query
+    orderByCode.value = await dataGridConsoleService.buildOrderByFromGridColumns(props.dataPointer, selectedQueryLanguage.value[0], sortBy)
 
     await executeQuery()
 }
@@ -128,38 +121,23 @@ async function executeQuery(): Promise<void> {
         selectedQueryLanguage.value[0],
         filterByCode.value,
         orderByCode.value,
+        dataLocales.value.length === 0 ? undefined : dataLocales.value[0],
         displayedData.value,
         pageNumber.value,
         pageSize.value
     )
-    console.log(result)
-    if (result.entities.length === 0) {
-        resultEntities.value = []
-        // resultEntityHeaders.value = []
-    } else {
-        [{key: 'primaryKey', title: 'Primary key'}, {key: 'type', title: 'Type'}]
-
-        resultEntities.value = result.entities
-
-    // todo lho flatten the entities ?
-    //     resultEntities.value = result.entities.map(entity => {
-    //         const flattenedEntity = {}
-    //         Object.keys(entity).forEach(key => {
-    //             flattenedEntity[key] = entity[key].value
-    //         })
-    //         return flattenedEntity
-    //     })
-    }
-
+    resultEntities.value = result.entities
     totalResultCount.value = result.totalEntitiesCount
 
     loading.value = false
 }
+
+await initializeConsole()
 </script>
 
 <template>
     <div class="data-grid">
-        <VToolbar>
+        <VToolbar density="compact">
             <VAppBarNavIcon
                 icon="mdi-table"
                 :disabled="true"
@@ -180,6 +158,7 @@ async function executeQuery(): Promise<void> {
                 icon
                 variant="elevated"
                 :loading="loading"
+                density="compact"
                 @click="executeQuery"
             >
                 <VIcon>mdi-play</VIcon>
@@ -234,12 +213,12 @@ async function executeQuery(): Promise<void> {
                     >
                         <VIcon>mdi-translate</VIcon>
                         <VTooltip activator="parent">
-                            Select data language
+                            Select data locale
                         </VTooltip>
 
                         <VMenu activator="parent">
                             <VList
-                                v-model:selected="selectedDataLanguage"
+                                v-model:selected="selectedDataLocales"
                                 density="compact"
                                 min-width="100"
                             >
@@ -252,11 +231,11 @@ async function executeQuery(): Promise<void> {
                                 <VDivider class="mt-2 mb-2" />
 
                                 <VListItem
-                                    v-for="language in dataLanguages"
-                                    :key="language"
-                                    :value="language"
+                                    v-for="locale in dataLocales"
+                                    :key="locale"
+                                    :value="locale"
                                 >
-                                    <VListItemTitle>{{ language }}</VListItemTitle>
+                                    <VListItemTitle>{{ locale }}</VListItemTitle>
                                 </VListItem>
                             </VList>
                         </VMenu>
@@ -320,10 +299,12 @@ async function executeQuery(): Promise<void> {
     <VContainer>
         <VRow>
             <VDataTableServer
-                :headers="resultHeaders"
+                :headers="gridHeaders"
                 :loading="loading"
                 :items="resultEntities"
                 :items-length="totalResultCount"
+                density="compact"
+                multi-sort
                 @update:options="gridUpdated"
             />
         </VRow>
