@@ -7,57 +7,31 @@ import { graphql } from 'cm6-graphql';
 import { json } from '@codemirror/lang-json'
 
 import { onMounted, ref } from 'vue'
-import { GraphQLConsoleService, useGraphQLConsoleService } from '@/services/tab/graphql-console.service'
-import { GraphQLSchema, printSchema } from 'graphql'
-import { GraphQLConsoleProps } from '@/model/tab/graphql-console'
 import CodemirrorFull from '@/components/CodemirrorFull.vue'
+import { EvitaQLConsoleService, useEvitaQLConsoleService } from '@/services/tab/evitaql-console.service'
+import { EvitaQLConsoleProps } from '@/model/tab/evitaql-console'
 
-const graphQLConsoleService: GraphQLConsoleService = useGraphQLConsoleService()
+const evitaQLConsoleService: EvitaQLConsoleService = useEvitaQLConsoleService()
 
-const props = defineProps<GraphQLConsoleProps>()
+const props = defineProps<EvitaQLConsoleProps>()
 
 const path = ref<string[]>([
-    props.instancePointer.catalogName,
-    props.instancePointer.instanceType, // todo lho i18n
+    props.dataPointer.catalogName
 ])
 const editorTab = ref<string>('query')
 
-const graphQLSchema = ref<GraphQLSchema>()
-
-const queryCode = ref<string>(`# Write your GraphQL query for catalog ${props.instancePointer.catalogName} here.\n`)
+const queryCode = ref<string>(`// Write your EvitaQL query for catalog ${props.dataPointer.catalogName} here.\n`)
 const queryExtensions = ref<any[]>([])
 
 const variablesCode = ref<string>('{\n  \n}')
 const variablesExtensions = ref<Extension[]>([json()])
 
-const schemaEditorInitialized = ref<boolean>(false)
-const schemaCode = ref<string>('')
-const schemaExtensions = ref<Extension[]>([])
-
 const resultCode = ref<string>('')
 const resultExtensions = ref<Extension[]>([json()])
 
-// todo lho remove this hook
-onMounted(async () => {
-    graphQLSchema.value = await graphQLConsoleService.getGraphQLSchema(props.instancePointer)
-    // todo lho update schema on load
-    queryExtensions.value.push(graphql())
-    schemaExtensions.value.push(graphql())
-})
 
 async function executeQuery(): Promise<void> {
-    resultCode.value = await graphQLConsoleService.executeGraphQLQuery(props.instancePointer, queryCode.value, JSON.parse(variablesCode.value))
-}
-
-function initializeSchemaEditor(): void {
-    if (!schemaEditorInitialized.value) {
-        if (graphQLSchema.value) {
-            schemaCode.value = printSchema(graphQLSchema.value as GraphQLSchema)
-            schemaEditorInitialized.value = true
-        } else {
-            schemaCode.value = ''
-        }
-    }
+    resultCode.value = await evitaQLConsoleService.executeEvitaQLQuery(props.dataPointer, queryCode.value, JSON.parse(variablesCode.value))
 }
 </script>
 
@@ -67,7 +41,7 @@ function initializeSchemaEditor(): void {
     >
         <VToolbar density="compact">
             <VAppBarNavIcon
-                icon="mdi-graphql"
+                icon="mdi-console"
                 :disabled="true"
                 style="opacity: 1"
             />
@@ -80,19 +54,6 @@ function initializeSchemaEditor(): void {
             </VToolbarTitle>
 
             <template #append>
-                <VBtn
-                    icon
-                    density="compact"
-                    class="mr-3"
-                >
-                    <VIcon>mdi-information</VIcon>
-                    <VTooltip
-                        activator="parent"
-                    >
-                        GraphQL API instance details
-                    </VTooltip>
-                </VBtn>
-
                 <!-- todo lho primary color? -->
                 <VBtn
                     icon
@@ -142,16 +103,6 @@ function initializeSchemaEditor(): void {
                             Variables
                         </VTooltip>
                     </VTab>
-                    <VTab
-                        value="schema"
-                    >
-                        <VIcon>mdi-file-code</VIcon>
-                        <VTooltip
-                            activator="parent"
-                        >
-                            Schema
-                        </VTooltip>
-                    </VTab>
                 </VTabs>
 
                 <VDivider />
@@ -183,18 +134,6 @@ function initializeSchemaEditor(): void {
                             <CodemirrorFull
                                 v-model="variablesCode"
                                 :additional-extensions="variablesExtensions"
-                            />
-                        </VWindowItem>
-
-                        <VWindowItem
-                            value="schema"
-                            style="height: 100%"
-                            @group:selected="initializeSchemaEditor"
-                        >
-                            <CodemirrorFull
-                                v-model="schemaCode"
-                                :additional-extensions="schemaExtensions"
-                                style=": 100%"
                             />
                         </VWindowItem>
                     </VWindow>

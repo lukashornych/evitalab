@@ -9,13 +9,13 @@ import { GraphQLInstanceType } from '@/model/tab/graphql-console'
 import { EditorService, useEditorService } from '@/services/editor.service'
 import { Catalog } from '@/model/evitadb/system'
 import { CatalogSchema } from '@/model/evitadb/schema'
+import { EvitaQLConsoleRequest } from '@/model/tab/evitaql-console-request'
 
 enum ActionType {
     OpenEvitaQLConsole = 'open-evitaql-console',
     OpenGraphQLDataAPIConsole = 'open-graphql-data-api-console',
     OpenGraphQLSchemaAPIConsole = 'open-graphql-schema-api-console',
-    ViewSchema = 'view-schema',
-    Delete = 'delete'
+    ViewSchema = 'view-schema'
 }
 
 const actions = ref<object[]>([
@@ -46,14 +46,7 @@ const actions = ref<object[]>([
         props: {
             prependIcon: 'mdi-file-code'
         }
-    },
-    {
-        value: ActionType.Delete,
-        title: 'Delete catalog',
-        props: {
-            prependIcon: 'mdi-delete'
-        }
-    },
+    }
 ])
 
 const labService: LabService = useLabService()
@@ -78,7 +71,13 @@ async function loadCatalogSchema(): Promise<void> {
 function handleAction(action: string) {
     switch (action) {
         case ActionType.OpenEvitaQLConsole:
-            throw new Error('Not implemented yet.')
+            editorService.createTabRequest(
+                new EvitaQLConsoleRequest(
+                    connection,
+                    props.catalog.name
+                )
+            )
+            break
         case ActionType.OpenGraphQLDataAPIConsole:
             editorService.createTabRequest(
                 new GraphQLConsoleRequest(
@@ -98,8 +97,6 @@ function handleAction(action: string) {
             )
             break
         case ActionType.ViewSchema:
-            throw new Error('Not implemented yet.')
-        case ActionType.Delete:
             throw new Error('Not implemented yet.')
     }
 }
@@ -138,9 +135,7 @@ function handleAction(action: string) {
             </TreeViewItem>
         </template>
 
-        <div
-            v-if="!catalog.corrupted && catalogSchema !== undefined"
-        >
+        <div v-if="!catalog.corrupted && catalogSchema !== undefined">
             <LabExplorerCollectionItem
                 v-for="entitySchema in catalogSchema.allEntitySchemas"
                 :key="entitySchema.name"

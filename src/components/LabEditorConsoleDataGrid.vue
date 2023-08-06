@@ -179,22 +179,22 @@ await initializeConsole()
                 />
             </VToolbarTitle>
 
-            <VSpacer />
+            <template #append>
+                <!-- todo lho primary color? -->
+                <VBtn
+                    icon
+                    variant="elevated"
+                    :loading="loading"
+                    density="compact"
+                    @click="executeQuery"
+                >
+                    <VIcon>mdi-play</VIcon>
 
-            <!-- todo lho primary color? -->
-            <VBtn
-                icon
-                variant="elevated"
-                :loading="loading"
-                density="compact"
-                @click="executeQuery"
-            >
-                <VIcon>mdi-play</VIcon>
-
-                <VTooltip activator="parent">
-                    Execute query
-                </VTooltip>
-            </VBtn>
+                    <VTooltip activator="parent">
+                        Execute query
+                    </VTooltip>
+                </VBtn>
+            </template>
 
             <template #extension>
                 <div class="query-input">

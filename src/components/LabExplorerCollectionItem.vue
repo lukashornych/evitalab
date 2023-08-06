@@ -8,14 +8,14 @@ import { DataGridConsoleRequest } from '@/model/tab/data-grid-console-request'
 import { GraphQLConsoleRequest } from '@/model/tab/graphql-console-request'
 import { GraphQLInstanceType } from '@/model/tab/graphql-console'
 import { CatalogSchema, EntitySchema } from '@/model/evitadb/schema'
+import { EvitaQLConsoleRequest } from '@/model/tab/evitaql-console-request'
 
 enum ActionType {
     ViewEntities = 'view-entities',
     OpenEvitaQLConsole = 'open-evitaql-console',
     OpenGraphQLDataAPIConsole = 'open-graphql-data-api-console',
     OpenGraphQLSchemaAPIConsole = 'open-graphql-schema-api-console',
-    ViewSchema = 'view-schema',
-    Delete = 'delete'
+    ViewSchema = 'view-schema'
 }
 
 const actions = ref<object[]>([
@@ -53,14 +53,7 @@ const actions = ref<object[]>([
         props: {
             prependIcon: 'mdi-file-code'
         }
-    },
-    {
-        value: ActionType.Delete,
-        title: 'Delete collection',
-        props: {
-            prependIcon: 'mdi-delete'
-        }
-    },
+    }
 ])
 
 const editorService: EditorService = useEditorService()
@@ -86,7 +79,13 @@ function handleAction(action: string) {
             openDataGrid()
             break
         case ActionType.OpenEvitaQLConsole:
-            throw new Error('Not implemented yet.')
+            editorService.createTabRequest(
+                new EvitaQLConsoleRequest(
+                    connection,
+                    catalogSchema.name
+                )
+            )
+            break
         case ActionType.OpenGraphQLDataAPIConsole:
             editorService.createTabRequest(
                 new GraphQLConsoleRequest(
@@ -106,8 +105,6 @@ function handleAction(action: string) {
             )
             break
         case ActionType.ViewSchema:
-            throw new Error('Not implemented yet.')
-        case ActionType.Delete:
             throw new Error('Not implemented yet.')
     }
 }
