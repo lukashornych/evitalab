@@ -59,7 +59,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
         if (entityFetchRequires.length > 0 ||
             requiredData.concat(StaticEntityProperties.Parent, StaticEntityProperties.Locales, StaticEntityProperties.AllLocales, StaticEntityProperties.PriceInnerRecordHandling)) {
             // we need to specify locale only if we want data
-            if (dataLocale !== undefined) {
+            if (dataLocale !== undefined && dataLocale !== 'none') {
                 entityFetchRequires.push(`dataInLocales('${dataLocale}')`)
             }
 

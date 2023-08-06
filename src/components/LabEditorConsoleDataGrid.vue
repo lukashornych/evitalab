@@ -1,19 +1,22 @@
 <script setup lang="ts">
+import { Splitpanes, Pane } from 'splitpanes'
+import 'splitpanes/dist/splitpanes.css'
 import { VDataTableServer } from 'vuetify/labs/VDataTable'
 
 import { ref, watch } from 'vue'
 import { DataGridConsoleProps } from '@/model/tab/data-grid-console'
 import { Extension } from '@codemirror/state'
 import { DataGridConsoleService, useDataGridConsoleService } from '@/services/tab/data-grid-console.service'
-import { EntitySchema } from '@/model/evitadb/schema'
 import CodemirrorOneLine from '@/components/CodemirrorOneLine.vue'
 import { QueryLanguage } from '@/model/lab'
 import { DataGridQueryResult } from '@/services/tab/data-grid-console/query-executor'
+import CodemirrorFull from '@/components/CodemirrorFull.vue'
 
 const dataGridConsoleService: DataGridConsoleService = useDataGridConsoleService()
 
 const props = defineProps<DataGridConsoleProps>()
 
+// static data
 const path = ref<string[]>([
     props.dataPointer.catalogName,
     props.dataPointer.entityType
@@ -29,6 +32,13 @@ const queryLanguages = [
         value: QueryLanguage.GraphQL
     }
 ]
+
+let entityProperties: string[] = []
+let dataLocales: string[] = []
+
+let gridHeaders: Map<String, any> = new Map<String, any>()
+
+// dynamic user data
 const selectedQueryLanguage = ref<QueryLanguage[]>([QueryLanguage.EvitaQL])
 watch(selectedQueryLanguage, (newValue, oldValue) => {
     if (newValue[0] === oldValue[0]) {
@@ -38,8 +48,6 @@ watch(selectedQueryLanguage, (newValue, oldValue) => {
     filterByCode.value = ''
     orderByCode.value = ''
 })
-
-const entityProperties = ref<string[]>([])
 
 const loading = ref<boolean>(false)
 const pageNumber = ref<number>(1)
@@ -51,13 +59,12 @@ const filterByExtensions: Extension[] = []
 const orderByCode = ref<string>('')
 const orderByExtensions: Extension[] = []
 
-const dataLocales = ref<string[]>([])
 const selectedDataLocales = ref<string[]>(['none'])
 watch(selectedDataLocales, () => executeQuery())
 
 const displayedData = ref<string[]>([])
 watch(displayedData, (newValue, oldValue) => {
-    updateGridHeaders()
+    updateDisplayedGridHeaders()
 
     // re-fetch entities only if new properties were added, only in such case there could be missing data when displaying
     // the new properties
@@ -66,40 +73,46 @@ watch(displayedData, (newValue, oldValue) => {
     }
 })
 
-const gridHeaders = ref<any[]>([])
+const displayedGridHeaders = ref<any[]>([])
 const resultEntities = ref<any[]>([])
 const totalResultCount = ref<number>(0)
 
+
+const showPropertyDetail = ref<boolean>(false)
+const propertyDetailName = ref<string>('')
+const propertyDetailValue = ref<string>('')
+
+
 async function initializeConsole(): Promise<void> {
-    dataLocales.value = await dataGridConsoleService.getDataLocales(props.dataPointer)
-    entityProperties.value = await dataGridConsoleService.getEntityProperties(props.dataPointer)
+    dataLocales = await dataGridConsoleService.getDataLocales(props.dataPointer)
+    entityProperties = await dataGridConsoleService.getEntityProperties(props.dataPointer)
+    for (const property of entityProperties) {
+        gridHeaders.set(
+            property,
+            {
+                key: property,
+                title: property,
+                sortable: await dataGridConsoleService.isEntityPropertySortable(props.dataPointer, property)
+            }
+        )
+    }
 
     // preselect all properties
     toggleAllEntityProperties()
-    // pre-build grid headers from initial properties
-    updateGridHeaders()
 }
 
-async function updateGridHeaders(): Promise<void> {
-    gridHeaders.value = []
-    for (const property of displayedData.value) {
-        // todo lho more toplevel header
-        gridHeaders.value.push({
-            key: property,
-            title: property,
-            sortable: await dataGridConsoleService.isEntityPropertySortable(props.dataPointer, property)
-        })
-    }
+async function updateDisplayedGridHeaders(): Promise<void> {
+    displayedGridHeaders.value = displayedData.value.map(property => gridHeaders.get(property))
 
     // sort grid headers by entity properties order
-    gridHeaders.value.sort((a, b) => {
-        return entityProperties.value.indexOf(a.key) - entityProperties.value.indexOf(b.key)
+    displayedGridHeaders.value.sort((a, b) => {
+        return entityProperties.indexOf(a.key) - entityProperties.indexOf(b.key)
     })
 }
 
 function toggleAllEntityProperties(): void {
-    if (displayedData.value.length < entityProperties.value.length) {
-        displayedData.value = entityProperties.value.slice()
+    if (displayedData.value.length < entityProperties.length) {
+        displayedData.value = entityProperties.slice()
     } else {
         displayedData.value = []
     }
@@ -107,7 +120,10 @@ function toggleAllEntityProperties(): void {
 
 async function gridUpdated({ page, itemsPerPage, sortBy }): Promise<void> {
     pageNumber.value = page
-    pageSize.value = itemsPerPage
+    if (itemsPerPage > -1) {
+        // -1 means all items, that would be too much data to render
+        pageSize.value = itemsPerPage
+    }
     orderByCode.value = await dataGridConsoleService.buildOrderByFromGridColumns(props.dataPointer, selectedQueryLanguage.value[0], sortBy)
 
     await executeQuery()
@@ -121,7 +137,7 @@ async function executeQuery(): Promise<void> {
         selectedQueryLanguage.value[0],
         filterByCode.value,
         orderByCode.value,
-        dataLocales.value.length === 0 ? undefined : dataLocales.value[0],
+        selectedDataLocales.value.length === 0 ? undefined : selectedDataLocales.value[0],
         displayedData.value,
         pageNumber.value,
         pageSize.value
@@ -130,6 +146,18 @@ async function executeQuery(): Promise<void> {
     totalResultCount.value = result.totalEntitiesCount
 
     loading.value = false
+}
+
+function openPropertyDetail(property: string, value: string): void {
+    propertyDetailName.value = property
+    propertyDetailValue.value = value
+    showPropertyDetail.value = true
+}
+
+function closePropertyDetail(): void {
+    showPropertyDetail.value = false
+    propertyDetailName.value = ''
+    propertyDetailValue.value = ''
 }
 
 await initializeConsole()
@@ -296,19 +324,60 @@ await initializeConsole()
         </VToolbar>
     </div>
 
-    <VContainer>
-        <VRow>
+    <Splitpanes vertical>
+        <Pane
+            size="70"
+            min-size="30"
+        >
             <VDataTableServer
-                :headers="gridHeaders"
+                :headers="displayedGridHeaders"
                 :loading="loading"
                 :items="resultEntities"
                 :items-length="totalResultCount"
                 density="compact"
                 multi-sort
                 @update:options="gridUpdated"
-            />
-        </VRow>
-    </VContainer>
+            >
+                <template #item="{ item }">
+                    <tr>
+                        <td
+                            v-for="(propertyValue, propertyName) in item.columns"
+                            :key="propertyName"
+                            @click="openPropertyDetail(propertyName, propertyValue)"
+                        >
+                            {{ propertyValue !== undefined && propertyValue.length > 20 ? propertyValue.substring(0, 20) + '...' : propertyValue }}
+                        </td>
+                    </tr>
+                </template>
+            </VDataTableServer>
+        </Pane>
+        <Pane
+            v-if="showPropertyDetail"
+            size="30"
+        >
+            <VCard>
+                <VCardTitle>
+                    <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                        <span>
+                            {{ propertyDetailName }}
+                        </span>
+                        <VBtn
+                            icon
+                            variant="flat"
+                            density="compact"
+                            @click="closePropertyDetail"
+                        >
+                            <VIcon>mdi-close</VIcon>
+                        </VBtn>
+                    </div>
+                </VCardTitle>
+                <VDivider />
+                <VCardText>
+                    <CodemirrorFull v-model="propertyDetailValue" />
+                </VCardText>
+            </VCard>
+        </Pane>
+    </Splitpanes>
 </template>
 
 <style lang="scss" scoped>

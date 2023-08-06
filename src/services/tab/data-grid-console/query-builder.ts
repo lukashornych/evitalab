@@ -27,6 +27,7 @@ export interface QueryBuilder {
 
     /**
      * Builds single attributeNatural constraint in language of implementation for order by clause.
+     *
      * @param attributeSchema attribute schema to build constraint for
      * @param orderDirection direction of order by clause
      */

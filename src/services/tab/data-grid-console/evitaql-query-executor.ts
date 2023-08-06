@@ -31,7 +31,7 @@ export class EvitaQLQueryExecutor implements QueryExecutor {
             .json()
 
         return {
-            entities: result?.recordPage?.data.map(this.flattenEntity) || [],
+            entities: result?.recordPage?.data.map((entity: any) => this.flattenEntity(entity)) || [],
             totalEntitiesCount: result?.recordPage?.totalRecordCount || 0
         }
     }
@@ -40,49 +40,37 @@ export class EvitaQLQueryExecutor implements QueryExecutor {
      * Converts original rich entity into simplified flat entity that is displayable in table
      */
     private flattenEntity(entity: any): any {
-        // todo lho proper formatting of objects and arrays
-
         const flattenedEntity: any = {}
 
-        flattenedEntity[StaticEntityProperties.PrimaryKey] = entity[StaticEntityProperties.PrimaryKey]
-        flattenedEntity[StaticEntityProperties.Parent] = entity[StaticEntityProperties.Parent]
-        flattenedEntity[StaticEntityProperties.Locales] = entity[StaticEntityProperties.Locales]
-        flattenedEntity[StaticEntityProperties.AllLocales] = entity[StaticEntityProperties.AllLocales]
-        flattenedEntity[StaticEntityProperties.PriceInnerRecordHandling] = entity[StaticEntityProperties.PriceInnerRecordHandling]
+        flattenedEntity[StaticEntityProperties.PrimaryKey] = this.deserializePropertyValue(entity[StaticEntityProperties.PrimaryKey])
+        flattenedEntity[StaticEntityProperties.Parent] = this.deserializePropertyValue(entity[StaticEntityProperties.Parent])
+        flattenedEntity[StaticEntityProperties.Locales] = this.deserializePropertyValue(entity[StaticEntityProperties.Locales])
+        flattenedEntity[StaticEntityProperties.AllLocales] = this.deserializePropertyValue(entity[StaticEntityProperties.AllLocales])
+        flattenedEntity[StaticEntityProperties.PriceInnerRecordHandling] = this.deserializePropertyValue(entity[StaticEntityProperties.PriceInnerRecordHandling])
 
         const globalAttributes = entity[EntityPropertyType.Attributes]?.['global'] || {}
         for (const attributeName in globalAttributes) {
-            flattenedEntity[EntityPropertyType.Attributes + '.' + attributeName] = globalAttributes[attributeName]
+            flattenedEntity[EntityPropertyType.Attributes + '.' + attributeName] = this.deserializePropertyValue(globalAttributes[attributeName])
         }
         const localizedAttributes = entity[EntityPropertyType.Attributes]?.['localized'] || {}
         for (const locale in localizedAttributes) {
             // this expects that we support only one locale
             const attributesInLocale = localizedAttributes[locale]
             for (const attributeName in attributesInLocale) {
-                flattenedEntity[EntityPropertyType.Attributes + '.' + attributeName] = attributesInLocale[attributeName]
+                flattenedEntity[EntityPropertyType.Attributes + '.' + attributeName] = this.deserializePropertyValue(attributesInLocale[attributeName])
             }
         }
 
         const globalAssociatedData = entity[EntityPropertyType.AssociatedData]?.['global'] || {}
         for (const associatedDataName in globalAssociatedData) {
-            const associatedDataValue = globalAssociatedData[associatedDataName]
-            if (associatedDataValue instanceof Object) {
-                flattenedEntity[EntityPropertyType.AssociatedData + '.' + associatedDataName] = JSON.stringify(associatedDataValue)
-            } else {
-                flattenedEntity[EntityPropertyType.AssociatedData + '.' + associatedDataName] = associatedDataValue
-            }
+            flattenedEntity[EntityPropertyType.AssociatedData + '.' + associatedDataName] = this.deserializePropertyValue(globalAssociatedData[associatedDataName])
         }
         const localizedAssociatedData = entity[EntityPropertyType.AssociatedData]?.['localized'] || {}
         for (const locale in localizedAssociatedData) {
             // this expects that we support only one locale
             const associatedDataInLocale = localizedAssociatedData[locale]
             for (const associatedDataName in associatedDataInLocale) {
-                const associatedDataValue = associatedDataInLocale[associatedDataName]
-                if (associatedDataValue instanceof Object) {
-                    flattenedEntity[EntityPropertyType.AssociatedData + '.' + associatedDataName] = JSON.stringify(associatedDataValue)
-                } else {
-                    flattenedEntity[EntityPropertyType.AssociatedData + '.' + associatedDataName] = associatedDataValue
-                }
+                flattenedEntity[EntityPropertyType.AssociatedData + '.' + associatedDataName] = this.deserializePropertyValue(associatedDataInLocale[associatedDataName])
             }
         }
 
@@ -90,12 +78,26 @@ export class EvitaQLQueryExecutor implements QueryExecutor {
         for (const referenceName in references) {
             const referencesOfName = references[referenceName]
             if (referencesOfName instanceof Array) {
-                flattenedEntity[EntityPropertyType.References + '.' + referenceName] = referencesOfName.map(it => it['referencedPrimaryKey'])
+                flattenedEntity[EntityPropertyType.References + '.' + referenceName] = this.deserializePropertyValue(referencesOfName.map(it => it['referencedPrimaryKey']))
             } else {
-                flattenedEntity[EntityPropertyType.References + '.' + referenceName] = referencesOfName['referencedPrimaryKey']
+                flattenedEntity[EntityPropertyType.References + '.' + referenceName] = this.deserializePropertyValue(referencesOfName['referencedPrimaryKey'])
             }
         }
 
         return flattenedEntity
+    }
+
+    private deserializePropertyValue(value?: any): string {
+        // return value
+        if (value === undefined || value === null) {
+            return ''
+        }
+        if (value instanceof Array) {
+            return `[${value.join(', ')}]`
+        } else if (value instanceof Object) {
+            return JSON.stringify(value)
+        } else {
+            return value.toString()
+        }
     }
 }
