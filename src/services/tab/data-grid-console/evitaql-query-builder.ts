@@ -1,7 +1,12 @@
 import { QueryBuilder } from '@/services/tab/data-grid-console/query-builder'
-import { DataGridDataPointer, EntityPropertyType, StaticEntityProperties } from '@/model/tab/data-grid-console'
+import {
+    DataGridDataPointer,
+    EntityPropertyKey,
+    EntityPropertyType,
+    StaticEntityProperties
+} from '@/model/tab/data-grid-console'
 import { LabService } from '@/services/lab.service'
-import { AttributeSchemaUnion, EntitySchema } from '@/model/evitadb/schema'
+import { AssociatedDataSchema, AttributeSchemaUnion, EntitySchema, ReferenceSchema } from '@/model/evitadb/schema'
 
 /**
  * Query builder for EvitaQL language.
@@ -9,21 +14,25 @@ import { AttributeSchemaUnion, EntitySchema } from '@/model/evitadb/schema'
 export class EvitaQLQueryBuilder implements QueryBuilder {
     readonly labService: LabService
 
+    readonly entityBodyProperties: Set<string> = new Set<string>()
+
     constructor(labService: LabService) {
         this.labService = labService
+
+        this.entityBodyProperties.add(StaticEntityProperties.Parent)
+        this.entityBodyProperties.add(StaticEntityProperties.Locales)
+        this.entityBodyProperties.add(StaticEntityProperties.AllLocales)
+        this.entityBodyProperties.add(StaticEntityProperties.PriceInnerRecordHandling)
     }
 
     async buildQuery(dataPointer: DataGridDataPointer,
                      filterBy: string,
                      orderBy: string,
                      dataLocale: string | undefined,
-                     requiredData: string[],
+                     requiredData: EntityPropertyKey[],
                      pageNumber: number,
                      pageSize: number): Promise<string> {
         const entitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, dataPointer.entityType)
-
-        // todo lho
-        let query = 'query('
 
         const constraints: string[] = []
 
@@ -42,11 +51,13 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
 
         const entityFetchRequires: string[] = []
 
-        const requiredAttributes = requiredData
-            .filter(it => it.startsWith(EntityPropertyType.Attributes))
-            .map(it => it.substring(EntityPropertyType.Attributes.length + 1))
+        const requiredAttributes: string[] = requiredData
+            .filter(({ type }) => type === EntityPropertyType.Attributes)
+            .map(({ name }) => name)
             .map(it => {
-                const attributeSchema = entitySchema.allAttributes.find(attributeSchema => attributeSchema.nameVariants.camelCase === it)
+                const attributeSchema: AttributeSchemaUnion | undefined = entitySchema
+                    .allAttributes
+                    .find(attributeSchema => attributeSchema.nameVariants.camelCase === it)
                 if (attributeSchema === undefined) {
                     throw new Error(`Could not find attribute '${it}' in '${dataPointer.entityType}'.`)
                 }
@@ -56,10 +67,42 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
             entityFetchRequires.push(`attributeContent(${requiredAttributes.join(',')})`)
         }
 
+        const requiredAssociatedData: string[] = requiredData
+            .filter(({ type }) => type === EntityPropertyType.AssociatedData)
+            .map(({ name }) => name)
+            .map(it => {
+                const associatedDataSchema: AssociatedDataSchema | undefined = entitySchema
+                    .allAssociatedData
+                    .find(associatedDataSchema => associatedDataSchema.nameVariants.camelCase === it)
+                if (associatedDataSchema === undefined) {
+                    throw new Error(`Could not find associated data '${it}' in '${dataPointer.entityType}'.`)
+                }
+                return `'${associatedDataSchema.name}'`
+            })
+        if (requiredAssociatedData.length > 0) {
+            entityFetchRequires.push(`associatedDataContent(${requiredAssociatedData.join(',')})`)
+        }
+
+        const requiredReferences: string[] = requiredData
+            .filter(({ type }) => type === EntityPropertyType.References)
+            .map(({ name }) => name)
+            .map(it => {
+                const referenceSchema: ReferenceSchema | undefined = entitySchema
+                    .allReferences
+                    .find(referenceSchema => referenceSchema.nameVariants.camelCase === it)
+                if (referenceSchema === undefined) {
+                    throw new Error(`Could not find reference '${it}' in '${dataPointer.entityType}'.`)
+                }
+                return `'${referenceSchema.name}'`
+            })
+        if (requiredReferences.length > 0) {
+            entityFetchRequires.push(`referenceContent(${requiredReferences.join(',')})`)
+        }
+
         if (entityFetchRequires.length > 0 ||
-            requiredData.concat(StaticEntityProperties.Parent, StaticEntityProperties.Locales, StaticEntityProperties.AllLocales, StaticEntityProperties.PriceInnerRecordHandling)) {
+            requiredData.findIndex(propertyKey => this.entityBodyProperties.has(propertyKey.toString())) > -1) {
             // we need to specify locale only if we want data
-            if (dataLocale !== undefined && dataLocale !== 'none') {
+            if (dataLocale !== undefined) {
                 entityFetchRequires.push(`dataInLocales('${dataLocale}')`)
             }
 
@@ -70,10 +113,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
             constraints.push(`require(${requireConstraints.join(',')})`)
         }
 
-        query += constraints.join(",")
-        query += ')'
-
-        return query
+        return `query(${constraints.join(',')})`
     }
 
     buildAttributeNaturalConstraint(attributeSchema: AttributeSchemaUnion, orderDirection: string): string {

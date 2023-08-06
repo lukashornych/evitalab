@@ -1,9 +1,15 @@
-import { DataGridDataPointer } from '@/model/tab/data-grid-console'
+import { DataGridDataPointer, QueryResult } from '@/model/tab/data-grid-console'
+import { LabService } from '@/services/lab.service'
 
 /**
  * Executes query against evitaDB server in language defined by implementation.
  */
-export interface QueryExecutor {
+export abstract class QueryExecutor {
+    readonly labService: LabService
+
+    protected constructor(labService: LabService) {
+        this.labService = labService
+    }
 
     /**
      * Executes query against evitaDB server in language defined by implementation and returns formatted data.
@@ -11,13 +17,23 @@ export interface QueryExecutor {
      * @param dataPointer points to collection where to fetch data from
      * @param query pre-built query to execute in language defined by implementation
      */
-    executeQuery(dataPointer: DataGridDataPointer, query: string): Promise<DataGridQueryResult>
-}
+    abstract executeQuery(dataPointer: DataGridDataPointer, query: string): Promise<QueryResult>
 
-/**
- * Holds query result of data grid console query.
- */
-export type DataGridQueryResult = {
-    readonly entities: any[],
-    readonly totalEntitiesCount: number
+    /**
+     * Deserializes property value to string displayable in the data grid to user.
+     * @protected
+     */
+    protected deserializePropertyValue(value?: any): string {
+        // return value
+        if (value === undefined || value === null) {
+            return ''
+        }
+        if (value instanceof Array) {
+            return `[${value.map(it => this.deserializePropertyValue(it)).join(', ')}]`
+        } else if (value instanceof Object) {
+            return JSON.stringify(value)
+        } else {
+            return value.toString()
+        }
+    }
 }

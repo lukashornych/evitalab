@@ -4,12 +4,11 @@ import 'splitpanes/dist/splitpanes.css'
 import { VDataTableServer } from 'vuetify/labs/VDataTable'
 
 import { ref, watch } from 'vue'
-import { DataGridConsoleProps } from '@/model/tab/data-grid-console'
+import { DataGridConsoleProps, QueryResult } from '@/model/tab/data-grid-console'
 import { Extension } from '@codemirror/state'
 import { DataGridConsoleService, useDataGridConsoleService } from '@/services/tab/data-grid-console.service'
 import CodemirrorOneLine from '@/components/CodemirrorOneLine.vue'
 import { QueryLanguage } from '@/model/lab'
-import { DataGridQueryResult } from '@/services/tab/data-grid-console/query-executor'
 import CodemirrorFull from '@/components/CodemirrorFull.vue'
 
 const dataGridConsoleService: DataGridConsoleService = useDataGridConsoleService()
@@ -33,7 +32,7 @@ const queryLanguages = [
     }
 ]
 
-let entityProperties: string[] = []
+let entityPropertyKeys: string[] = []
 let dataLocales: string[] = []
 
 let gridHeaders: Map<String, any> = new Map<String, any>()
@@ -47,11 +46,13 @@ watch(selectedQueryLanguage, (newValue, oldValue) => {
 
     filterByCode.value = ''
     orderByCode.value = ''
+
+    executeQuery()
 })
 
 const loading = ref<boolean>(false)
 const pageNumber = ref<number>(1)
-const pageSize = ref<number>(20)
+const pageSize = ref<number>(0)
 
 const filterByCode = ref<string>('')
 const filterByExtensions: Extension[] = []
@@ -92,11 +93,11 @@ function initializeConsole(): void {
     dataGridConsoleService.getDataLocales(props.dataPointer)
         .then(dl => {
             dataLocales = dl
-            return dataGridConsoleService.getEntityProperties(props.dataPointer)
+            return dataGridConsoleService.getEntityPropertyKeys(props.dataPointer)
         })
         .then(ep => {
-            entityProperties = ep
-            return initializeGridHeaders(ep)
+            entityPropertyKeys = ep.map(it => it.toString())
+            return initializeGridHeaders(entityPropertyKeys)
         })
         .then(gh => {
             gridHeaders = gh
@@ -128,13 +129,13 @@ async function updateDisplayedGridHeaders(): Promise<void> {
 
     // sort grid headers by entity properties order
     displayedGridHeaders.value.sort((a, b) => {
-        return entityProperties.indexOf(a.key) - entityProperties.indexOf(b.key)
+        return entityPropertyKeys.indexOf(a.key) - entityPropertyKeys.indexOf(b.key)
     })
 }
 
 function toggleAllEntityProperties(): void {
-    if (displayedData.value.length < entityProperties.length) {
-        displayedData.value = entityProperties.slice()
+    if (displayedData.value.length < entityPropertyKeys.length) {
+        displayedData.value = entityPropertyKeys.slice()
     } else {
         displayedData.value = []
     }
@@ -154,7 +155,7 @@ async function gridUpdated({ page, itemsPerPage, sortBy }): Promise<void> {
 async function executeQuery(): Promise<void> {
     loading.value = true
 
-    const result: DataGridQueryResult = await dataGridConsoleService.executeQuery(
+    const result: QueryResult = await dataGridConsoleService.executeQuery(
         props.dataPointer,
         selectedQueryLanguage.value[0],
         filterByCode.value,
@@ -164,7 +165,11 @@ async function executeQuery(): Promise<void> {
         pageNumber.value,
         pageSize.value
     )
-    resultEntities.value = result.entities
+    resultEntities.value = result.entities.map(entity => {
+        const row: any = {}
+        entity.forEach(([propertyKey, propertyValue]) => row[propertyKey.toString()] = propertyValue)
+        return row
+    })
     totalResultCount.value = result.totalEntitiesCount
 
     loading.value = false
@@ -314,8 +319,8 @@ initializeConsole()
                                         <template #prepend>
                                             <VListItemAction start>
                                                 <VCheckboxBtn
-                                                    :indeterminate="displayedData.length > 0 && displayedData.length < entityProperties.length"
-                                                    :model-value="displayedData.length === entityProperties.length"
+                                                    :indeterminate="displayedData.length > 0 && displayedData.length < entityPropertyKeys.length"
+                                                    :model-value="displayedData.length === entityPropertyKeys.length"
                                                     @click="toggleAllEntityProperties"
                                                 />
                                             </VListItemAction>
@@ -327,7 +332,7 @@ initializeConsole()
                                     <VDivider class="mt-2 mb-2" />
 
                                     <VListItem
-                                        v-for="property in entityProperties"
+                                        v-for="property in entityPropertyKeys"
                                         :key="property"
                                         :value="property"
                                     >

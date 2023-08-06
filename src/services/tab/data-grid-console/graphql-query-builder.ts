@@ -1,0 +1,121 @@
+import { QueryBuilder } from '@/services/tab/data-grid-console/query-builder'
+import {
+    DataGridDataPointer,
+    EntityPropertyKey,
+    EntityPropertyType
+} from '@/model/tab/data-grid-console'
+import { LabService } from '@/services/lab.service'
+import { AssociatedDataSchema, AttributeSchemaUnion, EntitySchema } from '@/model/evitadb/schema'
+
+/**
+ * Query builder for GraphQL language.
+ */
+export class GraphQLQueryBuilder implements QueryBuilder {
+    readonly labService: LabService
+
+    constructor(labService: LabService) {
+        this.labService = labService
+    }
+
+    async buildQuery(dataPointer: DataGridDataPointer,
+                     filterBy: string,
+                     orderBy: string,
+                     dataLocale: string | undefined,
+                     requiredData: EntityPropertyKey[],
+                     pageNumber: number,
+                     pageSize: number): Promise<string> {
+        const entitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, dataPointer.entityType)
+
+        const headerArguments: string[] = []
+        if (filterBy) {
+            headerArguments.push(`filterBy: { ${filterBy} }`)
+        }
+        if (orderBy) {
+            headerArguments.push(`orderBy: { ${orderBy} }`)
+        }
+
+        const groupedPropertyKeys: Map<EntityPropertyType, string[]> = new Map<EntityPropertyType, string[]>()
+        for (const propertyKey of requiredData) {
+
+            let group: string[] | undefined = groupedPropertyKeys.get(propertyKey.type)
+            if (group === undefined) {
+                group = []
+                groupedPropertyKeys.set(propertyKey.type, group)
+            }
+            group.push(propertyKey.name)
+        }
+
+        const entityOutputFields: string[] = []
+        for (const [propertyType, properties] of groupedPropertyKeys) {
+            switch (propertyType) {
+                case EntityPropertyType.Entity:
+                    entityOutputFields.push(...properties)
+                    break
+                case EntityPropertyType.Attributes:
+                    if (dataLocale !== undefined) {
+                        entityOutputFields.push(`attributes(locale: ${dataLocale.replace('-', '_')}) {`)
+                    } else {
+                        entityOutputFields.push(`attributes {`)
+                    }
+
+                    for (const property of properties) {
+                        const attributeSchema: AttributeSchemaUnion | undefined = entitySchema.allAttributes.find(attribute => attribute.nameVariants.camelCase === property)
+                        if (attributeSchema === undefined) {
+                            throw new Error(`Attribute ${property} not found in entity ${entitySchema.name}`)
+                        }
+                        if (!attributeSchema.localized || dataLocale !== undefined) {
+                            entityOutputFields.push(property)
+                        }
+                    }
+
+                    entityOutputFields.push('}')
+                    break
+                case EntityPropertyType.AssociatedData:
+                    if (dataLocale !== undefined) {
+                        entityOutputFields.push(`associatedData(locale: ${dataLocale.replace('-', '_')}) {`)
+                    } else {
+                        entityOutputFields.push(`associatedData {`)
+                    }
+
+                    for (const property of properties) {
+                        const associatedDataSchema: AssociatedDataSchema | undefined = entitySchema.allAssociatedData.find(associatedData => associatedData.nameVariants.camelCase === property)
+                        if (associatedDataSchema === undefined) {
+                            throw new Error(`Associated data ${property} not found in entity ${entitySchema.name}`)
+                        }
+                        if (!associatedDataSchema.localized || dataLocale !== undefined) {
+                            entityOutputFields.push(property)
+                        }
+                    }
+
+                    entityOutputFields.push('}')
+                    break
+                case EntityPropertyType.References:
+                    for (const property of properties) {
+                        entityOutputFields.push(`reference_${property}: ${property} {`)
+                        entityOutputFields.push('  referencedPrimaryKey')
+                        entityOutputFields.push('}')
+                    }
+                    break
+            }
+        }
+
+        const queryHeader = headerArguments.length > 0 ? `(\n${headerArguments.join(", ")}\n)` : ''
+        return `
+        {
+            q: query${entitySchema.nameVariants.pascalCase}${queryHeader} {
+                recordPage(number: ${pageNumber}, size: ${pageSize}) {
+                    data {
+                        ${entityOutputFields.join("\n")}
+                    }
+                    totalRecordCount
+                }
+            }
+        }
+        `
+    }
+
+    buildAttributeNaturalConstraint(attributeSchema: AttributeSchemaUnion, orderDirection: string): string {
+        return `attribute${attributeSchema.nameVariants.pascalCase}Natural: ${orderDirection.toUpperCase()}`
+    }
+
+}

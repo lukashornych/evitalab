@@ -1,4 +1,4 @@
-import { DataGridDataPointer } from '@/model/tab/data-grid-console'
+import { DataGridDataPointer, EntityPropertyKey } from '@/model/tab/data-grid-console'
 import { AttributeSchemaUnion } from '@/model/evitadb/schema'
 
 /**
@@ -21,7 +21,7 @@ export interface QueryBuilder {
                filterBy: string,
                orderBy: string,
                dataLocale: string | undefined,
-               requiredData: string[],
+               requiredData: EntityPropertyKey[],
                pageNumber: number,
                pageSize: number): Promise<string>
 

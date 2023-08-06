@@ -1,12 +1,20 @@
 import { inject, InjectionKey } from 'vue'
-import { DataGridDataPointer, EntityPropertyType, StaticEntityProperties } from '@/model/tab/data-grid-console'
+import {
+    DataGridDataPointer,
+    EntityPropertyKey,
+    EntityPropertyType,
+    QueryResult,
+    StaticEntityProperties
+} from '@/model/tab/data-grid-console'
 import { QueryLanguage } from '@/model/lab'
-import { DataGridQueryResult, QueryExecutor } from '@/services/tab/data-grid-console/query-executor'
+import { QueryExecutor } from '@/services/tab/data-grid-console/query-executor'
 import { QueryBuilder } from '@/services/tab/data-grid-console/query-builder'
 import { EvitaQLQueryBuilder } from '@/services/tab/data-grid-console/evitaql-query-builder'
 import { EvitaQLQueryExecutor } from '@/services/tab/data-grid-console/evitaql-query-executor'
 import { LabService } from '@/services/lab.service'
 import { AttributeSchemaUnion, EntitySchema } from '@/model/evitadb/schema'
+import { GraphQLQueryBuilder } from '@/services/tab/data-grid-console/graphql-query-builder'
+import { GraphQLQueryExecutor } from '@/services/tab/data-grid-console/graphql-query-executor'
 
 export const key: InjectionKey<DataGridConsoleService> = Symbol()
 
@@ -15,17 +23,17 @@ export const key: InjectionKey<DataGridConsoleService> = Symbol()
  */
 export class DataGridConsoleService {
     readonly labService: LabService
-    readonly queryBuilders: Map<QueryLanguage, QueryBuilder>
-    readonly queryExecutors: Map<QueryLanguage, QueryExecutor>
+    readonly queryBuilders: Map<QueryLanguage, QueryBuilder> = new Map<QueryLanguage, QueryBuilder>()
+    readonly queryExecutors: Map<QueryLanguage, QueryExecutor> = new Map<QueryLanguage, QueryExecutor>()
 
     constructor(labService: LabService) {
         this.labService = labService
 
-        this.queryBuilders = new Map<QueryLanguage, QueryBuilder>()
         this.queryBuilders.set(QueryLanguage.EvitaQL, new EvitaQLQueryBuilder(this.labService))
-
-        this.queryExecutors = new Map<QueryLanguage, QueryExecutor>()
         this.queryExecutors.set(QueryLanguage.EvitaQL, new EvitaQLQueryExecutor(this.labService))
+
+        this.queryBuilders.set(QueryLanguage.GraphQL, new GraphQLQueryBuilder(this.labService))
+        this.queryExecutors.set(QueryLanguage.GraphQL, new GraphQLQueryExecutor(this.labService))
     }
 
     /**
@@ -47,10 +55,19 @@ export class DataGridConsoleService {
                        dataLocale: string | undefined,
                        requiredData: string[],
                        pageNumber: number,
-                       pageSize: number): Promise<DataGridQueryResult> {
+                       pageSize: number): Promise<QueryResult> {
         const queryBuilder: QueryBuilder = this.getQueryBuilder(language)
         const queryExecutor: QueryExecutor = this.getQueryExecutor(language)
-        const query: string = await queryBuilder.buildQuery(dataPointer, filterBy, orderBy, dataLocale, requiredData, pageNumber, pageSize)
+
+        const query: string = await queryBuilder.buildQuery(
+            dataPointer,
+            filterBy,
+            orderBy,
+            dataLocale === undefined || dataLocale === 'none' ? undefined : dataLocale,
+            requiredData.map(property => EntityPropertyKey.fromString(property)),
+            pageNumber,
+            pageSize
+        )
         return queryExecutor.executeQuery(dataPointer, query)
     }
 
@@ -67,12 +84,12 @@ export class DataGridConsoleService {
 
         const orderBy: string[] = []
         for (const column of columns) {
-            const [propertyType, propertyName] = this.deconstructEntityProperty(column.key)
-            if (propertyType === EntityPropertyType.Attributes) {
+            const propertyKey: EntityPropertyKey = EntityPropertyKey.fromString(column.key)
+            if (propertyKey.type === EntityPropertyType.Attributes) {
                 const attributeSchema: AttributeSchemaUnion | undefined = entitySchema.allAttributes
-                    .find(attributeSchema => attributeSchema.nameVariants.camelCase === propertyName)
+                    .find(attributeSchema => attributeSchema.nameVariants.camelCase === propertyKey.name)
                 if (attributeSchema === undefined) {
-                    throw new Error(`Entity ${entitySchema.name} does not have attribute ${propertyName}.`)
+                    throw new Error(`Entity ${entitySchema.name} does not have attribute ${propertyKey.name}.`)
                 }
 
                 orderBy.push(queryBuilder.buildAttributeNaturalConstraint(attributeSchema, column.order))
@@ -95,30 +112,30 @@ export class DataGridConsoleService {
     /**
      * Builds a list of all possible entity properties for entities of given schema.
      */
-    async getEntityProperties(dataPointer: DataGridDataPointer): Promise<string[]> {
+    async getEntityPropertyKeys(dataPointer: DataGridDataPointer): Promise<EntityPropertyKey[]> {
         const entitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, dataPointer.entityType)
 
-        const entityProperties: string[] = []
+        const entityProperties: EntityPropertyKey[] = []
 
-        entityProperties.push(StaticEntityProperties.PrimaryKey)
+        entityProperties.push(EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey))
         if (entitySchema.withHierarchy) {
-            entityProperties.push(this.constructEntityProperty(EntityPropertyType.Entity, StaticEntityProperties.Parent))
+            entityProperties.push(EntityPropertyKey.entity(StaticEntityProperties.Parent))
         }
         if (entitySchema.locales.length > 0) {
-            entityProperties.push(this.constructEntityProperty(EntityPropertyType.Entity, StaticEntityProperties.Locales))
-            entityProperties.push(this.constructEntityProperty(EntityPropertyType.Entity, StaticEntityProperties.AllLocales))
+            entityProperties.push(EntityPropertyKey.entity(StaticEntityProperties.Locales))
+            entityProperties.push(EntityPropertyKey.entity(StaticEntityProperties.AllLocales))
         }
         if (entitySchema.withPrice) {
-            entityProperties.push(this.constructEntityProperty(EntityPropertyType.Entity, StaticEntityProperties.PriceInnerRecordHandling))
+            entityProperties.push(EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling))
         }
         for (const attributeSchema of entitySchema.allAttributes) {
-            entityProperties.push(this.constructEntityProperty(EntityPropertyType.Attributes, attributeSchema.nameVariants.camelCase))
+            entityProperties.push(EntityPropertyKey.attributes(attributeSchema.nameVariants.camelCase))
         }
         for (const associatedDataSchema of entitySchema.allAssociatedData) {
-            entityProperties.push(this.constructEntityProperty(EntityPropertyType.AssociatedData, associatedDataSchema.nameVariants.camelCase))
+            entityProperties.push(EntityPropertyKey.associatedData(associatedDataSchema.nameVariants.camelCase))
         }
         for (const referenceSchema of entitySchema.allReferences) {
-            entityProperties.push(this.constructEntityProperty(EntityPropertyType.References, referenceSchema.nameVariants.camelCase))
+            entityProperties.push(EntityPropertyKey.references(referenceSchema.nameVariants.camelCase))
         }
 
         return entityProperties
@@ -130,15 +147,15 @@ export class DataGridConsoleService {
     async isEntityPropertySortable(dataPointer: DataGridDataPointer, entityProperty: string): Promise<boolean> {
         const entitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, dataPointer.entityType)
 
-        const [propertyType, propertyName] = this.deconstructEntityProperty(entityProperty)
-        if (propertyType !== EntityPropertyType.Attributes) {
+        const propertyKey: EntityPropertyKey = EntityPropertyKey.fromString(entityProperty)
+        if (propertyKey.type !== EntityPropertyType.Attributes) {
             return false
         }
 
         const attributeSchema: AttributeSchemaUnion | undefined = entitySchema.allAttributes
-            .find(attributeSchema => attributeSchema.nameVariants.camelCase === propertyName)
+            .find(attributeSchema => attributeSchema.nameVariants.camelCase === propertyKey.name)
         if (attributeSchema === undefined) {
-            throw new Error(`Attribute ${propertyName} not found in entity schema ${entitySchema.name}.`)
+            throw new Error(`Attribute ${propertyKey.name} not found in entity schema ${entitySchema.name}.`)
         }
         return attributeSchema.sortable
     }
@@ -157,33 +174,6 @@ export class DataGridConsoleService {
             throw new Error(`Query executor for language ${language} is not registered.`)
         }
         return queryExecutor
-    }
-
-    /**
-     * Builds a single entity property in correct format.
-     * @private
-     */
-    private constructEntityProperty(propertyType: EntityPropertyType, propertyName: string): string {
-        if (propertyType === EntityPropertyType.Entity) {
-            return propertyName
-        }
-        return `${propertyType}.${propertyName}`
-    }
-
-    /**
-     * Deconstructs entity property into its type and name.
-     * @private
-     */
-    private deconstructEntityProperty(entityProperty: string): [EntityPropertyType, string] {
-        if (entityProperty.startsWith(EntityPropertyType.Attributes)) {
-            return [EntityPropertyType.Attributes, entityProperty.substring(EntityPropertyType.Attributes.length + 1)]
-        } else if (entityProperty.startsWith(EntityPropertyType.AssociatedData)) {
-            return [EntityPropertyType.AssociatedData, entityProperty.substring(EntityPropertyType.AssociatedData.length + 1)]
-        } else if (entityProperty.startsWith(EntityPropertyType.References)) {
-            return [EntityPropertyType.References, entityProperty.substring(EntityPropertyType.References.length + 1)]
-        } else {
-            return [EntityPropertyType.Entity, entityProperty]
-        }
     }
 }
 

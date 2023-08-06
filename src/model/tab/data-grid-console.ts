@@ -43,3 +43,69 @@ export enum StaticEntityProperties {
     AllLocales = 'allLocales',
     PriceInnerRecordHandling = 'priceInnerRecordHandling'
 }
+
+/**
+ * Represents key of a single typed entity property.
+ */
+export class EntityPropertyKey {
+    readonly type: EntityPropertyType
+    readonly name: string
+
+    constructor(type: EntityPropertyType, name: string) {
+        this.type = type
+        this.name = name
+    }
+
+    static entity(name: string): EntityPropertyKey {
+        return new EntityPropertyKey(EntityPropertyType.Entity, name)
+    }
+
+    static attributes(name: string): EntityPropertyKey {
+        return new EntityPropertyKey(EntityPropertyType.Attributes, name)
+    }
+
+    static associatedData(name: string): EntityPropertyKey {
+        return new EntityPropertyKey(EntityPropertyType.AssociatedData, name)
+    }
+
+    static references(name: string): EntityPropertyKey {
+        return new EntityPropertyKey(EntityPropertyType.References, name)
+    }
+
+    static fromString(propertyKey: string): EntityPropertyKey {
+        if (propertyKey.startsWith(EntityPropertyType.Attributes)) {
+            return new EntityPropertyKey(EntityPropertyType.Attributes, propertyKey.substring(EntityPropertyType.Attributes.length + 1))
+        } else if (propertyKey.startsWith(EntityPropertyType.AssociatedData)) {
+            return new EntityPropertyKey(EntityPropertyType.AssociatedData, propertyKey.substring(EntityPropertyType.AssociatedData.length + 1))
+        } else if (propertyKey.startsWith(EntityPropertyType.References)) {
+            return new EntityPropertyKey(EntityPropertyType.References, propertyKey.substring(EntityPropertyType.References.length + 1))
+        } else {
+            return new EntityPropertyKey(EntityPropertyType.Entity, propertyKey)
+        }
+    }
+
+    toString(): string {
+        if (this.type === EntityPropertyType.Entity) {
+            return this.name
+        }
+        return `${this.type}.${this.name}`
+    }
+}
+
+/**
+ * Represents a single entity property with its key and value.
+ */
+export type EntityProperty = [EntityPropertyKey, string]
+
+/**
+ * Represents a single flattened entity for data table rendering.
+ */
+export type FlatEntity = EntityProperty[]
+
+/**
+ * Holds query result of data grid console query.
+ */
+export type QueryResult = {
+    readonly entities: FlatEntity[],
+    readonly totalEntitiesCount: number
+}
