@@ -3,6 +3,7 @@
 import { computed, ref } from 'vue'
 import { TabRequest, TabRequestComponentProps } from '@/model/editor'
 import { EditorService, useEditorService } from '@/services/editor.service'
+import LabEditorTabWindow from '@/components/LabEditorTabWindow.vue'
 
 const editorService: EditorService = useEditorService()
 
@@ -83,17 +84,11 @@ function closeTab(tabId: string) {
                 :key="tab.id"
                 :value="tab.id"
             >
-                <Suspense>
-                    <Component
-                        v-if="currentTab"
-                        :is="currentTab.component"
-                        v-bind="currentTab.componentProps"
-                    />
-
-                    <template #fallback>
-                        Loading ...
-                    </template>
-                </Suspense>
+                <LabEditorTabWindow
+                    v-if="currentTab"
+                    :component="currentTab.component"
+                    :component-props="currentTab.componentProps"
+                />
             </VWindowItem>
         </VWindow>
         <div v-else>
