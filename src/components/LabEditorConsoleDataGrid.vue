@@ -3,7 +3,7 @@ import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 import { VDataTableServer } from 'vuetify/labs/VDataTable'
 
-import { ref, watch } from 'vue'
+import { onBeforeMount, ref, watch } from 'vue'
 import { DataGridConsoleProps, QueryResult } from '@/model/tab/data-grid-console'
 import { Extension } from '@codemirror/state'
 import { DataGridConsoleService, useDataGridConsoleService } from '@/services/tab/data-grid-console.service'
@@ -86,7 +86,8 @@ const propertyDetailValue = ref<string>('')
 const initialized = ref<boolean>(false)
 
 
-function initializeConsole(): void {
+// function initializeConsole(): void {
+onBeforeMount(() => {
     // note: we can use async/await here, because that would make this component async which currently doesn't seem to work
     // properly in combination with dynamic <component> rendering and tabs
 
@@ -107,7 +108,7 @@ function initializeConsole(): void {
 
             initialized.value = true
         })
-}
+})
 
 async function initializeGridHeaders(entityProperties: string[]): Promise<Map<string, any>> {
     const gridHeaders: Map<string, any> = new Map<string, any>()
@@ -187,7 +188,7 @@ function closePropertyDetail(): void {
     propertyDetailValue.value = ''
 }
 
-initializeConsole()
+// initializeConsole()
 </script>
 
 <template>

@@ -3,10 +3,9 @@ import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 
 import { Extension } from '@codemirror/state';
-import { graphql } from 'cm6-graphql';
 import { json } from '@codemirror/lang-json'
 
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import CodemirrorFull from '@/components/CodemirrorFull.vue'
 import { EvitaQLConsoleService, useEvitaQLConsoleService } from '@/services/tab/evitaql-console.service'
 import { EvitaQLConsoleProps } from '@/model/tab/evitaql-console'
@@ -37,7 +36,7 @@ async function executeQuery(): Promise<void> {
 
 <template>
     <div
-        class="graphql-editor"
+        class="evitaql-editor"
     >
         <VToolbar density="compact">
             <VAppBarNavIcon
@@ -152,7 +151,7 @@ async function executeQuery(): Promise<void> {
 </template>
 
 <style lang="scss" scoped>
-.graphql-editor {
+.evitaql-editor {
     display: grid;
     grid-template-rows: auto 1fr;
 }

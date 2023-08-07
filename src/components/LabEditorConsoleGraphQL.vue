@@ -6,7 +6,7 @@ import { Extension } from '@codemirror/state';
 import { graphql } from 'cm6-graphql';
 import { json } from '@codemirror/lang-json'
 
-import { onMounted, ref } from 'vue'
+import { onBeforeMount, ref } from 'vue'
 import { GraphQLConsoleService, useGraphQLConsoleService } from '@/services/tab/graphql-console.service'
 import { GraphQLSchema, printSchema } from 'graphql'
 import { GraphQLConsoleProps } from '@/model/tab/graphql-console'
@@ -25,24 +25,27 @@ const editorTab = ref<string>('query')
 const graphQLSchema = ref<GraphQLSchema>()
 
 const queryCode = ref<string>(`# Write your GraphQL query for catalog ${props.instancePointer.catalogName} here.\n`)
-const queryExtensions = ref<any[]>([])
+const queryExtensions: Extension[] = []
 
 const variablesCode = ref<string>('{\n  \n}')
-const variablesExtensions = ref<Extension[]>([json()])
+const variablesExtensions: Extension[] = [json()]
 
 const schemaEditorInitialized = ref<boolean>(false)
 const schemaCode = ref<string>('')
-const schemaExtensions = ref<Extension[]>([])
+const schemaExtensions: Extension[] = [graphql()]
 
 const resultCode = ref<string>('')
-const resultExtensions = ref<Extension[]>([json()])
+const resultExtensions: Extension[] = [json()]
 
-// todo lho remove this hook
-onMounted(async () => {
-    graphQLSchema.value = await graphQLConsoleService.getGraphQLSchema(props.instancePointer)
-    // todo lho update schema on load
-    queryExtensions.value.push(graphql())
-    schemaExtensions.value.push(graphql())
+const initialized = ref<boolean>(false)
+
+onBeforeMount(() => {
+    graphQLConsoleService.getGraphQLSchema(props.instancePointer)
+        .then(schema => {
+            graphQLSchema.value = schema
+            queryExtensions.push(graphql(schema))
+            initialized.value = true
+        })
 })
 
 async function executeQuery(): Promise<void> {
@@ -63,6 +66,7 @@ function initializeSchemaEditor(): void {
 
 <template>
     <div
+        v-if="initialized"
         class="graphql-editor"
     >
         <VToolbar density="compact">
