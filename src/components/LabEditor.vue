@@ -83,6 +83,8 @@ function closeTab(tabId: string) {
                 v-for="tab in tabs"
                 :key="tab.id"
                 :value="tab.id"
+                :transition="false"
+                :reverse-transition="false"
             >
                 <LabEditorTabWindow
                     v-if="currentTab"
