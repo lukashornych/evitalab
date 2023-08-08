@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import VPropertiesTable from '@/components/VPropertiesTable.vue'
+import LabEditorSchemaViewerPanelGroup from '@/components/LabEditorSchemaViewerPanelGroup.vue'
 
 const props = defineProps<{
-    properties: [string, any][]
+    properties: [string, any, (item?: string) => void?][]
 }>()
 </script>
 
@@ -10,13 +11,12 @@ const props = defineProps<{
     <VSheet>
         <VPropertiesTable :properties="properties"/>
 
-        <VExpansionPanels
+        <LabEditorSchemaViewerPanelGroup
             v-if="$slots['nested-details']"
-            multiple
             class="mt-5"
         >
             <slot name="nested-details"/>
-        </VExpansionPanels>
+        </LabEditorSchemaViewerPanelGroup>
     </VSheet>
 </template>
 

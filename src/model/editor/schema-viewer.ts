@@ -1,6 +1,7 @@
 import { EvitaDBConnection } from '@/model/lab'
 import { TabRequestComponentProps } from '@/model/editor/editor'
 import LabEditorSchemaViewerCatalog from '@/components/LabEditorSchemaViewerCatalog.vue'
+import LabEditorSchemaViewerEntity from '@/components/LabEditorSchemaViewerEntity.vue'
 import { DefineComponent } from 'vue'
 
 /**
@@ -72,7 +73,7 @@ export class EntitySchemaPointer implements SchemaPointer {
     }
 
     component(): DefineComponent<any, any, any> {
-        throw new Error('Not implemented')
+        return LabEditorSchemaViewerEntity
     }
 
     path(): string[] {

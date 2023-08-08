@@ -1,24 +1,15 @@
 <script setup lang="ts">
-import { AttributeSchemaUnion, GlobalAttributeSchema } from '@/model/evitadb/schema'
+import { AssociatedDataSchema } from '@/model/evitadb/schema'
 import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
-import LabEditorSchemaViewerAttribute from '@/components/LabEditorSchemaViewerAttribute.vue'
+import LabEditorSchemaViewerAssociatedDatum from '@/components/LabEditorSchemaViewerAssociatedDatum.vue'
 import LabEditorSchemaViewerPanelGroupItem from '@/components/LabEditorSchemaViewerPanelGroupItem.vue'
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
-    schema: AttributeSchemaUnion
+    schema: AssociatedDataSchema
 }>()
 
-const globalAttribute = 'uniqueGlobally' in props.schema
-
 const flags: string[] = []
-if (globalAttribute && (props.schema as GlobalAttributeSchema).uniqueGlobally) {
-    flags.push('unique globally')
-} else if (props.schema.unique) {
-    flags.push('unique')
-}
-if (props.schema.unique || props.schema.filterable) flags.push('filterable')
-if (props.schema.sortable) flags.push('sortable')
 if (props.schema.localized) flags.push('localized')
 
 </script>
@@ -29,7 +20,7 @@ if (props.schema.localized) flags.push('localized')
         :deprecated="!!schema.deprecationNotice"
         :flags="flags"
     >
-        <LabEditorSchemaViewerAttribute
+        <LabEditorSchemaViewerAssociatedDatum
             :data-pointer="dataPointer"
             :schema="schema"
         />

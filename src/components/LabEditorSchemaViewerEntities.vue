@@ -2,37 +2,28 @@
 import { CatalogSchema, EntitySchema } from '@/model/evitadb/schema'
 import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
 import LabEditorSchemaViewerEntitiesItem from '@/components/LabEditorSchemaViewerEntitiesItem.vue'
-import { ref, watch } from 'vue'
+import LabEditorSchemaViewerPanelGroupItem from '@/components/LabEditorSchemaViewerPanelGroupItem.vue'
+import LabEditorSchemaViewerPanelGroup from '@/components/LabEditorSchemaViewerPanelGroup.vue'
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
     catalogSchema: CatalogSchema,
     entities: EntitySchema[]
 }>()
-
-const openedEntities = ref<string[]>([])
-watch(openedEntities, (newVal) => {
-    if (newVal.length === 0) {
-        return
-    }
-    openedEntities.value = []
-})
 </script>
 
 <template>
-    <VExpansionPanel title="Entities">
-        <VExpansionPanelText>
-            <VExpansionPanels v-model="openedEntities">
-                <LabEditorSchemaViewerEntitiesItem
-                    v-for="entity in entities"
-                    :key="entity.name"
-                    :data-pointer="dataPointer"
-                    :catalog-schema="catalogSchema"
-                    :schema="entity"
-                />
-            </VExpansionPanels>
-        </VExpansionPanelText>
-    </VExpansionPanel>
+    <LabEditorSchemaViewerPanelGroupItem name="Entities">
+        <LabEditorSchemaViewerPanelGroup redirecting>
+            <LabEditorSchemaViewerEntitiesItem
+                v-for="entity in entities"
+                :key="entity.name"
+                :data-pointer="dataPointer"
+                :catalog-schema="catalogSchema"
+                :schema="entity"
+            />
+        </LabEditorSchemaViewerPanelGroup>
+    </LabEditorSchemaViewerPanelGroupItem>
 </template>
 
 <style lang="scss" scoped>

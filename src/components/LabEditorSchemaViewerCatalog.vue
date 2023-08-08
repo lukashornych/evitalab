@@ -1,17 +1,11 @@
 <script setup lang="ts">
-import { SchemaViewerDataPointer, SchemaViewerProps } from '@/model/editor/schema-viewer'
-import { onBeforeMount, ref } from 'vue'
-import {
-    SchemaViewerService,
-    useSchemaViewerService
-} from '@/services/editor/schema-viewer.service'
+import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
+import { ref } from 'vue'
 import { CatalogSchema } from '@/model/evitadb/schema'
 import LabEditorViewerNameVariants from '@/components/LabEditorSchemaViewerNameVariants.vue'
 import LabEditorViewerAttributes from '@/components/LabEditorSchemaViewerAttributes.vue'
 import LabEditorViewerContainer from '@/components/LabEditorSchemaViewerContainer.vue'
 import LabEditorSchemaViewerEntities from '@/components/LabEditorSchemaViewerEntities.vue'
-
-const catalogSchemaViewerService: SchemaViewerService = useSchemaViewerService()
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
@@ -20,8 +14,8 @@ const props = defineProps<{
 
 const baseProperties = ref<[string, any][]>([
     // todo lho i18n
-    ['Version', props.schema.version as String],
-    ['Description', props.schema.description as String]
+    ['Version', props.schema.version],
+    ['Description', props.schema.description]
 ])
 </script>
 
@@ -31,11 +25,13 @@ const baseProperties = ref<[string, any][]>([
             <LabEditorViewerNameVariants :name-variants="schema.nameVariants" />
 
             <LabEditorViewerAttributes
+                v-if="schema.allAttributes && schema.allAttributes.length > 0"
                 :data-pointer="dataPointer"
                 :attributes="schema.allAttributes"
             />
 
             <LabEditorSchemaViewerEntities
+                v-if="schema.allEntitySchemas && schema.allEntitySchemas.length > 0"
                 :data-pointer="dataPointer"
                 :catalog-schema="schema"
                 :entities="schema.allEntitySchemas"

@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import { NameVariants } from '@/model/evitadb/schema'
 import LabEditorViewerContainer from '@/components/LabEditorSchemaViewerContainer.vue'
+import LabEditorSchemaViewerPanelGroupItem from '@/components/LabEditorSchemaViewerPanelGroupItem.vue'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
+    prefix?: string,
     nameVariants: NameVariants
-}>()
+}>(), {
+    prefix: ''
+})
+
+const name = props.prefix ? `${props.prefix} name variants` : 'Name variants'
 
 const properties: [string, any][] = [
     ['camelCase', props.nameVariants.camelCase as String],
@@ -16,11 +22,9 @@ const properties: [string, any][] = [
 </script>
 
 <template>
-    <VExpansionPanel title="Name variants">
-        <VExpansionPanelText>
-            <LabEditorViewerContainer :properties="properties" />
-        </VExpansionPanelText>
-    </VExpansionPanel>
+    <LabEditorSchemaViewerPanelGroupItem :name="name">
+        <LabEditorViewerContainer :properties="properties" />
+    </LabEditorSchemaViewerPanelGroupItem>
 </template>
 
 <style lang="scss" scoped>

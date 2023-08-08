@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { AttributeSchemaUnion } from '@/model/evitadb/schema'
+import { AssociatedDataSchema } from '@/model/evitadb/schema'
 import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
-import LabEditorViewerAttributesItem from '@/components/LabEditorSchemaViewerAttributesItem.vue'
+import LabEditorViewerAssociatedDataItem from '@/components/LabEditorSchemaViewerAssociatedDataItem'
 import LabEditorSchemaViewerPanelGroupItem from '@/components/LabEditorSchemaViewerPanelGroupItem.vue'
 import LabEditorSchemaViewerPanelGroup from '@/components/LabEditorSchemaViewerPanelGroup.vue'
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
-    attributes: AttributeSchemaUnion[]
+    associatedData: AssociatedDataSchema[]
 }>()
 </script>
 
 <template>
-    <LabEditorSchemaViewerPanelGroupItem name="Attributes">
+    <LabEditorSchemaViewerPanelGroupItem name="Associated data">
         <LabEditorSchemaViewerPanelGroup>
-            <LabEditorViewerAttributesItem
-                v-for="attribute in attributes"
-                :key="attribute.name"
+            <LabEditorViewerAssociatedDataItem
+                v-for="associatedDatum in associatedData"
+                :key="associatedDatum.name"
                 :data-pointer="dataPointer"
-                :schema="attribute"
+                :schema="associatedDatum"
             />
         </LabEditorSchemaViewerPanelGroup>
     </LabEditorSchemaViewerPanelGroupItem>
