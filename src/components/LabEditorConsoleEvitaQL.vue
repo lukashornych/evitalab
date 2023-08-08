@@ -7,8 +7,8 @@ import { json } from '@codemirror/lang-json'
 
 import { ref } from 'vue'
 import CodemirrorFull from '@/components/CodemirrorFull.vue'
-import { EvitaQLConsoleService, useEvitaQLConsoleService } from '@/services/tab/evitaql-console.service'
-import { EvitaQLConsoleProps } from '@/model/tab/evitaql-console'
+import { EvitaQLConsoleService, useEvitaQLConsoleService } from '@/services/editor/evitaql-console.service'
+import { EvitaQLConsoleProps } from '@/model/editor/evitaql-console'
 
 const evitaQLConsoleService: EvitaQLConsoleService = useEvitaQLConsoleService()
 

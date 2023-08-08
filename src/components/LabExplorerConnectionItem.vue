@@ -4,7 +4,7 @@ import LabExplorerCatalogItem from '@/components/LabExplorerCatalogItem.vue'
 import { EvitaDBConnection } from '@/model/lab'
 import { provide, readonly, ref } from 'vue'
 import { LabService, useLabService } from '@/services/lab.service'
-import TreeViewItem from '@/components/TreeViewItem.vue'
+import VTreeViewItem from '@/components/VTreeViewItem.vue'
 import { Catalog } from '@/model/evitadb/system'
 
 enum ActionType {
@@ -63,7 +63,7 @@ function handleAction(action: string, payload?: any) {
         :value="connection.name"
     >
         <template v-slot:activator="{ isOpen, props }">
-            <TreeViewItem
+            <VTreeViewItem
                 v-bind="props"
                 openable
                 :is-open="isOpen"
@@ -73,7 +73,7 @@ function handleAction(action: string, payload?: any) {
                 @click:action="handleAction"
             >
                 {{ connection.name }}
-            </TreeViewItem>
+            </VTreeViewItem>
         </template>
 
         <div

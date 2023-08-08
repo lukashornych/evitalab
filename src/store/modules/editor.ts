@@ -1,12 +1,13 @@
-import { TabRequest } from '@/model/editor'
+import { TabRequest } from '@/model/editor/editor'
 
 export type EditorState = {
-    readonly tabsRequests: TabRequest[]
+    readonly tabsRequests: TabRequest<any>[]
 }
 
 type EditorMutations = {
-    addTabRequest: (state: EditorState, console: TabRequest) => void,
-    destroyTabRequest: (state: EditorState, consoleId: string) => void
+    addTabRequest: (state: EditorState, tabRequest: TabRequest<any>) => void,
+    markTabRequestAsVisited: (state: EditorState, id: string) => void,
+    destroyTabRequest: (state: EditorState, id: string) => void
 }
 
 const state = (): EditorState => ({
@@ -18,8 +19,15 @@ const mutations: EditorMutations = {
         state.tabsRequests.push(tabRequest)
     },
 
-    destroyTabRequest (state, consoleId): void {
-        state.tabsRequests.splice(state.tabsRequests.findIndex(tabRequest => tabRequest.id === consoleId), 1)
+    markTabRequestAsVisited (state, id): void {
+        const tabRequest: TabRequest<any> | undefined = state.tabsRequests.find(tabRequest => tabRequest.id === id)
+        if (tabRequest) {
+            tabRequest.new = false
+        }
+    },
+
+    destroyTabRequest (state, id): void {
+        state.tabsRequests.splice(state.tabsRequests.findIndex(tabRequest => tabRequest.id === id), 1)
     }
 }
 

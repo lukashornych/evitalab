@@ -4,12 +4,13 @@ import 'splitpanes/dist/splitpanes.css'
 import { VDataTableServer } from 'vuetify/labs/VDataTable'
 
 import { onBeforeMount, ref, watch } from 'vue'
-import { DataGridConsoleProps, QueryResult } from '@/model/tab/data-grid-console'
+import { DataGridConsoleProps, QueryResult } from '@/model/editor/data-grid-console'
 import { Extension } from '@codemirror/state'
-import { DataGridConsoleService, useDataGridConsoleService } from '@/services/tab/data-grid-console.service'
+import { DataGridConsoleService, useDataGridConsoleService } from '@/services/editor/data-grid-console.service'
 import CodemirrorOneLine from '@/components/CodemirrorOneLine.vue'
 import { QueryLanguage } from '@/model/lab'
 import CodemirrorFull from '@/components/CodemirrorFull.vue'
+import { ellipsis } from '../utils/text-utils'
 
 const dataGridConsoleService: DataGridConsoleService = useDataGridConsoleService()
 
@@ -193,165 +194,163 @@ function closePropertyDetail(): void {
 
 <template>
     <div v-if="initialized">
-        <div class="data-grid">
-            <VToolbar density="compact">
-                <VAppBarNavIcon
-                    icon="mdi-table"
-                    :disabled="true"
-                    style="opacity: 1"
+        <VToolbar density="compact">
+            <VAppBarNavIcon
+                icon="mdi-table"
+                :disabled="true"
+                style="opacity: 1"
+            />
+
+            <VToolbarTitle>
+                <VBreadcrumbs
+                    :items="path"
+                    class="pl-0 pr-0"
                 />
+            </VToolbarTitle>
 
-                <VToolbarTitle>
-                    <VBreadcrumbs
-                        :items="path"
-                        class="pl-0 pr-0"
-                    />
-                </VToolbarTitle>
+            <template #append>
+                <!-- todo lho primary color? -->
+                <VBtn
+                    icon
+                    variant="elevated"
+                    :loading="loading"
+                    density="compact"
+                    @click="executeQuery"
+                >
+                    <VIcon>mdi-play</VIcon>
 
-                <template #append>
-                    <!-- todo lho primary color? -->
+                    <VTooltip activator="parent">
+                        Execute query
+                    </VTooltip>
+                </VBtn>
+            </template>
+
+            <template #extension>
+                <div class="query-input">
                     <VBtn
                         icon
-                        variant="elevated"
-                        :loading="loading"
-                        density="compact"
-                        @click="executeQuery"
+                        density="comfortable"
                     >
-                        <VIcon>mdi-play</VIcon>
+                        <VIcon>mdi-code-braces</VIcon>
+                        <VTooltip activator="parent">Select query language</VTooltip>
 
-                        <VTooltip activator="parent">
-                            Execute query
-                        </VTooltip>
-                    </VBtn>
-                </template>
-
-                <template #extension>
-                    <div class="query-input">
-                        <VBtn
-                            icon
-                            density="comfortable"
-                        >
-                            <VIcon>mdi-code-braces</VIcon>
-                            <VTooltip activator="parent">Select query language</VTooltip>
-
-                            <VMenu activator="parent">
-                                <VList
-                                    v-model:selected="selectedQueryLanguage"
-                                    density="compact"
-                                >
-                                    <VListItem
-                                        v-for="language in queryLanguages"
-                                        :key="language.value"
-                                        :value="language.value"
-                                    >
-                                        <VListItemTitle>{{ language.title }}</VListItemTitle>
-                                    </VListItem>
-                                </VList>
-                            </VMenu>
-                        </VBtn>
-
-                        <CodemirrorOneLine
-                            v-model="filterByCode"
-                            prepend-inner-icon="mdi-filter"
-                            placeholder="Filter by"
-                            :additional-extensions="filterByExtensions"
-                        />
-
-                        <CodemirrorOneLine
-                            v-model="orderByCode"
-                            prepend-inner-icon="mdi-sort"
-                            placeholder="Order by"
-                            :additional-extensions="orderByExtensions"
-                        />
-
-                        <VBtn
-                            icon
-                            density="comfortable"
-                        >
-                            <VIcon>mdi-translate</VIcon>
-                            <VTooltip activator="parent">
-                                Select data locale
-                            </VTooltip>
-
-                            <VMenu activator="parent">
-                                <VList
-                                    v-model:selected="selectedDataLocales"
-                                    density="compact"
-                                    min-width="100"
-                                >
-                                    <VListItem
-                                        value="none"
-                                    >
-                                        <VListItemTitle>None</VListItemTitle>
-                                    </VListItem>
-
-                                    <VDivider class="mt-2 mb-2" />
-
-                                    <VListItem
-                                        v-for="locale in dataLocales"
-                                        :key="locale"
-                                        :value="locale"
-                                    >
-                                        <VListItemTitle>{{ locale }}</VListItemTitle>
-                                    </VListItem>
-                                </VList>
-                            </VMenu>
-                        </VBtn>
-
-                        <VBtn
-                            icon
-                            density="comfortable"
-                        >
-                            <VIcon>mdi-view-column</VIcon>
-                            <VTooltip activator="parent">
-                                Select displayed data
-                            </VTooltip>
-
-                            <VMenu
-                                activator="parent"
-                                :close-on-content-click="false"
+                        <VMenu activator="parent">
+                            <VList
+                                v-model:selected="selectedQueryLanguage"
+                                density="compact"
                             >
-                                <VList
-                                    v-model:selected="displayedData"
-                                    select-strategy="classic"
-                                    density="compact"
+                                <VListItem
+                                    v-for="language in queryLanguages"
+                                    :key="language.value"
+                                    :value="language.value"
                                 >
-                                    <VListItem>
-                                        <template #prepend>
-                                            <VListItemAction start>
-                                                <VCheckboxBtn
-                                                    :indeterminate="displayedData.length > 0 && displayedData.length < entityPropertyKeys.length"
-                                                    :model-value="displayedData.length === entityPropertyKeys.length"
-                                                    @click="toggleAllEntityProperties"
-                                                />
-                                            </VListItemAction>
-                                        </template>
+                                    <VListItemTitle>{{ language.title }}</VListItemTitle>
+                                </VListItem>
+                            </VList>
+                        </VMenu>
+                    </VBtn>
 
-                                        <VListItemTitle>Select all</VListItemTitle>
-                                    </VListItem>
+                    <CodemirrorOneLine
+                        v-model="filterByCode"
+                        prepend-inner-icon="mdi-filter"
+                        placeholder="Filter by"
+                        :additional-extensions="filterByExtensions"
+                    />
 
-                                    <VDivider class="mt-2 mb-2" />
+                    <CodemirrorOneLine
+                        v-model="orderByCode"
+                        prepend-inner-icon="mdi-sort"
+                        placeholder="Order by"
+                        :additional-extensions="orderByExtensions"
+                    />
 
-                                    <VListItem
-                                        v-for="property in entityPropertyKeys"
-                                        :key="property"
-                                        :value="property"
-                                    >
-                                        <template v-slot:prepend="{ isActive }">
-                                            <VListItemAction start>
-                                                <VCheckboxBtn :model-value="isActive" />
-                                            </VListItemAction>
-                                        </template>
+                    <VBtn
+                        icon
+                        density="comfortable"
+                    >
+                        <VIcon>mdi-translate</VIcon>
+                        <VTooltip activator="parent">
+                            Select data locale
+                        </VTooltip>
 
-                                        <VListItemTitle>{{ property }}</VListItemTitle>
-                                    </VListItem>
-                                </VList>
-                            </VMenu>
-                        </VBtn>
-                    </div>
-                </template>
-            </VToolbar>
-        </div>
+                        <VMenu activator="parent">
+                            <VList
+                                v-model:selected="selectedDataLocales"
+                                density="compact"
+                                min-width="100"
+                            >
+                                <VListItem
+                                    value="none"
+                                >
+                                    <VListItemTitle>None</VListItemTitle>
+                                </VListItem>
+
+                                <VDivider class="mt-2 mb-2" />
+
+                                <VListItem
+                                    v-for="locale in dataLocales"
+                                    :key="locale"
+                                    :value="locale"
+                                >
+                                    <VListItemTitle>{{ locale }}</VListItemTitle>
+                                </VListItem>
+                            </VList>
+                        </VMenu>
+                    </VBtn>
+
+                    <VBtn
+                        icon
+                        density="comfortable"
+                    >
+                        <VIcon>mdi-view-column</VIcon>
+                        <VTooltip activator="parent">
+                            Select displayed data
+                        </VTooltip>
+
+                        <VMenu
+                            activator="parent"
+                            :close-on-content-click="false"
+                        >
+                            <VList
+                                v-model:selected="displayedData"
+                                select-strategy="classic"
+                                density="compact"
+                            >
+                                <VListItem>
+                                    <template #prepend>
+                                        <VListItemAction start>
+                                            <VCheckboxBtn
+                                                :indeterminate="displayedData.length > 0 && displayedData.length < entityPropertyKeys.length"
+                                                :model-value="displayedData.length === entityPropertyKeys.length"
+                                                @click="toggleAllEntityProperties"
+                                            />
+                                        </VListItemAction>
+                                    </template>
+
+                                    <VListItemTitle>Select all</VListItemTitle>
+                                </VListItem>
+
+                                <VDivider class="mt-2 mb-2" />
+
+                                <VListItem
+                                    v-for="property in entityPropertyKeys"
+                                    :key="property"
+                                    :value="property"
+                                >
+                                    <template v-slot:prepend="{ isActive }">
+                                        <VListItemAction start>
+                                            <VCheckboxBtn :model-value="isActive" />
+                                        </VListItemAction>
+                                    </template>
+
+                                    <VListItemTitle>{{ property }}</VListItemTitle>
+                                </VListItem>
+                            </VList>
+                        </VMenu>
+                    </VBtn>
+                </div>
+            </template>
+        </VToolbar>
 
         <Splitpanes vertical>
             <Pane
@@ -374,7 +373,7 @@ function closePropertyDetail(): void {
                                 :key="propertyName"
                                 @click="openPropertyDetail(propertyName, propertyValue)"
                             >
-                                {{ propertyValue !== undefined && propertyValue.length > 20 ? propertyValue.substring(0, 20) + '...' : propertyValue }}
+                                {{ propertyValue !== undefined ? ellipsis(propertyValue, 20) : '' }}
                             </td>
                         </tr>
                     </template>

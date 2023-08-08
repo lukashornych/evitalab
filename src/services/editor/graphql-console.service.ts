@@ -1,5 +1,5 @@
 import { buildClientSchema, getIntrospectionQuery, GraphQLSchema } from 'graphql'
-import { GraphQLInstancePointer } from '@/model/tab/graphql-console'
+import { GraphQLInstancePointer } from '@/model/editor/graphql-console'
 import { inject, InjectionKey } from 'vue'
 import { fetchGraphQL } from '@/services/graphql-client'
 import { GraphQLResponse } from '@/model/graphql'

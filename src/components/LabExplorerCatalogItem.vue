@@ -2,14 +2,16 @@
 import { inject, provide, readonly, ref } from 'vue'
 import { LabService, useLabService } from '@/services/lab.service'
 import { EvitaDBConnection } from '@/model/lab'
-import TreeViewItem from '@/components/TreeViewItem.vue'
+import VTreeViewItem from '@/components/VTreeViewItem.vue'
 import LabExplorerCollectionItem from '@/components/LabExplorerCollectionItem.vue'
-import { GraphQLConsoleRequest } from '@/model/tab/graphql-console-request'
-import { GraphQLInstanceType } from '@/model/tab/graphql-console'
-import { EditorService, useEditorService } from '@/services/editor.service'
+import { GraphQLConsoleRequest } from '@/model/editor/graphql-console-request'
+import { GraphQLInstanceType } from '@/model/editor/graphql-console'
+import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import { Catalog } from '@/model/evitadb/system'
 import { CatalogSchema } from '@/model/evitadb/schema'
-import { EvitaQLConsoleRequest } from '@/model/tab/evitaql-console-request'
+import { EvitaQLConsoleRequest } from '@/model/editor/evitaql-console-request'
+import { SchemaViewerRequest } from '@/model/editor/schema-viewer-request'
+import { CatalogSchemaPointer } from '@/model/editor/schema-viewer'
 
 enum ActionType {
     OpenEvitaQLConsole = 'open-evitaql-console',
@@ -97,7 +99,13 @@ function handleAction(action: string) {
             )
             break
         case ActionType.ViewSchema:
-            throw new Error('Not implemented yet.')
+            editorService.createTabRequest(
+                new SchemaViewerRequest(
+                    connection,
+                    new CatalogSchemaPointer(props.catalog.name)
+                )
+            )
+            break
     }
 }
 </script>
@@ -107,7 +115,7 @@ function handleAction(action: string) {
         :value="catalog.name"
     >
         <template v-slot:activator="{ isOpen, props }">
-            <TreeViewItem
+            <VTreeViewItem
                 v-if="!catalog.corrupted"
                 v-bind="props"
                 openable
@@ -118,9 +126,9 @@ function handleAction(action: string) {
                 @click:action="handleAction"
             >
                 {{ catalog.name }}
-            </TreeViewItem>
+            </VTreeViewItem>
 
-            <TreeViewItem
+            <VTreeViewItem
                 v-else
                 v-bind="props"
                 prepend-icon="mdi-book-open"
@@ -132,7 +140,7 @@ function handleAction(action: string) {
                 >
                     This catalog couldn't be loaded because it's corrupted.
                 </VTooltip>
-            </TreeViewItem>
+            </VTreeViewItem>
         </template>
 
         <div v-if="!catalog.corrupted && catalogSchema !== undefined">

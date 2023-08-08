@@ -5,16 +5,16 @@ import {
     EntityPropertyType,
     QueryResult,
     StaticEntityProperties
-} from '@/model/tab/data-grid-console'
+} from '@/model/editor/data-grid-console'
 import { QueryLanguage } from '@/model/lab'
-import { QueryExecutor } from '@/services/tab/data-grid-console/query-executor'
-import { QueryBuilder } from '@/services/tab/data-grid-console/query-builder'
-import { EvitaQLQueryBuilder } from '@/services/tab/data-grid-console/evitaql-query-builder'
-import { EvitaQLQueryExecutor } from '@/services/tab/data-grid-console/evitaql-query-executor'
+import { QueryExecutor } from '@/services/editor/data-grid-console/query-executor'
+import { QueryBuilder } from '@/services/editor/data-grid-console/query-builder'
+import { EvitaQLQueryBuilder } from '@/services/editor/data-grid-console/evitaql-query-builder'
+import { EvitaQLQueryExecutor } from '@/services/editor/data-grid-console/evitaql-query-executor'
 import { LabService } from '@/services/lab.service'
 import { AttributeSchemaUnion, EntitySchema } from '@/model/evitadb/schema'
-import { GraphQLQueryBuilder } from '@/services/tab/data-grid-console/graphql-query-builder'
-import { GraphQLQueryExecutor } from '@/services/tab/data-grid-console/graphql-query-executor'
+import { GraphQLQueryBuilder } from '@/services/editor/data-grid-console/graphql-query-builder'
+import { GraphQLQueryExecutor } from '@/services/editor/data-grid-console/graphql-query-executor'
 
 export const key: InjectionKey<DataGridConsoleService> = Symbol()
 

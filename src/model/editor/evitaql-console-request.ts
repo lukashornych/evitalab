@@ -1,8 +1,8 @@
-import { TabRequest } from '@/model/editor'
+import { TabRequest } from '@/model/editor/editor'
 import { EvitaDBConnection } from '@/model/lab'
 import { markRaw } from 'vue'
 import LabEditorConsoleEvitaQL from '@/components/LabEditorConsoleEvitaQL.vue'
-import { EvitaQLConsoleProps, EvitaQLDataPointer } from '@/model/tab/evitaql-console'
+import { EvitaQLConsoleProps, EvitaQLDataPointer } from '@/model/editor/evitaql-console'
 
 /**
  * Creates new EvitaQL tab.

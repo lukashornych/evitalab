@@ -1,11 +1,11 @@
-import { QueryExecutor } from '@/services/tab/data-grid-console/query-executor'
+import { QueryExecutor } from '@/services/editor/data-grid-console/query-executor'
 import { LabService } from '@/services/lab.service'
 import {
     DataGridDataPointer, EntityPropertyKey,
     EntityPropertyType, FlatEntity,
     QueryResult,
     StaticEntityProperties
-} from '@/model/tab/data-grid-console'
+} from '@/model/editor/data-grid-console'
 import { fetchGraphQL } from '@/services/graphql-client'
 
 /**

@@ -1,4 +1,4 @@
-import { DataGridDataPointer, EntityPropertyKey } from '@/model/tab/data-grid-console'
+import { DataGridDataPointer, EntityPropertyKey } from '@/model/editor/data-grid-console'
 import { AttributeSchemaUnion } from '@/model/evitadb/schema'
 
 /**

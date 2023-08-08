@@ -1,5 +1,5 @@
 import { EvitaDBConnection } from '@/model/lab'
-import { TabRequestComponentProps } from '@/model/editor'
+import { TabRequestComponentProps } from '@/model/editor/editor'
 import { CatalogSchema } from '@/model/evitadb/schema'
 
 /**

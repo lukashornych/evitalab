@@ -7,9 +7,9 @@ import { graphql } from 'cm6-graphql';
 import { json } from '@codemirror/lang-json'
 
 import { onBeforeMount, ref } from 'vue'
-import { GraphQLConsoleService, useGraphQLConsoleService } from '@/services/tab/graphql-console.service'
+import { GraphQLConsoleService, useGraphQLConsoleService } from '@/services/editor/graphql-console.service'
 import { GraphQLSchema, printSchema } from 'graphql'
-import { GraphQLConsoleProps } from '@/model/tab/graphql-console'
+import { GraphQLConsoleProps } from '@/model/editor/graphql-console'
 import CodemirrorFull from '@/components/CodemirrorFull.vue'
 
 const graphQLConsoleService: GraphQLConsoleService = useGraphQLConsoleService()

@@ -1,5 +1,5 @@
 import { EvitaDBConnection } from '@/model/lab'
-import { TabRequestComponentProps } from '@/model/editor'
+import { TabRequestComponentProps } from '@/model/editor/editor'
 
 /**
  * Points to concrete evitaDB collection to fetch data from.

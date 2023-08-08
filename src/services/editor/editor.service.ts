@@ -1,6 +1,6 @@
 import { Store } from 'vuex'
 import { State } from '@/store'
-import { TabRequest } from '@/model/editor'
+import { TabRequest } from '@/model/editor/editor'
 import { inject, InjectionKey } from 'vue'
 
 export const key: InjectionKey<EditorService> = Symbol()
@@ -19,12 +19,20 @@ export class EditorService {
         return this.store.state.editor.tabsRequests
     }
 
-    getTabRequest(id: string): TabRequest<any> | null {
-        return this.getTabRequests().find(it => it.id === id) || null
+    getTabRequest(id: string): TabRequest<any> | undefined {
+        return this.getTabRequests().find(it => it.id === id)
+    }
+
+    getNewTabRequest(): TabRequest<any> | undefined {
+        return this.getTabRequests().find(it => it.new)
     }
 
     createTabRequest(tabRequest: TabRequest<any>): void {
         this.store.commit('editor/addTabRequest', tabRequest)
+    }
+
+    markTabRequestAsVisited(tabId: string): void {
+        this.store.commit('editor/markTabRequestAsVisited', tabId)
     }
 
     destroyTabRequest(tabId: string): void {

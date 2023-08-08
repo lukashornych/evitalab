@@ -1,15 +1,25 @@
 <script setup lang="ts">
 
-import { computed, ref } from 'vue'
-import { TabRequest, TabRequestComponentProps } from '@/model/editor'
-import { EditorService, useEditorService } from '@/services/editor.service'
+import { computed, ref, watch } from 'vue'
+import { TabRequest, TabRequestComponentProps } from '@/model/editor/editor'
+import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import LabEditorTabWindow from '@/components/LabEditorTabWindow.vue'
+import { ellipsis } from '../utils/text-utils'
 
 const editorService: EditorService = useEditorService()
 
 const tabs = computed<TabRequest<any>[]>(() => {
     return editorService.getTabRequests()
 })
+watch(tabs, () => {
+    // switch to newly opened tab
+    const newTab: TabRequest<any> | undefined = editorService.getNewTabRequest()
+    if (newTab) {
+        currentTabId.value = newTab.id
+        editorService.markTabRequestAsVisited(newTab.id)
+    }
+}, { deep: true})
+
 const currentTabId = ref<string | null>()
 const currentTab = computed(() => {
     if (!currentTabId.value) {
@@ -50,7 +60,14 @@ function closeTab(tabId: string) {
                 :prepend-icon="tab.icon"
             >
                 <span>
-                    {{ tab.title }}
+                    {{ ellipsis(tab.title, 30) }}
+
+                    <VTooltip
+                        v-if="tab.title.length > 30"
+                        activator="parent"
+                    >
+                        {{ tab.title }}
+                    </VTooltip>
                 </span>
 
                 <VBtn

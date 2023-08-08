@@ -1,9 +1,9 @@
-import { QueryBuilder } from '@/services/tab/data-grid-console/query-builder'
+import { QueryBuilder } from '@/services/editor/data-grid-console/query-builder'
 import {
     DataGridDataPointer,
     EntityPropertyKey,
     EntityPropertyType
-} from '@/model/tab/data-grid-console'
+} from '@/model/editor/data-grid-console'
 import { LabService } from '@/services/lab.service'
 import { AssociatedDataSchema, AttributeSchemaUnion, EntitySchema } from '@/model/evitadb/schema'
 

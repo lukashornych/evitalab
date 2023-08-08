@@ -1,4 +1,4 @@
-import { QueryExecutor } from '@/services/tab/data-grid-console/query-executor'
+import { QueryExecutor } from '@/services/editor/data-grid-console/query-executor'
 import ky from 'ky'
 import { LabService } from '@/services/lab.service'
 import {
@@ -6,7 +6,7 @@ import {
     EntityPropertyType, FlatEntity,
     QueryResult,
     StaticEntityProperties
-} from '@/model/tab/data-grid-console'
+} from '@/model/editor/data-grid-console'
 
 /**
  * Query executor for EvitaQL language.

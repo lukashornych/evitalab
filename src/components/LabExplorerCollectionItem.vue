@@ -1,14 +1,16 @@
 <script setup lang="ts">
 
-import TreeViewItem from '@/components/TreeViewItem.vue'
+import VTreeViewItem from '@/components/VTreeViewItem.vue'
 import { EvitaDBConnection } from '@/model/lab'
 import { inject, ref } from 'vue'
-import { EditorService, useEditorService } from '@/services/editor.service'
-import { DataGridConsoleRequest } from '@/model/tab/data-grid-console-request'
-import { GraphQLConsoleRequest } from '@/model/tab/graphql-console-request'
-import { GraphQLInstanceType } from '@/model/tab/graphql-console'
+import { EditorService, useEditorService } from '@/services/editor/editor.service'
+import { DataGridConsoleRequest } from '@/model/editor/data-grid-console-request'
+import { GraphQLConsoleRequest } from '@/model/editor/graphql-console-request'
+import { GraphQLInstanceType } from '@/model/editor/graphql-console'
 import { CatalogSchema, EntitySchema } from '@/model/evitadb/schema'
-import { EvitaQLConsoleRequest } from '@/model/tab/evitaql-console-request'
+import { EvitaQLConsoleRequest } from '@/model/editor/evitaql-console-request'
+import { SchemaViewerRequest } from '@/model/editor/schema-viewer-request'
+import { EntitySchemaPointer } from '@/model/editor/schema-viewer'
 
 enum ActionType {
     ViewEntities = 'view-entities',
@@ -105,20 +107,29 @@ function handleAction(action: string) {
             )
             break
         case ActionType.ViewSchema:
-            throw new Error('Not implemented yet.')
+            editorService.createTabRequest(
+                new SchemaViewerRequest(
+                    connection,
+                    new EntitySchemaPointer(
+                        catalogSchema.name,
+                        props.entitySchema.name
+                    )
+                )
+            )
+            break
     }
 }
 </script>
 
 <template>
-    <TreeViewItem
+    <VTreeViewItem
         prepend-icon="mdi-list-box"
         :actions="actions"
         @click="openDataGrid"
         @click:action="handleAction"
     >
         {{ entitySchema.name }}
-    </TreeViewItem>
+    </VTreeViewItem>
 </template>
 
 <style lang="scss" scoped>

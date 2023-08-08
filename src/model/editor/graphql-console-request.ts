@@ -1,7 +1,7 @@
-import { TabRequest } from '@/model/editor'
+import { TabRequest } from '@/model/editor/editor'
 import { EvitaDBConnection } from '@/model/lab'
 import LabEditorConsoleGraphQL from '@/components/LabEditorConsoleGraphQL.vue'
-import { GraphQLConsoleProps, GraphQLInstancePointer, GraphQLInstanceType } from '@/model/tab/graphql-console'
+import { GraphQLConsoleProps, GraphQLInstancePointer, GraphQLInstanceType } from '@/model/editor/graphql-console'
 import { markRaw } from 'vue'
 
 /**
