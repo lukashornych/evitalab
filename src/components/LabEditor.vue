@@ -42,6 +42,7 @@ function closeTab(tabId: string) {
         currentTabId.value = tabs.value[closedTabIndex].id
     }
 }
+
 </script>
 
 <template>
