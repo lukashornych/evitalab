@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { AssociatedDataSchema } from '@/model/evitadb/schema'
 import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
 import LabEditorSchemaViewerAssociatedDatum from '@/components/LabEditorSchemaViewerAssociatedDatum.vue'
 import LabEditorSchemaViewerPanelGroupItem from '@/components/LabEditorSchemaViewerPanelGroupItem.vue'
+import { AssociatedDataSchema } from '@/model/evitadb'
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,

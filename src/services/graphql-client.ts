@@ -1,5 +1,6 @@
 import ky from 'ky'
 import { GraphQLResponse } from '@/model/graphql'
+import { EvitaDBConnection } from '@/model/lab'
 
 /**
  * Simplified GraphQL API client that doesn't need to know about specific GraphQL schemas.
@@ -8,14 +9,14 @@ import { GraphQLResponse } from '@/model/graphql'
  * @param query GraphQL query
  * @param variables GraphQL query variables
  */
-export async function fetchGraphQL(url: string, query: string, variables: any = {}): Promise<GraphQLResponse> {
+// todo lho reimplement it into a injectable class
+export async function fetchGraphQL(connection: EvitaDBConnection, path: string, query: string, variables: any = {}): Promise<GraphQLResponse> {
     return (
         await ky.post(
-            url,
+            `${connection.gqlUrl}/${path}`,
             {
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     query,

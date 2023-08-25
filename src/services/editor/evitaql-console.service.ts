@@ -1,7 +1,8 @@
 import { inject, InjectionKey } from 'vue'
 import { LabService } from '@/services/lab.service'
 import { EvitaQLDataPointer } from '@/model/editor/evitaql-console'
-import ky from 'ky'
+import { EvitaDBClient } from '@/services/evitadb-client'
+import { Response } from '@/model/evitadb'
 
 export const key: InjectionKey<EvitaQLConsoleService> = Symbol()
 
@@ -10,9 +11,11 @@ export const key: InjectionKey<EvitaQLConsoleService> = Symbol()
  */
 export class EvitaQLConsoleService {
     readonly labService: LabService
+    readonly evitaDBClient: EvitaDBClient
 
-    constructor(labService: LabService) {
+    constructor(labService: LabService, evitaDBClient: EvitaDBClient) {
         this.labService = labService
+        this.evitaDBClient = evitaDBClient
     }
 
     /**
@@ -24,18 +27,7 @@ export class EvitaQLConsoleService {
             .nameVariants
             .kebabCase
 
-        const result: any = await ky.post(
-            `${dataPointer.connection.restUrl}/${urlCatalogName}/entity/query`,
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ query })
-            },
-        )
-            .json()
-
+        const result: Response = await this.evitaDBClient.queryEntities(dataPointer.connection, urlCatalogName, query)
         return JSON.stringify(result, null, 2)
     }
 }

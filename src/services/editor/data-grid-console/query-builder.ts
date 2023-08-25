@@ -1,5 +1,5 @@
 import { DataGridDataPointer, EntityPropertyKey } from '@/model/editor/data-grid-console'
-import { AttributeSchemaUnion } from '@/model/evitadb/schema'
+import { AttributeSchemaUnion } from '@/model/evitadb'
 
 /**
  * Builds query from arguments based on language of implementation.

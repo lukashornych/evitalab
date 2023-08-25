@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import LabEditorViewerNameVariants from '@/components/LabEditorSchemaViewerNameVariants.vue'
-import { ReferenceSchema } from '@/model/evitadb/schema'
 import LabEditorViewerContainer from '@/components/LabEditorSchemaViewerContainer.vue'
 import { EntitySchemaPointer, SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
 import LabEditorSchemaViewerAttributes from '@/components/LabEditorSchemaViewerAttributes.vue'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import { SchemaViewerRequest } from '@/model/editor/schema-viewer-request'
+import { ReferenceSchema } from '@/model/evitadb'
 
 const editorService: EditorService = useEditorService()
 
@@ -74,9 +74,9 @@ properties.push(['Faceted', props.schema.faceted])
             />
 
             <LabEditorSchemaViewerAttributes
-                v-if="schema.allAttributes && schema.allAttributes.length > 0"
+                v-if="Object.values(schema.attributes) && Object.values(schema.attributes).length > 0"
                 :data-pointer="dataPointer"
-                :attributes="schema.allAttributes"
+                :attributes="Object.values(schema.attributes)"
             />
         </template>
     </LabEditorViewerContainer>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { NameVariants } from '@/model/evitadb/schema'
 import LabEditorViewerContainer from '@/components/LabEditorSchemaViewerContainer.vue'
 import LabEditorSchemaViewerPanelGroupItem from '@/components/LabEditorSchemaViewerPanelGroupItem.vue'
+import { NameVariants } from '@/model/evitadb'
 
 const props = withDefaults(defineProps<{
     prefix?: string,

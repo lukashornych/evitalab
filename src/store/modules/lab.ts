@@ -1,6 +1,5 @@
 import { EvitaDBConnection, EvitaDBConnectionId } from '@/model/lab'
-import { CatalogSchema, EntitySchema } from '@/model/evitadb/schema'
-import { Catalog } from '@/model/evitadb/system'
+import { Catalog, CatalogSchema, EntitySchema, EntitySchemas } from '@/model/evitadb'
 
 /**
  * Stores global information about configured evitaDB servers.
@@ -15,6 +14,7 @@ export type LabState = {
      * Cache of catalog schemas for all servers.
      */
     readonly catalogSchemas: Map<EvitaDBConnectionId, Map<string, CatalogSchema>>,
+    // todo lho logs history, mainly errors for debugging
 }
 
 type LabGetters = {
@@ -37,6 +37,7 @@ const state = (): LabState => ({
     connections: [
         new EvitaDBConnection(
             'evita local',
+            'https://localhost:5558/lab/api',
             'https://localhost:5555/rest',
             'https://localhost:5555/gql'
         )
@@ -67,9 +68,13 @@ const getters: LabGetters = {
     },
     getEntitySchema(state: LabState): (connectionId: EvitaDBConnectionId, catalogName: string, entityType: string) => EntitySchema | undefined {
         return (connectionId: EvitaDBConnectionId, catalogName: string, entityType: string) => {
-            return state.catalogSchemas.get(connectionId)
+            const entitySchemas: EntitySchemas | undefined = state.catalogSchemas.get(connectionId)
                 ?.get(catalogName)
-                ?.allEntitySchemas.find(entitySchema => entitySchema.name === entityType)
+                ?.entitySchemas
+            if (entitySchemas === undefined) {
+                return undefined
+            }
+            return Object.values(entitySchemas).find(entitySchema => entitySchema.name === entityType)
         }
     }
 }

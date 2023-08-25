@@ -7,10 +7,10 @@ import { EditorService, useEditorService } from '@/services/editor/editor.servic
 import { DataGridConsoleRequest } from '@/model/editor/data-grid-console-request'
 import { GraphQLConsoleRequest } from '@/model/editor/graphql-console-request'
 import { GraphQLInstanceType } from '@/model/editor/graphql-console'
-import { CatalogSchema, EntitySchema } from '@/model/evitadb/schema'
 import { EvitaQLConsoleRequest } from '@/model/editor/evitaql-console-request'
 import { SchemaViewerRequest } from '@/model/editor/schema-viewer-request'
 import { EntitySchemaPointer } from '@/model/editor/schema-viewer'
+import { CatalogSchema, EntitySchema } from '@/model/evitadb'
 
 enum ActionType {
     ViewEntities = 'view-entities',

@@ -12,9 +12,10 @@ import { QueryBuilder } from '@/services/editor/data-grid-console/query-builder'
 import { EvitaQLQueryBuilder } from '@/services/editor/data-grid-console/evitaql-query-builder'
 import { EvitaQLQueryExecutor } from '@/services/editor/data-grid-console/evitaql-query-executor'
 import { LabService } from '@/services/lab.service'
-import { AttributeSchemaUnion, EntitySchema } from '@/model/evitadb/schema'
 import { GraphQLQueryBuilder } from '@/services/editor/data-grid-console/graphql-query-builder'
 import { GraphQLQueryExecutor } from '@/services/editor/data-grid-console/graphql-query-executor'
+import { EvitaDBClient } from '@/services/evitadb-client'
+import { AttributeSchemaUnion, EntitySchema } from '@/model/evitadb'
 
 export const key: InjectionKey<DataGridConsoleService> = Symbol()
 
@@ -26,11 +27,11 @@ export class DataGridConsoleService {
     readonly queryBuilders: Map<QueryLanguage, QueryBuilder> = new Map<QueryLanguage, QueryBuilder>()
     readonly queryExecutors: Map<QueryLanguage, QueryExecutor> = new Map<QueryLanguage, QueryExecutor>()
 
-    constructor(labService: LabService) {
+    constructor(labService: LabService, evitaDBClient: EvitaDBClient) {
         this.labService = labService
 
         this.queryBuilders.set(QueryLanguage.EvitaQL, new EvitaQLQueryBuilder(this.labService))
-        this.queryExecutors.set(QueryLanguage.EvitaQL, new EvitaQLQueryExecutor(this.labService))
+        this.queryExecutors.set(QueryLanguage.EvitaQL, new EvitaQLQueryExecutor(this.labService, evitaDBClient))
 
         this.queryBuilders.set(QueryLanguage.GraphQL, new GraphQLQueryBuilder(this.labService))
         this.queryExecutors.set(QueryLanguage.GraphQL, new GraphQLQueryExecutor(this.labService))
@@ -86,7 +87,7 @@ export class DataGridConsoleService {
         for (const column of columns) {
             const propertyKey: EntityPropertyKey = EntityPropertyKey.fromString(column.key)
             if (propertyKey.type === EntityPropertyType.Attributes) {
-                const attributeSchema: AttributeSchemaUnion | undefined = entitySchema.allAttributes
+                const attributeSchema: AttributeSchemaUnion | undefined = Object.values(entitySchema.attributes)
                     .find(attributeSchema => attributeSchema.nameVariants.camelCase === propertyKey.name)
                 if (attributeSchema === undefined) {
                     throw new Error(`Entity ${entitySchema.name} does not have attribute ${propertyKey.name}.`)
@@ -128,13 +129,13 @@ export class DataGridConsoleService {
         if (entitySchema.withPrice) {
             entityProperties.push(EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling))
         }
-        for (const attributeSchema of entitySchema.allAttributes) {
+        for (const attributeSchema of Object.values(entitySchema.attributes)) {
             entityProperties.push(EntityPropertyKey.attributes(attributeSchema.nameVariants.camelCase))
         }
-        for (const associatedDataSchema of entitySchema.allAssociatedData) {
+        for (const associatedDataSchema of Object.values(entitySchema.associatedData)) {
             entityProperties.push(EntityPropertyKey.associatedData(associatedDataSchema.nameVariants.camelCase))
         }
-        for (const referenceSchema of entitySchema.allReferences) {
+        for (const referenceSchema of Object.values(entitySchema.references)) {
             entityProperties.push(EntityPropertyKey.references(referenceSchema.nameVariants.camelCase))
         }
 
@@ -152,7 +153,7 @@ export class DataGridConsoleService {
             return false
         }
 
-        const attributeSchema: AttributeSchemaUnion | undefined = entitySchema.allAttributes
+        const attributeSchema: AttributeSchemaUnion | undefined = Object.values(entitySchema.attributes)
             .find(attributeSchema => attributeSchema.nameVariants.camelCase === propertyKey.name)
         if (attributeSchema === undefined) {
             throw new Error(`Attribute ${propertyKey.name} not found in entity schema ${entitySchema.name}.`)

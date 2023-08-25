@@ -1,7 +1,7 @@
 export enum NotificationType {
-    INFO = 'info',
-    SUCCESS = 'success',
-    ERROR = 'error'
+    Info = 'info',
+    Success = 'success',
+    Error = 'error'
 }
 
 export type NotificationData = {

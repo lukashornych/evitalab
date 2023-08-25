@@ -5,7 +5,7 @@ import {
     EntityPropertyType
 } from '@/model/editor/data-grid-console'
 import { LabService } from '@/services/lab.service'
-import { AssociatedDataSchema, AttributeSchemaUnion, EntitySchema } from '@/model/evitadb/schema'
+import { AssociatedDataSchema, AttributeSchemaUnion, EntitySchema } from '@/model/evitadb'
 
 /**
  * Query builder for GraphQL language.
@@ -59,7 +59,8 @@ export class GraphQLQueryBuilder implements QueryBuilder {
                     }
 
                     for (const property of properties) {
-                        const attributeSchema: AttributeSchemaUnion | undefined = entitySchema.allAttributes.find(attribute => attribute.nameVariants.camelCase === property)
+                        const attributeSchema: AttributeSchemaUnion | undefined = Object.values(entitySchema.attributes)
+                            .find(attribute => attribute.nameVariants.camelCase === property)
                         if (attributeSchema === undefined) {
                             throw new Error(`Attribute ${property} not found in entity ${entitySchema.name}`)
                         }
@@ -78,7 +79,8 @@ export class GraphQLQueryBuilder implements QueryBuilder {
                     }
 
                     for (const property of properties) {
-                        const associatedDataSchema: AssociatedDataSchema | undefined = entitySchema.allAssociatedData.find(associatedData => associatedData.nameVariants.camelCase === property)
+                        const associatedDataSchema: AssociatedDataSchema | undefined = Object.values(entitySchema.associatedData)
+                            .find(associatedData => associatedData.nameVariants.camelCase === property)
                         if (associatedDataSchema === undefined) {
                             throw new Error(`Associated data ${property} not found in entity ${entitySchema.name}`)
                         }

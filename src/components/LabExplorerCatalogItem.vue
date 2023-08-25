@@ -7,11 +7,10 @@ import LabExplorerCollectionItem from '@/components/LabExplorerCollectionItem.vu
 import { GraphQLConsoleRequest } from '@/model/editor/graphql-console-request'
 import { GraphQLInstanceType } from '@/model/editor/graphql-console'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import { Catalog } from '@/model/evitadb/system'
-import { CatalogSchema } from '@/model/evitadb/schema'
 import { EvitaQLConsoleRequest } from '@/model/editor/evitaql-console-request'
 import { SchemaViewerRequest } from '@/model/editor/schema-viewer-request'
 import { CatalogSchemaPointer } from '@/model/editor/schema-viewer'
+import { Catalog, CatalogSchema } from '@/model/evitadb'
 
 enum ActionType {
     OpenEvitaQLConsole = 'open-evitaql-console',
@@ -145,7 +144,7 @@ function handleAction(action: string) {
 
         <div v-if="!catalog.corrupted && catalogSchema !== undefined">
             <LabExplorerCollectionItem
-                v-for="entitySchema in catalogSchema.allEntitySchemas"
+                v-for="entitySchema in Object.values(catalogSchema.entitySchemas)"
                 :key="entitySchema.name"
                 :entity-schema="entitySchema"
             />

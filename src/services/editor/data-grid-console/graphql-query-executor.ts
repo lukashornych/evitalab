@@ -23,7 +23,8 @@ export class GraphQLQueryExecutor extends QueryExecutor {
             .kebabCase
 
         const result = await fetchGraphQL(
-            `${dataPointer.connection.gqlUrl}/${urlCatalogName}`,
+            dataPointer.connection,
+            `${urlCatalogName}`,
             query
         )
 

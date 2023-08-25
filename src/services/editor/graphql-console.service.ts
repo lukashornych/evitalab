@@ -48,9 +48,9 @@ export class GraphQLConsoleService {
         const urlCatalogName: string = (await this.labService.getCatalogSchema(instancePointer.connection, instancePointer.catalogName))
             .nameVariants
             .kebabCase
-        const url = `${instancePointer.connection.gqlUrl}/${urlCatalogName}${instancePointer.instanceTypeSuffix()}`
+        const path = `${urlCatalogName}${instancePointer.instanceTypeSuffix()}`
 
-        return await fetchGraphQL(url, query, variables)
+        return await fetchGraphQL(instancePointer.connection, path, query, variables)
     }
 }
 

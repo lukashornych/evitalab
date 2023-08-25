@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
 import { ref } from 'vue'
-import { CatalogSchema } from '@/model/evitadb/schema'
 import LabEditorViewerNameVariants from '@/components/LabEditorSchemaViewerNameVariants.vue'
 import LabEditorViewerAttributes from '@/components/LabEditorSchemaViewerAttributes.vue'
 import LabEditorViewerContainer from '@/components/LabEditorSchemaViewerContainer.vue'
 import LabEditorSchemaViewerEntities from '@/components/LabEditorSchemaViewerEntities.vue'
+import { CatalogSchema } from '@/model/evitadb'
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
@@ -25,16 +25,16 @@ const baseProperties = ref<[string, any][]>([
             <LabEditorViewerNameVariants :name-variants="schema.nameVariants" />
 
             <LabEditorViewerAttributes
-                v-if="schema.allAttributes && schema.allAttributes.length > 0"
+                v-if="schema.attributes && Object.values(schema.attributes).length > 0"
                 :data-pointer="dataPointer"
-                :attributes="schema.allAttributes"
+                :attributes="Object.values(schema.attributes)"
             />
 
             <LabEditorSchemaViewerEntities
-                v-if="schema.allEntitySchemas && schema.allEntitySchemas.length > 0"
+                v-if="schema.entitySchemas && Object.values(schema.entitySchemas).length > 0"
                 :data-pointer="dataPointer"
                 :catalog-schema="schema"
-                :entities="schema.allEntitySchemas"
+                :entities="Object.values(schema.entitySchemas)"
             />
         </template>
     </LabEditorViewerContainer>

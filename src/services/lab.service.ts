@@ -2,9 +2,8 @@ import { EvitaDBConnection } from '@/model/lab'
 import { inject, InjectionKey } from 'vue'
 import { Store } from 'vuex'
 import { State } from '@/store'
-import { Catalog } from '@/model/evitadb/system'
-import { fetchGraphQL } from '@/services/graphql-client'
-import { CatalogSchema, EntitySchema } from '@/model/evitadb/schema'
+import { EvitaDBClient } from '@/services/evitadb-client'
+import { Catalog, CatalogSchema, EntitySchema } from '@/model/evitadb'
 
 export const key: InjectionKey<LabService> = Symbol()
 
@@ -14,9 +13,11 @@ export const key: InjectionKey<LabService> = Symbol()
  */
 export class LabService {
     readonly store: Store<State>
+    readonly evitaDBClient: EvitaDBClient
 
-    constructor(store: Store<State>) {
+    constructor(store: Store<State>, evitaDBClient: EvitaDBClient) {
         this.store = store
+        this.evitaDBClient = evitaDBClient
     }
 
     getConnections = (): EvitaDBConnection[] => {
@@ -70,26 +71,7 @@ export class LabService {
     }
 
     private async fetchCatalogs(connection: EvitaDBConnection): Promise<Catalog[]> {
-        const fetchedCatalogs: Catalog[] = (await fetchGraphQL(
-            `${connection.gqlUrl}/system`,
-            `
-            {
-                catalogs {
-                    ... on Catalog {
-                        name
-                        nameVariants {
-                            kebabCase
-                        }
-                        corrupted
-                    }
-                    ... on CorruptedCatalog {
-                        name
-                        corrupted
-                    }
-                }
-            }
-            `
-        )).data['catalogs'] as Catalog[]
+        const fetchedCatalogs: Catalog[] = await this.evitaDBClient.getCatalogs(connection)
 
         this.store.commit(
             'lab/putCatalogs',
@@ -105,179 +87,7 @@ export class LabService {
     private async fetchCatalogSchema(connection: EvitaDBConnection, catalogName: string): Promise<CatalogSchema> {
         const catalog: Catalog = await this.getCatalog(connection, catalogName)
 
-        const fetchedCatalogSchema: CatalogSchema = (await fetchGraphQL(
-            `${connection.gqlUrl}/${catalog.nameVariants.kebabCase}/schema`,
-            `
-            {
-              catalogSchema: getCatalogSchema {
-                version
-                name
-                nameVariants {
-                  camelCase
-                  pascalCase
-                  snakeCase
-                  upperSnakeCase
-                  kebabCase
-                }
-                description
-                allAttributes {
-                  name
-                  nameVariants {
-                    camelCase
-                    pascalCase
-                    snakeCase
-                    upperSnakeCase
-                    kebabCase
-                  }
-                  description
-                  deprecationNotice
-                  unique
-                  uniqueGlobally
-                  filterable
-                  sortable
-                  localized
-                  nullable
-                  type
-                  defaultValue
-                  indexedDecimalPlaces
-                }
-                allEntitySchemas {
-                  version
-                  name
-                  nameVariants {
-                    camelCase
-                    pascalCase
-                    snakeCase
-                    upperSnakeCase
-                    kebabCase
-                  }
-                  description
-                  deprecationNotice
-                  withGeneratedPrimaryKey
-                  withHierarchy
-                  withPrice
-                  indexedPricePlaces
-                  locales
-                  currencies
-                  evolutionMode
-                  allAttributes {
-                    ... on GlobalAttributeSchema {
-                      __typename
-                      name
-                      nameVariants {
-                        camelCase
-                        pascalCase
-                        snakeCase
-                        upperSnakeCase
-                        kebabCase
-                      }
-                      description
-                      deprecationNotice
-                      uniqueGlobally
-                      unique
-                      filterable
-                      sortable
-                      localized
-                      nullable
-                      type
-                      defaultValue
-                      indexedDecimalPlaces
-                    }
-                    ... on AttributeSchema {
-                      __typename
-                      name
-                      nameVariants {
-                        camelCase
-                        pascalCase
-                        snakeCase
-                        upperSnakeCase
-                        kebabCase
-                      }
-                      description
-                      deprecationNotice
-                      unique
-                      filterable
-                      sortable
-                      localized
-                      nullable
-                      type
-                      defaultValue
-                      indexedDecimalPlaces
-                    }
-                  }
-                  allAssociatedData {
-                    name
-                    nameVariants {
-                      camelCase
-                      pascalCase
-                      snakeCase
-                      upperSnakeCase
-                      kebabCase
-                    }
-                    description
-                    deprecationNotice
-                    localized
-                    nullable
-                    type
-                  }
-                  allReferences {
-                    name
-                    nameVariants {
-                      camelCase
-                      pascalCase
-                      snakeCase
-                      upperSnakeCase
-                      kebabCase
-                    }
-                    description
-                    deprecationNotice
-                    cardinality
-                    referencedEntityType
-                    entityTypeNameVariants {
-                      camelCase
-                      pascalCase
-                      snakeCase
-                      upperSnakeCase
-                      kebabCase
-                    }
-                    referencedEntityTypeManaged
-                    referencedGroupType
-                    groupTypeNameVariants {
-                      camelCase
-                      pascalCase
-                      snakeCase
-                      upperSnakeCase
-                      kebabCase
-                    }
-                    referencedGroupTypeManaged
-                    indexed
-                    faceted
-                    allAttributes {
-                      name
-                      nameVariants {
-                        camelCase
-                        pascalCase
-                        snakeCase
-                        upperSnakeCase
-                        kebabCase
-                      }
-                      description
-                      deprecationNotice
-                      unique
-                      filterable
-                      sortable
-                      localized
-                      nullable
-                      type
-                      defaultValue
-                      indexedDecimalPlaces
-                    }
-                  }
-                }
-              }
-            }
-            `
-        )).data['catalogSchema'] as CatalogSchema
+        const fetchedCatalogSchema: CatalogSchema = await this.evitaDBClient.getCatalogSchema(connection, catalog.name)
 
         this.store.commit(
             'lab/putCatalogSchema',

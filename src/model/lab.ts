@@ -11,12 +11,14 @@ export type EvitaDBConnectionId = string
 export class EvitaDBConnection {
     readonly id: EvitaDBConnectionId
     readonly name: string
+    readonly labApiUrl: string
     readonly restUrl: string
     readonly gqlUrl: string
 
-    constructor(name: string, restUrl: string, gqlUrl: string) {
+    constructor(name: string, labApiUrl: string, restUrl: string, gqlUrl: string) {
         this.id = uuidv4()
         this.name = name
+        this.labApiUrl = labApiUrl
         this.restUrl = restUrl
         this.gqlUrl = gqlUrl
     }

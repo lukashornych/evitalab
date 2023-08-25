@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
 import { ref } from 'vue'
-import { EntitySchema } from '@/model/evitadb/schema'
 import LabEditorViewerNameVariants from '@/components/LabEditorSchemaViewerNameVariants.vue'
 import LabEditorViewerAttributes from '@/components/LabEditorSchemaViewerAttributes.vue'
 import LabEditorViewerContainer from '@/components/LabEditorSchemaViewerContainer.vue'
 import LabEditorSchemaViewerAssociatedData from '@/components/LabEditorSchemaViewerAssociatedData.vue'
 import LabEditorSchemaViewerReferences from '@/components/LabEditorSchemaViewerReferences.vue'
+import { EntitySchema } from '@/model/evitadb'
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
@@ -34,21 +34,21 @@ const baseProperties = ref<[string, any][]>([
             <LabEditorViewerNameVariants :name-variants="schema.nameVariants" />
 
             <LabEditorViewerAttributes
-                v-if="schema.allAttributes && schema.allAttributes.length > 0"
+                v-if="schema.attributes && Object.values(schema.attributes).length > 0"
                 :data-pointer="dataPointer"
-                :attributes="schema.allAttributes"
+                :attributes="Object.values(schema.attributes)"
             />
 
             <LabEditorSchemaViewerAssociatedData
-                v-if="schema.allAssociatedData && schema.allAssociatedData.length > 0"
+                v-if="schema.associatedData && Object.values(schema.associatedData).length > 0"
                 :data-pointer="dataPointer"
-                :associated-data="schema.allAssociatedData"
+                :associated-data="Object.values(schema.associatedData)"
             />
 
             <LabEditorSchemaViewerReferences
-                v-if="schema.allReferences && schema.allReferences.length > 0"
+                v-if="schema.references && Object.values(schema.references).length > 0"
                 :data-pointer="dataPointer"
-                :references="schema.allReferences"
+                :references="Object.values(schema.references)"
             />
         </template>
     </LabEditorViewerContainer>
