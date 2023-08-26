@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, provide, readonly, ref } from 'vue'
+import { inject, provide, readonly, Ref, ref } from 'vue'
 import { LabService, useLabService } from '@/services/lab.service'
 import { EvitaDBConnection } from '@/model/lab'
 import VTreeViewItem from '@/components/VTreeViewItem.vue'
@@ -60,7 +60,7 @@ const props = defineProps<{
 const connection = inject('connection') as EvitaDBConnection
 
 const catalogSchema = ref<CatalogSchema>()
-provide('catalogSchema', readonly(catalogSchema))
+provide<Ref<CatalogSchema | undefined>>('catalogSchema', catalogSchema)
 
 async function loadCatalogSchema(): Promise<void> {
     if (catalogSchema.value !== undefined || props.catalog.corrupted) {

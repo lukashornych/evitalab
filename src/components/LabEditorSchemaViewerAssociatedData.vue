@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
-import LabEditorViewerAssociatedDataItem from '@/components/LabEditorSchemaViewerAssociatedDataItem'
+import LabEditorViewerAssociatedDataItem from '@/components/LabEditorSchemaViewerAssociatedDataItem.vue'
 import LabEditorSchemaViewerPanelGroupItem from '@/components/LabEditorSchemaViewerPanelGroupItem.vue'
 import LabEditorSchemaViewerPanelGroup from '@/components/LabEditorSchemaViewerPanelGroup.vue'
 import { AssociatedDataSchema } from '@/model/evitadb'

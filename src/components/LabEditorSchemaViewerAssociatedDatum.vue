@@ -9,7 +9,7 @@ const props = defineProps<{
     schema: AssociatedDataSchema
 }>()
 
-const properties: [string, any][] = []
+const properties: [string, any, ((item?: string) => void)?][] = []
 properties.push(['Type', props.schema.type.replace('ComplexDataObject', 'Object')])
 properties.push(['Description', props.schema.description])
 properties.push(['Deprecation notice', props.schema.deprecationNotice])

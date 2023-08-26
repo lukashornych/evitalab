@@ -2,7 +2,7 @@ import { EvitaDBConnection } from '@/model/lab'
 import { TabRequestComponentProps } from '@/model/editor/editor'
 import LabEditorSchemaViewerCatalog from '@/components/LabEditorSchemaViewerCatalog.vue'
 import LabEditorSchemaViewerEntity from '@/components/LabEditorSchemaViewerEntity.vue'
-import { DefineComponent } from 'vue'
+import { DefineComponent, markRaw, Raw } from 'vue'
 
 /**
  * Points to concrete evitaDB schema (catalog, entity, attributes, ...)
@@ -33,7 +33,7 @@ export interface SchemaPointer {
     /**
      * Returns component that will be used to render this schema.
      */
-    component(): DefineComponent<any, any, any>
+    component(): Raw<DefineComponent<any, any, any>>
 
     /**
      * Returns path to this schema.
@@ -51,8 +51,8 @@ export class CatalogSchemaPointer implements SchemaPointer {
         this.catalogName = catalogName
     }
 
-    component(): DefineComponent<any, any, any> {
-        return LabEditorSchemaViewerCatalog
+    component(): Raw<DefineComponent<any, any, any>> {
+        return markRaw(LabEditorSchemaViewerCatalog as DefineComponent<any, any, any>)
     }
 
     path(): string[] {
@@ -72,8 +72,8 @@ export class EntitySchemaPointer implements SchemaPointer {
         this.entityName = entityName
     }
 
-    component(): DefineComponent<any, any, any> {
-        return LabEditorSchemaViewerEntity
+    component(): Raw<DefineComponent<any, any, any>> {
+        return markRaw(LabEditorSchemaViewerEntity as DefineComponent<any, any, any>)
     }
 
     path(): string[] {

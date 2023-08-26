@@ -14,7 +14,7 @@ const props = defineProps<{
     schema: ReferenceSchema
 }>()
 
-const properties: [string, any, (item: string) => void?][] = []
+const properties: [string, any, ((item?: string) => void)?][] = []
 properties.push(['Description', props.schema.description])
 properties.push(['Deprecation notice', props.schema.deprecationNotice])
 properties.push(['Cardinality', [props.schema.cardinality]])

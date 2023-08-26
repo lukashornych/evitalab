@@ -13,7 +13,7 @@ const props = defineProps<{
     schema: EntitySchema
 }>()
 
-const baseProperties = ref<[string, any][]>([
+const baseProperties = ref<[string, any, ((item?: string) => void)?][]>([
     // todo lho i18n
     ['Version', props.schema.version],
     ['Description', props.schema.description],

@@ -10,7 +10,7 @@ import { DataGridConsoleService, useDataGridConsoleService } from '@/services/ed
 import CodemirrorOneLine from '@/components/CodemirrorOneLine.vue'
 import { QueryLanguage } from '@/model/lab'
 import CodemirrorFull from '@/components/CodemirrorFull.vue'
-import { ellipsis } from '../utils/text-utils'
+import { ellipsis } from '@/utils/text-utils'
 
 const dataGridConsoleService: DataGridConsoleService = useDataGridConsoleService()
 
@@ -143,7 +143,7 @@ function toggleAllEntityProperties(): void {
     }
 }
 
-async function gridUpdated({ page, itemsPerPage, sortBy }): Promise<void> {
+async function gridUpdated({ page, itemsPerPage, sortBy }: { page: number, itemsPerPage: number, sortBy: any[] }): Promise<void> {
     pageNumber.value = page
     if (itemsPerPage > -1) {
         // -1 means all items, that would be too much data to render
@@ -371,7 +371,7 @@ function closePropertyDetail(): void {
                             <td
                                 v-for="(propertyValue, propertyName) in item.columns"
                                 :key="propertyName"
-                                @click="openPropertyDetail(propertyName, propertyValue)"
+                                @click="openPropertyDetail(propertyName as string, propertyValue)"
                             >
                                 {{ propertyValue !== undefined ? ellipsis(propertyValue, 20) : '' }}
                             </td>

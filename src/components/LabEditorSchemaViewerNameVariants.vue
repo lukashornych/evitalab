@@ -12,7 +12,7 @@ const props = withDefaults(defineProps<{
 
 const name = props.prefix ? `${props.prefix} name variants` : 'Name variants'
 
-const properties: [string, any][] = [
+const properties: [string, any, ((item?: string) => void)?][] = [
     ['camelCase', props.nameVariants.camelCase as String],
     ['kebab-case', props.nameVariants.kebabCase as String],
     ['PascalCase', props.nameVariants.pascalCase as String],

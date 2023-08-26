@@ -11,7 +11,7 @@ const props = defineProps<{
 
 const globalAttribute = 'uniqueGlobally' in props.schema
 
-const properties: [string, any][] = []
+const properties: [string, any, ((item?: string) => void)?][] = []
 properties.push(['Type', props.schema.type])
 properties.push(['Description', props.schema.description])
 properties.push(['Deprecation notice', props.schema.deprecationNotice])

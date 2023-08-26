@@ -19,8 +19,8 @@ const emit = defineEmits<{
 
 <template>
     <VListItem
-        :prepend-icon="null"
-        :append-icon="null"
+        :prepend-icon="null as any"
+        :append-icon="null as any"
     >
         <div
             class="tree-view-item__content"
