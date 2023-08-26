@@ -6,11 +6,6 @@ on:
   push:
     tags:
       - 'v*' # Push events to matching v*, v*.*, v*.*.* tags
-#    branches: [ "master", "dev" ] # todo lho remove the dev branch
-#    paths:
-#      - public/**.*
-#      - src/**.*
-#      - package.json
 
 jobs:
   build:
@@ -31,14 +26,14 @@ jobs:
       - name: Build
         run: yarn build
 
-      - name: Zip Release
+      - name: Zip Dist
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'zip'
           filename: 'dist.zip'
           path: './dist'
 
-      - name: Tar Release
+      - name: Tar Dist
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'tar'
@@ -50,9 +45,8 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: false
-          draft: true
           automatic_release_tag: "latest"
-          title: "Release v${{ github.ref_name }}"
+          title: "Release ${{ github.ref_name }}"
           files: |
             dist.zip
             dist.tar.gz
