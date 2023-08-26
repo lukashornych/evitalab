@@ -1,0 +1,30 @@
+# Builds and releases a new public version of evitaLab a puts it into `Releases` section of GitHub
+
+name: Release
+
+on:
+  push:
+    branches: [ "master", "dev" ] # todo lho remove the dev branch
+    paths:
+      - public/**.*
+      - src/**.*
+      - package.json
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18.16.1'
+
+      - name: Install dependencies
+        run: npm install -g yarn && yarn install
+
+      - name: Build
+        run: yarn build
