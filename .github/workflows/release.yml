@@ -52,7 +52,7 @@ jobs:
           prerelease: false
           draft: true
           automatic_release_tag: "latest"
-          title: "Release v${{ github.ref }}"
+          title: "Release v${{ github.ref_name }}"
           files: |
             dist.zip
             dist.tar.gz
