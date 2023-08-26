@@ -33,7 +33,7 @@ jobs:
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'zip'
-          filename: 'release.zip'
+          filename: 'dist.zip'
           path: './dist'
 
       - name: Release
@@ -41,7 +41,8 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: false
+          draft: true
           automatic_release_tag: "latest"
           title: "Release ${{ github.ref }}"
           files: |
-            release.zip
+            dist.zip
