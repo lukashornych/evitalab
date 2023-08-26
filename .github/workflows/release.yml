@@ -24,12 +24,23 @@ jobs:
           node-version: '18.16.1'
 
       - name: Install dependencies
-        run: npm install -g yarn && yarn install
+        run: npm install -g yarn && yarn install --frozen-lockfile
 
       - name: Build
         run: yarn build
 
-      - name: Upload dist artifact
-        uses: actions/upload-artifact@v2
+#      - name: Upload dist artifact
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: dist
+#          path: './dist'
+      - name: Release
+        uses: "marvinpinto/action-automatic-releases@v1.2.1"
         with:
-          path: './dist'
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: false
+          automatic_release_tag: "latest"
+          title: "Release ${{ github.ref }}"
+          files: |
+            ./dist
+            ./
