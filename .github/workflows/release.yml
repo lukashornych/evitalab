@@ -43,6 +43,6 @@ jobs:
           prerelease: false
           draft: true
           automatic_release_tag: "latest"
-          title: "Release ${{ github.ref }}"
+#          title: "Release ${{ github.ref }}"
           files: |
             dist.zip
