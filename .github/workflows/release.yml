@@ -31,11 +31,18 @@ jobs:
       - name: Build
         run: yarn build
 
-      - name: Archive Release
+      - name: Zip Release
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'zip'
           filename: 'dist.zip'
+          path: './dist'
+
+      - name: Tar Release
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          type: 'tar'
+          filename: 'dist.tar.gz'
           path: './dist'
 
       - name: Release
@@ -45,6 +52,7 @@ jobs:
           prerelease: false
           draft: true
           automatic_release_tag: "latest"
-#          title: "Release ${{ github.ref }}"
+          title: "Release v${{ github.ref }}"
           files: |
             dist.zip
+            dist.tar.gz
