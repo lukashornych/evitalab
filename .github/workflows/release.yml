@@ -29,6 +29,13 @@ jobs:
       - name: Build
         run: yarn build
 
+      - name: Archive Release
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          type: 'zip'
+          filename: 'release.zip'
+          path: './dist'
+
       - name: Release
         uses: "marvinpinto/action-automatic-releases@v1.2.1"
         with:
@@ -37,5 +44,4 @@ jobs:
           automatic_release_tag: "latest"
           title: "Release ${{ github.ref }}"
           files: |
-            ./dist
-            ./
+            release.zip
