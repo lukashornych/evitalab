@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, provide, readonly, ref } from 'vue'
+import { inject, provide, readonly, Ref, ref } from 'vue'
 import { LabService, useLabService } from '@/services/lab.service'
 import { EvitaDBConnection } from '@/model/lab'
 import VTreeViewItem from '@/components/VTreeViewItem.vue'
@@ -7,11 +7,10 @@ import LabExplorerCollectionItem from '@/components/LabExplorerCollectionItem.vu
 import { GraphQLConsoleRequest } from '@/model/editor/graphql-console-request'
 import { GraphQLInstanceType } from '@/model/editor/graphql-console'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import { Catalog } from '@/model/evitadb/system'
-import { CatalogSchema } from '@/model/evitadb/schema'
 import { EvitaQLConsoleRequest } from '@/model/editor/evitaql-console-request'
 import { SchemaViewerRequest } from '@/model/editor/schema-viewer-request'
 import { CatalogSchemaPointer } from '@/model/editor/schema-viewer'
+import { Catalog, CatalogSchema } from '@/model/evitadb'
 
 enum ActionType {
     OpenEvitaQLConsole = 'open-evitaql-console',
@@ -61,7 +60,7 @@ const props = defineProps<{
 const connection = inject('connection') as EvitaDBConnection
 
 const catalogSchema = ref<CatalogSchema>()
-provide('catalogSchema', readonly(catalogSchema))
+provide<Ref<CatalogSchema | undefined>>('catalogSchema', catalogSchema)
 
 async function loadCatalogSchema(): Promise<void> {
     if (catalogSchema.value !== undefined || props.catalog.corrupted) {
@@ -145,7 +144,7 @@ function handleAction(action: string) {
 
         <div v-if="!catalog.corrupted && catalogSchema !== undefined">
             <LabExplorerCollectionItem
-                v-for="entitySchema in catalogSchema.allEntitySchemas"
+                v-for="entitySchema in Object.values(catalogSchema.entitySchemas)"
                 :key="entitySchema.name"
                 :entity-schema="entitySchema"
             />

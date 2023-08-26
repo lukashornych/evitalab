@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import LabEditorViewerNameVariants from '@/components/LabEditorSchemaViewerNameVariants.vue'
-import { AttributeSchemaUnion, GlobalAttributeSchema } from '@/model/evitadb/schema'
 import LabEditorViewerContainer from '@/components/LabEditorSchemaViewerContainer.vue'
 import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
+import { AttributeSchemaUnion, GlobalAttributeSchema } from '@/model/evitadb'
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
@@ -11,7 +11,7 @@ const props = defineProps<{
 
 const globalAttribute = 'uniqueGlobally' in props.schema
 
-const properties: [string, any][] = []
+const properties: [string, any, ((item?: string) => void)?][] = []
 properties.push(['Type', props.schema.type])
 properties.push(['Description', props.schema.description])
 properties.push(['Deprecation notice', props.schema.deprecationNotice])

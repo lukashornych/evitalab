@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { AttributeSchemaUnion } from '@/model/evitadb/schema'
 import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
 import LabEditorViewerAttributesItem from '@/components/LabEditorSchemaViewerAttributesItem.vue'
 import LabEditorSchemaViewerPanelGroupItem from '@/components/LabEditorSchemaViewerPanelGroupItem.vue'
 import LabEditorSchemaViewerPanelGroup from '@/components/LabEditorSchemaViewerPanelGroup.vue'
+import { AttributeSchemaUnion } from '@/model/evitadb'
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,

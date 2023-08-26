@@ -1,0 +1,88 @@
+# Builds and releases a new public version of evitaLab a puts it into `Releases` section of GitHub
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, v*.*, v*.*.* tags
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-release:
+    name: Build and release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.16.1'
+
+      - name: Install dependencies
+        run: npm install -g yarn && yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
+      - name: Zip Dist
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          type: 'zip'
+          filename: 'dist.zip'
+          path: './dist'
+
+      - name: Tar Dist
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          type: 'tar'
+          filename: 'dist.tar.gz'
+          path: './dist'
+
+      - name: Release
+        uses: marvinpinto/action-automatic-releases@v1.2.1
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: false
+          draft: true
+          automatic_release_tag: "latest"
+          title: "Release ${{ github.ref_name }}"
+          files: |
+            dist.zip
+            dist.tar.gz
+
+  build-and-release-docker:
+    name: Build and release Docker image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker hub
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

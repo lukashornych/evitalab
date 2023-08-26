@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { NameVariants } from '@/model/evitadb/schema'
 import LabEditorViewerContainer from '@/components/LabEditorSchemaViewerContainer.vue'
 import LabEditorSchemaViewerPanelGroupItem from '@/components/LabEditorSchemaViewerPanelGroupItem.vue'
+import { NameVariants } from '@/model/evitadb'
 
 const props = withDefaults(defineProps<{
     prefix?: string,
@@ -12,7 +12,7 @@ const props = withDefaults(defineProps<{
 
 const name = props.prefix ? `${props.prefix} name variants` : 'Name variants'
 
-const properties: [string, any][] = [
+const properties: [string, any, ((item?: string) => void)?][] = [
     ['camelCase', props.nameVariants.camelCase as String],
     ['kebab-case', props.nameVariants.kebabCase as String],
     ['PascalCase', props.nameVariants.pascalCase as String],

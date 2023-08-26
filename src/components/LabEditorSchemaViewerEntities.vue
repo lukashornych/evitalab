@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { CatalogSchema, EntitySchema } from '@/model/evitadb/schema'
 import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
 import LabEditorSchemaViewerEntitiesItem from '@/components/LabEditorSchemaViewerEntitiesItem.vue'
 import LabEditorSchemaViewerPanelGroupItem from '@/components/LabEditorSchemaViewerPanelGroupItem.vue'
 import LabEditorSchemaViewerPanelGroup from '@/components/LabEditorSchemaViewerPanelGroup.vue'
+import { CatalogSchema, EntitySchema } from '@/model/evitadb'
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,

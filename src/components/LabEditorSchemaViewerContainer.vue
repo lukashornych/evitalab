@@ -3,7 +3,7 @@ import VPropertiesTable from '@/components/VPropertiesTable.vue'
 import LabEditorSchemaViewerPanelGroup from '@/components/LabEditorSchemaViewerPanelGroup.vue'
 
 const props = defineProps<{
-    properties: [string, any, (item?: string) => void?][]
+    properties: [string, any, ((item?: string) => void)?][]
 }>()
 </script>
 

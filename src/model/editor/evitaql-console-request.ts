@@ -1,6 +1,6 @@
 import { TabRequest } from '@/model/editor/editor'
 import { EvitaDBConnection } from '@/model/lab'
-import { markRaw } from 'vue'
+import { DefineComponent, markRaw } from 'vue'
 import LabEditorConsoleEvitaQL from '@/components/LabEditorConsoleEvitaQL.vue'
 import { EvitaQLConsoleProps, EvitaQLDataPointer } from '@/model/editor/evitaql-console'
 
@@ -12,7 +12,7 @@ export class EvitaQLConsoleRequest extends TabRequest<EvitaQLConsoleProps> {
         super(
             `${catalogName} [${connection.name}]`,
             'mdi-console',
-            markRaw(LabEditorConsoleEvitaQL),
+            markRaw(LabEditorConsoleEvitaQL as DefineComponent<any, any, any>),
             {
                 dataPointer: new EvitaQLDataPointer(connection, catalogName)
             }

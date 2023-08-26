@@ -6,7 +6,7 @@ import {
     StaticEntityProperties
 } from '@/model/editor/data-grid-console'
 import { LabService } from '@/services/lab.service'
-import { AssociatedDataSchema, AttributeSchemaUnion, EntitySchema, ReferenceSchema } from '@/model/evitadb/schema'
+import { AssociatedDataSchema, AttributeSchemaUnion, EntitySchema, ReferenceSchema } from '@/model/evitadb'
 
 /**
  * Query builder for EvitaQL language.
@@ -55,8 +55,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
             .filter(({ type }) => type === EntityPropertyType.Attributes)
             .map(({ name }) => name)
             .map(it => {
-                const attributeSchema: AttributeSchemaUnion | undefined = entitySchema
-                    .allAttributes
+                const attributeSchema: AttributeSchemaUnion | undefined = Object.values(entitySchema.attributes)
                     .find(attributeSchema => attributeSchema.nameVariants.camelCase === it)
                 if (attributeSchema === undefined) {
                     throw new Error(`Could not find attribute '${it}' in '${dataPointer.entityType}'.`)
@@ -71,8 +70,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
             .filter(({ type }) => type === EntityPropertyType.AssociatedData)
             .map(({ name }) => name)
             .map(it => {
-                const associatedDataSchema: AssociatedDataSchema | undefined = entitySchema
-                    .allAssociatedData
+                const associatedDataSchema: AssociatedDataSchema | undefined = Object.values(entitySchema.associatedData)
                     .find(associatedDataSchema => associatedDataSchema.nameVariants.camelCase === it)
                 if (associatedDataSchema === undefined) {
                     throw new Error(`Could not find associated data '${it}' in '${dataPointer.entityType}'.`)
@@ -87,8 +85,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
             .filter(({ type }) => type === EntityPropertyType.References)
             .map(({ name }) => name)
             .map(it => {
-                const referenceSchema: ReferenceSchema | undefined = entitySchema
-                    .allReferences
+                const referenceSchema: ReferenceSchema | undefined = Object.values(entitySchema.references)
                     .find(referenceSchema => referenceSchema.nameVariants.camelCase === it)
                 if (referenceSchema === undefined) {
                     throw new Error(`Could not find reference '${it}' in '${dataPointer.entityType}'.`)

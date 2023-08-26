@@ -12,9 +12,9 @@ export abstract class QueryExecutor {
     }
 
     /**
-     * Executes query against evitaDB server in language defined by implementation and returns formatted data.
+     * Executes a query against evitaDB server in language defined by implementation and returns formatted data.
      *
-     * @param dataPointer points to collection where to fetch data from
+     * @param dataPointer points to a collection where to fetch data from
      * @param query pre-built query to execute in language defined by implementation
      */
     abstract executeQuery(dataPointer: DataGridDataPointer, query: string): Promise<QueryResult>

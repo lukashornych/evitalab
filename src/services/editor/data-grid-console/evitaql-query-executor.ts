@@ -1,5 +1,4 @@
 import { QueryExecutor } from '@/services/editor/data-grid-console/query-executor'
-import ky from 'ky'
 import { LabService } from '@/services/lab.service'
 import {
     DataGridDataPointer, EntityPropertyKey,
@@ -7,14 +6,18 @@ import {
     QueryResult,
     StaticEntityProperties
 } from '@/model/editor/data-grid-console'
+import { EvitaDBClient } from '@/services/evitadb-client'
+import { Response } from '@/model/evitadb'
 
 /**
  * Query executor for EvitaQL language.
  */
 export class EvitaQLQueryExecutor extends QueryExecutor {
+    readonly evitaDBClient: EvitaDBClient
 
-    constructor(labService: LabService) {
+    constructor(labService: LabService, evitaDBClient: EvitaDBClient) {
         super(labService)
+        this.evitaDBClient = evitaDBClient
     }
 
     async executeQuery(dataPointer: DataGridDataPointer, query: string): Promise<QueryResult> {
@@ -22,17 +25,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
             .nameVariants
             .kebabCase
 
-        const result = await ky.post(
-            `${dataPointer.connection.restUrl}/${urlCatalogName}/entity/query`,
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ query })
-            },
-        )
-            .json()
+        const result: Response = await this.evitaDBClient.queryEntities(dataPointer.connection, urlCatalogName, query)
 
         return {
             entities: result?.recordPage?.data.map((entity: any) => this.flattenEntity(entity)) || [],

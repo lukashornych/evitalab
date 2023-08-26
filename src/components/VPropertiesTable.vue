@@ -2,7 +2,7 @@
 import VueMarkdown from 'vue-markdown-render'
 
 const props = defineProps<{
-    properties: [string, any, (item?: string) => void?][]
+    properties: [string, any, ((item?: string) => void)?][]
 }>()
 </script>
 

@@ -5,7 +5,7 @@ import { EvitaDBConnection } from '@/model/lab'
 import { provide, readonly, ref } from 'vue'
 import { LabService, useLabService } from '@/services/lab.service'
 import VTreeViewItem from '@/components/VTreeViewItem.vue'
-import { Catalog } from '@/model/evitadb/system'
+import { Catalog } from '@/model/evitadb'
 
 enum ActionType {
     Edit = 'edit',

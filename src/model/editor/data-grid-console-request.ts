@@ -1,6 +1,6 @@
 import { TabRequest } from '@/model/editor/editor'
 import { EvitaDBConnection } from '@/model/lab'
-import { markRaw } from 'vue'
+import { DefineComponent, markRaw } from 'vue'
 import LabEditorConsoleDataGrid from '@/components/LabEditorConsoleDataGrid.vue'
 import { DataGridConsoleProps, DataGridDataPointer } from '@/model/editor/data-grid-console'
 
@@ -9,7 +9,7 @@ export class DataGridConsoleRequest extends TabRequest<DataGridConsoleProps> {
         super(
             `${catalogName} - ${entityType} [${connection.name}]`,
             'mdi-table',
-            markRaw(LabEditorConsoleDataGrid),
+            markRaw(LabEditorConsoleDataGrid as DefineComponent<any, any, any>),
             {
                 dataPointer: new DataGridDataPointer(connection, catalogName, entityType)
             }

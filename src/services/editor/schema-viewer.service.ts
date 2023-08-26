@@ -1,12 +1,12 @@
 import { LabService } from '@/services/lab.service'
 import { inject, InjectionKey } from 'vue'
-import { CatalogSchema, EntitySchema } from '@/model/evitadb/schema'
 import {
     CatalogSchemaPointer,
     EntitySchemaPointer,
     SchemaPointer,
     SchemaViewerDataPointer
 } from '@/model/editor/schema-viewer'
+import { CatalogSchema, EntitySchema } from '@/model/evitadb'
 
 export const key: InjectionKey<SchemaViewerService> = Symbol()
 

@@ -23,10 +23,10 @@ const queryCode = ref<string>(`// Write your EvitaQL query for catalog ${props.d
 const queryExtensions = ref<any[]>([])
 
 const variablesCode = ref<string>('{\n  \n}')
-const variablesExtensions = ref<Extension[]>([json()])
+const variablesExtensions: Extension[] = [json()]
 
 const resultCode = ref<string>('')
-const resultExtensions = ref<Extension[]>([json()])
+const resultExtensions: Extension[] = [json()]
 
 
 async function executeQuery(): Promise<void> {

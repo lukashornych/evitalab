@@ -2,15 +2,15 @@
 
 import VTreeViewItem from '@/components/VTreeViewItem.vue'
 import { EvitaDBConnection } from '@/model/lab'
-import { inject, ref } from 'vue'
+import { inject, Ref, ref } from 'vue'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import { DataGridConsoleRequest } from '@/model/editor/data-grid-console-request'
 import { GraphQLConsoleRequest } from '@/model/editor/graphql-console-request'
 import { GraphQLInstanceType } from '@/model/editor/graphql-console'
-import { CatalogSchema, EntitySchema } from '@/model/evitadb/schema'
 import { EvitaQLConsoleRequest } from '@/model/editor/evitaql-console-request'
 import { SchemaViewerRequest } from '@/model/editor/schema-viewer-request'
 import { EntitySchemaPointer } from '@/model/editor/schema-viewer'
+import { CatalogSchema, EntitySchema } from '@/model/evitadb'
 
 enum ActionType {
     ViewEntities = 'view-entities',
@@ -64,13 +64,13 @@ const props = defineProps<{
     entitySchema: EntitySchema
 }>()
 
-const connection = inject('connection') as EvitaDBConnection
-const catalogSchema = inject('catalogSchema').value as CatalogSchema
+const connection = inject<EvitaDBConnection>('connection') as EvitaDBConnection
+const catalogSchema = inject<Ref<CatalogSchema | undefined>>('catalogSchema') as Ref<CatalogSchema>
 
 function openDataGrid() {
     editorService.createTabRequest(new DataGridConsoleRequest(
         connection as EvitaDBConnection,
-        catalogSchema.name,
+        catalogSchema.value.name,
         props.entitySchema.name
     ))
 }
@@ -84,7 +84,7 @@ function handleAction(action: string) {
             editorService.createTabRequest(
                 new EvitaQLConsoleRequest(
                     connection,
-                    catalogSchema.name
+                    catalogSchema.value.name
                 )
             )
             break
@@ -92,7 +92,7 @@ function handleAction(action: string) {
             editorService.createTabRequest(
                 new GraphQLConsoleRequest(
                     connection,
-                    catalogSchema.name,
+                    catalogSchema.value.name,
                     GraphQLInstanceType.DATA
                 )
             )
@@ -101,7 +101,7 @@ function handleAction(action: string) {
             editorService.createTabRequest(
                 new GraphQLConsoleRequest(
                     connection,
-                    catalogSchema.name,
+                    catalogSchema.value.name,
                     GraphQLInstanceType.SCHEMA
                 )
             )
@@ -111,7 +111,7 @@ function handleAction(action: string) {
                 new SchemaViewerRequest(
                     connection,
                     new EntitySchemaPointer(
-                        catalogSchema.name,
+                        catalogSchema.value.name,
                         props.entitySchema.name
                     )
                 )
