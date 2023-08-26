@@ -29,11 +29,6 @@ jobs:
       - name: Build
         run: yarn build
 
-#      - name: Upload dist artifact
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: dist
-#          path: './dist'
       - name: Release
         uses: "marvinpinto/action-automatic-releases@v1.2.1"
         with:
