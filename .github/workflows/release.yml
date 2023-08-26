@@ -5,10 +5,10 @@ name: Release
 on:
   push:
     branches: [ "master", "dev" ] # todo lho remove the dev branch
-    paths:
-      - public/**.*
-      - src/**.*
-      - package.json
+#    paths:
+#      - public/**.*
+#      - src/**.*
+#      - package.json
 
 jobs:
   build:
