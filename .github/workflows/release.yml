@@ -28,3 +28,8 @@ jobs:
 
       - name: Build
         run: yarn build
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v2
+        with:
+          path: './dist'
