@@ -6,7 +6,7 @@ on:
   push:
     tags:
       - 'v*' # Push events to matching v*, v*.*, v*.*.* tags
-    branches: [ "master", "dev" ] # todo lho remove the dev branch
+#    branches: [ "master", "dev" ] # todo lho remove the dev branch
 #    paths:
 #      - public/**.*
 #      - src/**.*
