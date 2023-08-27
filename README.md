@@ -19,7 +19,7 @@
   <a href="https://github.com/lukashornych/evitalab/blob/master/LICENSE" title="License"><img src="https://img.shields.io/badge/license-MIT-blue.svg"/></a>
 </p>
 
-evitaLab aims to allow easy browsing of contents in the database, and to provide a simple way to run queries
+evitaLab aims to allow for easy browsing of contents stored in the database as well as to provide a simple way to run queries
 against all APIs.
 
 In the future, evitaLab will hopefully also allow for easy schema and data manipulations.
@@ -50,7 +50,7 @@ In the future, we plan to provide pre-built binaries for all major desktop platf
 ### Embedded in local evitaDB instance
 
 The easiest and quickest way to run evitaLab locally is to enable it inside your configuration of evitaDB.
-By default, evitaDB will automatically expose its own local evitaLab instance on the [localhost:5558/lab/gui](https://localhost:5558/lab/gui)
+By default, evitaDB will automatically expose its own local evitaLab instance on the [localhost:5555/lab](https://localhost:5555/lab)
 address. For more configuration, see [evitaDB documentation](https://evitadb.io/documentation/operate/configure#lab-configuration).
 
 ### Docker
@@ -62,7 +62,7 @@ You can use the following command to run evitaLab locally:
 docker run -ti -p 3000:3000 ghcr.io/lukashornych/evitalab:latest
 ```
 
-This will expose an evitaLab instance on [localhost:3000](http://localhost:3000) address.
+This will expose an evitaLab instance on [localhost:3000/lab](http://localhost:3000/lab) address.
 
 ### From dist
 
@@ -87,7 +87,7 @@ yarn install
 yarn dev
 ```
 
-This will start a development server on [localhost:3000](http://localhost:3000) address.
+This will start a development server on [localhost:3000/lab](http://localhost:3000/lab) address.
 
 ## Development
 
