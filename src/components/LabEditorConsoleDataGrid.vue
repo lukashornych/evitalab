@@ -11,8 +11,10 @@ import CodemirrorOneLine from '@/components/CodemirrorOneLine.vue'
 import { QueryLanguage } from '@/model/lab'
 import CodemirrorFull from '@/components/CodemirrorFull.vue'
 import { ellipsis } from '@/utils/text-utils'
+import { Toaster, useToaster } from '@/services/editor/toaster'
 
 const dataGridConsoleService: DataGridConsoleService = useDataGridConsoleService()
+const toaster: Toaster = useToaster()
 
 const props = defineProps<DataGridConsoleProps>()
 
@@ -109,17 +111,28 @@ onBeforeMount(() => {
 
             initialized.value = true
         })
+        .catch(error => {
+            toaster.error(error)
+        })
 })
 
 async function initializeGridHeaders(entityProperties: string[]): Promise<Map<string, any>> {
     const gridHeaders: Map<string, any> = new Map<string, any>()
     for (const property of entityProperties) {
+        let sortable: boolean
+        try {
+            sortable = await dataGridConsoleService.isEntityPropertySortable(props.dataPointer, property)
+        } catch (error: any) {
+            toaster.error(error)
+            sortable = false
+        }
+
         gridHeaders.set(
             property,
             {
                 key: property,
                 title: property,
-                sortable: await dataGridConsoleService.isEntityPropertySortable(props.dataPointer, property)
+                sortable
             }
         )
     }
@@ -149,7 +162,11 @@ async function gridUpdated({ page, itemsPerPage, sortBy }: { page: number, items
         // -1 means all items, that would be too much data to render
         pageSize.value = itemsPerPage
     }
-    orderByCode.value = await dataGridConsoleService.buildOrderByFromGridColumns(props.dataPointer, selectedQueryLanguage.value[0], sortBy)
+    try {
+        orderByCode.value = await dataGridConsoleService.buildOrderByFromGridColumns(props.dataPointer, selectedQueryLanguage.value[0], sortBy)
+    } catch (error: any) {
+        toaster.error(error)
+    }
 
     await executeQuery()
 }
@@ -157,22 +174,26 @@ async function gridUpdated({ page, itemsPerPage, sortBy }: { page: number, items
 async function executeQuery(): Promise<void> {
     loading.value = true
 
-    const result: QueryResult = await dataGridConsoleService.executeQuery(
-        props.dataPointer,
-        selectedQueryLanguage.value[0],
-        filterByCode.value,
-        orderByCode.value,
-        selectedDataLocales.value.length === 0 ? undefined : selectedDataLocales.value[0],
-        displayedData.value,
-        pageNumber.value,
-        pageSize.value
-    )
-    resultEntities.value = result.entities.map(entity => {
-        const row: any = {}
-        entity.forEach(([propertyKey, propertyValue]) => row[propertyKey.toString()] = propertyValue)
-        return row
-    })
-    totalResultCount.value = result.totalEntitiesCount
+    try {
+        const result: QueryResult = await dataGridConsoleService.executeQuery(
+            props.dataPointer,
+            selectedQueryLanguage.value[0],
+            filterByCode.value,
+            orderByCode.value,
+            selectedDataLocales.value.length === 0 ? undefined : selectedDataLocales.value[0],
+            displayedData.value,
+            pageNumber.value,
+            pageSize.value
+        )
+        resultEntities.value = result.entities.map(entity => {
+            const row: any = {}
+            entity.forEach(([propertyKey, propertyValue]) => row[propertyKey.toString()] = propertyValue)
+            return row
+        })
+        totalResultCount.value = result.totalEntitiesCount
+    } catch (error: any) {
+        toaster.error(error)
+    }
 
     loading.value = false
 }
@@ -188,8 +209,6 @@ function closePropertyDetail(): void {
     propertyDetailName.value = ''
     propertyDetailValue.value = ''
 }
-
-// initializeConsole()
 </script>
 
 <template>

@@ -2,7 +2,6 @@ import { inject, InjectionKey } from 'vue'
 import { LabService } from '@/services/lab.service'
 import { EvitaQLDataPointer } from '@/model/editor/evitaql-console'
 import { EvitaDBClient } from '@/services/evitadb-client'
-import { Response } from '@/model/evitadb'
 
 export const key: InjectionKey<EvitaQLConsoleService> = Symbol()
 
@@ -27,7 +26,16 @@ export class EvitaQLConsoleService {
             .nameVariants
             .kebabCase
 
-        const result: Response = await this.evitaDBClient.queryEntities(dataPointer.connection, urlCatalogName, query)
+        let result: any
+        try {
+           result = await this.evitaDBClient.queryEntities(dataPointer.connection, urlCatalogName, query)
+        } catch (e: any) {
+            if (e.name === 'QueryError') {
+                result = e.error
+            } else {
+                throw e
+            }
+        }
         return JSON.stringify(result, null, 2)
     }
 }

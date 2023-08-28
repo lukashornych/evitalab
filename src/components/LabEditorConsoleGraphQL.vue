@@ -11,8 +11,10 @@ import { GraphQLConsoleService, useGraphQLConsoleService } from '@/services/edit
 import { GraphQLSchema, printSchema } from 'graphql'
 import { GraphQLConsoleProps } from '@/model/editor/graphql-console'
 import CodemirrorFull from '@/components/CodemirrorFull.vue'
+import { Toaster, useToaster } from '@/services/editor/toaster'
 
 const graphQLConsoleService: GraphQLConsoleService = useGraphQLConsoleService()
+const toaster: Toaster = useToaster()
 
 const props = defineProps<GraphQLConsoleProps>()
 
@@ -46,10 +48,17 @@ onBeforeMount(() => {
             queryExtensions.push(graphql(schema))
             initialized.value = true
         })
+        .catch(error => {
+            toaster.error(error)
+        })
 })
 
 async function executeQuery(): Promise<void> {
-    resultCode.value = await graphQLConsoleService.executeGraphQLQuery(props.instancePointer, queryCode.value, JSON.parse(variablesCode.value))
+    try {
+        resultCode.value = await graphQLConsoleService.executeGraphQLQuery(props.instancePointer, queryCode.value, JSON.parse(variablesCode.value))
+    } catch (error: any) {
+        toaster.error(error)
+    }
 }
 
 function initializeSchemaEditor(): void {
