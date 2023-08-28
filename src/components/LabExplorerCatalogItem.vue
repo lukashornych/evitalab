@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, provide, readonly, Ref, ref } from 'vue'
+import { inject, provide, Ref, ref } from 'vue'
 import { LabService, useLabService } from '@/services/lab.service'
 import { EvitaDBConnection } from '@/model/lab'
 import VTreeViewItem from '@/components/VTreeViewItem.vue'
@@ -11,6 +11,7 @@ import { EvitaQLConsoleRequest } from '@/model/editor/evitaql-console-request'
 import { SchemaViewerRequest } from '@/model/editor/schema-viewer-request'
 import { CatalogSchemaPointer } from '@/model/editor/schema-viewer'
 import { Catalog, CatalogSchema } from '@/model/evitadb'
+import { Toaster, useToaster } from '@/services/editor/toaster'
 
 enum ActionType {
     OpenEvitaQLConsole = 'open-evitaql-console',
@@ -52,6 +53,7 @@ const actions = ref<object[]>([
 
 const labService: LabService = useLabService()
 const editorService: EditorService = useEditorService()
+const toaster: Toaster = useToaster()
 
 const props = defineProps<{
     catalog: Catalog
@@ -66,7 +68,11 @@ async function loadCatalogSchema(): Promise<void> {
     if (catalogSchema.value !== undefined || props.catalog.corrupted) {
         return
     }
-    catalogSchema.value = await labService.getCatalogSchema(connection, props.catalog.name)
+    try {
+        catalogSchema.value = await labService.getCatalogSchema(connection, props.catalog.name)
+    } catch (e: any) {
+        toaster.error(e)
+    }
 }
 
 function handleAction(action: string) {

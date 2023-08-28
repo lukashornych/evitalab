@@ -37,7 +37,7 @@ const state = (): LabState => ({
     connections: [
         new EvitaDBConnection(
             'evita local',
-            'https://localhost:5558/lab/api',
+            'https://localhost:5555/lab/api',
             'https://localhost:5555/rest',
             'https://localhost:5555/gql'
         )

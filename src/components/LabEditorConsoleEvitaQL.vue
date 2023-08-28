@@ -9,8 +9,10 @@ import { ref } from 'vue'
 import CodemirrorFull from '@/components/CodemirrorFull.vue'
 import { EvitaQLConsoleService, useEvitaQLConsoleService } from '@/services/editor/evitaql-console.service'
 import { EvitaQLConsoleProps } from '@/model/editor/evitaql-console'
+import { Toaster, useToaster } from '@/services/editor/toaster'
 
 const evitaQLConsoleService: EvitaQLConsoleService = useEvitaQLConsoleService()
+const toaster: Toaster = useToaster()
 
 const props = defineProps<EvitaQLConsoleProps>()
 
@@ -30,7 +32,11 @@ const resultExtensions: Extension[] = [json()]
 
 
 async function executeQuery(): Promise<void> {
-    resultCode.value = await evitaQLConsoleService.executeEvitaQLQuery(props.dataPointer, queryCode.value, JSON.parse(variablesCode.value))
+    try {
+        resultCode.value = await evitaQLConsoleService.executeEvitaQLQuery(props.dataPointer, queryCode.value, JSON.parse(variablesCode.value))
+    } catch (error: any) {
+        toaster.error(error)
+    }
 }
 </script>
 

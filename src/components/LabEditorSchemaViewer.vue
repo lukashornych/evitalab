@@ -2,13 +2,19 @@
 import { SchemaViewerProps } from '@/model/editor/schema-viewer'
 import { ref } from 'vue'
 import { SchemaViewerService, useSchemaViewerService } from '@/services/editor/schema-viewer.service'
+import { Toaster, useToaster } from '@/services/editor/toaster'
 
 const schemaViewerService: SchemaViewerService = useSchemaViewerService()
+const toaster: Toaster = useToaster()
 
 const props = defineProps<SchemaViewerProps>()
 
 const schema = ref<any>()
-schemaViewerService.getSchema(props.dataPointer).then(s => schema.value = s)
+schemaViewerService.getSchema(props.dataPointer)
+    .catch(error => {
+        toaster.error(error)
+    })
+    .then(s => schema.value = s)
 </script>
 
 <template>
