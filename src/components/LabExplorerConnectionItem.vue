@@ -14,20 +14,20 @@ enum ActionType {
 }
 
 const actions = ref<object[]>([
-    {
-        value: ActionType.Edit,
-        title: 'Edit connection',
-        props: {
-            prependIcon: 'mdi-pencil'
-        }
-    },
-    {
-        value: ActionType.Remove,
-        title: 'Remove connection',
-        props: {
-            prependIcon: 'mdi-delete'
-        }
-    },
+    // {
+    //     value: ActionType.Edit,
+    //     title: 'Edit connection',
+    //     props: {
+    //         prependIcon: 'mdi-pencil'
+    //     }
+    // },
+    // {
+    //     value: ActionType.Remove,
+    //     title: 'Remove connection',
+    //     props: {
+    //         prependIcon: 'mdi-delete'
+    //     }
+    // },
 ])
 
 
