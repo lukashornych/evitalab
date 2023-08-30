@@ -16,6 +16,7 @@ import { GraphQLQueryBuilder } from '@/services/editor/data-grid-console/graphql
 import { GraphQLQueryExecutor } from '@/services/editor/data-grid-console/graphql-query-executor'
 import { EvitaDBClient } from '@/services/evitadb-client'
 import { AttributeSchemaUnion, EntitySchema } from '@/model/evitadb'
+import { GraphQLClient } from '@/services/graphql-client'
 
 export const key: InjectionKey<DataGridConsoleService> = Symbol()
 
@@ -27,14 +28,14 @@ export class DataGridConsoleService {
     readonly queryBuilders: Map<QueryLanguage, QueryBuilder> = new Map<QueryLanguage, QueryBuilder>()
     readonly queryExecutors: Map<QueryLanguage, QueryExecutor> = new Map<QueryLanguage, QueryExecutor>()
 
-    constructor(labService: LabService, evitaDBClient: EvitaDBClient) {
+    constructor(labService: LabService, evitaDBClient: EvitaDBClient, graphQLClient: GraphQLClient) {
         this.labService = labService
 
         this.queryBuilders.set(QueryLanguage.EvitaQL, new EvitaQLQueryBuilder(this.labService))
         this.queryExecutors.set(QueryLanguage.EvitaQL, new EvitaQLQueryExecutor(this.labService, evitaDBClient))
 
         this.queryBuilders.set(QueryLanguage.GraphQL, new GraphQLQueryBuilder(this.labService))
-        this.queryExecutors.set(QueryLanguage.GraphQL, new GraphQLQueryExecutor(this.labService))
+        this.queryExecutors.set(QueryLanguage.GraphQL, new GraphQLQueryExecutor(this.labService, graphQLClient))
     }
 
     /**

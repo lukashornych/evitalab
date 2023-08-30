@@ -6,15 +6,17 @@ import {
     QueryResult,
     StaticEntityProperties
 } from '@/model/editor/data-grid-console'
-import { fetchGraphQL } from '@/services/graphql-client'
+import { GraphQLClient } from '@/services/graphql-client'
 
 /**
  * Query executor for GraphQL language.
  */
 export class GraphQLQueryExecutor extends QueryExecutor {
+    readonly graphQLClient: GraphQLClient
 
-    constructor(labService: LabService) {
+    constructor(labService: LabService, graphQLClient: GraphQLClient) {
         super(labService)
+        this.graphQLClient = graphQLClient
     }
 
     async executeQuery(dataPointer: DataGridDataPointer, query: string): Promise<QueryResult> {
@@ -22,7 +24,7 @@ export class GraphQLQueryExecutor extends QueryExecutor {
             .nameVariants
             .kebabCase
 
-        const result = await fetchGraphQL(
+        const result = await this.graphQLClient.fetch(
             dataPointer.connection,
             `${urlCatalogName}`,
             query

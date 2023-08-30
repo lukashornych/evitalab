@@ -18,9 +18,17 @@ export class EvitaDBConnection {
     constructor(name: string, labApiUrl: string, restUrl: string, gqlUrl: string) {
         this.id = uuidv4()
         this.name = name
-        this.labApiUrl = labApiUrl
-        this.restUrl = restUrl
-        this.gqlUrl = gqlUrl
+        this.labApiUrl = this.normalizeApiUrl(labApiUrl)
+        this.restUrl = this.normalizeApiUrl(restUrl)
+        this.gqlUrl = this.normalizeApiUrl(gqlUrl)
+    }
+
+    static fromJson(json: any): EvitaDBConnection {
+        return new EvitaDBConnection(json.name, json.labApiUrl, json.restUrl, json.gqlUrl)
+    }
+
+    private normalizeApiUrl(url: string): string {
+        return url.endsWith('/') ? url.substring(0, url.length - 1) : url
     }
 }
 

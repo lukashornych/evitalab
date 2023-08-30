@@ -6,6 +6,7 @@ import { provide, readonly, ref } from 'vue'
 import { LabService, useLabService } from '@/services/lab.service'
 import VTreeViewItem from '@/components/VTreeViewItem.vue'
 import { Catalog } from '@/model/evitadb'
+import { Toaster, useToaster } from '@/services/editor/toaster'
 
 enum ActionType {
     Edit = 'edit',
@@ -13,24 +14,25 @@ enum ActionType {
 }
 
 const actions = ref<object[]>([
-    {
-        value: ActionType.Edit,
-        title: 'Edit connection',
-        props: {
-            prependIcon: 'mdi-pencil'
-        }
-    },
-    {
-        value: ActionType.Remove,
-        title: 'Remove connection',
-        props: {
-            prependIcon: 'mdi-delete'
-        }
-    },
+    // {
+    //     value: ActionType.Edit,
+    //     title: 'Edit connection',
+    //     props: {
+    //         prependIcon: 'mdi-pencil'
+    //     }
+    // },
+    // {
+    //     value: ActionType.Remove,
+    //     title: 'Remove connection',
+    //     props: {
+    //         prependIcon: 'mdi-delete'
+    //     }
+    // },
 ])
 
 
 const labService: LabService = useLabService()
+const toaster: Toaster = useToaster()
 
 const props = defineProps<{
     connection: EvitaDBConnection
@@ -44,7 +46,11 @@ async function loadCatalogs(): Promise<void> {
     if (catalogs.value !== undefined) {
         return
     }
-    catalogs.value = await labService.getCatalogs(props.connection)
+    try {
+        catalogs.value = await labService.getCatalogs(props.connection)
+    } catch (e: any) {
+        toaster.error(e)
+    }
 }
 
 function handleAction(action: string, payload?: any) {

@@ -1,10 +1,15 @@
 import { EvitaDBConnection, EvitaDBConnectionId } from '@/model/lab'
 import { Catalog, CatalogSchema, EntitySchema, EntitySchemas } from '@/model/evitadb'
+import Cookies from 'js-cookie'
 
 /**
  * Stores global information about configured evitaDB servers.
  */
 export type LabState = {
+    /**
+     * Flag indicating whether the lab is in read-only mode.
+     */
+    readonly readOnly: boolean,
     /**
      * List of configured evitaDB servers.
      */
@@ -32,19 +37,25 @@ type LabMutations = {
     putCatalogSchema(state: LabState, payload: { connectionId: EvitaDBConnectionId, catalogSchema: CatalogSchema }): void
 }
 
-const state = (): LabState => ({
-    // todo lho load from local storage
-    connections: [
-        new EvitaDBConnection(
-            'evita local',
-            'https://localhost:5558/lab/api',
-            'https://localhost:5555/rest',
-            'https://localhost:5555/gql'
-        )
-    ],
-    catalogs: new Map<EvitaDBConnectionId, Map<string, Catalog>>(),
-    catalogSchemas: new Map<EvitaDBConnectionId, Map<string, CatalogSchema>>()
-})
+const state = (): LabState => {
+    const readOnlyCookie: string | undefined = Cookies.get('evitalab_readonly')
+    const readOnly: boolean = readOnlyCookie != undefined && readOnlyCookie === 'true'
+
+    const preconfiguredConnectionsCookie: string | undefined = Cookies.get('evitalab_pconnections')
+    let preconfiguredConnections: EvitaDBConnection[] = []
+    if (preconfiguredConnectionsCookie != undefined) {
+        preconfiguredConnections = (JSON.parse(preconfiguredConnectionsCookie) as Array<any>)
+            .map(connection => EvitaDBConnection.fromJson(connection))
+    }
+
+    return {
+        // todo lho load from local storage
+        readOnly,
+        connections: preconfiguredConnections,
+        catalogs: new Map<EvitaDBConnectionId, Map<string, Catalog>>(),
+        catalogSchemas: new Map<EvitaDBConnectionId, Map<string, CatalogSchema>>()
+    }
+}
 
 const getters: LabGetters = {
     getCatalog(state: LabState): (connectionId: EvitaDBConnectionId, catalogName: string) => Catalog | undefined {

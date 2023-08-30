@@ -8,6 +8,7 @@
 import { loadFonts } from './webfontloader'
 import vuetify from './vuetify'
 import { codemirror, defaultCodemirrorOptions } from './codemirror'
+import { toast, defaultToastOptions } from './toastification'
 import { store, key as storeKey } from '@/store'
 import router from '@/router'
 import { registerServices } from '@/plugins/services'
@@ -21,6 +22,7 @@ export function registerPlugins(app: App) {
     app
         .use(vuetify)
         .use(codemirror, defaultCodemirrorOptions)
+        .use(toast, defaultToastOptions)
         .use(store, storeKey)
         .use(router)
 

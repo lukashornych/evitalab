@@ -1,9 +1,9 @@
 import { buildClientSchema, getIntrospectionQuery, GraphQLSchema } from 'graphql'
 import { GraphQLInstancePointer } from '@/model/editor/graphql-console'
 import { inject, InjectionKey } from 'vue'
-import { fetchGraphQL } from '@/services/graphql-client'
 import { GraphQLResponse } from '@/model/graphql'
 import { LabService } from '@/services/lab.service'
+import { GraphQLClient } from '@/services/graphql-client'
 
 export const key: InjectionKey<GraphQLConsoleService> = Symbol()
 
@@ -12,9 +12,11 @@ export const key: InjectionKey<GraphQLConsoleService> = Symbol()
  */
 export class GraphQLConsoleService {
     readonly labService: LabService
+    readonly graphQLClient: GraphQLClient
 
-    constructor(labService: LabService) {
+    constructor(labService: LabService, graphQLClient: GraphQLClient) {
         this.labService = labService
+        this.graphQLClient = graphQLClient
     }
 
     /**
@@ -50,7 +52,7 @@ export class GraphQLConsoleService {
             .kebabCase
         const path = `${urlCatalogName}${instancePointer.instanceTypeSuffix()}`
 
-        return await fetchGraphQL(instancePointer.connection, path, query, variables)
+        return await this.graphQLClient.fetch(instancePointer.connection, path, query, variables)
     }
 }
 

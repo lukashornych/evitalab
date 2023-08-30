@@ -34,19 +34,19 @@ const connections = computed<EvitaDBConnection[]>(() => labService.getConnection
             />
         </VList>
 
-        <template #append>
-            <div
-                class="pa-2"
-            >
-                <VBtn
-                    prepend-icon="mdi-plus"
-                    block
-                    variant="tonal"
-                >
-                    Add connection
-                </VBtn>
-            </div>
-        </template>
+<!--        <template #append>-->
+<!--            <div-->
+<!--                class="pa-2"-->
+<!--            >-->
+<!--                <VBtn-->
+<!--                    prepend-icon="mdi-plus"-->
+<!--                    block-->
+<!--                    variant="tonal"-->
+<!--                >-->
+<!--                    Add connection-->
+<!--                </VBtn>-->
+<!--            </div>-->
+<!--        </template>-->
     </VNavigationDrawer>
 </template>
 
