@@ -18,34 +18,51 @@ schemaViewerService.getSchema(props.dataPointer)
 </script>
 
 <template>
-    <VToolbar density="compact">
-        <VAppBarNavIcon
-            icon="mdi-file-code"
-            :disabled="true"
-            style="opacity: 1"
-        />
-
-        <VToolbarTitle>
-            <VBreadcrumbs
-                :items="dataPointer.schemaPointer.path()"
-                class="pl-0 pr-0"
+    <div class="schema-viewer">
+        <VToolbar
+            density="compact"
+            elevation="2"
+            class="schema-viewer__header"
+        >
+            <VAppBarNavIcon
+                icon="mdi-file-code"
+                :disabled="true"
+                style="opacity: 1"
             />
-        </VToolbarTitle>
-    </VToolbar>
 
-    <VSheet class="pa-4">
-        <component
-            v-if="schema"
-            :is="dataPointer.schemaPointer.component()"
-            :data-pointer="dataPointer"
-            :schema="schema"
-        />
-        <span v-else>
-            Loading...
-        </span>
-    </VSheet>
+            <VToolbarTitle>
+                <VBreadcrumbs
+                    :items="dataPointer.schemaPointer.path()"
+                    class="pl-0 pr-0"
+                />
+            </VToolbarTitle>
+        </VToolbar>
+
+        <VSheet class="schema-viewer__body">
+            <component
+                v-if="schema"
+                :is="dataPointer.schemaPointer.component()"
+                :data-pointer="dataPointer"
+                :schema="schema"
+            />
+            <span v-else>
+                Loading...
+            </span>
+        </VSheet>
+    </div>
 </template>
 
 <style lang="scss" scoped>
+.schema-viewer {
+    display: grid;
+    grid-template-rows: 3rem 1fr;
 
+    &__header {
+        z-index: 100;
+    }
+
+    &__body {
+        position: relative;
+    }
+}
 </style>

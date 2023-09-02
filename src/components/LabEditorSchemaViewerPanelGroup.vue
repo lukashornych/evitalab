@@ -19,6 +19,7 @@ watch(openedItems, (newVal) => {
 <template>
     <VExpansionPanels
         v-model="openedItems"
+        variant="accordion"
         multiple
     >
         <slot />

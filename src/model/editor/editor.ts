@@ -62,6 +62,19 @@ export class UnexpectedError extends LabError {
 }
 
 /**
+ * Thrown when request to evitaDB took too long.
+ */
+export class TimeoutError extends LabError {
+    constructor(connection: EvitaDBConnection | undefined) {
+        super(
+            'TimeoutError',
+            connection,
+            'Request timed out. Please check your connection settings.'
+        )
+    }
+}
+
+/**
  * Something went wrong with the server (evitaDB instance). We can't do anything about it.
  */
 export class EvitaDBInstanceServerError extends LabError {

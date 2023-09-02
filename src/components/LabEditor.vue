@@ -49,6 +49,7 @@ function closeTab(tabId: string) {
     <VAppBar
         v-if="tabs.length > 0"
         density="compact"
+        elevation="0"
     >
         <VTabs
             v-model="currentTabId"
@@ -103,6 +104,7 @@ function closeTab(tabId: string) {
                 :value="tab.id"
                 :transition="false"
                 :reverse-transition="false"
+                class="window-item"
             >
                 <LabEditorTabWindow
                     v-if="currentTab"
@@ -124,5 +126,35 @@ function closeTab(tabId: string) {
     grid-template-rows: 1fr;
     justify-items: stretch;
     align-items: stretch;
+
+    & :deep(.v-window) {
+        position: absolute;
+        left: var(--v-layout-left);
+        right: var(--v-layout-right);
+        top: var(--v-layout-top);
+        bottom: var(--v-layout-bottom);
+    }
+
+    & :deep(.v-window__container) {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }
+
+    & :deep(.v-window-item) {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+        align-items: stretch;
+        justify-items: stretch;
+
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }
 }
 </style>

@@ -78,7 +78,11 @@ function initializeSchemaEditor(): void {
         v-if="initialized"
         class="graphql-editor"
     >
-        <VToolbar density="compact">
+        <VToolbar
+            density="compact"
+            elevation="2"
+            class="graphql-editor__header"
+        >
             <VAppBarNavIcon
                 icon="mdi-graphql"
                 :disabled="true"
@@ -99,9 +103,7 @@ function initializeSchemaEditor(): void {
                     class="mr-3"
                 >
                     <VIcon>mdi-information</VIcon>
-                    <VTooltip
-                        activator="parent"
-                    >
+                    <VTooltip activator="parent">
                         GraphQL API instance details
                     </VTooltip>
                 </VBtn>
@@ -115,53 +117,35 @@ function initializeSchemaEditor(): void {
                 >
                     <VIcon>mdi-play</VIcon>
 
-                    <VTooltip
-                        activator="parent"
-                    >
+                    <VTooltip activator="parent">
                         Execute query
                     </VTooltip>
                 </VBtn>
             </template>
         </VToolbar>
 
-        <div
-            class="editors"
-        >
-            <VSheet
-                class="editors__tabs"
-            >
+        <div class="graphql-editor__body">
+            <VSheet class="graphql-editor-query-sections">
                 <VTabs
                     v-model="editorTab"
                     direction="vertical"
-                    class="editors__tab"
+                    class="graphql-editor-query-sections__tab"
                 >
-                    <VTab
-                        value="query"
-                    >
+                    <VTab value="query">
                         <VIcon>mdi-database-search</VIcon>
-                        <VTooltip
-                            activator="parent"
-                        >
+                        <VTooltip activator="parent">
                             Query
                         </VTooltip>
                     </VTab>
-                    <VTab
-                        value="variables"
-                    >
+                    <VTab value="variables">
                         <VIcon>mdi-variable</VIcon>
-                        <VTooltip
-                            activator="parent"
-                        >
+                        <VTooltip activator="parent">
                             Variables
                         </VTooltip>
                     </VTab>
-                    <VTab
-                        value="schema"
-                    >
+                    <VTab value="schema">
                         <VIcon>mdi-file-code</VIcon>
-                        <VTooltip
-                            activator="parent"
-                        >
+                        <VTooltip activator="parent">
                             Schema
                         </VTooltip>
                     </VTab>
@@ -170,29 +154,20 @@ function initializeSchemaEditor(): void {
                 <VDivider />
             </VSheet>
 
-            <Splitpanes
-                vertical
-            >
-                <Pane>
+            <Splitpanes vertical>
+                <Pane class="graphql-editor-query">
                     <VWindow
                         v-model="editorTab"
                         direction="vertical"
-                        style="height: 100%"
                     >
-                        <VWindowItem
-                            value="query"
-                            style="height: 100%"
-                        >
+                        <VWindowItem value="query">
                             <CodemirrorFull
                                 v-model="queryCode"
                                 :additional-extensions="queryExtensions"
                             />
                         </VWindowItem>
 
-                        <VWindowItem
-                            value="variables"
-                            style="height: 100%"
-                        >
+                        <VWindowItem value="variables">
                             <CodemirrorFull
                                 v-model="variablesCode"
                                 :additional-extensions="variablesExtensions"
@@ -201,45 +176,62 @@ function initializeSchemaEditor(): void {
 
                         <VWindowItem
                             value="schema"
-                            style="height: 100%"
                             @group:selected="initializeSchemaEditor"
                         >
                             <CodemirrorFull
                                 v-model="schemaCode"
                                 :additional-extensions="schemaExtensions"
-                                style=": 100%"
+                                style="height: 100%"
                             />
                         </VWindowItem>
                     </VWindow>
                 </Pane>
+
                 <Pane>
                     <CodemirrorFull
                         v-model="resultCode"
                         placeholder="Results will be displayed here..."
-                        disabled
+                        read-only
                         :additional-extensions="resultExtensions"
                     />
                 </Pane>
             </Splitpanes>
         </div>
     </div>
+    <div v-else>
+        Loading...
+    </div>
 </template>
 
 <style lang="scss" scoped>
 .graphql-editor {
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: 3rem 1fr;
+
+    &__header {
+        z-index: 100;
+    }
+
+    &__body {
+        display: grid;
+        grid-template-columns: 3rem 1fr;
+    }
 }
 
-.editors {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 3rem 1fr;
-
-    &__tabs {
-        display: flex;
-        width: 3rem;
+.graphql-editor-query {
+    & :deep(.v-window) {
+        // we need to override the default tab window styles used in LabEditor
+        position: absolute;
+        left: 0 !important;
+        right: 0 !important;
+        top: 0 !important;
+        bottom: 0 !important;
     }
+}
+
+.graphql-editor-query-sections {
+    display: flex;
+    width: 3rem;
 
     &__tab {
         width: 3rem;

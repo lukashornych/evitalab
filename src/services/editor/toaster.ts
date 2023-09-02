@@ -40,7 +40,7 @@ export class Toaster {
             } else {
                 this.toast.error(
                     error.message,
-                    this.createErrorOptions(error.connection, error.message, error.detail)
+                    this.createErrorOptions(error.connection, error.message, error.detail + '\n\n' + error.stack)
                 )
             }
         } else {

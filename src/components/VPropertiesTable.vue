@@ -19,7 +19,7 @@ const props = defineProps<{
                     v-if="property[1] === undefined || property[1] === null"
                     class="text-disabled font-weight-light font-italic"
                 >
-                    &lt;null&gt;
+                    &lt;empty&gt;
                 </span>
                 <VCheckbox
                     v-else-if="typeof property[1] === 'boolean'"

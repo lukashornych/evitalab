@@ -1,4 +1,3 @@
-import ky from 'ky'
 import { Catalog, CatalogSchema, ModelError, QueryEntitiesRequestBody, Response } from '@/model/evitadb'
 import { EvitaDBConnection } from '@/model/lab'
 import { LabError } from '@/model/editor/editor'
@@ -15,7 +14,7 @@ export class EvitaDBClient extends ApiClient {
      */
     async getCatalogSchema(connection: EvitaDBConnection, urlCatalogName: string): Promise<CatalogSchema> {
         try {
-            return await ky.get(`${connection.labApiUrl}/schema/catalogs/${urlCatalogName}`)
+            return await this.httpClient.get(`${connection.labApiUrl}/schema/catalogs/${urlCatalogName}`)
                 .json() as CatalogSchema
         } catch (e: any) {
             throw this.handleCallError(e, connection)
@@ -27,7 +26,7 @@ export class EvitaDBClient extends ApiClient {
      */
     async getCatalogs(connection: EvitaDBConnection): Promise<Catalog[]> {
         try {
-            return await ky.get(`${connection.labApiUrl}/data/catalogs`)
+            return await this.httpClient.get(`${connection.labApiUrl}/data/catalogs`)
                 .json() as Catalog[]
         } catch (e: any) {
             throw this.handleCallError(e, connection)
@@ -39,7 +38,7 @@ export class EvitaDBClient extends ApiClient {
      */
     async queryEntities(connection: EvitaDBConnection, urlCatalogName: string, query: string): Promise<Response> {
         try {
-            return await ky.post(
+            return await this.httpClient.post(
                 `${connection.labApiUrl}/data/catalogs/${urlCatalogName}/collections/query`,
                 {
                     headers: {
