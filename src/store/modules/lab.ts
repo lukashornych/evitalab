@@ -48,6 +48,13 @@ const state = (): LabState => {
             .map(connection => EvitaDBConnection.fromJson(connection))
     }
 
+    preconfiguredConnections.push(new EvitaDBConnection(
+        'dev',
+        'https://localhost:5555/lab/api',
+        'https://localhost:5555/rest',
+        'https://localhost:5555/gql',
+    ))
+
     return {
         // todo lho load from local storage
         readOnly,

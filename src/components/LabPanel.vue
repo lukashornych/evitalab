@@ -44,6 +44,23 @@ function selectPanel(item: any): void {
         permanent
         rail
     >
+        <template #prepend>
+            <div class="lab-logo">
+                <!-- todo lho hp link into .env -->
+                <a
+                    href="https://github.com/lukashornych/evitalab"
+                    target="_blank"
+                >
+                    <VAvatar size="24px">
+                        <VImg
+                            alt="evitaLab Logo"
+                            src="/logo.png"
+                        />
+                    </VAvatar>
+                </a>
+            </div>
+        </template>
+
         <VList
             density="compact"
             nav
@@ -63,5 +80,10 @@ function selectPanel(item: any): void {
 </template>
 
 <style scoped>
-
+.lab-logo {
+    height: 3.5rem;
+    display: grid;
+    justify-items: center;
+    align-items: center;
+}
 </style>
