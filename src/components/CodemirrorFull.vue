@@ -2,6 +2,7 @@
 
 import { Codemirror } from 'vue-codemirror'
 import { EditorState, Extension } from '@codemirror/state'
+import { keymap } from '@codemirror/view'
 import { basicSetup } from 'codemirror'
 import { materialDark } from 'cm6-theme-material-dark'
 
@@ -10,7 +11,7 @@ const props = withDefaults(
         modelValue: string
         additionalExtensions?: Extension[]
         placeholder?: string
-        readOnly: boolean,
+        readOnly?: boolean,
         disabled?: boolean
     }>(),
     {
@@ -21,10 +22,24 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-    (e: 'update:modelValue', value: string): void
+    (e: 'update:modelValue', value: string): void,
+    (e: 'execute'): void
 }>()
 
-const extensions: Extension[] = [basicSetup, materialDark, ...props.additionalExtensions]
+const extensions: Extension[] = [
+    keymap.of([
+        {
+            key: 'Ctrl-Enter',
+            run: () => {
+                emit('execute')
+                return true
+            }
+        }
+    ]),
+    basicSetup,
+    materialDark,
+    ...props.additionalExtensions
+]
 if (props.readOnly) {
     extensions.push(EditorState.readOnly.of(true))
 }

@@ -164,6 +164,7 @@ function initializeSchemaEditor(): void {
                             <CodemirrorFull
                                 v-model="queryCode"
                                 :additional-extensions="queryExtensions"
+                                @execute="executeQuery"
                             />
                         </VWindowItem>
 
@@ -171,6 +172,7 @@ function initializeSchemaEditor(): void {
                             <CodemirrorFull
                                 v-model="variablesCode"
                                 :additional-extensions="variablesExtensions"
+                                @execute="executeQuery"
                             />
                         </VWindowItem>
 
@@ -180,6 +182,7 @@ function initializeSchemaEditor(): void {
                         >
                             <CodemirrorFull
                                 v-model="schemaCode"
+                                read-only
                                 :additional-extensions="schemaExtensions"
                                 style="height: 100%"
                             />

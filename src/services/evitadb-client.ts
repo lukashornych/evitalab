@@ -1,6 +1,6 @@
 import { Catalog, CatalogSchema, ModelError, QueryEntitiesRequestBody, Response } from '@/model/evitadb'
 import { EvitaDBConnection } from '@/model/lab'
-import { LabError } from '@/model/editor/editor'
+import { LabInvalidUsageError } from '@/model/editor/editor'
 import { ApiClient } from '@/services/api-client'
 
 /**
@@ -63,11 +63,11 @@ export class EvitaDBClient extends ApiClient {
 /**
  * Error that is thrown when a query to evitaDB fails.
  */
-export class QueryError extends LabError {
+export class QueryError extends LabInvalidUsageError {
     readonly error: any
 
     constructor(connection: EvitaDBConnection, error: any) {
-        super('QueryError', connection, 'Query error occurred.')
+        super('QueryError', connection, 'Query error occurred.', error.message)
         this.error = error
     }
 }

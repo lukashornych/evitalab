@@ -29,16 +29,16 @@ const currentTab = computed(() => {
 })
 
 function closeTab(tabId: string) {
+    const prevTabsLength: number = tabs.value.length
+    const prevTabIndex: number = tabs.value.findIndex(tab => tab.id === currentTabId.value)
     const closedTabIndex: number = tabs.value.findIndex(tab => tab.id === tabId)
     editorService.destroyTabRequest(tabId)
 
     if (tabs.value.length === 0) {
         currentTabId.value = null
-    } else if (closedTabIndex === 0) {
-        currentTabId.value = tabs.value[0].id
-    } else if (tabs.value.length <= closedTabIndex) {
+    } else if (closedTabIndex === prevTabIndex && closedTabIndex === prevTabsLength - 1) {
         currentTabId.value = tabs.value[closedTabIndex - 1].id
-    } else {
+    } else if (closedTabIndex === prevTabIndex && closedTabIndex < prevTabsLength - 1) {
         currentTabId.value = tabs.value[closedTabIndex].id
     }
 }
@@ -60,6 +60,7 @@ function closeTab(tabId: string) {
                 :key="tab.id"
                 :value="tab.id"
                 :prepend-icon="tab.icon"
+                @mousedown.middle="closeTab(tab.id)"
             >
                 <span>
                     {{ ellipsis(tab.title, 30) }}

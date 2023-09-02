@@ -1,8 +1,23 @@
 <script setup lang="ts">
 import CodemirrorFull from '@/components/CodemirrorFull.vue'
 import { ErrorViewerProps } from '@/model/editor/error-viewer'
+import { computed } from 'vue'
 
 const props = defineProps<ErrorViewerProps>()
+
+const title = computed(() => {
+    if (props.error.message.endsWith('.')) {
+        return props.error.message.substring(0, props.error.message.length - 1)
+    }
+    return props.error.message
+})
+
+const detail = computed(() => {
+    if (props.error.detail === undefined) {
+        return 'No details available.'
+    }
+    return props.error.detail
+})
 </script>
 
 <template>
@@ -21,7 +36,7 @@ const props = defineProps<ErrorViewerProps>()
 
             <VToolbarTitle>
                 <VBreadcrumbs
-                    :items="[props.message]"
+                    :items="[title]"
                     class="pl-0 pr-0"
                 />
             </VToolbarTitle>
@@ -42,7 +57,7 @@ const props = defineProps<ErrorViewerProps>()
 
         <VSheet class="error-viewer__body">
             <CodemirrorFull
-                :model-value="props.detail"
+                :model-value="detail"
                 read-only
             />
         </VSheet>

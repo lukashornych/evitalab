@@ -282,6 +282,7 @@ function closePropertyDetail(): void {
                         prepend-inner-icon="mdi-filter"
                         placeholder="Filter by"
                         :additional-extensions="filterByExtensions"
+                        @execute="executeQuery"
                     />
 
                     <CodemirrorOneLine
@@ -289,6 +290,7 @@ function closePropertyDetail(): void {
                         prepend-inner-icon="mdi-sort"
                         placeholder="Order by"
                         :additional-extensions="orderByExtensions"
+                        @execute="executeQuery"
                     />
 
                     <VBtn

@@ -23,6 +23,10 @@ export class EditorService {
         return this.getTabRequests().find(it => it.id === id)
     }
 
+    getTabRequestIndex(id: string): number {
+        return this.getTabRequests().findIndex(it => it.id === id)
+    }
+
     getNewTabRequest(): TabRequest<any> | undefined {
         return this.getTabRequests().find(it => it.new)
     }

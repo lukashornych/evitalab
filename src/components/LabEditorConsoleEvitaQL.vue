@@ -111,6 +111,7 @@ async function executeQuery(): Promise<void> {
                             <CodemirrorFull
                                 v-model="queryCode"
                                 :additional-extensions="queryExtensions"
+                                @execute="executeQuery"
                             />
                         </VWindowItem>
 
@@ -118,6 +119,7 @@ async function executeQuery(): Promise<void> {
                             <CodemirrorFull
                                 v-model="variablesCode"
                                 :additional-extensions="variablesExtensions"
+                                @execute="executeQuery"
                             />
                         </VWindowItem>
                     </VWindow>

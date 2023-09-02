@@ -37,20 +37,47 @@ export interface TabRequestComponentProps {}
  */
 export abstract class LabError extends Error {
     readonly connection?: EvitaDBConnection
-    readonly detail?: string
+
+    protected readonly _detail?: string | undefined
+    get detail(): string | undefined {
+        return this._detail
+    }
 
     protected constructor(name: string, connection: EvitaDBConnection | undefined, message: string, detail?: string) {
         super(message)
         this.name = name
         this.connection = connection
-        this.detail = detail
+        this._detail = detail
+    }
+}
+
+export abstract class LabInternalError extends LabError {
+    protected constructor(name: string, connection: EvitaDBConnection | undefined, message: string, detail?: string) {
+        super(name, connection, message, detail)
+    }
+
+    get detail(): string {
+        const parts: string[] = []
+        if (this._detail !== undefined) {
+            parts.push(this._detail)
+        }
+        if (this.stack !== undefined) {
+            parts.push(this.stack)
+        }
+        return parts.join('\n\n')
+    }
+}
+
+export abstract class LabInvalidUsageError extends LabError {
+    protected constructor(name: string, connection: EvitaDBConnection | undefined, message: string, detail?: string) {
+        super(name, connection, message, detail)
     }
 }
 
 /**
  * Unexpected error that should never happen. We don't know what happened.
  */
-export class UnexpectedError extends LabError {
+export class UnexpectedError extends LabInternalError {
     constructor(connection: EvitaDBConnection | undefined, detail: string) {
         super(
             'UnexpectedError',
@@ -64,7 +91,7 @@ export class UnexpectedError extends LabError {
 /**
  * Thrown when request to evitaDB took too long.
  */
-export class TimeoutError extends LabError {
+export class TimeoutError extends LabInvalidUsageError {
     constructor(connection: EvitaDBConnection | undefined) {
         super(
             'TimeoutError',
@@ -77,7 +104,7 @@ export class TimeoutError extends LabError {
 /**
  * Something went wrong with the server (evitaDB instance). We can't do anything about it.
  */
-export class EvitaDBInstanceServerError extends LabError {
+export class EvitaDBInstanceServerError extends LabInvalidUsageError {
     constructor(connection: EvitaDBConnection | undefined) {
         super(
             'EvitaDBInstanceCallError',
@@ -90,7 +117,7 @@ export class EvitaDBInstanceServerError extends LabError {
 /**
  * Could not connect to the server (evitaDB instance). We can't do anything about it.
  */
-export class EvitaDBInstanceNetworkError extends LabError {
+export class EvitaDBInstanceNetworkError extends LabInvalidUsageError {
     constructor(connection: EvitaDBConnection) {
         super(
             'EvitaDBInstanceNetworkError',

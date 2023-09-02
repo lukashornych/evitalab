@@ -34,7 +34,8 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-    (e: 'update:modelValue', value: string): void
+    (e: 'update:modelValue', value: string): void,
+    (e: 'execute'): void
 }>()
 
 const extensions: Extension[] = [
@@ -50,6 +51,13 @@ const extensions: Extension[] = [
     rectangularSelection(),
     crosshairCursor(),
     keymap.of([
+        {
+            key: 'Enter',
+            run: () => {
+                emit('execute')
+                return true
+            }
+        },
         ...closeBracketsKeymap,
         ...defaultKeymap,
         ...historyKeymap,
