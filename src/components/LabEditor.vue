@@ -51,10 +51,7 @@ function closeTab(tabId: string) {
         density="compact"
         elevation="0"
     >
-        <VTabs
-            v-model="currentTabId"
-            show-arrows
-        >
+        <VTabs v-model="currentTabId">
             <VTab
                 v-for="tab in tabs"
                 :key="tab.id"
