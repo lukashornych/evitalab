@@ -1,5 +1,5 @@
 <h1 align="center" style="border-bottom: none">
-    <a href="https://evitadb.io" target="_blank"><img src="https://raw.githubusercontent.com/lukashornych/evitalab/master/documentation/assets/img/evitalab.png"/></a><br>evitaLab
+    <a href="https://evitadb.io" target="_blank"><img src="https://raw.githubusercontent.com/lukashornych/evitalab/dev/documentation/assets/img/evitalab.png"/></a><br>evitaLab
 </h1>
 
 <p align="center">
@@ -23,6 +23,8 @@ evitaLab aims to provide a user-friendly client for evitaDB database to easily b
 In the future, evitaLab will hopefully also allow data modifications.
 
 You can try out evitaLab with evitaDB demo dataset at [demo.evitadb.io](https://demo.evitadb.io).
+
+<img src="https://raw.githubusercontent.com/lukashornych/evitalab/dev/documentation/assets/img/preview.png"/>
 
 ## Features
 
