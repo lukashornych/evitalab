@@ -4,7 +4,12 @@ import 'splitpanes/dist/splitpanes.css'
 import { VDataTableServer } from 'vuetify/labs/VDataTable'
 
 import { onBeforeMount, ref, watch } from 'vue'
-import { DataGridConsoleProps, QueryResult } from '@/model/editor/data-grid-console'
+import {
+    DataGridConsoleProps,
+    EntityPropertyKey,
+    QueryResult,
+    StaticEntityProperties
+} from '@/model/editor/data-grid-console'
 import { Extension } from '@codemirror/state'
 import { DataGridConsoleService, useDataGridConsoleService } from '@/services/editor/data-grid-console.service'
 import CodemirrorOneLine from '@/components/CodemirrorOneLine.vue'
@@ -90,9 +95,8 @@ const propertyDetailValue = ref<string>('')
 const initialized = ref<boolean>(false)
 
 
-// function initializeConsole(): void {
 onBeforeMount(() => {
-    // note: we can use async/await here, because that would make this component async which currently doesn't seem to work
+    // note: we can't use async/await here, because that would make this component async which currently doesn't seem to work
     // properly in combination with dynamic <component> rendering and tabs
 
     dataGridConsoleService.getDataLocales(props.dataPointer)
@@ -106,10 +110,7 @@ onBeforeMount(() => {
         })
         .then(gh => {
             gridHeaders = gh
-
-            // preselect all properties
-            toggleAllEntityProperties()
-
+            preselectEntityProperties()
             initialized.value = true
         })
         .catch(error => {
@@ -147,6 +148,32 @@ async function updateDisplayedGridHeaders(): Promise<void> {
     displayedGridHeaders.value.sort((a, b) => {
         return entityPropertyKeys.indexOf(a.key) - entityPropertyKeys.indexOf(b.key)
     })
+}
+
+function preselectEntityProperties(): void {
+    const primaryKeyProperty = EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey).toString()
+    const parentProperty = EntityPropertyKey.entity(StaticEntityProperties.Parent).toString()
+    const localesProperty = EntityPropertyKey.entity(StaticEntityProperties.Locales).toString()
+    const allLocalesProperty = EntityPropertyKey.entity(StaticEntityProperties.AllLocales).toString()
+    const priceInnerRecordHandlingProperty = EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling).toString()
+
+    const preselectedProperties = []
+    if (entityPropertyKeys.includes(primaryKeyProperty)) {
+        preselectedProperties.push(primaryKeyProperty)
+    }
+    if (entityPropertyKeys.includes(parentProperty)) {
+        preselectedProperties.push(parentProperty)
+    }
+    if (entityPropertyKeys.includes(localesProperty)) {
+        preselectedProperties.push(localesProperty)
+    }
+    if (entityPropertyKeys.includes(allLocalesProperty)) {
+        preselectedProperties.push(allLocalesProperty)
+    }
+    if (entityPropertyKeys.includes(priceInnerRecordHandlingProperty)) {
+        preselectedProperties.push(priceInnerRecordHandlingProperty)
+    }
+    displayedData.value = preselectedProperties
 }
 
 function toggleAllEntityProperties(): void {
