@@ -21,6 +21,7 @@
     "ky": "^0.33.3",
     "roboto-fontface": "*",
     "splitpanes": "^3.1.5",
+    "store2": "^2.14.2",
     "uuid": "^9.0.0",
     "vue": "^3.2.0",
     "vue-codemirror": "^6.1.1",

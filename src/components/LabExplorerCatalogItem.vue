@@ -117,7 +117,7 @@ function handleAction(action: string) {
 
 <template>
     <VListGroup
-        :value="catalog.name"
+        :value="`${connection.name}|${catalog.name}`"
     >
         <template v-slot:activator="{ isOpen, props }">
             <VTreeViewItem

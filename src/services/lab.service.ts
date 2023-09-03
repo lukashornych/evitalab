@@ -1,4 +1,4 @@
-import { EvitaDBConnection } from '@/model/lab'
+import { EvitaDBConnection, UnexpectedError } from '@/model/lab'
 import { inject, InjectionKey } from 'vue'
 import { Store } from 'vuex'
 import { State } from '@/store'
@@ -20,8 +20,16 @@ export class LabService {
         this.evitaDBClient = evitaDBClient
     }
 
+    isReadOnly = (): boolean => {
+        return this.store.state.lab.readOnly
+    }
+
     getConnections = (): EvitaDBConnection[] => {
-        return this.store.state.lab.connections
+        return this.store.getters['lab/getConnections']()
+    }
+
+    isConnectionExists = (connectionName: string): boolean => {
+        return this.store.getters['lab/isConnectionExists'](connectionName)
     }
 
     addConnection = (connection: EvitaDBConnection): void => {
@@ -39,7 +47,7 @@ export class LabService {
 
             catalog = this.store.getters['lab/getCatalog'](connection.id, catalogName)
             if (catalog === undefined) {
-                throw new Error(`Catalog ${catalogName} not found.`)
+                throw new UnexpectedError(undefined, `Catalog ${catalogName} not found.`)
             }
         }
         return catalog

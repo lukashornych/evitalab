@@ -1,35 +1,18 @@
 <script setup lang="ts">
 import LabExplorerCatalogItem from '@/components/LabExplorerCatalogItem.vue'
 
-import { EvitaDBConnection } from '@/model/lab'
+import { EvitaDBConnection, UnexpectedError } from '@/model/lab'
 import { provide, readonly, ref } from 'vue'
 import { LabService, useLabService } from '@/services/lab.service'
 import VTreeViewItem from '@/components/VTreeViewItem.vue'
 import { Catalog } from '@/model/evitadb'
 import { Toaster, useToaster } from '@/services/editor/toaster'
+import LabExplorerConnectionRemoveDialog from '@/components/LabExplorerConnectionRemoveDialog.vue'
 
 enum ActionType {
     Edit = 'edit',
     Remove = 'remove'
 }
-
-const actions = ref<object[]>([
-    // {
-    //     value: ActionType.Edit,
-    //     title: 'Edit connection',
-    //     props: {
-    //         prependIcon: 'mdi-pencil'
-    //     }
-    // },
-    // {
-    //     value: ActionType.Remove,
-    //     title: 'Remove connection',
-    //     props: {
-    //         prependIcon: 'mdi-delete'
-    //     }
-    // },
-])
-
 
 const labService: LabService = useLabService()
 const toaster: Toaster = useToaster()
@@ -40,6 +23,24 @@ const props = defineProps<{
 
 provide('connection', readonly(props.connection))
 
+const actions = ref<object[]>([])
+if (!labService.isReadOnly() && !props.connection.preconfigured) {
+    // actions.value.push({
+    //     value: ActionType.Edit,
+    //     title: 'Edit connection',
+    //     props: {
+    //         prependIcon: 'mdi-pencil'
+    //     }
+    // })
+    actions.value.push({
+        value: ActionType.Remove,
+        title: 'Remove connection',
+        props: {
+            prependIcon: 'mdi-delete'
+        }
+    },)
+}
+const removeConnectionDialogOpen = ref<boolean>(false)
 const catalogs = ref<Catalog[]>()
 
 async function loadCatalogs(): Promise<void> {
@@ -56,9 +57,9 @@ async function loadCatalogs(): Promise<void> {
 function handleAction(action: string, payload?: any) {
     switch (action) {
         case ActionType.Edit:
-            throw new Error('Not implemented yet.')
+            throw new UnexpectedError(undefined, 'Not implemented yet.')
         case ActionType.Remove:
-            labService.removeConnection(payload)
+            removeConnectionDialogOpen.value = true
             break
     }
 }
@@ -91,6 +92,11 @@ function handleAction(action: string, payload?: any) {
                 :catalog="catalog"
             />
         </div>
+
+        <LabExplorerConnectionRemoveDialog
+            v-model="removeConnectionDialogOpen"
+            :connection="connection"
+        />
     </VListGroup>
 </template>
 

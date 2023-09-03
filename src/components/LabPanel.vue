@@ -52,9 +52,10 @@ function selectPanel(item: any): void {
                     target="_blank"
                 >
                     <VAvatar size="24px">
+                        <!-- todo lho use local link, don't how to do it when we use the /lab prefix -->
                         <VImg
                             alt="evitaLab Logo"
-                            src="/logo.png"
+                            src="https://github.com/lukashornych/evitalab/blob/dev/public/logo.png?raw=true"
                         />
                     </VAvatar>
                 </a>

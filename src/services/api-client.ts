@@ -1,10 +1,9 @@
-import { EvitaDBConnection } from '@/model/lab'
+import { EvitaDBConnection, LabError, UnexpectedError } from '@/model/lab'
 import {
     EvitaDBInstanceNetworkError,
     EvitaDBInstanceServerError,
-    LabError, TimeoutError,
-    UnexpectedError
-} from '@/model/editor/editor'
+    TimeoutError
+} from '@/model/lab'
 import { KyInstance } from 'ky/distribution/types/ky'
 import ky from 'ky'
 

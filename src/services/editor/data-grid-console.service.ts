@@ -6,7 +6,7 @@ import {
     QueryResult,
     StaticEntityProperties
 } from '@/model/editor/data-grid-console'
-import { QueryLanguage } from '@/model/lab'
+import { QueryLanguage, UnexpectedError } from '@/model/lab'
 import { QueryExecutor } from '@/services/editor/data-grid-console/query-executor'
 import { QueryBuilder } from '@/services/editor/data-grid-console/query-builder'
 import { EvitaQLQueryBuilder } from '@/services/editor/data-grid-console/evitaql-query-builder'
@@ -91,12 +91,12 @@ export class DataGridConsoleService {
                 const attributeSchema: AttributeSchemaUnion | undefined = Object.values(entitySchema.attributes)
                     .find(attributeSchema => attributeSchema.nameVariants.camelCase === propertyKey.name)
                 if (attributeSchema === undefined) {
-                    throw new Error(`Entity ${entitySchema.name} does not have attribute ${propertyKey.name}.`)
+                    throw new UnexpectedError(undefined, `Entity ${entitySchema.name} does not have attribute ${propertyKey.name}.`)
                 }
 
                 orderBy.push(queryBuilder.buildAttributeNaturalConstraint(attributeSchema, column.order))
             } else {
-                throw new Error(`Entity property ${column.key} is not supported to be sortable.`)
+                throw new UnexpectedError(undefined, `Entity property ${column.key} is not supported to be sortable.`)
             }
         }
 
@@ -157,7 +157,7 @@ export class DataGridConsoleService {
         const attributeSchema: AttributeSchemaUnion | undefined = Object.values(entitySchema.attributes)
             .find(attributeSchema => attributeSchema.nameVariants.camelCase === propertyKey.name)
         if (attributeSchema === undefined) {
-            throw new Error(`Attribute ${propertyKey.name} not found in entity schema ${entitySchema.name}.`)
+            throw new UnexpectedError(undefined, `Attribute ${propertyKey.name} not found in entity schema ${entitySchema.name}.`)
         }
         return attributeSchema.sortable
     }
@@ -165,7 +165,7 @@ export class DataGridConsoleService {
     private getQueryBuilder(language: QueryLanguage): QueryBuilder {
         const queryBuilder: QueryBuilder | undefined = this.queryBuilders.get(language)
         if (queryBuilder === undefined) {
-            throw new Error(`Query builder for language ${language} is not registered.`)
+            throw new UnexpectedError(undefined, `Query builder for language ${language} is not registered.`)
         }
         return queryBuilder
     }
@@ -173,7 +173,7 @@ export class DataGridConsoleService {
     private getQueryExecutor(language: QueryLanguage): QueryExecutor {
         const queryExecutor: QueryExecutor | undefined = this.queryExecutors.get(language)
         if (queryExecutor === undefined) {
-            throw new Error(`Query executor for language ${language} is not registered.`)
+            throw new UnexpectedError(undefined, `Query executor for language ${language} is not registered.`)
         }
         return queryExecutor
     }

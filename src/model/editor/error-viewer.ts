@@ -1,4 +1,5 @@
-import { LabError, TabRequestComponentProps } from '@/model/editor/editor'
+import { TabRequestComponentProps } from '@/model/editor/editor'
+import { LabError } from '@/model/lab'
 
 /**
  * Represents props of the LabEditorErrorViewer component.

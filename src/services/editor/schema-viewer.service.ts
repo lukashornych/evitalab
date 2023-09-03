@@ -7,6 +7,7 @@ import {
     SchemaViewerDataPointer
 } from '@/model/editor/schema-viewer'
 import { CatalogSchema, EntitySchema } from '@/model/evitadb'
+import { UnexpectedError } from '@/model/lab'
 
 export const key: InjectionKey<SchemaViewerService> = Symbol()
 
@@ -27,7 +28,7 @@ export class SchemaViewerService {
         } else if (schemaPointer instanceof EntitySchemaPointer) {
             return this.labService.getEntitySchema(dataPointer.connection, schemaPointer.catalogName, schemaPointer.entityName)
         } else {
-            throw new Error(`Unsupported type of schema ${schemaPointer}`)
+            throw new UnexpectedError(undefined, `Unsupported type of schema ${schemaPointer}`)
         }
     }
 }

@@ -1,6 +1,5 @@
 import { Catalog, CatalogSchema, ModelError, QueryEntitiesRequestBody, Response } from '@/model/evitadb'
-import { EvitaDBConnection } from '@/model/lab'
-import { LabInvalidUsageError } from '@/model/editor/editor'
+import { LabInvalidUsageError, EvitaDBConnection } from '@/model/lab'
 import { ApiClient } from '@/services/api-client'
 
 /**
