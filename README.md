@@ -1,7 +1,117 @@
-# evitaLab
+<h1 align="center" style="border-bottom: none">
+    <!--<a href="https://evitadb.io" target="_blank"><img src="https://raw.githubusercontent.com/FgForrest/evitaDB/dev/documentation/assets/img/evita.png"/></a>--><br>evitaLab
+</h1>
 
-For now, check [evitaDB](https://evitadb.io)...
+<p align="center">
+    evitaLab is the official web-based GUI client for <a href="https://github.com/FgForrest/evitaDB">evitaDB</a> e-commerce database.
+    Visit <a href="https://demo.evitadb.io" target="_blank">demo.evitadb.io</a> for the live demo.
+</p>
+
+<p align="center">
+  <a href="https://github.com/lukashornych/evitalab/releases" title="Releases"><img src="https://img.shields.io/github/v/release/lukashornych/evitalab?color=%23ff00a0&include_prereleases&label=version&sort=semver"/></a>
+  &nbsp;
+  <a href="https://vuejs.org/" title="Platform"><img src="https://img.shields.io/badge/Built%20with-Vue-green?color=42b883"/></a>
+  &nbsp;
+  <a href="https://nodejs.org/en" title="Node.js"><img src="https://img.shields.io/badge/Node.js%20-v18.16.1-green?color=026e00"/></a>
+  &nbsp;
+  <a href="https://discord.gg/VsNBWxgmSw" title="Discord"><img src="https://img.shields.io/discord/999338870996992223?color=5865f2"/></a>
+  &nbsp;
+  <a href="https://github.com/lukashornych/evitalab/blob/master/LICENSE" title="License"><img src="https://img.shields.io/badge/license-MIT-blue.svg"/></a>
+</p>
+
+evitaLab aims to allow for easy browsing of contents stored in the database as well as to provide a simple way to run queries
+against all APIs.
+
+In the future, evitaLab will hopefully also allow for easy schema and data manipulations.
+
+You can try out evitaLab with evitaDB demo dataset at [demo.evitadb.io](https://demo.evitadb.io).
+
+## Features
+
+evitaLab is currently in early development stage and features are being added as we go.
+
+The current feature set is:
+
+- [x] preview all internal schemas
+- [x] read stored entities in interactive table
+- [x] run queries against GraphQL API
+- [x] run queries against evitaQL
+
+The following features are planned to be implemented in the near future:
+
+- [ ] multiple evitaDB instances
+- [ ] run queries against REST API
+
+## Running locally
+
+To run evitaLab locally, you can use either of the following ways. 
+In the future, we plan to provide pre-built binaries for all major desktop platforms, but this is not yet available.
+
+### Embedded in local evitaDB instance
+
+The easiest and quickest way to run evitaLab locally is to enable it inside your configuration of evitaDB.
+By default, evitaDB will automatically expose its own local evitaLab instance on the [localhost:5555/lab](https://localhost:5555/lab)
+address. For more configuration, see [evitaDB documentation](https://evitadb.io/documentation/operate/configure#lab-configuration).
+
+### Docker
+
+The easiest and quickest way to run evitaLab locally without running evitaDB is to use Docker. 
+You can use the following command to run evitaLab locally:
+
+```shell
+docker run -ti -p 3000:3000 ghcr.io/lukashornych/evitalab:latest
+```
+
+This will expose an evitaLab instance on [localhost:3000/lab](http://localhost:3000/lab) address.
+
+### From dist
+
+If you want to run evitaLab manually, you can download the latest release from [releases page](https://github.com/lukashornych/evitalab/releases/tag/latest)
+and use any static web server to serve the files from `dist` directory. 
+For example, you can use [nginx](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/)
+
+### From source
+
+If you want to run a development version of the evitaLab, you can clone this repository.
+
+Before you start, make sure you have [Node.js](https://nodejs.org/en/) v18.16.1 installed. 
+Optionally, you can also install [Yarn](https://yarnpkg.com/) package manager.
+
+```shell
+# running using npm
+npm install
+npm run dev
+
+# running using yarn
+yarn install
+yarn dev
+```
+
+This will start a development server on [localhost:3000/lab](http://localhost:3000/lab) address.
 
 ## Development
 
-Tested on Node v18.16.1.
+If you would like to contribute to evitaLab source code or just simply play with it locally, you just need to
+clone the project, install the [Node.js](https://nodejs.org/en/) v18.16.1 
+(you can also install [Yarn](https://yarnpkg.com/) as that's what we use for development)
+and run the following commands to run the evitaLab locally:
+
+```shell
+# running using npm
+npm install
+npm run dev
+
+# running using yarn
+yarn install
+yarn dev
+```
+
+## Licence
+
+[Apache License 2.0](LICENSE)
+
+## Contribution
+
+Any contributions are welcome and appreciated. If you would like to contribute to evitaLab, feel free to open an issue
+and submit a pull request. However, keep in mind that this project is still in an early development stage and features
+may change or be completely removed.
