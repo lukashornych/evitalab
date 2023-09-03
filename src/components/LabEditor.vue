@@ -5,6 +5,7 @@ import { TabRequest, TabRequestComponentProps } from '@/model/editor/editor'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import LabEditorTabWindow from '@/components/LabEditorTabWindow.vue'
 import { ellipsis } from '../utils/text-utils'
+import LabEditorWelcomeScreen from '@/components/LabEditorWelcomeScreen.vue'
 
 const editorService: EditorService = useEditorService()
 
@@ -111,8 +112,8 @@ function closeTab(tabId: string) {
                 />
             </VWindowItem>
         </VWindow>
-        <div v-else>
-            No tabs are open
+        <div v-else style="position: relative">
+            <LabEditorWelcomeScreen/>
         </div>
     </VMain>
 </template>
