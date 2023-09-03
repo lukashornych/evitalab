@@ -19,16 +19,14 @@
   <a href="https://github.com/lukashornych/evitalab/blob/master/LICENSE" title="License"><img src="https://img.shields.io/badge/license-MIT-blue.svg"/></a>
 </p>
 
-evitaLab aims to allow for easy browsing of contents stored in the database as well as to provide a simple way to run queries
-against all APIs.
-
-In the future, evitaLab will hopefully also allow for easy schema and data manipulations.
+evitaLab aims to provide a user-friendly client for evitaDB database to easily browse data stored in the database.
+In the future, evitaLab will hopefully also allow data modifications.
 
 You can try out evitaLab with evitaDB demo dataset at [demo.evitadb.io](https://demo.evitadb.io).
 
 ## Features
 
-evitaLab is currently in early development stage and features are being added as we go.
+evitaLab is currently in early development stage, and features are being added as we go.
 
 The current feature set is:
 
@@ -36,16 +34,13 @@ The current feature set is:
 - [x] read stored entities in interactive table
 - [x] run queries against GraphQL API
 - [x] run queries against evitaQL
-
-The following features are planned to be implemented in the near future:
-
-- [ ] multiple evitaDB instances
-- [ ] run queries against REST API
+- [x] manage connections to multiple evitaDB instances
 
 ## Running locally
 
 To run evitaLab locally, you can use either of the following ways. 
-In the future, we plan to provide pre-built binaries for all major desktop platforms, but this is not yet available.
+In the future, we plan to provide pre-built binaries for all major desktop platforms, but currently [the docker image](#docker)
+is the closest thing we have.
 
 ### Embedded in local evitaDB instance
 
@@ -56,13 +51,19 @@ address. For more configuration, see [evitaDB documentation](https://evitadb.io/
 ### Docker
 
 The easiest and quickest way to run evitaLab locally without running evitaDB is to use Docker. 
-You can use the following command to run evitaLab locally:
+You can use the following command to install evitaLab locally:
 
 ```shell
-docker run -ti -p 3000:3000 ghcr.io/lukashornych/evitalab:latest
+docker run --name evitalab -ti -p 5566:3000 ghcr.io/lukashornych/evitalab:latest
 ```
+ 
+Next time you want to run the evitaLab, simply start use:
 
-This will expose an evitaLab instance on [localhost:3000/lab](http://localhost:3000/lab) address.
+```shell
+docker start evitalab
+````
+
+This will expose an evitaLab instance on [localhost:5566/lab](http://localhost:5566/lab) address.
 
 ### From dist
 
