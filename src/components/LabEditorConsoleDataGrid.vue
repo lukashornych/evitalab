@@ -4,7 +4,12 @@ import 'splitpanes/dist/splitpanes.css'
 import { VDataTableServer } from 'vuetify/labs/VDataTable'
 
 import { onBeforeMount, ref, watch } from 'vue'
-import { DataGridConsoleProps, QueryResult } from '@/model/editor/data-grid-console'
+import {
+    DataGridConsoleProps,
+    EntityPropertyKey,
+    QueryResult,
+    StaticEntityProperties
+} from '@/model/editor/data-grid-console'
 import { Extension } from '@codemirror/state'
 import { DataGridConsoleService, useDataGridConsoleService } from '@/services/editor/data-grid-console.service'
 import CodemirrorOneLine from '@/components/CodemirrorOneLine.vue'
@@ -55,7 +60,8 @@ watch(selectedQueryLanguage, (newValue, oldValue) => {
 
 const loading = ref<boolean>(false)
 const pageNumber = ref<number>(1)
-const pageSize = ref<number>(0)
+const pageSize = ref<number>(10)
+const itemsPerPage: any[] = [10, 100, 500, 1000].map(it => ({ title: it.toString(10), value: it }))
 
 const filterByCode = ref<string>('')
 const filterByExtensions: Extension[] = []
@@ -89,9 +95,8 @@ const propertyDetailValue = ref<string>('')
 const initialized = ref<boolean>(false)
 
 
-// function initializeConsole(): void {
 onBeforeMount(() => {
-    // note: we can use async/await here, because that would make this component async which currently doesn't seem to work
+    // note: we can't use async/await here, because that would make this component async which currently doesn't seem to work
     // properly in combination with dynamic <component> rendering and tabs
 
     dataGridConsoleService.getDataLocales(props.dataPointer)
@@ -105,10 +110,7 @@ onBeforeMount(() => {
         })
         .then(gh => {
             gridHeaders = gh
-
-            // preselect all properties
-            toggleAllEntityProperties()
-
+            preselectEntityProperties()
             initialized.value = true
         })
         .catch(error => {
@@ -148,6 +150,32 @@ async function updateDisplayedGridHeaders(): Promise<void> {
     })
 }
 
+function preselectEntityProperties(): void {
+    const primaryKeyProperty = EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey).toString()
+    const parentProperty = EntityPropertyKey.entity(StaticEntityProperties.Parent).toString()
+    const localesProperty = EntityPropertyKey.entity(StaticEntityProperties.Locales).toString()
+    const allLocalesProperty = EntityPropertyKey.entity(StaticEntityProperties.AllLocales).toString()
+    const priceInnerRecordHandlingProperty = EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling).toString()
+
+    const preselectedProperties = []
+    if (entityPropertyKeys.includes(primaryKeyProperty)) {
+        preselectedProperties.push(primaryKeyProperty)
+    }
+    if (entityPropertyKeys.includes(parentProperty)) {
+        preselectedProperties.push(parentProperty)
+    }
+    if (entityPropertyKeys.includes(localesProperty)) {
+        preselectedProperties.push(localesProperty)
+    }
+    if (entityPropertyKeys.includes(allLocalesProperty)) {
+        preselectedProperties.push(allLocalesProperty)
+    }
+    if (entityPropertyKeys.includes(priceInnerRecordHandlingProperty)) {
+        preselectedProperties.push(priceInnerRecordHandlingProperty)
+    }
+    displayedData.value = preselectedProperties
+}
+
 function toggleAllEntityProperties(): void {
     if (displayedData.value.length < entityPropertyKeys.length) {
         displayedData.value = entityPropertyKeys.slice()
@@ -158,10 +186,7 @@ function toggleAllEntityProperties(): void {
 
 async function gridUpdated({ page, itemsPerPage, sortBy }: { page: number, itemsPerPage: number, sortBy: any[] }): Promise<void> {
     pageNumber.value = page
-    if (itemsPerPage > -1) {
-        // -1 means all items, that would be too much data to render
-        pageSize.value = itemsPerPage
-    }
+    pageSize.value = itemsPerPage
     try {
         orderByCode.value = await dataGridConsoleService.buildOrderByFromGridColumns(props.dataPointer, selectedQueryLanguage.value[0], sortBy)
     } catch (error: any) {
@@ -199,6 +224,9 @@ async function executeQuery(): Promise<void> {
 }
 
 function openPropertyDetail(property: string, value: string): void {
+    if (!value) {
+        return
+    }
     propertyDetailName.value = property
     propertyDetailValue.value = value
     showPropertyDetail.value = true
@@ -212,8 +240,15 @@ function closePropertyDetail(): void {
 </script>
 
 <template>
-    <div v-if="initialized">
-        <VToolbar density="compact">
+    <div
+        v-if="initialized"
+        class="data-grid"
+    >
+        <VToolbar
+            density="compact"
+            elevation="2"
+            class="data-grid__header"
+        >
             <VAppBarNavIcon
                 icon="mdi-table"
                 :disabled="true"
@@ -274,6 +309,7 @@ function closePropertyDetail(): void {
                         prepend-inner-icon="mdi-filter"
                         placeholder="Filter by"
                         :additional-extensions="filterByExtensions"
+                        @execute="executeQuery"
                     />
 
                     <CodemirrorOneLine
@@ -281,6 +317,7 @@ function closePropertyDetail(): void {
                         prepend-inner-icon="mdi-sort"
                         placeholder="Order by"
                         :additional-extensions="orderByExtensions"
+                        @execute="executeQuery"
                     />
 
                     <VBtn
@@ -371,7 +408,10 @@ function closePropertyDetail(): void {
             </template>
         </VToolbar>
 
-        <Splitpanes vertical>
+        <Splitpanes
+            vertical
+            class="data-grid__body"
+        >
             <Pane
                 size="70"
                 min-size="30"
@@ -382,7 +422,10 @@ function closePropertyDetail(): void {
                     :items="resultEntities"
                     :items-length="totalResultCount"
                     density="compact"
+                    fixed-header
+                    fixed-footer
                     multi-sort
+                    :itemsPerPageOptions="itemsPerPage"
                     @update:options="gridUpdated"
                 >
                     <template #item="{ item }">
@@ -392,7 +435,14 @@ function closePropertyDetail(): void {
                                 :key="propertyName"
                                 @click="openPropertyDetail(propertyName as string, propertyValue)"
                             >
-                                {{ propertyValue !== undefined ? ellipsis(propertyValue, 20) : '' }}
+                                <span class="data-grid-cell__body">
+                                    <template v-if="!propertyValue">
+                                        <span class="text-disabled">&lt;null&gt;</span>
+                                    </template>
+                                    <template v-else>
+                                        {{ propertyValue }}
+                                    </template>
+                                </span>
                             </td>
                         </tr>
                     </template>
@@ -402,7 +452,7 @@ function closePropertyDetail(): void {
                 v-if="showPropertyDetail"
                 size="30"
             >
-                <VCard>
+                <VCard class="data-grid-cell-detail">
                     <VCardTitle>
                         <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
                             <span>
@@ -419,7 +469,7 @@ function closePropertyDetail(): void {
                         </div>
                     </VCardTitle>
                     <VDivider />
-                    <VCardText>
+                    <VCardText class="data-grid-cell-detail__body">
                         <CodemirrorFull v-model="propertyDetailValue" />
                     </VCardText>
                 </VCard>
@@ -432,6 +482,49 @@ function closePropertyDetail(): void {
 </template>
 
 <style lang="scss" scoped>
+.data-grid {
+    display: grid;
+    grid-template-rows: 5.5rem 1fr;
+    overflow-y: auto;
+
+    &__header {
+        z-index: 100;
+    }
+
+    &__body {
+        // we need to force table to be stretched to a window borders
+        & :deep(.v-table) {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr;
+            overflow-x: auto;
+        }
+
+        & :deep(th) {
+            border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+        }
+
+        & :deep(td) {
+            border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+            border-bottom: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+        }
+    }
+}
+
+.data-grid-cell {
+    &__body {
+        line-height: 2.25rem;
+        overflow-x: hidden;
+        overflow-y: hidden;
+        display: block;
+        min-width: 5rem;
+        max-width: 15rem;
+        height: 2.25rem;
+        text-overflow: clip;
+        text-wrap: nowrap;
+    }
+}
+
 .query-input {
     width: 100%;
     height: 100%;
@@ -441,5 +534,14 @@ function closePropertyDetail(): void {
     margin: 0 0.5rem;
     align-items: center;
     justify-items: stretch;
+}
+
+.data-grid-cell-detail {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+
+    &__body {
+        position: relative;
+    }
 }
 </style>

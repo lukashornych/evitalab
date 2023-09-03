@@ -41,10 +41,12 @@ async function executeQuery(): Promise<void> {
 </script>
 
 <template>
-    <div
-        class="evitaql-editor"
-    >
-        <VToolbar density="compact">
+    <div class="evitaql-editor">
+        <VToolbar
+            density="compact"
+            elevation="2"
+            class="evitaql-editor__header"
+        >
             <VAppBarNavIcon
                 icon="mdi-console"
                 :disabled="true"
@@ -68,43 +70,29 @@ async function executeQuery(): Promise<void> {
                 >
                     <VIcon>mdi-play</VIcon>
 
-                    <VTooltip
-                        activator="parent"
-                    >
+                    <VTooltip activator="parent">
                         Execute query
                     </VTooltip>
                 </VBtn>
             </template>
         </VToolbar>
 
-        <div
-            class="editors"
-        >
-            <VSheet
-                class="editors__tabs"
-            >
+        <div class="evitaql-editor__body">
+            <VSheet class="evitaql-editor-query-sections">
                 <VTabs
                     v-model="editorTab"
                     direction="vertical"
-                    class="editors__tab"
+                    class="evitaql-editor-query-sections__tab"
                 >
-                    <VTab
-                        value="query"
-                    >
+                    <VTab value="query">
                         <VIcon>mdi-database-search</VIcon>
-                        <VTooltip
-                            activator="parent"
-                        >
+                        <VTooltip activator="parent">
                             Query
                         </VTooltip>
                     </VTab>
-                    <VTab
-                        value="variables"
-                    >
+                    <VTab value="variables">
                         <VIcon>mdi-variable</VIcon>
-                        <VTooltip
-                            activator="parent"
-                        >
+                        <VTooltip activator="parent">
                             Variables
                         </VTooltip>
                     </VTab>
@@ -113,41 +101,35 @@ async function executeQuery(): Promise<void> {
                 <VDivider />
             </VSheet>
 
-            <Splitpanes
-                vertical
-            >
-                <Pane>
+            <Splitpanes vertical>
+                <Pane class="evitaql-editor-query">
                     <VWindow
                         v-model="editorTab"
                         direction="vertical"
-                        style="height: 100%"
                     >
-                        <VWindowItem
-                            value="query"
-                            style="height: 100%"
-                        >
+                        <VWindowItem value="query">
                             <CodemirrorFull
                                 v-model="queryCode"
                                 :additional-extensions="queryExtensions"
+                                @execute="executeQuery"
                             />
                         </VWindowItem>
 
-                        <VWindowItem
-                            value="variables"
-                            style="height: 100%"
-                        >
+                        <VWindowItem value="variables">
                             <CodemirrorFull
                                 v-model="variablesCode"
                                 :additional-extensions="variablesExtensions"
+                                @execute="executeQuery"
                             />
                         </VWindowItem>
                     </VWindow>
                 </Pane>
+
                 <Pane>
                     <CodemirrorFull
                         v-model="resultCode"
                         placeholder="Results will be displayed here..."
-                        disabled
+                        read-only
                         :additional-extensions="resultExtensions"
                     />
                 </Pane>
@@ -159,18 +141,32 @@ async function executeQuery(): Promise<void> {
 <style lang="scss" scoped>
 .evitaql-editor {
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: 3rem 1fr;
+
+    &__header {
+        z-index: 100;
+    }
+
+    &__body {
+        display: grid;
+        grid-template-columns: 3rem 1fr;
+    }
 }
 
-.editors {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 3rem 1fr;
-
-    &__tabs {
-        display: flex;
-        width: 3rem;
+.evitaql-editor-query {
+    & :deep(.v-window) {
+        // we need to override the default tab window styles used in LabEditor
+        position: absolute;
+        left: 0 !important;
+        right: 0 !important;
+        top: 0 !important;
+        bottom: 0 !important;
     }
+}
+
+.evitaql-editor-query-sections {
+    display: flex;
+    width: 3rem;
 
     &__tab {
         width: 3rem;

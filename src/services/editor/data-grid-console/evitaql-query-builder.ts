@@ -7,6 +7,7 @@ import {
 } from '@/model/editor/data-grid-console'
 import { LabService } from '@/services/lab.service'
 import { AssociatedDataSchema, AttributeSchemaUnion, EntitySchema, ReferenceSchema } from '@/model/evitadb'
+import { UnexpectedError } from '@/model/lab'
 
 /**
  * Query builder for EvitaQL language.
@@ -58,7 +59,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                 const attributeSchema: AttributeSchemaUnion | undefined = Object.values(entitySchema.attributes)
                     .find(attributeSchema => attributeSchema.nameVariants.camelCase === it)
                 if (attributeSchema === undefined) {
-                    throw new Error(`Could not find attribute '${it}' in '${dataPointer.entityType}'.`)
+                    throw new UnexpectedError(undefined, `Could not find attribute '${it}' in '${dataPointer.entityType}'.`)
                 }
                 return `'${attributeSchema.name}'`
             })
@@ -73,7 +74,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                 const associatedDataSchema: AssociatedDataSchema | undefined = Object.values(entitySchema.associatedData)
                     .find(associatedDataSchema => associatedDataSchema.nameVariants.camelCase === it)
                 if (associatedDataSchema === undefined) {
-                    throw new Error(`Could not find associated data '${it}' in '${dataPointer.entityType}'.`)
+                    throw new UnexpectedError(undefined, `Could not find associated data '${it}' in '${dataPointer.entityType}'.`)
                 }
                 return `'${associatedDataSchema.name}'`
             })
@@ -88,7 +89,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                 const referenceSchema: ReferenceSchema | undefined = Object.values(entitySchema.references)
                     .find(referenceSchema => referenceSchema.nameVariants.camelCase === it)
                 if (referenceSchema === undefined) {
-                    throw new Error(`Could not find reference '${it}' in '${dataPointer.entityType}'.`)
+                    throw new UnexpectedError(undefined, `Could not find reference '${it}' in '${dataPointer.entityType}'.`)
                 }
                 return `'${referenceSchema.name}'`
             })

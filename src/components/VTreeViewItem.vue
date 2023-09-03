@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+
 export interface Props {
     openable?: boolean,
     isOpen?: boolean,
@@ -12,15 +14,24 @@ const props = withDefaults(defineProps<Props>(), {
     actions: () => []
 })
 
+const actionsOpened = ref<boolean>(false)
+
 const emit = defineEmits<{
     (e: 'click:action', value: string): void
 }>()
+
+function openActions(): void {
+    if (props.actions && props.actions.length > 0) {
+        actionsOpened.value = true
+    }
+}
 </script>
 
 <template>
     <VListItem
         :prepend-icon="null as any"
         :append-icon="null as any"
+        @contextmenu.prevent="openActions"
     >
         <div
             class="tree-view-item__content"
@@ -45,6 +56,7 @@ const emit = defineEmits<{
             <VMenu
                 v-if="actions && actions.length > 0"
                 :menu-items="actions"
+                v-model="actionsOpened"
             >
                 <template #activator="{ props }">
                     <VIcon

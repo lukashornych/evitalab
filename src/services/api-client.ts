@@ -1,15 +1,23 @@
-import { EvitaDBConnection } from '@/model/lab'
+import { EvitaDBConnection, LabError, UnexpectedError } from '@/model/lab'
 import {
     EvitaDBInstanceNetworkError,
     EvitaDBInstanceServerError,
-    LabError,
-    UnexpectedError
-} from '@/model/editor/editor'
+    TimeoutError
+} from '@/model/lab'
+import { KyInstance } from 'ky/distribution/types/ky'
+import ky from 'ky'
 
 /**
  * Common base for all API clients.
  */
 export abstract class ApiClient {
+    readonly httpClient: KyInstance
+
+    constructor() {
+        this.httpClient = ky.create({
+            timeout: 300000 // 5 minutes
+        })
+    }
 
     /**
      * Translates HTTP errors into specific lab errors.
@@ -22,6 +30,8 @@ export abstract class ApiClient {
             } else {
                 return new UnexpectedError(connection, e.message)
             }
+        } else if (e.name === 'TimeoutError') {
+            return new TimeoutError(connection)
         } else if (e.name === 'TypeError' && e.message === 'Failed to fetch') {
             return new EvitaDBInstanceNetworkError(connection)
         } else {

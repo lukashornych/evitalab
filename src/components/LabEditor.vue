@@ -5,6 +5,7 @@ import { TabRequest, TabRequestComponentProps } from '@/model/editor/editor'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import LabEditorTabWindow from '@/components/LabEditorTabWindow.vue'
 import { ellipsis } from '../utils/text-utils'
+import LabEditorWelcomeScreen from '@/components/LabEditorWelcomeScreen.vue'
 
 const editorService: EditorService = useEditorService()
 
@@ -29,16 +30,16 @@ const currentTab = computed(() => {
 })
 
 function closeTab(tabId: string) {
+    const prevTabsLength: number = tabs.value.length
+    const prevTabIndex: number = tabs.value.findIndex(tab => tab.id === currentTabId.value)
     const closedTabIndex: number = tabs.value.findIndex(tab => tab.id === tabId)
     editorService.destroyTabRequest(tabId)
 
     if (tabs.value.length === 0) {
         currentTabId.value = null
-    } else if (closedTabIndex === 0) {
-        currentTabId.value = tabs.value[0].id
-    } else if (tabs.value.length <= closedTabIndex) {
+    } else if (closedTabIndex === prevTabIndex && closedTabIndex === prevTabsLength - 1) {
         currentTabId.value = tabs.value[closedTabIndex - 1].id
-    } else {
+    } else if (closedTabIndex === prevTabIndex && closedTabIndex < prevTabsLength - 1) {
         currentTabId.value = tabs.value[closedTabIndex].id
     }
 }
@@ -49,16 +50,15 @@ function closeTab(tabId: string) {
     <VAppBar
         v-if="tabs.length > 0"
         density="compact"
+        elevation="0"
     >
-        <VTabs
-            v-model="currentTabId"
-            show-arrows
-        >
+        <VTabs v-model="currentTabId">
             <VTab
                 v-for="tab in tabs"
                 :key="tab.id"
                 :value="tab.id"
                 :prepend-icon="tab.icon"
+                @mousedown.middle="closeTab(tab.id)"
             >
                 <span>
                     {{ ellipsis(tab.title, 30) }}
@@ -103,6 +103,7 @@ function closeTab(tabId: string) {
                 :value="tab.id"
                 :transition="false"
                 :reverse-transition="false"
+                class="window-item"
             >
                 <LabEditorTabWindow
                     v-if="currentTab"
@@ -111,8 +112,8 @@ function closeTab(tabId: string) {
                 />
             </VWindowItem>
         </VWindow>
-        <div v-else>
-            No tabs are open
+        <div v-else style="position: relative">
+            <LabEditorWelcomeScreen/>
         </div>
     </VMain>
 </template>
@@ -124,5 +125,35 @@ function closeTab(tabId: string) {
     grid-template-rows: 1fr;
     justify-items: stretch;
     align-items: stretch;
+
+    & :deep(.v-window) {
+        position: absolute;
+        left: var(--v-layout-left);
+        right: var(--v-layout-right);
+        top: var(--v-layout-top);
+        bottom: var(--v-layout-bottom);
+    }
+
+    & :deep(.v-window__container) {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }
+
+    & :deep(.v-window-item) {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+        align-items: stretch;
+        justify-items: stretch;
+
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }
 }
 </style>

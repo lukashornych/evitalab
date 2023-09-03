@@ -1,19 +1,26 @@
-import { EvitaDBConnection, EvitaDBConnectionId } from '@/model/lab'
+import { DuplicateEvitaDBConnectionError, EvitaDBConnection, EvitaDBConnectionId } from '@/model/lab'
 import { Catalog, CatalogSchema, EntitySchema, EntitySchemas } from '@/model/evitadb'
 import Cookies from 'js-cookie'
+import { LabStorage, LabStorageVersionedItemType } from '@/services/lab-storage'
 
 /**
  * Stores global information about configured evitaDB servers.
  */
 export type LabState = {
+    // todo lho this is probably wrong
+    readonly storage: LabStorage,
     /**
      * Flag indicating whether the lab is in read-only mode.
      */
     readonly readOnly: boolean,
     /**
-     * List of configured evitaDB servers.
+     * List of preconfigured evitaDB servers by hosted server.
      */
-    readonly connections: EvitaDBConnection[],
+    readonly preconfiguredConnections: EvitaDBConnection[],
+    /**
+     * List of configured evitaDB servers by user.
+     */
+    readonly userConnections: EvitaDBConnection[],
     readonly catalogs: Map<EvitaDBConnectionId, Map<string, Catalog>>,
     /**
      * Cache of catalog schemas for all servers.
@@ -23,6 +30,8 @@ export type LabState = {
 }
 
 type LabGetters = {
+    isConnectionExists(state: LabState): (connectionName: string) => boolean
+    getConnections(state: LabState): () => EvitaDBConnection[]
     getCatalog(state: LabState): (connectionId: EvitaDBConnectionId, catalogName: string) =>  Catalog | undefined
     getCatalogs(state: LabState): (connectionId: EvitaDBConnectionId) => Catalog[] | undefined
     getCatalogSchema(state: LabState): (connectionId: EvitaDBConnectionId, catalogName: string) => CatalogSchema | undefined
@@ -38,26 +47,51 @@ type LabMutations = {
 }
 
 const state = (): LabState => {
+    // todo lho this is temporary solution to storing connections in local storage
+    const storage = new LabStorage()
+    storage.initialize()
+
+    // todo lho this should happen in Lab view so we can handle errors?
     const readOnlyCookie: string | undefined = Cookies.get('evitalab_readonly')
     const readOnly: boolean = readOnlyCookie != undefined && readOnlyCookie === 'true'
 
-    const preconfiguredConnectionsCookie: string | undefined = Cookies.get('evitalab_pconnections')
+    // todo lho refactor
     let preconfiguredConnections: EvitaDBConnection[] = []
+    // load preconfigured connections from cookie from hosted evitaDB instance
+    const preconfiguredConnectionsCookie: string | undefined = Cookies.get('evitalab_pconnections')
     if (preconfiguredConnectionsCookie != undefined) {
         preconfiguredConnections = (JSON.parse(preconfiguredConnectionsCookie) as Array<any>)
-            .map(connection => EvitaDBConnection.fromJson(connection))
+                .map(connection => EvitaDBConnection.fromJson(connection, true))
     }
+    // load user-defined connections from local storage
+    const userConnections: EvitaDBConnection[] = storage.getItem(
+        LabStorageVersionedItemType.Connections,
+        (item: string) => JSON.parse(item) as EvitaDBConnection[]
+    ) as EvitaDBConnection[]
 
     return {
-        // todo lho load from local storage
+        storage,
         readOnly,
-        connections: preconfiguredConnections,
+        preconfiguredConnections,
+        userConnections,
         catalogs: new Map<EvitaDBConnectionId, Map<string, Catalog>>(),
         catalogSchemas: new Map<EvitaDBConnectionId, Map<string, CatalogSchema>>()
     }
 }
 
 const getters: LabGetters = {
+    isConnectionExists(state: LabState): (connectionName: string) => boolean {
+        return (connectionName: string) => {
+            // todo lho change to getter
+            return [...state.preconfiguredConnections, ...state.userConnections].find((c: any) => c.name === connectionName) !== undefined
+        }
+    },
+    getConnections(state: LabState): () => EvitaDBConnection[] {
+        return () => {
+            return [...state.preconfiguredConnections, ...state.userConnections]
+        }
+    },
+
     getCatalog(state: LabState): (connectionId: EvitaDBConnectionId, catalogName: string) => Catalog | undefined {
         return (connectionId: EvitaDBConnectionId, catalogName: string) => {
             return state.catalogs.get(connectionId)?.get(catalogName)
@@ -92,14 +126,17 @@ const getters: LabGetters = {
 
 const mutations: LabMutations = {
     addConnection(state, connection): void {
-        if (state.connections.find(c => c.name === connection.name)) {
-            throw new Error(`Connection with name ${connection.name} already exists.`)
+        // todo lho change to getter
+        if ([...state.preconfiguredConnections, ...state.userConnections].findIndex((c: any) => c.name === connection.name) !== -1) {
+            throw new DuplicateEvitaDBConnectionError(connection.name)
         }
-        state.connections.push(connection)
+        state.userConnections.push(connection)
+        state.storage.storeItem(LabStorageVersionedItemType.Connections, state.userConnections)
     },
 
     removeConnection(state, connectionName): void {
-        state.connections.splice(state.connections.findIndex(connection => connection.name === connectionName), 1)
+        state.userConnections.splice(state.userConnections.findIndex(connection => connection.name === connectionName), 1)
+        state.storage.storeItem(LabStorageVersionedItemType.Connections, state.userConnections)
     },
 
     putCatalogs(state, payload): void {

@@ -21,10 +21,24 @@ const mainItems = ref([
 ])
 const secondaryItems = ref([
     {
-        title: 'Info',
-        value: PanelType.Info,
+        title: 'evitaDB Documentation',
+        value: PanelType.EvitaDBDocumentation,
         props: {
-            prependIcon: 'mdi-information',
+            prependIcon: 'mdi-book',
+        }
+    },
+    {
+        title: 'Feedback',
+        value: PanelType.Feedback,
+        props: {
+            prependIcon: 'mdi-comment-quote',
+        }
+    },
+    {
+        title: 'Issues',
+        value: PanelType.GitHub,
+        props: {
+            prependIcon: 'mdi-github',
         }
     }
 ])
@@ -37,6 +51,19 @@ function selectPanel(item: any): void {
     }
 }
 
+function openItem(item: any): void {
+    switch (item.id) {
+        case PanelType.EvitaDBDocumentation:
+            window.open('https://evitadb.io/documentation', '_blank')
+            break
+        case PanelType.Feedback:
+            window.open('https://discord.gg/VsNBWxgmSw', '_blank')
+            break
+        case PanelType.GitHub:
+            window.open('https://github.com/lukashornych/evitalab', '_blank')
+            break
+    }
+}
 </script>
 
 <template>
@@ -44,6 +71,24 @@ function selectPanel(item: any): void {
         permanent
         rail
     >
+        <template #prepend>
+            <div class="lab-logo">
+                <!-- todo lho open info dialog -->
+                <a
+                    href="https://github.com/lukashornych/evitalab"
+                    target="_blank"
+                >
+                    <VAvatar size="24px">
+                        <!-- todo lho use local link, don't how to do it when we use the /lab prefix -->
+                        <VImg
+                            alt="evitaLab Logo"
+                            src="https://github.com/lukashornych/evitalab/blob/dev/public/logo.png?raw=true"
+                        />
+                    </VAvatar>
+                </a>
+            </div>
+        </template>
+
         <VList
             density="compact"
             nav
@@ -57,11 +102,17 @@ function selectPanel(item: any): void {
                 density="compact"
                 nav
                 :items="secondaryItems"
+                @click:select="openItem"
             />
         </template>
     </VNavigationDrawer>
 </template>
 
 <style scoped>
-
+.lab-logo {
+    height: 3.5rem;
+    display: grid;
+    justify-items: center;
+    align-items: center;
+}
 </style>

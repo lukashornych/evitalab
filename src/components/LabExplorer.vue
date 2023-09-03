@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import LabExplorerConnectionItem from '@/components/LabExplorerConnectionItem.vue'
 import { LabService, useLabService } from '@/services/lab.service'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { EvitaDBConnection } from '@/model/lab'
+import LabExplorerConnectionEditor from '@/components/LabExplorerConnectionEditor.vue'
 
 const labService: LabService = useLabService()
 
@@ -14,6 +15,7 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void
 }>()
 
+const addConnectionDialogOpen = ref<boolean>(false)
 const connections = computed<EvitaDBConnection[]>(() => labService.getConnections())
 </script>
 
@@ -27,6 +29,8 @@ const connections = computed<EvitaDBConnection[]>(() => labService.getConnection
             density="compact"
             nav
         >
+            <VListSubheader>Connections</VListSubheader>
+
             <LabExplorerConnectionItem
                 v-for="connection in connections"
                 :key="connection.name"
@@ -34,19 +38,28 @@ const connections = computed<EvitaDBConnection[]>(() => labService.getConnection
             />
         </VList>
 
-<!--        <template #append>-->
-<!--            <div-->
-<!--                class="pa-2"-->
-<!--            >-->
-<!--                <VBtn-->
-<!--                    prepend-icon="mdi-plus"-->
-<!--                    block-->
-<!--                    variant="tonal"-->
-<!--                >-->
-<!--                    Add connection-->
-<!--                </VBtn>-->
-<!--            </div>-->
-<!--        </template>-->
+        <template #append>
+            <div
+                v-if="!labService.isReadOnly()"
+                class="pa-2"
+            >
+                <LabExplorerConnectionEditor
+                    v-model="addConnectionDialogOpen"
+                >
+                    <template #activator="{ props }">
+                        <VBtn
+                            prepend-icon="mdi-plus"
+                            block
+                            variant="tonal"
+                            v-bind="props"
+                            @click="addConnectionDialogOpen = true"
+                        >
+                            Add connection
+                        </VBtn>
+                    </template>
+                </LabExplorerConnectionEditor>
+            </div>
+        </template>
     </VNavigationDrawer>
 </template>
 

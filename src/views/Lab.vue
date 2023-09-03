@@ -15,9 +15,7 @@ const panel = ref<string>(PanelType.Explorer)
         v-model:panel="panel"
     />
 
-    <LabExplorer
-        :model-value="panel === PanelType.Explorer"
-    />
+    <LabExplorer :model-value="panel === PanelType.Explorer"/>
 
     <LabEditor />
 </template>

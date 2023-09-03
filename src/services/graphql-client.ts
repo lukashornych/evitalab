@@ -1,4 +1,3 @@
-import ky from 'ky'
 import { GraphQLResponse } from '@/model/graphql'
 import { EvitaDBConnection } from '@/model/lab'
 import { ApiClient } from '@/services/api-client'
@@ -14,7 +13,7 @@ export class GraphQLClient extends ApiClient {
     async fetch(connection: EvitaDBConnection, path: string, query: string, variables: any = {}): Promise<GraphQLResponse> {
         try {
             return (
-                await ky.post(
+                await this.httpClient.post(
                     `${connection.gqlUrl}/${path}`,
                     {
                         headers: {

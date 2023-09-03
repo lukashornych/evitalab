@@ -3,9 +3,8 @@ import { ToastInterface } from 'vue-toastification/src/ts/interface'
 import { ToastOptions } from 'vue-toastification/dist/types/types'
 import { TYPE } from 'vue-toastification/src/ts/constants'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import { EvitaDBConnection } from '@/model/lab'
 import { v4 as uuidv4 } from 'uuid'
-import { LabError, UnexpectedError } from '@/model/editor/editor'
+import { LabError, UnexpectedError } from '@/model/lab'
 import { ErrorViewerRequest } from '@/model/editor/error-viewer-request'
 
 /**
@@ -33,33 +32,32 @@ export class Toaster {
         this.toast.warning(title)
     }
 
-    error(error: Error) {
+    error(error: Error | String): void {
+        if (typeof error === 'string') {
+            this.toast.error(error)
+            return
+        }
+
         if (error instanceof LabError) {
             if (error.detail === undefined) {
                 this.toast.error(error.message)
             } else {
                 this.toast.error(
                     error.message,
-                    this.createErrorOptions(error.connection, error.message, error.detail)
+                    this.createErrorOptions(error)
                 )
             }
-        } else {
+        } else if (error instanceof Error) {
             this.error(new UnexpectedError(undefined, error.message))
         }
     }
 
-    private createErrorOptions(connection: EvitaDBConnection | undefined, message: string, detail: string): ToastOptions & { type?: TYPE.ERROR } {
+    private createErrorOptions(error: LabError): ToastOptions & { type?: TYPE.ERROR } {
         const id: string = uuidv4()
         return {
             id,
             onClick: () => {
-                this.editorService.createTabRequest(
-                    new ErrorViewerRequest(
-                        connection,
-                        message,
-                        detail
-                    )
-                )
+                this.editorService.createTabRequest(new ErrorViewerRequest(error.connection, error))
                 this.toast.dismiss(id)
             }
         }
