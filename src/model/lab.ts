@@ -39,7 +39,9 @@ export class EvitaDBConnection {
  */
 export enum PanelType {
     Explorer = 'explorer',
-    Info = 'info'
+    EvitaDBDocumentation = 'evitadb-documentation',
+    Feedback = 'feedback',
+    GitHub = 'github'
 }
 
 /**

@@ -21,10 +21,24 @@ const mainItems = ref([
 ])
 const secondaryItems = ref([
     {
-        title: 'Info',
-        value: PanelType.Info,
+        title: 'evitaDB Documentation',
+        value: PanelType.EvitaDBDocumentation,
         props: {
-            prependIcon: 'mdi-information',
+            prependIcon: 'mdi-book',
+        }
+    },
+    {
+        title: 'Feedback',
+        value: PanelType.Feedback,
+        props: {
+            prependIcon: 'mdi-comment-quote',
+        }
+    },
+    {
+        title: 'Issues',
+        value: PanelType.GitHub,
+        props: {
+            prependIcon: 'mdi-github',
         }
     }
 ])
@@ -37,6 +51,19 @@ function selectPanel(item: any): void {
     }
 }
 
+function openItem(item: any): void {
+    switch (item.id) {
+        case PanelType.EvitaDBDocumentation:
+            window.open('https://evitadb.io/documentation', '_blank')
+            break
+        case PanelType.Feedback:
+            window.open('https://discord.gg/VsNBWxgmSw', '_blank')
+            break
+        case PanelType.GitHub:
+            window.open('https://github.com/lukashornych/evitalab', '_blank')
+            break
+    }
+}
 </script>
 
 <template>
@@ -46,7 +73,7 @@ function selectPanel(item: any): void {
     >
         <template #prepend>
             <div class="lab-logo">
-                <!-- todo lho hp link into .env -->
+                <!-- todo lho open info dialog -->
                 <a
                     href="https://github.com/lukashornych/evitalab"
                     target="_blank"
@@ -75,6 +102,7 @@ function selectPanel(item: any): void {
                 density="compact"
                 nav
                 :items="secondaryItems"
+                @click:select="openItem"
             />
         </template>
     </VNavigationDrawer>
