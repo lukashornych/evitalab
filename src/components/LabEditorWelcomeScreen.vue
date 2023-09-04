@@ -37,7 +37,7 @@ function openGitHubIssues() {
                     prepend-icon="mdi-github"
                     @click="openGitHub"
                 >
-                    Star us ⭐ on GitHub
+                    Give us a ⭐ on GitHub
                 </VBtn>
                 <VBtn
                     prepend-icon="mdi-comment-quote"
