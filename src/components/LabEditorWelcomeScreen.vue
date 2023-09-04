@@ -23,7 +23,7 @@ function openGitHubIssues() {
                 <h1 class="text-h2">evitaLab</h1>
                 <!-- todo lho autoload -->
                 <span class="text-caption">alpha 0.1.0</span>
-                <p class="text-subtitle-1 mt-2">User-friendly evitaDB client</p>
+                <p class="text-subtitle-1 mt-2">evitaDB web console</p>
             </header>
 
             <div class="editor-welcome-screen-hero__links">
@@ -37,7 +37,7 @@ function openGitHubIssues() {
                     prepend-icon="mdi-github"
                     @click="openGitHub"
                 >
-                    Star as on GitHub
+                    Star us ⭐ on GitHub
                 </VBtn>
                 <VBtn
                     prepend-icon="mdi-comment-quote"
