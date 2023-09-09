@@ -470,7 +470,10 @@ function closePropertyDetail(): void {
                     </VCardTitle>
                     <VDivider />
                     <VCardText class="data-grid-cell-detail__body">
-                        <CodemirrorFull v-model="propertyDetailValue" />
+                        <CodemirrorFull
+                            v-model="propertyDetailValue"
+                            read-only
+                        />
                     </VCardText>
                 </VCard>
             </Pane>
