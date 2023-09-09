@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import project from '../../package.json'
+
 function openEvitaDBDocumentation() {
     window.open('https://evitadb.io/documentation', '_blank')
 }
@@ -21,9 +23,8 @@ function openGitHubIssues() {
         <div class="editor-welcome-screen-hero">
             <header class="editor-welcome-screen-hero__header">
                 <h1 class="text-h2">evitaLab</h1>
-                <!-- todo lho autoload -->
-                <span class="text-caption">alpha 0.1.0</span>
-                <p class="text-subtitle-1 mt-2">evitaDB web console</p>
+                <span class="text-caption">alpha {{ project.version }}</span>
+                <p class="text-subtitle-1 mt-2">evitaDB web client</p>
             </header>
 
             <div class="editor-welcome-screen-hero__links">
@@ -31,7 +32,7 @@ function openGitHubIssues() {
                     prepend-icon="mdi-book"
                     @click="openEvitaDBDocumentation"
                 >
-                    Checkout evitaDB documentation
+                    Check out the evitaDB documentation
                 </VBtn>
                 <VBtn
                     prepend-icon="mdi-github"
@@ -43,7 +44,7 @@ function openGitHubIssues() {
                     prepend-icon="mdi-comment-quote"
                     @click="openDiscord"
                 >
-                    Reach out on Discord
+                    Reach out to us on Discord
                 </VBtn>
                 <VBtn
                     prepend-icon="mdi-bug"
