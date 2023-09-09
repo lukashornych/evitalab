@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import LabExplorerConnectionItem from '@/components/LabExplorerConnectionItem.vue'
+import LabExplorerConnectionItem from './LabExplorerConnectionItem.vue'
 import { LabService, useLabService } from '@/services/lab.service'
 import { computed, ref } from 'vue'
 import { EvitaDBConnection } from '@/model/lab'
-import LabExplorerConnectionEditor from '@/components/LabExplorerConnectionEditor.vue'
+import LabExplorerConnectionEditor from './LabExplorerConnectionEditor.vue'
 
 const labService: LabService = useLabService()
 

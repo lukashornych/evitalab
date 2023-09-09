@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import VTreeViewItem from '@/components/VTreeViewItem.vue'
+import VTreeViewItem from '@/components/base/VTreeViewItem.vue'
 import { EvitaDBConnection } from '@/model/lab'
 import { inject, Ref, ref } from 'vue'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'

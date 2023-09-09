@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import LabEditorViewerContainer from '@/components/LabEditorSchemaViewerContainer.vue'
-import LabEditorSchemaViewerPanelGroupItem from '@/components/LabEditorSchemaViewerPanelGroupItem.vue'
+import LabEditorViewerContainer from './LabEditorSchemaViewerContainer.vue'
+import LabEditorSchemaViewerPanelGroupItem from './LabEditorSchemaViewerPanelGroupItem.vue'
 import { NameVariants } from '@/model/evitadb'
 
 const props = withDefaults(defineProps<{

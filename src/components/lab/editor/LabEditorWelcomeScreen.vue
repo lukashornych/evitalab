@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import project from '../../package.json'
+import project from '../../../../package.json'
 
 function openEvitaDBDocumentation() {
     window.open('https://evitadb.io/documentation', '_blank')

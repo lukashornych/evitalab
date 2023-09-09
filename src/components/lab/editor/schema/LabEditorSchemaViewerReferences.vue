@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
-import LabEditorViewerReferencesItem from '@/components/LabEditorSchemaViewerReferencesItem.vue'
-import LabEditorSchemaViewerPanelGroupItem from '@/components/LabEditorSchemaViewerPanelGroupItem.vue'
-import LabEditorSchemaViewerPanelGroup from '@/components/LabEditorSchemaViewerPanelGroup.vue'
+import LabEditorViewerReferencesItem from './LabEditorSchemaViewerReferencesItem.vue'
+import LabEditorSchemaViewerPanelGroupItem from './LabEditorSchemaViewerPanelGroupItem.vue'
+import LabEditorSchemaViewerPanelGroup from './LabEditorSchemaViewerPanelGroup.vue'
 import { ReferenceSchema } from '@/model/evitadb'
 
 const props = defineProps<{

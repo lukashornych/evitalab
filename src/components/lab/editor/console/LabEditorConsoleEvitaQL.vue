@@ -6,7 +6,7 @@ import { Extension } from '@codemirror/state';
 import { json } from '@codemirror/lang-json'
 
 import { ref } from 'vue'
-import CodemirrorFull from '@/components/CodemirrorFull.vue'
+import CodemirrorFull from '@/components/base/CodemirrorFull.vue'
 import { EvitaQLConsoleService, useEvitaQLConsoleService } from '@/services/editor/evitaql-console.service'
 import { EvitaQLConsoleProps } from '@/model/editor/evitaql-console'
 import { Toaster, useToaster } from '@/services/editor/toaster'

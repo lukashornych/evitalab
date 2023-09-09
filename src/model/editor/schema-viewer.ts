@@ -1,7 +1,7 @@
 import { EvitaDBConnection } from '@/model/lab'
 import { TabRequestComponentProps } from '@/model/editor/editor'
-import LabEditorSchemaViewerCatalog from '@/components/LabEditorSchemaViewerCatalog.vue'
-import LabEditorSchemaViewerEntity from '@/components/LabEditorSchemaViewerEntity.vue'
+import LabEditorSchemaViewerCatalog from '@/components/lab/editor/schema/LabEditorSchemaViewerCatalog.vue'
+import LabEditorSchemaViewerEntity from '@/components/lab/editor/schema/LabEditorSchemaViewerEntity.vue'
 import { DefineComponent, markRaw, Raw } from 'vue'
 
 /**

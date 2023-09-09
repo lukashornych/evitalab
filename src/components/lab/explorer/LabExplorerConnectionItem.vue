@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import LabExplorerCatalogItem from '@/components/LabExplorerCatalogItem.vue'
+import LabExplorerCatalogItem from './LabExplorerCatalogItem.vue'
 
 import { EvitaDBConnection, UnexpectedError } from '@/model/lab'
 import { provide, readonly, ref } from 'vue'
 import { LabService, useLabService } from '@/services/lab.service'
-import VTreeViewItem from '@/components/VTreeViewItem.vue'
+import VTreeViewItem from '@/components/base/VTreeViewItem.vue'
 import { Catalog } from '@/model/evitadb'
 import { Toaster, useToaster } from '@/services/editor/toaster'
-import LabExplorerConnectionRemoveDialog from '@/components/LabExplorerConnectionRemoveDialog.vue'
+import LabExplorerConnectionRemoveDialog from './LabExplorerConnectionRemoveDialog.vue'
 
 enum ActionType {
     Edit = 'edit',

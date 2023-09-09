@@ -3,9 +3,9 @@
 import { computed, ref, watch } from 'vue'
 import { TabRequest, TabRequestComponentProps } from '@/model/editor/editor'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import LabEditorTabWindow from '@/components/LabEditorTabWindow.vue'
-import { ellipsis } from '../utils/text-utils'
-import LabEditorWelcomeScreen from '@/components/LabEditorWelcomeScreen.vue'
+import LabEditorTabWindow from './LabEditorTabWindow.vue'
+import { ellipsis } from '@/utils/text-utils'
+import LabEditorWelcomeScreen from './LabEditorWelcomeScreen.vue'
 
 const editorService: EditorService = useEditorService()
 

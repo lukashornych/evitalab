@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import LabEditorViewerNameVariants from '@/components/LabEditorSchemaViewerNameVariants.vue'
-import LabEditorViewerContainer from '@/components/LabEditorSchemaViewerContainer.vue'
+import LabEditorViewerNameVariants from './LabEditorSchemaViewerNameVariants.vue'
+import LabEditorViewerContainer from './LabEditorSchemaViewerContainer.vue'
 import { EntitySchemaPointer, SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
-import LabEditorSchemaViewerAttributes from '@/components/LabEditorSchemaViewerAttributes.vue'
+import LabEditorSchemaViewerAttributes from './LabEditorSchemaViewerAttributes.vue'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import { SchemaViewerRequest } from '@/model/editor/schema-viewer-request'
 import { ReferenceSchema } from '@/model/evitadb'

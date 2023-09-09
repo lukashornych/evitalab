@@ -12,10 +12,9 @@ import {
 } from '@/model/editor/data-grid-console'
 import { Extension } from '@codemirror/state'
 import { DataGridConsoleService, useDataGridConsoleService } from '@/services/editor/data-grid-console.service'
-import CodemirrorOneLine from '@/components/CodemirrorOneLine.vue'
+import CodemirrorOneLine from '@/components/base/CodemirrorOneLine.vue'
 import { QueryLanguage } from '@/model/lab'
-import CodemirrorFull from '@/components/CodemirrorFull.vue'
-import { ellipsis } from '@/utils/text-utils'
+import CodemirrorFull from '@/components/base/CodemirrorFull.vue'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 
 const dataGridConsoleService: DataGridConsoleService = useDataGridConsoleService()

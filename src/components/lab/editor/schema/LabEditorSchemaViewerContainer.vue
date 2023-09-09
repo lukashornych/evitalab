@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import VPropertiesTable from '@/components/VPropertiesTable.vue'
-import LabEditorSchemaViewerPanelGroup from '@/components/LabEditorSchemaViewerPanelGroup.vue'
+import VPropertiesTable from '@/components/base/VPropertiesTable.vue'
+import LabEditorSchemaViewerPanelGroup from './LabEditorSchemaViewerPanelGroup.vue'
 
 const props = defineProps<{
     properties: [string, any, ((item?: string) => void)?][]

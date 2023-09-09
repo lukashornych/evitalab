@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import LabEditorViewerNameVariants from '@/components/LabEditorSchemaViewerNameVariants.vue'
-import LabEditorViewerContainer from '@/components/LabEditorSchemaViewerContainer.vue'
+import LabEditorViewerNameVariants from './LabEditorSchemaViewerNameVariants.vue'
+import LabEditorViewerContainer from './LabEditorSchemaViewerContainer.vue'
 import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
 import { AttributeSchemaUnion, GlobalAttributeSchema } from '@/model/evitadb'
 

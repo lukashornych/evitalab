@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import CodemirrorFull from '@/components/CodemirrorFull.vue'
+import CodemirrorFull from '@/components/base/CodemirrorFull.vue'
 import { ErrorViewerProps } from '@/model/editor/error-viewer'
 import { computed } from 'vue'
 

@@ -2,7 +2,7 @@ import { TabRequest } from '@/model/editor/editor'
 import { SchemaPointer, SchemaViewerDataPointer, SchemaViewerProps } from '@/model/editor/schema-viewer'
 import { EvitaDBConnection } from '@/model/lab'
 import { DefineComponent, markRaw } from 'vue'
-import LabEditorViewerCatalogSchema from '@/components/LabEditorSchemaViewer.vue'
+import LabEditorViewerCatalogSchema from '@/components/lab/editor/schema/LabEditorSchemaViewer.vue'
 
 /**
  * Creates new schema viewer tab.

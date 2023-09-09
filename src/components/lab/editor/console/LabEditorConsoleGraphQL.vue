@@ -10,7 +10,7 @@ import { onBeforeMount, ref } from 'vue'
 import { GraphQLConsoleService, useGraphQLConsoleService } from '@/services/editor/graphql-console.service'
 import { GraphQLSchema, printSchema } from 'graphql'
 import { GraphQLConsoleProps } from '@/model/editor/graphql-console'
-import CodemirrorFull from '@/components/CodemirrorFull.vue'
+import CodemirrorFull from '@/components/base/CodemirrorFull.vue'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 
 const graphQLConsoleService: GraphQLConsoleService = useGraphQLConsoleService()
