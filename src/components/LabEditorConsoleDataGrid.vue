@@ -60,8 +60,8 @@ watch(selectedQueryLanguage, (newValue, oldValue) => {
 
 const loading = ref<boolean>(false)
 const pageNumber = ref<number>(1)
-const pageSize = ref<number>(10)
-const itemsPerPage: any[] = [10, 100, 500, 1000].map(it => ({ title: it.toString(10), value: it }))
+const pageSize = ref<number>(25)
+const itemsPerPage: any[] = [10, 25, 50, 100, 250, 500, 1000].map(it => ({ title: it.toString(10), value: it }))
 
 const filterByCode = ref<string>('')
 const filterByExtensions: Extension[] = []
