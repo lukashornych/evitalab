@@ -424,7 +424,8 @@ function closePropertyDetail(): void {
                     fixed-header
                     fixed-footer
                     multi-sort
-                    :itemsPerPageOptions="itemsPerPage"
+                    :items-per-page="pageSize"
+                    :items-per-page-Options="itemsPerPage"
                     @update:options="gridUpdated"
                 >
                     <template #item="{ item }">
