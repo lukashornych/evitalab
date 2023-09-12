@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
 import LabEditorViewerAssociatedDataItem from './LabEditorSchemaViewerAssociatedDataItem.vue'
-import LabEditorSchemaViewerPanelGroupItem from './LabEditorSchemaViewerPanelGroupItem.vue'
-import LabEditorSchemaViewerPanelGroup from './LabEditorSchemaViewerPanelGroup.vue'
+import LabEditorSchemaViewerContainerSection from './LabEditorSchemaViewerContainerSection.vue'
 import { AssociatedDataSchema } from '@/model/evitadb'
+import LabEditorSchemaViewerContainerSectionList
+    from '@/components/lab/editor/schema/LabEditorSchemaViewerContainerSectionList.vue'
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
@@ -12,16 +13,20 @@ const props = defineProps<{
 </script>
 
 <template>
-    <LabEditorSchemaViewerPanelGroupItem name="Associated data">
-        <LabEditorSchemaViewerPanelGroup>
-            <LabEditorViewerAssociatedDataItem
-                v-for="associatedDatum in associatedData"
+    <LabEditorSchemaViewerContainerSection name="Associated data">
+        <LabEditorSchemaViewerContainerSectionList>
+            <template
+                v-for="(associatedDatum, index) in associatedData"
                 :key="associatedDatum.name"
-                :data-pointer="dataPointer"
-                :schema="associatedDatum"
-            />
-        </LabEditorSchemaViewerPanelGroup>
-    </LabEditorSchemaViewerPanelGroupItem>
+            >
+                <LabEditorViewerAssociatedDataItem
+                    :data-pointer="dataPointer"
+                    :schema="associatedDatum"
+                />
+                <VDivider v-if="index < associatedData.length - 1" />
+            </template>
+        </LabEditorSchemaViewerContainerSectionList>
+    </LabEditorSchemaViewerContainerSection>
 </template>
 
 <style lang="scss" scoped>

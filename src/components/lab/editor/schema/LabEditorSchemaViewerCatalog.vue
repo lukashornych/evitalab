@@ -20,36 +20,25 @@ const baseProperties = ref<[string, any, ((item?: string) => void)?][]>([
 </script>
 
 <template>
-    <div class="catalog-schema-viewer">
-        <LabEditorViewerContainer :properties="baseProperties">
-            <template #nested-details>
-                <LabEditorViewerNameVariants :name-variants="schema.nameVariants" />
+    <LabEditorViewerContainer :properties="baseProperties">
+        <template #nested-details>
+            <LabEditorViewerNameVariants :name-variants="schema.nameVariants" />
 
-                <LabEditorViewerAttributes
-                    v-if="schema.attributes && Object.values(schema.attributes).length > 0"
-                    :data-pointer="dataPointer"
-                    :attributes="Object.values(schema.attributes)"
-                />
+            <LabEditorViewerAttributes
+                v-if="schema.attributes && Object.values(schema.attributes).length > 0"
+                :data-pointer="dataPointer"
+                :attributes="Object.values(schema.attributes)"
+            />
 
-                <LabEditorSchemaViewerEntities
-                    v-if="schema.entitySchemas && Object.values(schema.entitySchemas).length > 0"
-                    :data-pointer="dataPointer"
-                    :catalog-schema="schema"
-                    :entities="Object.values(schema.entitySchemas)"
-                />
-            </template>
-        </LabEditorViewerContainer>
-    </div>
+            <LabEditorSchemaViewerEntities
+                v-if="schema.entitySchemas && Object.values(schema.entitySchemas).length > 0"
+                :data-pointer="dataPointer"
+                :entities="Object.values(schema.entitySchemas)"
+            />
+        </template>
+    </LabEditorViewerContainer>
 </template>
 
 <style lang="scss" scoped>
-.catalog-schema-viewer {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    padding: 1rem;
-    overflow-y: auto;
-}
+
 </style>

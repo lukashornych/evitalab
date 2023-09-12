@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import LabEditorViewerContainer from './LabEditorSchemaViewerContainer.vue'
-import LabEditorSchemaViewerPanelGroupItem from './LabEditorSchemaViewerPanelGroupItem.vue'
+import LabEditorSchemaViewerContainerSection from './LabEditorSchemaViewerContainerSection.vue'
 import { NameVariants } from '@/model/evitadb'
+import VPropertiesTable from '@/components/base/VPropertiesTable.vue'
 
 const props = withDefaults(defineProps<{
     prefix?: string,
@@ -22,9 +22,9 @@ const properties: [string, any, ((item?: string) => void)?][] = [
 </script>
 
 <template>
-    <LabEditorSchemaViewerPanelGroupItem :name="name">
-        <LabEditorViewerContainer :properties="properties" />
-    </LabEditorSchemaViewerPanelGroupItem>
+    <LabEditorSchemaViewerContainerSection :name="name">
+        <VPropertiesTable :properties="properties"/>
+    </LabEditorSchemaViewerContainerSection>
 </template>
 
 <style lang="scss" scoped>

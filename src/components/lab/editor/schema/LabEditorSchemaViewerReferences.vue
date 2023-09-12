@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
 import LabEditorViewerReferencesItem from './LabEditorSchemaViewerReferencesItem.vue'
-import LabEditorSchemaViewerPanelGroupItem from './LabEditorSchemaViewerPanelGroupItem.vue'
-import LabEditorSchemaViewerPanelGroup from './LabEditorSchemaViewerPanelGroup.vue'
+import LabEditorSchemaViewerContainerSection from './LabEditorSchemaViewerContainerSection.vue'
 import { ReferenceSchema } from '@/model/evitadb'
+import LabEditorSchemaViewerContainerSectionList
+    from '@/components/lab/editor/schema/LabEditorSchemaViewerContainerSectionList.vue'
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
@@ -12,16 +13,20 @@ const props = defineProps<{
 </script>
 
 <template>
-    <LabEditorSchemaViewerPanelGroupItem name="References">
-        <LabEditorSchemaViewerPanelGroup>
-            <LabEditorViewerReferencesItem
-                v-for="reference in references"
+    <LabEditorSchemaViewerContainerSection name="References">
+        <LabEditorSchemaViewerContainerSectionList>
+            <template
+                v-for="(reference, index) in references"
                 :key="reference.name"
-                :data-pointer="dataPointer"
-                :schema="reference"
-            />
-        </LabEditorSchemaViewerPanelGroup>
-    </LabEditorSchemaViewerPanelGroupItem>
+            >
+                <LabEditorViewerReferencesItem
+                    :data-pointer="dataPointer"
+                    :schema="reference"
+                />
+                <VDivider v-if="index < references.length - 1" />
+            </template>
+        </LabEditorSchemaViewerContainerSectionList>
+    </LabEditorSchemaViewerContainerSection>
 </template>
 
 <style lang="scss" scoped>

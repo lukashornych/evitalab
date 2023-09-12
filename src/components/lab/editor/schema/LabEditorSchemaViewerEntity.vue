@@ -29,41 +29,31 @@ const baseProperties = ref<[string, any, ((item?: string) => void)?][]>([
 </script>
 
 <template>
-    <div class="entity-schema-viewer">
-        <LabEditorViewerContainer :properties="baseProperties">
-            <template #nested-details>
-                <LabEditorViewerNameVariants :name-variants="schema.nameVariants" />
+    <LabEditorViewerContainer :properties="baseProperties">
+        <template #nested-details>
+            <LabEditorViewerNameVariants :name-variants="schema.nameVariants" />
 
-                <LabEditorViewerAttributes
-                    v-if="schema.attributes && Object.values(schema.attributes).length > 0"
-                    :data-pointer="dataPointer"
-                    :attributes="Object.values(schema.attributes)"
-                />
+            <LabEditorViewerAttributes
+                v-if="schema.attributes && Object.values(schema.attributes).length > 0"
+                :data-pointer="dataPointer"
+                :attributes="Object.values(schema.attributes)"
+            />
 
-                <LabEditorSchemaViewerAssociatedData
-                    v-if="schema.associatedData && Object.values(schema.associatedData).length > 0"
-                    :data-pointer="dataPointer"
-                    :associated-data="Object.values(schema.associatedData)"
-                />
+            <LabEditorSchemaViewerAssociatedData
+                v-if="schema.associatedData && Object.values(schema.associatedData).length > 0"
+                :data-pointer="dataPointer"
+                :associated-data="Object.values(schema.associatedData)"
+            />
 
-                <LabEditorSchemaViewerReferences
-                    v-if="schema.references && Object.values(schema.references).length > 0"
-                    :data-pointer="dataPointer"
-                    :references="Object.values(schema.references)"
-                />
-            </template>
-        </LabEditorViewerContainer>
-    </div>
+            <LabEditorSchemaViewerReferences
+                v-if="schema.references && Object.values(schema.references).length > 0"
+                :data-pointer="dataPointer"
+                :references="Object.values(schema.references)"
+            />
+        </template>
+    </LabEditorViewerContainer>
 </template>
 
 <style lang="scss" scoped>
-.entity-schema-viewer {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    padding: 1rem;
-    overflow-y: auto;
-}
+
 </style>

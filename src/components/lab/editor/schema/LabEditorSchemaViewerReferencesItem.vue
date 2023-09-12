@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
-import LabEditorSchemaViewerReference from './LabEditorSchemaViewerReference.vue'
-import LabEditorSchemaViewerPanelGroupItem from './LabEditorSchemaViewerPanelGroupItem.vue'
+import { EntitySchemaPointer, ReferenceSchemaPointer, SchemaViewerDataPointer } from '@/model/editor/schema-viewer'
 import { ReferenceSchema } from '@/model/evitadb'
+import { UnexpectedError } from '@/model/lab'
+import { EditorService, useEditorService } from '@/services/editor/editor.service'
+import { SchemaViewerRequest } from '@/model/editor/schema-viewer-request'
+import LabEditorSchemaViewerContainerSectionListItem
+    from '@/components/lab/editor/schema/LabEditorSchemaViewerContainerSectionListItem.vue'
+
+const editorService: EditorService = useEditorService()
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
@@ -14,19 +19,29 @@ if (!props.schema.referencedEntityTypeManaged) flags.push('external')
 if (props.schema.indexed) flags.push('indexed')
 if (props.schema.faceted) flags.push('faceted')
 
+function openReferenceSchema(): void {
+    if (!(props.dataPointer.schemaPointer instanceof EntitySchemaPointer)) {
+        throw new UnexpectedError(props.dataPointer.connection, 'Unsupported parent schema for entities.')
+    }
+    editorService.createTabRequest(new SchemaViewerRequest(
+        props.dataPointer.connection,
+        new ReferenceSchemaPointer(
+            props.dataPointer.schemaPointer.catalogName,
+            props.dataPointer.schemaPointer.entityType,
+            props.schema.name
+        )
+    ))
+}
+
 </script>
 
 <template>
-    <LabEditorSchemaViewerPanelGroupItem
+    <LabEditorSchemaViewerContainerSectionListItem
         :name="schema.name"
         :deprecated="!!schema.deprecationNotice"
         :flags="flags"
-    >
-        <LabEditorSchemaViewerReference
-            :data-pointer="dataPointer"
-            :schema="schema"
-        />
-    </LabEditorSchemaViewerPanelGroupItem>
+        @open="openReferenceSchema"
+    />
 </template>
 
 <style lang="scss" scoped>

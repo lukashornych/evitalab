@@ -9,12 +9,16 @@ const toaster: Toaster = useToaster()
 
 const props = defineProps<SchemaViewerProps>()
 
+const schemaLoaded = ref<boolean>(false)
 const schema = ref<any>()
 schemaViewerService.getSchema(props.dataPointer)
     .catch(error => {
         toaster.error(error)
     })
-    .then(s => schema.value = s)
+    .then(s => {
+        schema.value = s
+        schemaLoaded.value = true
+    })
 </script>
 
 <template>
@@ -40,7 +44,7 @@ schemaViewerService.getSchema(props.dataPointer)
 
         <VSheet class="schema-viewer__body">
             <component
-                v-if="schema"
+                v-if="schemaLoaded"
                 :is="dataPointer.schemaPointer.component()"
                 :data-pointer="dataPointer"
                 :schema="schema"

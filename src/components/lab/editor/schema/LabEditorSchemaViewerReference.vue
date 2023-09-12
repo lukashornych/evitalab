@@ -68,7 +68,7 @@ properties.push(['Faceted', props.schema.faceted])
             />
 
             <LabEditorViewerNameVariants
-                v-if="schema.groupTypeNameVariants"
+                v-if="schema.referencedGroupType && schema.groupTypeNameVariants"
                 prefix="Referenced group"
                 :name-variants="schema.groupTypeNameVariants"
             />
