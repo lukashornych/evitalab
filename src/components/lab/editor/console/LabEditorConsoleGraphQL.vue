@@ -72,6 +72,7 @@ function initializeSchemaEditor(): void {
         }
     }
 }
+
 </script>
 
 <template>
