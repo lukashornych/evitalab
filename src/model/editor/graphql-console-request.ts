@@ -10,7 +10,7 @@ import { DefineComponent, markRaw } from 'vue'
 export class GraphQLConsoleRequest extends TabRequest<GraphQLConsoleProps> {
     constructor(connection: EvitaDBConnection, catalogName: string, instanceType: GraphQLInstanceType) {
         super(
-            `${catalogName} - ${instanceType} [${connection.name}]`,
+            (instanceType === GraphQLInstanceType.SYSTEM ? instanceType : `${catalogName} - ${instanceType}`) +  ` [${connection.name}]`,
             'mdi-graphql',
             markRaw(LabEditorConsoleGraphQL as DefineComponent<any, any, any>),
             {

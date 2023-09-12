@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { Splitpanes, Pane } from 'splitpanes'
+import { Pane, Splitpanes } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 
-import { Extension } from '@codemirror/state';
-import { graphql } from 'cm6-graphql';
+import { Extension } from '@codemirror/state'
+import { graphql } from 'cm6-graphql'
 import { json } from '@codemirror/lang-json'
 
 import { onBeforeMount, ref } from 'vue'
 import { GraphQLConsoleService, useGraphQLConsoleService } from '@/services/editor/graphql-console.service'
 import { GraphQLSchema, printSchema } from 'graphql'
-import { GraphQLConsoleProps } from '@/model/editor/graphql-console'
+import { GraphQLConsoleProps, GraphQLInstanceType } from '@/model/editor/graphql-console'
 import CodemirrorFull from '@/components/base/CodemirrorFull.vue'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 
@@ -18,10 +18,11 @@ const toaster: Toaster = useToaster()
 
 const props = defineProps<GraphQLConsoleProps>()
 
-const path = ref<string[]>([
-    props.instancePointer.catalogName,
-    props.instancePointer.instanceType, // todo lho i18n
-])
+const path = ref<string[]>([])
+if (props.instancePointer.instanceType !== GraphQLInstanceType.SYSTEM) {
+    path.value.push(props.instancePointer.catalogName)
+}
+path.value.push(props.instancePointer.instanceType) // todo lho i18n
 const editorTab = ref<string>('query')
 
 const graphQLSchema = ref<GraphQLSchema>()

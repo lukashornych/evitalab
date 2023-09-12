@@ -14,9 +14,6 @@ import { CatalogSchema, EntitySchema } from '@/model/evitadb'
 
 enum ActionType {
     ViewEntities = 'view-entities',
-    OpenEvitaQLConsole = 'open-evitaql-console',
-    OpenGraphQLDataAPIConsole = 'open-graphql-data-api-console',
-    OpenGraphQLSchemaAPIConsole = 'open-graphql-schema-api-console',
     ViewSchema = 'view-schema'
 }
 
@@ -26,27 +23,6 @@ const actions = ref<object[]>([
         title: 'View entities',
         props: {
             prependIcon: 'mdi-table'
-        }
-    },
-    {
-        value: ActionType.OpenEvitaQLConsole,
-        title: 'Open EvitaQL console',
-        props: {
-            prependIcon: 'mdi-console'
-        }
-    },
-    {
-        value: ActionType.OpenGraphQLDataAPIConsole,
-        title: 'Open GraphQL Data API console',
-        props: {
-            prependIcon: 'mdi-graphql'
-        }
-    },
-    {
-        value: ActionType.OpenGraphQLSchemaAPIConsole,
-        title: 'Open GraphQL Schema API console',
-        props: {
-            prependIcon: 'mdi-graphql'
         }
     },
     {
@@ -79,32 +55,6 @@ function handleAction(action: string) {
     switch (action) {
         case ActionType.ViewEntities:
             openDataGrid()
-            break
-        case ActionType.OpenEvitaQLConsole:
-            editorService.createTabRequest(
-                new EvitaQLConsoleRequest(
-                    connection,
-                    catalogSchema.value.name
-                )
-            )
-            break
-        case ActionType.OpenGraphQLDataAPIConsole:
-            editorService.createTabRequest(
-                new GraphQLConsoleRequest(
-                    connection,
-                    catalogSchema.value.name,
-                    GraphQLInstanceType.DATA
-                )
-            )
-            break
-        case ActionType.OpenGraphQLSchemaAPIConsole:
-            editorService.createTabRequest(
-                new GraphQLConsoleRequest(
-                    connection,
-                    catalogSchema.value.name,
-                    GraphQLInstanceType.SCHEMA
-                )
-            )
             break
         case ActionType.ViewSchema:
             editorService.createTabRequest(

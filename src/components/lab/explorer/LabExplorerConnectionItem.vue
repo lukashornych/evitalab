@@ -8,12 +8,17 @@ import VTreeViewItem from '@/components/base/VTreeViewItem.vue'
 import { Catalog } from '@/model/evitadb'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import LabExplorerConnectionRemoveDialog from './LabExplorerConnectionRemoveDialog.vue'
+import { GraphQLConsoleRequest } from '@/model/editor/graphql-console-request'
+import { GraphQLInstanceType } from '@/model/editor/graphql-console'
+import { EditorService, useEditorService } from '@/services/editor/editor.service'
 
 enum ActionType {
+    OpenGraphQLSystemAPIConsole = 'open-graphql-system-api-console',
     Edit = 'edit',
     Remove = 'remove'
 }
 
+const editorService: EditorService = useEditorService()
 const labService: LabService = useLabService()
 const toaster: Toaster = useToaster()
 
@@ -23,7 +28,15 @@ const props = defineProps<{
 
 provide('connection', readonly(props.connection))
 
-const actions = ref<object[]>([])
+const actions = ref<object[]>([
+    {
+        value: ActionType.OpenGraphQLSystemAPIConsole,
+        title: 'Open GraphQL System API console',
+        props: {
+            prependIcon: 'mdi-graphql'
+        }
+    }
+])
 if (!labService.isReadOnly() && !props.connection.preconfigured) {
     // actions.value.push({
     //     value: ActionType.Edit,
@@ -38,7 +51,7 @@ if (!labService.isReadOnly() && !props.connection.preconfigured) {
         props: {
             prependIcon: 'mdi-delete'
         }
-    },)
+    })
 }
 const removeConnectionDialogOpen = ref<boolean>(false)
 const catalogs = ref<Catalog[]>()
@@ -56,6 +69,15 @@ async function loadCatalogs(): Promise<void> {
 
 function handleAction(action: string, payload?: any) {
     switch (action) {
+        case ActionType.OpenGraphQLSystemAPIConsole:
+            editorService.createTabRequest(
+                new GraphQLConsoleRequest(
+                    props.connection,
+                    'system', // todo lho: this is not needed
+                    GraphQLInstanceType.SYSTEM
+                )
+            )
+            break
         case ActionType.Edit:
             throw new UnexpectedError(undefined, 'Not implemented yet.')
         case ActionType.Remove:
