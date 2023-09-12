@@ -29,7 +29,7 @@ const connections = computed<EvitaDBConnection[]>(() => labService.getConnection
             density="compact"
             nav
         >
-            <VListSubheader>Connections</VListSubheader>
+            <VListSubheader>Connections Explorer</VListSubheader>
 
             <LabExplorerConnectionItem
                 v-for="connection in connections"
