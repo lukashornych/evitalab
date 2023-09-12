@@ -22,12 +22,6 @@ watch(tabs, () => {
 }, { deep: true})
 
 const currentTabId = ref<string | null>()
-const currentTab = computed(() => {
-    if (!currentTabId.value) {
-        return null
-    }
-    return editorService.getTabRequest(currentTabId.value as string) as TabRequest<TabRequestComponentProps>
-})
 
 function closeTab(tabId: string) {
     const prevTabsLength: number = tabs.value.length
@@ -106,9 +100,8 @@ function closeTab(tabId: string) {
                 class="window-item"
             >
                 <LabEditorTabWindow
-                    v-if="currentTab"
-                    :component="currentTab.component"
-                    :component-props="currentTab.componentProps"
+                    :component="tab.component"
+                    :component-props="tab.componentProps"
                 />
             </VWindowItem>
         </VWindow>
