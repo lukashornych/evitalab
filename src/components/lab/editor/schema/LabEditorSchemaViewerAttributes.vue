@@ -14,17 +14,15 @@ const props = defineProps<{
 
 <template>
     <LabEditorSchemaViewerContainerSection name="Attributes">
-        <LabEditorSchemaViewerContainerSectionList>
-            <template
-                v-for="(attribute, index) in attributes"
-                :key="attribute.name"
-            >
-                <LabEditorViewerAttributesItem
-                    :data-pointer="dataPointer"
-                    :schema="attribute"
-                />
-                <VDivider v-if="index < attributes.length - 1" />
-            </template>
+        <LabEditorSchemaViewerContainerSectionList
+            :items="attributes"
+            :nameSupplier="item => item.name"
+            v-slot="{ item }"
+        >
+            <LabEditorViewerAttributesItem
+                :data-pointer="dataPointer"
+                :schema="item"
+            />
         </LabEditorSchemaViewerContainerSectionList>
     </LabEditorSchemaViewerContainerSection>
 </template>

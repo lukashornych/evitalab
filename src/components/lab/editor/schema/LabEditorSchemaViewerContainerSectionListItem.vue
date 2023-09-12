@@ -2,21 +2,31 @@
 const props = withDefaults(defineProps<{
     name: string,
     deprecated?: boolean,
-    flags?: string[]
+    flags?: string[],
+    openable?: boolean
 }>(), {
     deprecated: false,
-    flags: () => []
+    flags: () => [],
+    openable: true
 })
 
 const emit = defineEmits<{
     (e: 'open'): void
 }>()
+
+function open() {
+    if (!props.openable) {
+        return
+    }
+    emit('open')
+}
 </script>
 
 <template>
     <VListItem
         class="rounded"
-        @click="emit('open')"
+        :disabled="!openable"
+        @click="open"
     >
         <div class="item-body">
             <VListItemTitle>
@@ -34,7 +44,10 @@ const emit = defineEmits<{
             </VChipGroup>
         </div>
 
-        <template #append>
+        <template
+            v-if="openable"
+            #append
+        >
             <VIcon>mdi-open-in-new</VIcon>
         </template>
     </VListItem>
