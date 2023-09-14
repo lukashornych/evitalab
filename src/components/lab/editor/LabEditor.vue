@@ -67,7 +67,7 @@ resolveDemoCodeSnippet()
             editorService.createTabRequest(tabRequest)
         }
     })
-
+</script>
 
 <template>
     <VAppBar
