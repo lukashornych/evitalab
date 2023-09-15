@@ -14,12 +14,13 @@ import CodemirrorFull from '@/components/base/CodemirrorFull.vue'
 import { EvitaQLConsoleService, useEvitaQLConsoleService } from '@/services/editor/evitaql-console.service'
 import { EvitaQLConsoleData, EvitaQLConsoleParams } from '@/model/editor/evitaql-console'
 import { Toaster, useToaster } from '@/services/editor/toaster'
-import { TabComponentProps } from '@/model/editor/editor'
+import { TabComponentEvents, TabComponentProps } from '@/model/editor/editor'
 
 const evitaQLConsoleService: EvitaQLConsoleService = useEvitaQLConsoleService()
 const toaster: Toaster = useToaster()
 
 const props = defineProps<TabComponentProps<EvitaQLConsoleParams, EvitaQLConsoleData>>()
+const emit = defineEmits<TabComponentEvents>()
 
 const path = ref<string[]>([
     props.params.dataPointer.catalogName
@@ -42,6 +43,8 @@ async function executeQuery(): Promise<void> {
         toaster.error(error)
     }
 }
+
+emit('ready')
 
 if (props.params.executeOnOpen) {
     executeQuery()

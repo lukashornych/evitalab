@@ -16,12 +16,13 @@ import { GraphQLSchema, printSchema } from 'graphql'
 import { GraphQLConsoleData, GraphQLConsoleParams, GraphQLInstanceType } from '@/model/editor/graphql-console'
 import CodemirrorFull from '@/components/base/CodemirrorFull.vue'
 import { Toaster, useToaster } from '@/services/editor/toaster'
-import { TabComponentProps } from '@/model/editor/editor'
+import { TabComponentEvents, TabComponentProps } from '@/model/editor/editor'
 
 const graphQLConsoleService: GraphQLConsoleService = useGraphQLConsoleService()
 const toaster: Toaster = useToaster()
 
 const props = defineProps<TabComponentProps<GraphQLConsoleParams, GraphQLConsoleData>>()
+const emit = defineEmits<TabComponentEvents>()
 
 const path = ref<string[]>([])
 if (props.params.instancePointer.instanceType !== GraphQLInstanceType.SYSTEM) {
@@ -53,6 +54,8 @@ onBeforeMount(() => {
             graphQLSchema.value = schema
             queryExtensions.push(graphql(schema))
             initialized.value = true
+            emit('ready')
+
             if (props.params.executeOnOpen) {
                 executeQuery()
             }
@@ -210,9 +213,6 @@ function initializeSchemaEditor(): void {
                 </Pane>
             </Splitpanes>
         </div>
-    </div>
-    <div v-else>
-        Loading...
     </div>
 </template>
 
