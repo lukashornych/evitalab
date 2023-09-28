@@ -9,7 +9,7 @@ import VLoadingCircular from '@/components/base/VLoadingCircular.vue'
 <template>
     <div class="loading-screen">
         <div class="loading-screen-info">
-            <VLoadingCircular size="48" />
+            <VLoadingCircular :size="48" />
             <span>Loading, please wait ...</span>
         </div>
     </div>
