@@ -11,7 +11,7 @@ import LabExplorerConnectionRemoveDialog from './LabExplorerConnectionRemoveDial
 import { GraphQLConsoleRequest } from '@/model/editor/graphql-console-request'
 import { GraphQLInstanceType } from '@/model/editor/graphql-console'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import VLoadingIcon from '@/components/base/VLoadingCircular.vue'
+import VTreeViewItemEmpty from '@/components/base/VTreeViewItemEmpty.vue'
 
 enum ActionType {
     OpenGraphQLSystemAPIConsole = 'open-graphql-system-api-console',
@@ -122,7 +122,7 @@ function handleAction(action: string, payload?: any) {
                 />
             </template>
             <template v-else>
-                <VTreeViewItem empty />
+                <VTreeViewItemEmpty />
             </template>
         </div>
 
