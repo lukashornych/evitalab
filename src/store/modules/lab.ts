@@ -98,6 +98,11 @@ const state = (): LabState => {
     // load user-defined connections from local storage
     const userConnections: EvitaDBConnection[] = storage.getUserConnections()
 
+    // expire cookies, so when the lab is reloaded, it will load new cookie values
+    Cookies.remove(serverNameCookieName)
+    Cookies.remove(readonlyCookieName)
+    Cookies.remove(preconfiguredConnectionsCookieName)
+
     return {
         serverName,
         storage,
