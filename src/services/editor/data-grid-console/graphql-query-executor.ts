@@ -58,8 +58,8 @@ export class GraphQLQueryExecutor extends QueryExecutor {
             flattenedEntity.push([EntityPropertyKey.associatedData(associatedDataName), this.deserializePropertyValue(associatedData[associatedDataName])])
         }
 
-        const references = Object.keys(entity).filter((it: string) => it.startsWith(EntityPropertyType.References + '_'))
-        for (const referenceAlias in references) {
+        const references = Object.keys(entity).filter((it: string) => it.startsWith('reference_'))
+        for (const referenceAlias of references) {
             const referenceName = referenceAlias.split('_')[1]
             const referencesOfName = entity[referenceAlias]
             if (referencesOfName instanceof Array) {
