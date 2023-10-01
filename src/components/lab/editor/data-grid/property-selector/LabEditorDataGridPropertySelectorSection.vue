@@ -19,7 +19,7 @@ const props = defineProps<{
     dataPointer: DataGridDataPointer
 }>()
 const emit = defineEmits<{
-    (e: 'toggle', value: EntityPropertySectionSelection)
+    (e: 'toggle', value: EntityPropertySectionSelection): void
 }>()
 
 function resolveNewSelection() {

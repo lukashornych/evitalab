@@ -33,10 +33,10 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{
     (e: 'executeQuery'): void
-    (e: 'update:selectedQueryLanguage', value: QueryLanguage): void
+    (e: 'update:selectedQueryLanguage', value: QueryLanguage | undefined): void
     (e: 'update:filterBy', value: string): void
     (e: 'update:orderBy', value: string): void
-    (e: 'update:selectedDataLocale', value: string): void
+    (e: 'update:selectedDataLocale', value: string | undefined): void
     (e: 'update:selectedEntityPropertyKeys', value: EntityPropertyKey[]): void
 }>()
 
@@ -56,7 +56,7 @@ const showPropertiesSelect = ref<boolean>(false)
                 <VList
                     :selected="[selectedQueryLanguage]"
                     density="compact"
-                    @update:selected="emit('update:selectedQueryLanguage', $event.length > 0 ? $event[0] : undefined)"
+                    @update:selected="emit('update:selectedQueryLanguage', $event.length > 0 ? $event[0] as QueryLanguage : undefined)"
                 >
                     <VListItem
                         v-for="language in queryLanguages"
@@ -99,7 +99,7 @@ const showPropertiesSelect = ref<boolean>(false)
                     :selected="[selectedDataLocale]"
                     density="compact"
                     min-width="100"
-                    @update:selected="emit('update:selectedDataLocale', $event.length > 0 ? $event[0] : undefined)"
+                    @update:selected="emit('update:selectedDataLocale', $event.length > 0 ? $event[0] as string : undefined)"
                 >
                     <VListItem
                         value="none"

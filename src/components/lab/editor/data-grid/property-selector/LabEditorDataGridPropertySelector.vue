@@ -107,17 +107,19 @@ function handleFilterUpdate(term: string): void {
     } else {
         // automatically open sections that have any properties matching the filter
         const sectionsWithAnyProperties: EntityPropertyType[] = []
-        if (filteredSectionedProperties.value.get(EntityPropertyType.Entity)?.length > 0) {
-            sectionsWithAnyProperties.push(EntityPropertyType.Entity)
-        }
-        if (filteredSectionedProperties.value.get(EntityPropertyType.Attributes)?.length > 0) {
-            sectionsWithAnyProperties.push(EntityPropertyType.Attributes)
-        }
-        if (filteredSectionedProperties.value.get(EntityPropertyType.AssociatedData)?.length > 0) {
-            sectionsWithAnyProperties.push(EntityPropertyType.AssociatedData)
-        }
-        if (filteredSectionedProperties.value.get(EntityPropertyType.References)?.length > 0) {
-            sectionsWithAnyProperties.push(EntityPropertyType.References)
+        if (filteredSectionedProperties.value.size > 0) {
+            if ((filteredSectionedProperties.value.get(EntityPropertyType.Entity) || []).length > 0) {
+                sectionsWithAnyProperties.push(EntityPropertyType.Entity)
+            }
+            if ((filteredSectionedProperties.value.get(EntityPropertyType.Attributes) || []).length > 0) {
+                sectionsWithAnyProperties.push(EntityPropertyType.Attributes)
+            }
+            if ((filteredSectionedProperties.value.get(EntityPropertyType.AssociatedData) || []).length > 0) {
+                sectionsWithAnyProperties.push(EntityPropertyType.AssociatedData)
+            }
+            if ((filteredSectionedProperties.value.get(EntityPropertyType.References) || []).length > 0) {
+                sectionsWithAnyProperties.push(EntityPropertyType.References)
+            }
         }
         openedPropertySections.value = sectionsWithAnyProperties
     }
@@ -171,7 +173,7 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
                 />
                 <VList
                     :selected="selected"
-                    @update:selected="emit('update:selected', $event)"
+                    @update:selected="emit('update:selected', $event as EntityPropertyKey[])"
                     v-model:opened="openedPropertySections"
                     lines="two"
                     open-strategy="multiple"

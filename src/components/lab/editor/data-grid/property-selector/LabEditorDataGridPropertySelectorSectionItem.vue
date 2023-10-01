@@ -11,7 +11,7 @@ const props = withDefaults(defineProps<{
 }>(), {
     description: undefined,
     openable: false,
-    flags: []
+    flags: () => []
 })
 const emit = defineEmits<{
     (e: 'schemaOpen'): void
