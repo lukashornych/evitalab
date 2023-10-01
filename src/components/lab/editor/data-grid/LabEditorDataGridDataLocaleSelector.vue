@@ -1,22 +1,22 @@
 <script setup lang="ts">
 const props = defineProps<{
-    selectedDataLocale: string | undefined,
+    selected: string | undefined,
     dataLocales: string[]
 }>()
 const emit = defineEmits<{
-    (e: 'update:selectedDataLocale', value: string | undefined): void
+    (e: 'update:selected', value: string | undefined): void
 }>()
 
 function handleDataLocaleSelect(selected: string[]) {
     if (selected.length > 0) {
         const dataLocale: string = selected[0]
         if (dataLocale === 'none') {
-            emit('update:selectedDataLocale', undefined)
+            emit('update:selected', undefined)
         } else {
-            emit('update:selectedDataLocale', dataLocale)
+            emit('update:selected', dataLocale)
         }
     } else {
-        emit('update:selectedDataLocale', undefined)
+        emit('update:selected', undefined)
     }
 }
 </script>
@@ -26,7 +26,7 @@ function handleDataLocaleSelect(selected: string[]) {
         icon
         density="comfortable"
     >
-        <VIcon v-if="!selectedDataLocale">mdi-translate-off</VIcon>
+        <VIcon v-if="!selected">mdi-translate-off</VIcon>
         <VIcon v-else>mdi-translate</VIcon>
 
         <VTooltip activator="parent">
@@ -35,7 +35,7 @@ function handleDataLocaleSelect(selected: string[]) {
 
         <VMenu activator="parent">
             <VList
-                :selected="[selectedDataLocale ? selectedDataLocale : 'none']"
+                :selected="[selected ? selected : 'none']"
                 density="compact"
                 min-width="100"
                 @update:selected="handleDataLocaleSelect"
