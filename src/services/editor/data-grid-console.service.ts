@@ -65,7 +65,7 @@ export class DataGridConsoleService {
             dataPointer,
             filterBy,
             orderBy,
-            (dataLocale == undefined || dataLocale == 'none') ? undefined : dataLocale,
+            dataLocale,
             requiredData,
             pageNumber,
             pageSize

@@ -57,7 +57,7 @@ const pageSize = ref<number>(props.data?.pageSize ? props.data.pageSize : 25)
 const filterByCode = ref<string>(props.data?.filterBy ? props.data.filterBy : '')
 const orderByCode = ref<string>(props.data?.orderBy ? props.data.orderBy : '')
 
-const selectedDataLocale = ref<string>(props.data?.dataLanguage ? props.data.dataLanguage : 'none')
+const selectedDataLocale = ref<string | undefined>(props.data?.dataLanguage ? props.data.dataLanguage : undefined)
 watch(selectedDataLocale, () => executeQuery())
 
 const displayedProperties = ref<EntityPropertyKey[]>(props.data?.displayedProperties ? props.data.displayedProperties : [])

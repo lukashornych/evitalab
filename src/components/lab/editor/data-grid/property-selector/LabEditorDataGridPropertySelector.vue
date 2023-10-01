@@ -155,6 +155,20 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
         max-width="60rem"
         scrollable
     >
+        <template #activator="{ props }">
+            <VBtn
+                icon
+                density="comfortable"
+                v-bind="props"
+            >
+                <VIcon>mdi-view-column</VIcon>
+                <VTooltip activator="parent">
+                    Select displayed properties
+                </VTooltip>
+            </VBtn>
+
+        </template>
+
         <VCard>
             <VClosableCardTitle @close="emit('update:modelValue', false)">
                 Displayed properties
