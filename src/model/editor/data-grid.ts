@@ -31,7 +31,7 @@ export interface DataGridConsoleData extends TabRequestComponentData {
     readonly filterBy?: string
     readonly orderBy?: string
     readonly dataLanguage?: string
-    readonly displayedData?: string[]
+    readonly displayedProperties?: EntityPropertyKey[]
     readonly pageSize?: number
     readonly pageNumber?: number
 }
@@ -103,6 +103,25 @@ export class EntityPropertyKey {
         }
         return `${this.type}.${this.name}`
     }
+}
+
+/**
+ * Full description of a single entity property
+ */
+export type EntityPropertyDescriptor = {
+    type: EntityPropertyType,
+    key: EntityPropertyKey,
+    title: string,
+    schema: any | undefined
+}
+
+/**
+ * Summarizes the selection state of all properties in a single section.
+ */
+export enum EntityPropertySectionSelection {
+    None = 'none',
+    Some = 'some',
+    All = 'all'
 }
 
 /**

@@ -1,6 +1,6 @@
 import { inject, InjectionKey } from 'vue'
 import {
-    DataGridDataPointer,
+    DataGridDataPointer, EntityPropertyDescriptor,
     EntityPropertyKey,
     EntityPropertyType,
     QueryResult,
@@ -55,7 +55,7 @@ export class DataGridConsoleService {
                        filterBy: string,
                        orderBy: string,
                        dataLocale: string | undefined,
-                       requiredData: string[],
+                       requiredData: EntityPropertyKey[],
                        pageNumber: number,
                        pageSize: number): Promise<QueryResult> {
         const queryBuilder: QueryBuilder = this.getQueryBuilder(language)
@@ -65,8 +65,8 @@ export class DataGridConsoleService {
             dataPointer,
             filterBy,
             orderBy,
-            (dataLocale == undefined || dataLocale === 'none') ? undefined : dataLocale,
-            requiredData.map(property => EntityPropertyKey.fromString(property)),
+            (dataLocale == undefined || dataLocale == 'none') ? undefined : dataLocale,
+            requiredData,
             pageNumber,
             pageSize
         )
@@ -114,52 +114,73 @@ export class DataGridConsoleService {
     /**
      * Builds a list of all possible entity properties for entities of given schema.
      */
-    async getEntityPropertyKeys(dataPointer: DataGridDataPointer): Promise<EntityPropertyKey[]> {
+    async getEntityPropertyDescriptors(dataPointer: DataGridDataPointer): Promise<EntityPropertyDescriptor[]> {
         const entitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, dataPointer.entityType)
-
-        const entityProperties: EntityPropertyKey[] = []
-
-        entityProperties.push(EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey))
+        const descriptors: EntityPropertyDescriptor[] = []
+        descriptors.push({
+            type: EntityPropertyType.Entity,
+            key: EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey),
+            title: 'Primary key',
+            schema: undefined
+        })
         if (entitySchema.withHierarchy) {
-            entityProperties.push(EntityPropertyKey.entity(StaticEntityProperties.Parent))
+            descriptors.push({
+                type: EntityPropertyType.Entity,
+                key: EntityPropertyKey.entity(StaticEntityProperties.Parent),
+                title: 'Parent',
+                schema: undefined
+            })
         }
         if (entitySchema.locales.length > 0) {
-            entityProperties.push(EntityPropertyKey.entity(StaticEntityProperties.Locales))
-            entityProperties.push(EntityPropertyKey.entity(StaticEntityProperties.AllLocales))
+            descriptors.push({
+                type: EntityPropertyType.Entity,
+                key: EntityPropertyKey.entity(StaticEntityProperties.Locales),
+                title: 'Locales',
+                schema: undefined
+            })
+            descriptors.push({
+                type: EntityPropertyType.Entity,
+                key: EntityPropertyKey.entity(StaticEntityProperties.AllLocales),
+                title: 'All locales',
+                schema: undefined
+            })
         }
         if (entitySchema.withPrice) {
-            entityProperties.push(EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling))
+            descriptors.push({
+                type: EntityPropertyType.Entity,
+                key: EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling),
+                title: 'Price inner record handling',
+                schema: undefined
+            })
         }
+
         for (const attributeSchema of Object.values(entitySchema.attributes)) {
-            entityProperties.push(EntityPropertyKey.attributes(attributeSchema.nameVariants.camelCase))
+            descriptors.push({
+                type: EntityPropertyType.Attributes,
+                key: EntityPropertyKey.attributes(attributeSchema.nameVariants.camelCase),
+                title: attributeSchema.name,
+                schema: attributeSchema
+            })
         }
+
         for (const associatedDataSchema of Object.values(entitySchema.associatedData)) {
-            entityProperties.push(EntityPropertyKey.associatedData(associatedDataSchema.nameVariants.camelCase))
+            descriptors.push({
+                type: EntityPropertyType.AssociatedData,
+                key: EntityPropertyKey.associatedData(associatedDataSchema.nameVariants.camelCase),
+                title: `${associatedDataSchema.name}`,
+                schema: associatedDataSchema
+            })
         }
         for (const referenceSchema of Object.values(entitySchema.references)) {
-            entityProperties.push(EntityPropertyKey.references(referenceSchema.nameVariants.camelCase))
+            descriptors.push({
+                type: EntityPropertyType.References,
+                key: EntityPropertyKey.references(referenceSchema.nameVariants.camelCase),
+                title: `${referenceSchema.name}`,
+                schema: referenceSchema
+            })
         }
 
-        return entityProperties
-    }
-
-    /**
-     * Determines if property is sortable based on its type and potentially entity schema.
-     */
-    async isEntityPropertySortable(dataPointer: DataGridDataPointer, entityProperty: string): Promise<boolean> {
-        const entitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, dataPointer.entityType)
-
-        const propertyKey: EntityPropertyKey = EntityPropertyKey.fromString(entityProperty)
-        if (propertyKey.type !== EntityPropertyType.Attributes) {
-            return false
-        }
-
-        const attributeSchema: AttributeSchemaUnion | undefined = Object.values(entitySchema.attributes)
-            .find(attributeSchema => attributeSchema.nameVariants.camelCase === propertyKey.name)
-        if (attributeSchema == undefined) {
-            throw new UnexpectedError(undefined, `Attribute ${propertyKey.name} not found in entity schema ${entitySchema.name}.`)
-        }
-        return attributeSchema.sortable
+        return descriptors
     }
 
     private getQueryBuilder(language: QueryLanguage): QueryBuilder {
