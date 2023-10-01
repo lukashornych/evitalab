@@ -167,7 +167,7 @@ export class DataGridConsoleService {
             descriptors.push({
                 type: EntityPropertyType.AssociatedData,
                 key: EntityPropertyKey.associatedData(associatedDataSchema.nameVariants.camelCase),
-                title: `${associatedDataSchema.name}`,
+                title: `📦 ${associatedDataSchema.name}`,
                 schema: associatedDataSchema
             })
         }
@@ -175,7 +175,7 @@ export class DataGridConsoleService {
             descriptors.push({
                 type: EntityPropertyType.References,
                 key: EntityPropertyKey.references(referenceSchema.nameVariants.camelCase),
-                title: `${referenceSchema.name}`,
+                title: `🔗 ${referenceSchema.name}`,
                 schema: referenceSchema
             })
         }
