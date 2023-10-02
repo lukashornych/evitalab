@@ -15,6 +15,7 @@ import LabEditorDataGridPropertySelectorSectionReferenceItem from './LabEditorDa
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import { UnexpectedError } from '@/model/lab'
 import { TabComponentProps } from '@/model/editor/editor'
+import Hotkeys from 'vue-hotkeys-rt/Hotkeys.vue'
 
 const toaster: Toaster = useToaster()
 
@@ -31,6 +32,7 @@ const emit = defineEmits<{
 }>()
 
 const filter = ref<string>('')
+const filterInput = ref<HTMLElement | null>(null)
 
 /**
  * Index of all properties by property type
@@ -156,6 +158,10 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
         scrollable
     >
         <template #activator="{ props }">
+            <Hotkeys
+                :shortcuts="['P']"
+                @triggered="emit('update:modelValue', true)"
+            />
             <VBtn
                 icon
                 density="comfortable"
@@ -166,7 +172,6 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
                     Select displayed properties
                 </VTooltip>
             </VBtn>
-
         </template>
 
         <VCard>
@@ -175,7 +180,12 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
             </VClosableCardTitle>
             <VDivider />
             <VCardText class="selector-body">
+                <Hotkeys
+                    :shortcuts="['F']"
+                    @triggered="filterInput?.focus()"
+                />
                 <VTextField
+                    ref="filterInput"
                     :model-value="filter"
                     label="Filter properties"
                     variant="solo-filled"
@@ -186,6 +196,7 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
                     @click:append-inner="handleFilterUpdate('')"
                     class="filter-input"
                 />
+
                 <VList
                     :selected="selected"
                     @update:selected="emit('update:selected', $event as EntityPropertyKey[])"
