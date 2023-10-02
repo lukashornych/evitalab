@@ -158,10 +158,6 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
         scrollable
     >
         <template #activator="{ props }">
-            <Hotkeys
-                :shortcuts="['P']"
-                @triggered="emit('update:modelValue', true)"
-            />
             <VBtn
                 icon
                 density="comfortable"
