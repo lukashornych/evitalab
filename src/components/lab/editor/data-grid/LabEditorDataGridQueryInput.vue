@@ -8,20 +8,25 @@ import { QueryLanguage } from '@/model/lab'
 import { ref } from 'vue'
 import LabEditorDataGridEntityPropertiesSelector
     from '@/components/lab/editor/data-grid/property-selector/LabEditorDataGridPropertySelector.vue'
-import { DataGridDataPointer, EntityPropertyDescriptor, EntityPropertyKey } from '@/model/editor/data-grid'
+import {
+    DataGridConsoleData, DataGridConsoleParams,
+    EntityPropertyDescriptor,
+    EntityPropertyKey
+} from '@/model/editor/data-grid'
 import LabEditorDataGridDataLocaleSelector
     from '@/components/lab/editor/data-grid/LabEditorDataGridDataLocaleSelector.vue'
 import LabEditorDataGridQueryLanguageSelector
     from '@/components/lab/editor/data-grid/LabEditorDataGridQueryLanguageSelector.vue'
+import { TabComponentProps } from '@/model/editor/editor'
 
 const props = defineProps<{
-    dataPointer: DataGridDataPointer,
+    gridProps: TabComponentProps<DataGridConsoleParams, DataGridConsoleData>,
     selectedQueryLanguage: QueryLanguage,
     filterBy: string,
     orderBy: string,
     dataLocales: string[],
     selectedDataLocale: string | undefined,
-    entityProperties: EntityPropertyDescriptor[],
+    entityPropertyDescriptors: EntityPropertyDescriptor[],
     selectedEntityPropertyKeys: EntityPropertyKey[]
 }>()
 const emit = defineEmits<{
@@ -67,8 +72,8 @@ const showPropertiesSelect = ref<boolean>(false)
 
         <LabEditorDataGridEntityPropertiesSelector
             v-model="showPropertiesSelect"
-            :data-pointer="dataPointer"
-            :properties="entityProperties"
+            :grid-props="gridProps"
+            :property-descriptors="entityPropertyDescriptors"
             :selected="selectedEntityPropertyKeys"
             @update:selected="emit('update:selectedEntityPropertyKeys', $event)"
             @schema-open="showPropertiesSelect = false"

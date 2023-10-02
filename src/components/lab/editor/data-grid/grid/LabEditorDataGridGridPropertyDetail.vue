@@ -5,12 +5,12 @@
 
 import CodemirrorFull from '@/components/base/CodemirrorFull.vue'
 import VClosableCardTitle from '@/components/base/VClosableCardTitle.vue'
+import { EntityPropertyDescriptor } from '@/model/editor/data-grid'
 
 const props = defineProps<{
     modelValue: boolean,
-    propertyName: string,
-    // propertyType: string, // todo lho pass data type from schema, we could pre-select possibly correct renderer by it
-    propertyValue: string
+    propertyDescriptor: EntityPropertyDescriptor | undefined,
+    propertyValue: any
 }>()
 const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void
@@ -20,12 +20,12 @@ const emit = defineEmits<{
 <template>
     <VCard class="data-grid-cell-detail">
         <VClosableCardTitle @close="emit('update:modelValue', false)">
-            {{ propertyName }}
+            {{ propertyDescriptor?.title || 'Unknown property' }}
         </VClosableCardTitle>
         <VDivider />
         <VCardText class="data-grid-cell-detail__body">
             <CodemirrorFull
-                :model-value="propertyValue"
+                :model-value="propertyValue.toString()"
                 read-only
             />
         </VCardText>

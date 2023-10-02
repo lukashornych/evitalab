@@ -33,7 +33,7 @@ const path = ref<string[]>([
 ])
 
 let sortedEntityPropertyKeys: string[] = []
-let entityProperties: EntityPropertyDescriptor[] = []
+let entityPropertyDescriptors: EntityPropertyDescriptor[] = []
 let gridHeaders: Map<string, any> = new Map<string, any>()
 let dataLocales: string[] = []
 
@@ -57,7 +57,7 @@ const pageSize = ref<number>(props.data?.pageSize ? props.data.pageSize : 25)
 const filterByCode = ref<string>(props.data?.filterBy ? props.data.filterBy : '')
 const orderByCode = ref<string>(props.data?.orderBy ? props.data.orderBy : '')
 
-const selectedDataLocale = ref<string | undefined>(props.data?.dataLanguage ? props.data.dataLanguage : undefined)
+const selectedDataLocale = ref<string | undefined>(props.data?.dataLocale ? props.data.dataLocale : undefined)
 watch(selectedDataLocale, () => executeQuery())
 
 const displayedProperties = ref<EntityPropertyKey[]>(props.data?.displayedProperties ? props.data.displayedProperties : [])
@@ -88,9 +88,9 @@ onBeforeMount(() => {
             return dataGridConsoleService.getEntityPropertyDescriptors(props.params.dataPointer)
         })
         .then(ep => {
-            entityProperties = ep
-            sortedEntityPropertyKeys = entityProperties.map(it => it.key.toString())
-            return initializeGridHeaders(entityProperties)
+            entityPropertyDescriptors = ep
+            sortedEntityPropertyKeys = entityPropertyDescriptors.map(it => it.key.toString())
+            return initializeGridHeaders(entityPropertyDescriptors)
         })
         .then(gh => {
             gridHeaders = gh
@@ -137,7 +137,7 @@ function preselectEntityProperties(): void {
         return
     }
 
-    displayedProperties.value = entityProperties
+    displayedProperties.value = entityPropertyDescriptors
         .filter(it => it.key.type === EntityPropertyType.Entity)
         .map(it => it.key)
 }
@@ -191,27 +191,33 @@ async function executeQuery(): Promise<void> {
         <LabEditorDataGridToolbar
             :path="path"
             :loading="loading"
-            @executeQuery="executeQuery"
+            @execute-query="executeQuery"
         >
             <template #query>
                 <LabEditorDataGridQueryInput
-                    :data-pointer="params.dataPointer"
+                    :grid-props="props"
                     v-model:selected-query-language="selectedQueryLanguage"
                     v-model:filter-by="filterByCode"
                     v-model:order-by="orderByCode"
                     :data-locales="dataLocales"
                     v-model:selected-data-locale="selectedDataLocale"
-                    :entity-properties="entityProperties"
+                    :entity-property-descriptors="entityPropertyDescriptors"
                     v-model:selected-entity-property-keys="displayedProperties"
+                    @execute-query="executeQuery"
                 />
             </template>
         </LabEditorDataGridToolbar>
 
         <LabEditorDataGridGrid
+            :grid-props="props"
+            :entity-property-descriptors="entityPropertyDescriptors"
             :displayed-grid-headers="displayedGridHeaders"
+            :data-locale="selectedDataLocale"
+            :query-language="selectedQueryLanguage"
             :loading="loading"
             :result-entities="resultEntities"
             :total-result-count="totalResultCount"
+            :page-number="pageNumber"
             :page-size="pageSize"
             @grid-updated="gridUpdated"
         />
