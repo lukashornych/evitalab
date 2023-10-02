@@ -41,7 +41,7 @@ function toPrintablePropertyValue(value: any): string {
 
 <template>
     <td
-        class="data-grid-cell"
+        :class="{'data-grid-cell--clickable': printablePropertyValue}"
         @click="emit('click')"
     >
         <span class="data-grid-cell__body">
@@ -64,10 +64,12 @@ function toPrintablePropertyValue(value: any): string {
 
 <style lang="scss" scoped>
 .data-grid-cell {
-    cursor: pointer;
+    &--clickable {
+        cursor: pointer;
 
-    &:hover {
-        background: rgba(var(--v-theme-on-surface), var(--v-hover-opacity));
+        &:hover {
+            background: rgba(var(--v-theme-on-surface), var(--v-hover-opacity));
+        }
     }
 
     &__body {

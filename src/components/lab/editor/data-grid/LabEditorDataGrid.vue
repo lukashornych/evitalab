@@ -109,13 +109,14 @@ onBeforeMount(() => {
 
 async function initializeGridHeaders(entityPropertyDescriptors: EntityPropertyDescriptor[]): Promise<Map<string, any>> {
     const gridHeaders: Map<string, any> = new Map<string, any>()
-    for (const property of entityPropertyDescriptors) {
+    for (const propertyDescriptor of entityPropertyDescriptors) {
         gridHeaders.set(
-            property.key.toString(),
+            propertyDescriptor.key.toString(),
             {
-                key: property.key.toString(),
-                title: property.title,
-                sortable: property.schema?.sortable || false
+                key: propertyDescriptor.key.toString(),
+                title: propertyDescriptor.title,
+                sortable: propertyDescriptor.schema?.sortable || false,
+                descriptor: propertyDescriptor
             }
         )
     }

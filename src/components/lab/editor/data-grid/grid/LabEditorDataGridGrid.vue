@@ -20,6 +20,8 @@ import { EditorService, useEditorService } from '@/services/editor/editor.servic
 import { DataGridRequest } from '@/model/editor/data-grid-request'
 import { TabComponentProps } from '@/model/editor/editor'
 import { DataGridConsoleService, useDataGridConsoleService } from '@/services/editor/data-grid-console.service'
+import LabEditorDataGridGridColumnHeader
+    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridColumnHeader.vue'
 
 const editorService: EditorService = useEditorService()
 const dataGridConsoleService: DataGridConsoleService = useDataGridConsoleService()
@@ -63,7 +65,10 @@ function handlePropertyClicked(propertyKey: string, value: any): void {
         return
     }
     const propertyDescriptor: EntityPropertyDescriptor | undefined = getPropertyDescriptor(propertyKey)
-    if (propertyDescriptor &&
+    if (!value || (value instanceof Array && value.length === 0)){
+        // do nothing with empty value
+        return
+    } else if (propertyDescriptor &&
         propertyDescriptor.type === EntityPropertyType.Entity &&
         propertyDescriptor.key.name === StaticEntityProperties.ParentPrimaryKey) {
         // we want to open parent entity in appropriate new grid
@@ -132,6 +137,18 @@ function closePropertyDetail(): void {
                 :items-per-page-Options="pageSizeOptions"
                 @update:options="emit('gridUpdated', $event)"
             >
+                <template #headers="{ columns, isSorted, getSortIcon, toggleSort }">
+                    <tr>
+                        <LabEditorDataGridGridColumnHeader
+                            v-for="column in columns"
+                            :key="column.key"
+                            :column="column"
+                            :is-sorted="isSorted"
+                            :get-sort-icon="getSortIcon"
+                            :toggle-sort="toggleSort"
+                        />
+                    </tr>
+                </template>
                 <template #item="{ item }">
                     <tr>
                         <LabEditorDataGridGridCell
