@@ -7,9 +7,9 @@ const emit = defineEmits<{
     (e: 'update:selected', value: string | undefined): void
 }>()
 
-function handleDataLocaleSelect(selected: string[]) {
+function handleDataLocaleSelect(selected: unknown[]) {
     if (selected.length > 0) {
-        const dataLocale: string = selected[0]
+        const dataLocale: string = selected[0] as string
         if (dataLocale === 'none') {
             emit('update:selected', undefined)
         } else {
