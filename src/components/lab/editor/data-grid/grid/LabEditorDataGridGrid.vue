@@ -166,6 +166,7 @@ function closePropertyDetail(): void {
         <Pane
             v-if="showPropertyDetail"
             size="30"
+            min-size="30"
         >
             <LabEditorDataGridGridPropertyDetail
                 :model-value="showPropertyDetail"
