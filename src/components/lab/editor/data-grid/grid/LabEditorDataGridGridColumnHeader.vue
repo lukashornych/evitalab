@@ -42,10 +42,12 @@ const localized = computed<boolean>(() => props.column.descriptor?.schema?.local
 .data-grid-column-header-content {
     display: flex;
     justify-content: space-between;
+    gap: 0.5rem;
 
     &__title {
         display: flex;
         gap: 0.5rem;
+        white-space: nowrap;
     }
 }
 </style>
