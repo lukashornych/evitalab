@@ -1,22 +1,24 @@
 <script setup lang="ts">
 
 import {
-    DataGridDataPointer,
+    DataGridConsoleData,
+    DataGridConsoleParams,
     EntityPropertyDescriptor,
     EntityPropertyKey,
     EntityPropertySectionSelection,
     EntityPropertyType
 } from '@/model/editor/data-grid'
 import LabEditorDataGridPropertySelectorSectionEmptyItem from './LabEditorDataGridPropertySelectorSectionEmptyItem.vue'
+import { TabComponentProps } from '@/model/editor/editor'
 
 const props = defineProps<{
+    gridProps: TabComponentProps<DataGridConsoleParams, DataGridConsoleData>,
     title: string, // todo lho this could be deleted when i18n is implemented, we could use the property type to resolve title
     propertyType: EntityPropertyType,
     selected: EntityPropertyKey[],
-    filteredProperties: EntityPropertyDescriptor[],
-    properties: EntityPropertyDescriptor[],
-    selection: EntityPropertySectionSelection,
-    dataPointer: DataGridDataPointer
+    filteredPropertyDescriptors: EntityPropertyDescriptor[],
+    propertyDescriptors: EntityPropertyDescriptor[],
+    selection: EntityPropertySectionSelection
 }>()
 const emit = defineEmits<{
     (e: 'toggle', value: EntityPropertySectionSelection): void
@@ -34,7 +36,7 @@ function resolveNewSelection() {
 
 <template>
     <VListGroup
-        v-if="properties.length > 0"
+        v-if="propertyDescriptors.length > 0"
         :value="propertyType"
     >
         <template #activator="{ props }">
@@ -64,19 +66,19 @@ function resolveNewSelection() {
                 </template>
 
                 <template #title>
-                    {{ title }} ({{selected.length || 0 }}/{{ properties.length }})
+                    {{ title }} ({{ selected.length || 0 }}/{{ propertyDescriptors.length }})
                 </template>
             </VListItem>
         </template>
 
-        <template v-if="filteredProperties.length > 0">
+        <template v-if="filteredPropertyDescriptors.length > 0">
             <template
-                v-for="(property, index) in filteredProperties"
+                v-for="(property, index) in filteredPropertyDescriptors"
                 :key="property.key.toString()"
             >
                 <slot :property="property" />
                 <VDivider
-                    v-if="index < filteredProperties.length - 1"
+                    v-if="index < filteredPropertyDescriptors.length - 1"
                     inset
                 />
             </template>

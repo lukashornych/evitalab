@@ -65,7 +65,7 @@ export class DataGridConsoleService {
             dataPointer,
             filterBy,
             orderBy,
-            (dataLocale == undefined || dataLocale == 'none') ? undefined : dataLocale,
+            dataLocale,
             requiredData,
             pageNumber,
             pageSize
@@ -94,13 +94,33 @@ export class DataGridConsoleService {
                     throw new UnexpectedError(undefined, `Entity ${entitySchema.name} does not have attribute ${propertyKey.name}.`)
                 }
 
-                orderBy.push(queryBuilder.buildAttributeNaturalConstraint(attributeSchema, column.order))
+                orderBy.push(queryBuilder.buildAttributeOrderBy(attributeSchema, column.order))
             } else {
                 throw new UnexpectedError(undefined, `Entity property ${column.key} is not supported to be sortable.`)
             }
         }
 
         return orderBy.join(', ')
+    }
+
+    /**
+     * Build filter by clause to find parent entities by their primary key in the same collection as child entity.
+     *
+     * @param language language of query, defines how query will be built and executed
+     * @param parentPrimaryKey primary key of parent entity
+     */
+    buildParentEntityFilterBy(language: QueryLanguage, parentPrimaryKey: number): string {
+        return this.getQueryBuilder(language).buildParentEntityFilterBy(parentPrimaryKey)
+    }
+
+    /**
+     * Builds filter by clause to find referenced entities by their primary keys in a referenced collection.
+     *
+     * @param language language of query, defines how query will be built and executed
+     * @param referencedPrimaryKeys primary keys of referenced entities
+     */
+    buildReferencedEntityFilterBy(language: QueryLanguage, referencedPrimaryKeys: number[]): string {
+        return this.getQueryBuilder(language).buildReferencedEntityFilterBy(referencedPrimaryKeys)
     }
 
     /**
@@ -126,7 +146,7 @@ export class DataGridConsoleService {
         if (entitySchema.withHierarchy) {
             descriptors.push({
                 type: EntityPropertyType.Entity,
-                key: EntityPropertyKey.entity(StaticEntityProperties.Parent),
+                key: EntityPropertyKey.entity(StaticEntityProperties.ParentPrimaryKey),
                 title: 'Parent',
                 schema: undefined
             })
@@ -167,7 +187,7 @@ export class DataGridConsoleService {
             descriptors.push({
                 type: EntityPropertyType.AssociatedData,
                 key: EntityPropertyKey.associatedData(associatedDataSchema.nameVariants.camelCase),
-                title: `${associatedDataSchema.name}`,
+                title: `📦 ${associatedDataSchema.name}`,
                 schema: associatedDataSchema
             })
         }
@@ -175,7 +195,7 @@ export class DataGridConsoleService {
             descriptors.push({
                 type: EntityPropertyType.References,
                 key: EntityPropertyKey.references(referenceSchema.nameVariants.camelCase),
-                title: `${referenceSchema.name}`,
+                title: `🔗 ${referenceSchema.name}`,
                 schema: referenceSchema
             })
         }

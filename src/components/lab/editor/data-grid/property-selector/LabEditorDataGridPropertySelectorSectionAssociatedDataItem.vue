@@ -1,33 +1,38 @@
 <script setup lang="ts">
 
-import { DataGridDataPointer, EntityPropertyDescriptor } from '@/model/editor/data-grid'
+import {
+    DataGridConsoleData,
+    DataGridConsoleParams,
+    EntityPropertyDescriptor
+} from '@/model/editor/data-grid'
 import { LabService, useLabService } from '@/services/lab.service'
 import LabEditorDataGridPropertyListItem from './LabEditorDataGridPropertySelectorSectionItem.vue'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import { SchemaViewerRequest } from '@/model/editor/schema-viewer-request'
 import { AssociatedDataSchemaPointer } from '@/model/editor/schema-viewer'
+import { TabComponentProps } from '@/model/editor/editor'
 
 const labService: LabService = useLabService()
 const editorService: EditorService = useEditorService()
 
 const props = defineProps<{
-    dataPointer: DataGridDataPointer,
-    property: EntityPropertyDescriptor
+    gridProps: TabComponentProps<DataGridConsoleParams, DataGridConsoleData>,
+    propertyDescriptor: EntityPropertyDescriptor
 }>()
 const emit = defineEmits<{
     (e: 'schemaOpen'): void
 }>()
 
-const flags: string[] = labService.getAssociatedDataSchemaFlags(props.property.schema)
+const flags: string[] = labService.getAssociatedDataSchemaFlags(props.propertyDescriptor.schema)
 
 function openSchema(): void {
     editorService.createTabRequest(
         new SchemaViewerRequest(
-            props.dataPointer.connection,
+            props.gridProps.params.dataPointer.connection,
             new AssociatedDataSchemaPointer(
-                props.dataPointer.catalogName,
-                props.dataPointer.entityType,
-                props.property.schema.name
+                props.gridProps.params.dataPointer.catalogName,
+                props.gridProps.params.dataPointer.entityType,
+                props.propertyDescriptor.schema.name
             )
         )
     )
@@ -37,9 +42,9 @@ function openSchema(): void {
 
 <template>
     <LabEditorDataGridPropertyListItem
-        :value="property.key"
-        :title="property.title"
-        :description="property.schema?.description"
+        :value="propertyDescriptor.key"
+        :title="propertyDescriptor.title"
+        :description="propertyDescriptor.schema?.description"
         :flags="flags"
         openable
         @schema-open="openSchema"

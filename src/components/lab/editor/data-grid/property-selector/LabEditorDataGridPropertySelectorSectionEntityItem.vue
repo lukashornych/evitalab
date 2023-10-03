@@ -1,16 +1,21 @@
 <script setup lang="ts">
 
-import { DataGridDataPointer, EntityPropertyDescriptor } from '@/model/editor/data-grid'
+import {
+    DataGridConsoleData,
+    DataGridConsoleParams,
+    EntityPropertyDescriptor
+} from '@/model/editor/data-grid'
 import LabEditorDataGridPropertyListItem from './LabEditorDataGridPropertySelectorSectionItem.vue'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import { SchemaViewerRequest } from '@/model/editor/schema-viewer-request'
 import { EntitySchemaPointer } from '@/model/editor/schema-viewer'
+import { TabComponentProps } from '@/model/editor/editor'
 
 const editorService: EditorService = useEditorService()
 
 const props = defineProps<{
-    dataPointer: DataGridDataPointer,
-    property: EntityPropertyDescriptor
+    gridProps: TabComponentProps<DataGridConsoleParams, DataGridConsoleData>,
+    propertyDescriptor: EntityPropertyDescriptor
 }>()
 const emit = defineEmits<{
     (e: 'schemaOpen'): void
@@ -19,10 +24,10 @@ const emit = defineEmits<{
 function openSchema(): void {
     editorService.createTabRequest(
         new SchemaViewerRequest(
-            props.dataPointer.connection,
+            props.gridProps.params.dataPointer.connection,
             new EntitySchemaPointer(
-                props.dataPointer.catalogName,
-                props.dataPointer.entityType
+                props.gridProps.params.dataPointer.catalogName,
+                props.gridProps.params.dataPointer.entityType
             )
         )
     )
@@ -32,8 +37,8 @@ function openSchema(): void {
 
 <template>
     <LabEditorDataGridPropertyListItem
-        :value="property.key"
-        :title="property.title"
+        :value="propertyDescriptor.key"
+        :title="propertyDescriptor.title"
         openable
         @schema-open="openSchema"
     />

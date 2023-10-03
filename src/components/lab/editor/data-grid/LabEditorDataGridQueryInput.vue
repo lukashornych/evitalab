@@ -8,27 +8,25 @@ import { QueryLanguage } from '@/model/lab'
 import { ref } from 'vue'
 import LabEditorDataGridEntityPropertiesSelector
     from '@/components/lab/editor/data-grid/property-selector/LabEditorDataGridPropertySelector.vue'
-import { DataGridDataPointer, EntityPropertyDescriptor, EntityPropertyKey } from '@/model/editor/data-grid'
-
-const queryLanguages = [
-    {
-        title: 'EvitaQL',
-        value: QueryLanguage.EvitaQL
-    },
-    {
-        title: 'GraphQL',
-        value: QueryLanguage.GraphQL
-    }
-]
+import {
+    DataGridConsoleData, DataGridConsoleParams,
+    EntityPropertyDescriptor,
+    EntityPropertyKey
+} from '@/model/editor/data-grid'
+import LabEditorDataGridDataLocaleSelector
+    from '@/components/lab/editor/data-grid/LabEditorDataGridDataLocaleSelector.vue'
+import LabEditorDataGridQueryLanguageSelector
+    from '@/components/lab/editor/data-grid/LabEditorDataGridQueryLanguageSelector.vue'
+import { TabComponentProps } from '@/model/editor/editor'
 
 const props = defineProps<{
-    dataPointer: DataGridDataPointer,
+    gridProps: TabComponentProps<DataGridConsoleParams, DataGridConsoleData>,
     selectedQueryLanguage: QueryLanguage,
     filterBy: string,
     orderBy: string,
     dataLocales: string[],
-    selectedDataLocale: string,
-    entityProperties: EntityPropertyDescriptor[],
+    selectedDataLocale: string | undefined,
+    entityPropertyDescriptors: EntityPropertyDescriptor[],
     selectedEntityPropertyKeys: EntityPropertyKey[]
 }>()
 const emit = defineEmits<{
@@ -45,29 +43,10 @@ const showPropertiesSelect = ref<boolean>(false)
 
 <template>
     <div class="query-input">
-        <VBtn
-            icon
-            density="comfortable"
-        >
-            <VIcon>mdi-code-braces</VIcon>
-            <VTooltip activator="parent">Select query language</VTooltip>
-
-            <VMenu activator="parent">
-                <VList
-                    :selected="[selectedQueryLanguage]"
-                    density="compact"
-                    @update:selected="emit('update:selectedQueryLanguage', $event.length > 0 ? $event[0] as QueryLanguage : undefined)"
-                >
-                    <VListItem
-                        v-for="language in queryLanguages"
-                        :key="language.value"
-                        :value="language.value"
-                    >
-                        <VListItemTitle>{{ language.title }}</VListItemTitle>
-                    </VListItem>
-                </VList>
-            </VMenu>
-        </VBtn>
+        <LabEditorDataGridQueryLanguageSelector
+            :selected="selectedQueryLanguage"
+            @update:selected="emit('update:selectedQueryLanguage', $event)"
+        />
 
         <CodemirrorOneLine
             :model-value="filterBy"
@@ -85,60 +64,20 @@ const showPropertiesSelect = ref<boolean>(false)
             @execute="emit('executeQuery')"
         />
 
-        <VBtn
-            icon
-            density="comfortable"
-        >
-            <VIcon>mdi-translate</VIcon>
-            <VTooltip activator="parent">
-                Select data locale
-            </VTooltip>
-
-            <VMenu activator="parent">
-                <VList
-                    :selected="[selectedDataLocale]"
-                    density="compact"
-                    min-width="100"
-                    @update:selected="emit('update:selectedDataLocale', $event.length > 0 ? $event[0] as string : undefined)"
-                >
-                    <VListItem
-                        value="none"
-                    >
-                        <VListItemTitle>None</VListItemTitle>
-                    </VListItem>
-
-                    <VDivider class="mt-2 mb-2" />
-
-                    <VListItem
-                        v-for="locale in dataLocales"
-                        :key="locale"
-                        :value="locale"
-                    >
-                        <VListItemTitle>{{ locale }}</VListItemTitle>
-                    </VListItem>
-                </VList>
-            </VMenu>
-        </VBtn>
+        <LabEditorDataGridDataLocaleSelector
+            :selected="selectedDataLocale"
+            @update:selected="emit('update:selectedDataLocale', $event)"
+            :data-locales="dataLocales"
+        />
 
         <LabEditorDataGridEntityPropertiesSelector
             v-model="showPropertiesSelect"
-            :data-pointer="dataPointer"
-            :properties="entityProperties"
+            :grid-props="gridProps"
+            :property-descriptors="entityPropertyDescriptors"
             :selected="selectedEntityPropertyKeys"
             @update:selected="emit('update:selectedEntityPropertyKeys', $event)"
             @schema-open="showPropertiesSelect = false"
         />
-
-        <VBtn
-            icon
-            density="comfortable"
-            @click="showPropertiesSelect = true"
-        >
-            <VIcon>mdi-view-column</VIcon>
-            <VTooltip activator="parent">
-                Select displayed properties
-            </VTooltip>
-        </VBtn>
     </div>
 </template>
 
