@@ -32,7 +32,7 @@ schemaViewerService.getSchema(props.params.dataPointer)
         <VToolbar
             density="compact"
             elevation="2"
-            class="schema-viewer__header"
+            class="bg-primary-light schema-viewer__header"
         >
             <VAppBarNavIcon
                 icon="mdi-file-code"
@@ -40,10 +40,10 @@ schemaViewerService.getSchema(props.params.dataPointer)
                 style="opacity: 1"
             />
 
-            <VToolbarTitle>
+            <VToolbarTitle class="ml-0 font-weight-bold">
                 <VBreadcrumbs
                     :items="params.dataPointer.schemaPointer.path()"
-                    class="pl-0 pr-0"
+                    class="pl-0 pr-0 pt-0 pb-0"
                 />
             </VToolbarTitle>
         </VToolbar>

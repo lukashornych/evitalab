@@ -77,10 +77,15 @@ html {
   width: calc(100vw - var(--v-layout-left) - var(--v-layout-right));
 }
 
-.v-breadcrumbs-item--disabled {
+.v-breadcrumbs-divider + .v-breadcrumbs-item--disabled {
   color: #21BFE3 !important;
   opacity: 1;
 }
+
+//.v-breadcrumbs-item--disabled {
+//  color: #21BFE3 !important;
+//  opacity: 1;
+//}
 
 .v-slide-group-item--active {
   color: #21BFE3 !important;

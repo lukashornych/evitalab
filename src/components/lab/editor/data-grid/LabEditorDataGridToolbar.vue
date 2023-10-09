@@ -26,10 +26,10 @@ const emit = defineEmits<{
             class="ml-0"
         />
 
-        <VToolbarTitle class="ml-0">
+        <VToolbarTitle class="ml-0 font-weight-bold">
             <VBreadcrumbs
                 :items="path"
-                class="pl-0 pr-0 font-weight-bold pt-0 pb-0"
+                class="pl-0 pr-0 pt-0 pb-0"
             />
         </VToolbarTitle>
 

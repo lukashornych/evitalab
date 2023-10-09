@@ -26,19 +26,19 @@ emit('ready')
         <VToolbar
             density="compact"
             elevation="2"
-            class="error-viewer__header"
+            class="bg-primary-light error-viewer__header"
         >
             <VAppBarNavIcon
-                icon="mdi-alert-circle"
-                color="red"
+                icon="mdi-alert-outline"
+                color="white"
                 :disabled="true"
                 style="opacity: 1"
             />
 
-            <VToolbarTitle>
+            <VToolbarTitle class="ml-0 font-weight-bold">
                 <VBreadcrumbs
                     :items="[title]"
-                    class="pl-0 pr-0"
+                    class="pl-0 pr-0 font-weight-bold pt-0 pb-0"
                 />
             </VToolbarTitle>
 
