@@ -13,7 +13,7 @@ const version: string = import.meta.env.VITE_BUILD_VERSION || '?'
                     height="160"
                     alt="evitaLab Logo"
                     src="/evita-lab-logo.svg"
-                    class="mx-auto mb-1"
+                    class="mx-auto mb-1 evita-lab-logo"
                 />
                 <h1 class="font-weight-bold mb-2" style="font-size: 70px;">evitaLab</h1>
                 <p class="text-white" style="font-size: 16px;">alpha {{ version }} <a class="text-primary-lightest text-body-2" href="https://github.com/lukashornych/evitalab/releases" target="_blank">(changelog)</a></p>
@@ -165,5 +165,34 @@ const version: string = import.meta.env.VITE_BUILD_VERSION || '?'
             color: white;
         }
     }
+}
+
+@-webkit-keyframes fade-in-fwd {
+    0% {
+        -webkit-transform: translateZ(-80px);
+        transform: translateZ(-80px);
+        opacity: 0;
+    }
+    100% {
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        opacity: 1;
+    }
+}
+@keyframes fade-in-fwd {
+    0% {
+        -webkit-transform: translateZ(-80px);
+        transform: translateZ(-80px);
+        opacity: 0;
+    }
+    100% {
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        opacity: 1;
+    }
+}
+.evita-lab-logo {
+    -webkit-animation: fade-in-fwd 2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+    animation: fade-in-fwd 2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
 }
 </style>

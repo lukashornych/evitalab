@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { PanelType } from '@/model/lab'
+import {ref} from 'vue'
+import {PanelType} from '@/model/lab'
 
 const props = defineProps<{
     panel?: string
@@ -15,12 +15,11 @@ const mainItems = ref([
         title: 'Explorer',
         value: PanelType.Explorer,
         props: {
-            prependIcon: 'mdi-compass-outline'
-        },
-        class: 'text-primary-lightest'
+            prependIcon: 'mdi-connection'
+        }
     }
 ])
-const secondaryItems = ref([
+/*const secondaryItems = ref([
     {
         title: 'evitaDB Documentation',
         value: PanelType.EvitaDBDocumentation,
@@ -42,7 +41,7 @@ const secondaryItems = ref([
             prependIcon: 'mdi-github',
         }
     }
-])
+])*/
 
 function selectPanel(item: any): void {
     if (!item.value) {
@@ -84,6 +83,8 @@ function openItem(item: any): void {
                         <!-- todo lho use local link, don't how to do it when we use the /lab prefix -->
                         <VImg
                             alt="evitaLab Logo"
+                            width="24px"
+                            height="24px"
                             src="/logo.png?raw=true"
                         />
                     </VAvatar>
@@ -97,24 +98,74 @@ function openItem(item: any): void {
             :items="mainItems"
             :selected="[panel]"
             @click:select="selectPanel"
+            class="connection-explorer"
         />
 
         <template #append>
-            <VList
-                density="compact"
-                nav
-                :items="secondaryItems"
-                @click:select="openItem"
-            />
+            <ul class="lab-nav-links">
+                <li>
+                    <a href="https://evitadb.io/documentation" target="_blank">
+                        <img src="/documentation.svg" alt="evitaDB Documentation">
+                        <VTooltip activator="parent">
+                            evitaDB documentation
+                        </VTooltip>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://discord.gg/VsNBWxgmSw" target="_blank">
+                        <img src="/discord.svg" alt="Discord icon">
+                        <VTooltip activator="parent">
+                            Discord
+                        </VTooltip>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://discord.gg/VsNBWxgmSw" target="_blank">
+                    <img src="/github.svg" alt="GitHub icon">
+                        <VTooltip activator="parent">
+                            Give us a ⭐️ on GitHub
+                        </VTooltip>
+                    </a>
+                </li>
+            </ul>
         </template>
     </VNavigationDrawer>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .lab-logo {
     height: 3.5rem;
     display: grid;
     justify-items: center;
     align-items: center;
+}
+.lab-nav-links {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    justify-content: center;
+    align-items: center;
+    margin: 0 0 20px 0;
+    gap: 20px 0;
+}
+.lab-nav-links li img {
+    opacity: .5;
+    transition: opacity .2s ease-in-out;
+}
+
+.lab-nav-links li:hover img {
+    opacity: 1;
+}
+
+.connection-explorer {
+
+    & :deep(.v-list-item__underlay) {
+        display: none;
+    }
+    & :deep(.v-list-item__overlay) {
+        background: #21BFE3;
+        opacity: 1;
+        border-radius: 50%;
+    }
 }
 </style>

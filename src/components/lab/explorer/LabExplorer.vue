@@ -51,9 +51,10 @@ const connections = computed<EvitaDBConnection[]>(() => labService.getConnection
                         <VBtn
                             prepend-icon="mdi-plus"
                             block
-                            variant="tonal"
+                            variant="plain"
                             v-bind="props"
                             @click="addConnectionDialogOpen = true"
+                            class="btn-add-connection"
                         >
                             Add connection
                         </VBtn>
@@ -64,6 +65,43 @@ const connections = computed<EvitaDBConnection[]>(() => labService.getConnection
     </VNavigationDrawer>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
+.btn-add-connection {
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    font-size: 14px;
+    color: white;
+    line-height: 1;
+    height: 40px;
+    border-radius: 20px;
+    outline: .1rem solid transparent;
+    z-index: 0;
+    opacity: 1;
+
+
+    &:after {
+        position: absolute;
+        display: block;
+        content: "";
+        width: 100%;
+        height: 140%;
+        bottom: 0;
+        left: 0;
+        background: rgb(57,180,222);
+        background: linear-gradient(to bottom, #8533C2 0%, #39B4DE 100%);
+        z-index: -1;
+        transition: height .4s ease;
+        opacity: 1;
+        border: 0;
+    }
+
+    &:hover {
+        &:after {
+            height: 100%;
+        }
+    }
+}
 
 </style>

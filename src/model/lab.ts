@@ -38,10 +38,7 @@ export class EvitaDBConnection {
  * Type of lab panel.
  */
 export enum PanelType {
-    Explorer = 'explorer',
-    EvitaDBDocumentation = 'evitadb-documentation',
-    Feedback = 'feedback',
-    GitHub = 'github'
+    Explorer = 'explorer'
 }
 
 /**
