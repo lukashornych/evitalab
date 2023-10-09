@@ -56,7 +56,7 @@ if (props.params.executeOnOpen) {
         <VToolbar
             density="compact"
             elevation="2"
-            class="bg-primary-light"
+            class="bg-primary-light evitaql-editor__header"
         >
             <VAppBarNavIcon
                 icon="mdi-application-braces-outline"
