@@ -17,34 +17,36 @@ const emit = defineEmits<{
     <VToolbar
         density="compact"
         elevation="2"
-        class="data-grid__header"
+        class="data-grid__header bg-primary-light"
     >
         <VAppBarNavIcon
-            icon="mdi-table"
+            icon="mdi-text-box-edit-outline"
             :disabled="true"
             style="opacity: 1"
+            class="ml-0"
         />
 
-        <VToolbarTitle>
+        <VToolbarTitle class="ml-0">
             <VBreadcrumbs
                 :items="path"
-                class="pl-0 pr-0"
+                class="pl-0 pr-0 font-weight-bold pt-0 pb-0"
             />
         </VToolbarTitle>
 
         <template #append>
             <VBtn
-                icon
-                variant="elevated"
+                variant="outlined"
                 :loading="loading"
                 density="compact"
                 @click="emit('executeQuery')"
+                class="text-primary-lightest font-weight-bold bg-primary-light rounded-lg border-md h-auto py-1 rounded-xl border-opacity-100 border-primary-lightest"
             >
-                <VIcon>mdi-play</VIcon>
+                <VIcon>mdi-play-outline</VIcon>
 
                 <VTooltip activator="parent">
                     Execute query
                 </VTooltip>
+                Run
             </VBtn>
         </template>
 
@@ -57,5 +59,8 @@ const emit = defineEmits<{
 <style lang="scss" scoped>
 .data-grid__header {
     z-index: 100;
+}
+.v-btn--variant-outlined {
+    border-color: #21BFE3!important;
 }
 </style>

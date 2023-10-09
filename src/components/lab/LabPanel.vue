@@ -15,8 +15,9 @@ const mainItems = ref([
         title: 'Explorer',
         value: PanelType.Explorer,
         props: {
-            prependIcon: 'mdi-compass'
-        }
+            prependIcon: 'mdi-compass-outline'
+        },
+        class: 'text-primary-lightest'
     }
 ])
 const secondaryItems = ref([
@@ -70,6 +71,7 @@ function openItem(item: any): void {
     <VNavigationDrawer
         permanent
         rail
+        class="bg-primary-dark"
     >
         <template #prepend>
             <div class="lab-logo">
@@ -82,7 +84,7 @@ function openItem(item: any): void {
                         <!-- todo lho use local link, don't how to do it when we use the /lab prefix -->
                         <VImg
                             alt="evitaLab Logo"
-                            src="https://github.com/lukashornych/evitalab/blob/dev/public/logo.png?raw=true"
+                            src="/logo.png?raw=true"
                         />
                     </VAvatar>
                 </a>

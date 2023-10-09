@@ -50,10 +50,11 @@ const showPropertiesSelect = ref<boolean>(false)
 
         <CodemirrorOneLine
             :model-value="filterBy"
-            prepend-inner-icon="mdi-filter"
+            prepend-inner-icon="mdi-filter-outline"
             placeholder="Filter by"
             @update:model-value="emit('update:filterBy', $event)"
             @execute="emit('executeQuery')"
+            class="text-gray-light"
         />
 
         <CodemirrorOneLine
@@ -62,6 +63,7 @@ const showPropertiesSelect = ref<boolean>(false)
             placeholder="Order by"
             @update:model-value="emit('update:orderBy', $event)"
             @execute="emit('executeQuery')"
+            class="text-gray-light"
         />
 
         <LabEditorDataGridDataLocaleSelector
@@ -85,6 +87,7 @@ const showPropertiesSelect = ref<boolean>(false)
 .query-input {
     width: 100%;
     height: 100%;
+    min-height: 60px;
     display: grid;
     grid-template-columns: 2.25rem 0.65fr 0.35fr 2.25rem 2.25rem;
     column-gap: 0.5rem;

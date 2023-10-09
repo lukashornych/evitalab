@@ -102,6 +102,7 @@ const extensions: Extension[] = [
     &--with-prepend-icon {
         grid-template-columns: 1.5rem 1fr;
         padding: 0 1rem 0 0.625rem;
+        gap: 0 1rem;
     }
 
     &__prepend-inner-icon {
@@ -110,6 +111,13 @@ const extensions: Extension[] = [
 
     & :deep(.cm-scroller) {
       overflow-x: hidden;
+        background: #131323;
+        border-radius: 5px;
+    }
+
+    & :deep(.cm-line) {
+        color: white;
+        font-weight: bold;
     }
 }
 </style>

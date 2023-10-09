@@ -189,12 +189,12 @@ function closePropertyDetail(): void {
     }
 
     & :deep(th) {
-        border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+        border-right: thin solid rgba(#5A5B51, 1);
     }
 
     & :deep(td) {
-        border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
-        border-bottom: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+        border-right: thin solid rgba(#5A5B51, 1);
+        border-bottom: thin solid rgba(#5A5B51, 1);
     }
 }
 

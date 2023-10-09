@@ -14,6 +14,48 @@ import { createVuetify } from 'vuetify'
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
 export default createVuetify({
     theme: {
-        defaultTheme: 'dark'
-    }
+        defaultTheme: 'dark',
+        themes: {
+            dark: {
+                light: false,
+                colors: {
+                    background: '#1f1f33',
+                    surface: '#1f1f33',
+                    primary: '#1f1f33',
+                    'primary-dark': '#131323',
+                    'primary-light': '#23355C',
+                    'primary-lightest': '#21BFE3',
+                    'gray-light' : '#A5ACBC'
+                },
+            }
+        }
+
+    },
+    defaults: {
+        global: {
+            ripple: false,
+        },
+        VSheet: {
+            elevation: 12,
+        },
+        VTooltip: {
+            contentClass: 'bg-primary-dark',
+        },
+        VListItem: {
+            activeColor: 'bg-primary-dark',
+        },
+        VChip: {
+            color: 'gray-light',
+        },
+        // VOverlay: {
+        //     contentClass: 'text-primary-dark',
+        // }
+
+        // VBtn: {
+        //     style: [{ textTransform: 'none' }],
+        // },
+        // VBtnOutlined: {
+        //     style: [{ borderColor: '#21BFE3' }],
+        // }
+    },
 })

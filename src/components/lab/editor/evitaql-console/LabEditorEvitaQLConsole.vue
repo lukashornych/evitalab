@@ -56,34 +56,36 @@ if (props.params.executeOnOpen) {
         <VToolbar
             density="compact"
             elevation="2"
-            class="evitaql-editor__header"
+            class="bg-primary-light"
         >
             <VAppBarNavIcon
-                icon="mdi-console"
+                icon="mdi-application-braces-outline"
                 :disabled="true"
                 style="opacity: 1"
+                class="text-primary-lightest ml-0"
             />
 
-            <VToolbarTitle>
+            <VToolbarTitle class="ml-0 font-weight-bold">
                 <VBreadcrumbs
                     :items="path"
-                    class="pl-0 pr-0"
+                    class="pl-0 pr-0 pt-0 pb-0"
                 />
             </VToolbarTitle>
 
             <template #append>
                 <!-- todo lho primary color? -->
                 <VBtn
-                    icon
-                    variant="elevated"
+                    variant="outlined"
                     density="compact"
                     @click="executeQuery"
+                    class="text-primary-lightest font-weight-bold bg-primary-light rounded-lg border-md h-auto py-1 rounded-xl border-opacity-100 border-primary-lightest"
                 >
-                    <VIcon>mdi-play</VIcon>
+                    <VIcon>mdi-play-outline</VIcon>
 
                     <VTooltip activator="parent">
                         Execute query
                     </VTooltip>
+                    Run
                 </VBtn>
             </template>
         </VToolbar>
@@ -178,6 +180,7 @@ if (props.params.executeOnOpen) {
 .evitaql-editor-query-sections {
     display: flex;
     width: 3rem;
+    background: #131323;
 
     &__tab {
         width: 3rem;

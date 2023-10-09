@@ -94,18 +94,19 @@ function initializeSchemaEditor(): void {
         <VToolbar
             density="compact"
             elevation="2"
-            class="graphql-editor__header"
+            class="bg-primary-light graphql-editor__header"
         >
             <VAppBarNavIcon
                 icon="mdi-graphql"
                 :disabled="true"
                 style="opacity: 1"
+                class="text-primary-lightest ml-0"
             />
 
-            <VToolbarTitle>
+            <VToolbarTitle class="ml-0 font-weight-bold">
                 <VBreadcrumbs
                     :items="path"
-                    class="pl-0 pr-0"
+                    class="pl-0 pr-0 pt-0 pb-0"
                 />
             </VToolbarTitle>
 
@@ -123,16 +124,17 @@ function initializeSchemaEditor(): void {
 
                 <!-- todo lho primary color? -->
                 <VBtn
-                    icon
                     variant="elevated"
                     density="compact"
                     @click="executeQuery"
+                    class="text-primary-lightest font-weight-bold bg-primary-light rounded-lg border-md h-auto py-1 rounded-xl border-opacity-100 border-primary-lightest"
                 >
                     <VIcon>mdi-play</VIcon>
 
                     <VTooltip activator="parent">
                         Execute query
                     </VTooltip>
+                    Run
                 </VBtn>
             </template>
         </VToolbar>

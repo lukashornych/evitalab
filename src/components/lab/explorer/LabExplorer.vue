@@ -24,12 +24,13 @@ const connections = computed<EvitaDBConnection[]>(() => labService.getConnection
         permanent
         :model-value="modelValue"
         @update:model-value="$emit('update:modelValue', $event)"
+        class="bg-primary border-opacity-25"
     >
         <VList
             density="compact"
             nav
         >
-            <VListSubheader>Connections Explorer</VListSubheader>
+            <VListSubheader class="text-gray-light text-sm-body-2 font-weight-medium">Connections Explorer</VListSubheader>
 
             <LabExplorerConnectionItem
                 v-for="connection in connections"

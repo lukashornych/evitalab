@@ -9,6 +9,37 @@
 //   $color-pack: false
 // );
 
+@use 'vuetify/settings' with (
+  $overlay-opacity: 0.8,
+  $overlay-scrim-background: #131323,
+  // tooltip
+  $tooltip-text-color: #fff,
+  // table
+  $table-row-font-size: 1.4rem,
+  $table-border-color: #5A5B51,
+);
+
+$primary-lightest: #21BFE3;
+$gray-light: #A5ACBC;
+$primary-dark: #131323;
+$primary-light: #23355C;
+
+// Refactor font family globally
+$font-family: 'Poppins';
+
+.v-application {
+  [class*='text-'] {
+    font-family: $font-family, sans-serif !important;
+  }
+  font-family: $font-family, sans-serif !important;
+}
+
+// Global/Generic styles
+html {
+  font-family: Poppins, sans-serif;
+  overflow-y: hidden;
+}
+
 .v-tab {
   text-transform: none !important;
 }
@@ -46,6 +77,57 @@
   width: calc(100vw - var(--v-layout-left) - var(--v-layout-right));
 }
 
-html {
-  overflow-y: hidden;
+.v-breadcrumbs-item--disabled {
+  color: #21BFE3 !important;
+  opacity: 1;
+}
+
+.v-slide-group-item--active {
+  color: #21BFE3 !important;
+}
+
+.v-chip--variant-outlined {
+  border: 1px solid $gray-light !important;
+  color: $gray-light !important;
+  transition: all .2s linear;
+
+  .v-chip__overlay,
+  .v-chip__underlay {
+    display: none;
+  }
+
+  &:hover {
+    border: 1px solid rgba($primary-lightest, .5) !important;
+    color: rgba($primary-lightest, .5) !important;
+  }
+
+  &.v-chip--selected {
+    border: 1px solid $primary-lightest !important;
+    color: $primary-lightest !important;
+  }
+}
+
+.v-field__input {
+  background: $primary-dark!important;
+  box-shadow: none!important;
+  border-radius: 5px;
+}
+
+.v-label.v-field-label {
+  color: $gray-light!important;
+  z-index: 1;
+}
+
+.v-expansion-panel__shadow {
+  display: none;
+}
+
+.v-expansion-panel--active > .v-expansion-panel-title {
+  background: $primary-light;
+  opacity: 1;
+  min-height: 48px;
+
+  .v-expansion-panel-title__overlay {
+    display: none;
+  }
 }
