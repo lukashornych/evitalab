@@ -17,7 +17,6 @@ export default createVuetify({
         defaultTheme: 'dark',
         themes: {
             dark: {
-                light: false,
                 colors: {
                     background: '#1f1f33',
                     surface: '#1f1f33',
@@ -46,16 +45,6 @@ export default createVuetify({
         },
         VChip: {
             color: 'gray-light',
-        },
-        // VOverlay: {
-        //     contentClass: 'text-primary-dark',
-        // }
-
-        // VBtn: {
-        //     style: [{ textTransform: 'none' }],
-        // },
-        // VBtnOutlined: {
-        //     style: [{ borderColor: '#21BFE3' }],
-        // }
+        }
     },
 })

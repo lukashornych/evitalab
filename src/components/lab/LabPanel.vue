@@ -19,29 +19,6 @@ const mainItems = ref([
         }
     }
 ])
-/*const secondaryItems = ref([
-    {
-        title: 'evitaDB Documentation',
-        value: PanelType.EvitaDBDocumentation,
-        props: {
-            prependIcon: 'mdi-book',
-        }
-    },
-    {
-        title: 'Feedback',
-        value: PanelType.Feedback,
-        props: {
-            prependIcon: 'mdi-comment-quote',
-        }
-    },
-    {
-        title: 'Issues',
-        value: PanelType.GitHub,
-        props: {
-            prependIcon: 'mdi-github',
-        }
-    }
-])*/
 
 function selectPanel(item: any): void {
     if (!item.value) {
@@ -51,19 +28,6 @@ function selectPanel(item: any): void {
     }
 }
 
-function openItem(item: any): void {
-    switch (item.id) {
-        case PanelType.EvitaDBDocumentation:
-            window.open('https://evitadb.io/documentation', '_blank')
-            break
-        case PanelType.Feedback:
-            window.open('https://discord.gg/VsNBWxgmSw', '_blank')
-            break
-        case PanelType.GitHub:
-            window.open('https://github.com/lukashornych/evitalab', '_blank')
-            break
-    }
-}
 </script>
 
 <template>
