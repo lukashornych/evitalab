@@ -67,40 +67,15 @@ const connections = computed<EvitaDBConnection[]>(() => labService.getConnection
 
 <style lang="scss" scoped>
 .btn-add-connection {
-    position: relative;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    font-size: 14px;
+    border: .1px solid rgba(white, .5);
+    border-radius: 18px;
     color: white;
-    line-height: 1;
-    height: 40px;
-    border-radius: 20px;
-    outline: .1rem solid transparent;
-    z-index: 0;
     opacity: 1;
-
-
-    &:after {
-        position: absolute;
-        display: block;
-        content: "";
-        width: 100%;
-        height: 140%;
-        bottom: 0;
-        left: 0;
-        background: rgb(57,180,222);
-        background: linear-gradient(to bottom, #8533C2 0%, #39B4DE 100%);
-        z-index: -1;
-        transition: height .4s ease;
-        opacity: 1;
-        border: 0;
-    }
+    transition: border-color .2s ease-in-out;
 
     &:hover {
-        &:after {
-            height: 100%;
-        }
+        border-color: rgba(white, 1);
+        transition: border-color .2s ease-in-out;
     }
 }
 

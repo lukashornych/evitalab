@@ -111,7 +111,7 @@ if (props.params.executeOnOpen) {
                     </VTab>
                 </VTabs>
 
-                <VDivider />
+                <VDivider class="mt-2 mb-2" />
             </VSheet>
 
             <Splitpanes vertical>

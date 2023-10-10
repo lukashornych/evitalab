@@ -24,9 +24,13 @@ $gray-light: #A5ACBC;
 $primary-dark: #131323;
 $primary-light: #23355C;
 
+.v-theme--dark {
+  --v-activated-opacity: 0.08!important;
+}
+
+
 // Refactor font family globally
 $font-family: 'Poppins';
-
 .v-application {
   [class*='text-'] {
     font-family: $font-family, sans-serif !important;
@@ -34,6 +38,10 @@ $font-family: 'Poppins';
   font-family: $font-family, sans-serif !important;
 }
 
+.v-field--variant-solo-filled .v-field__overlay {
+    background-color: $primary-dark!important;
+    opacity: 1!important;
+}
 // Global/Generic styles
 html {
   font-family: Poppins, sans-serif;
@@ -82,10 +90,14 @@ html {
   opacity: 1;
 }
 
-//.v-breadcrumbs-item--disabled {
-//  color: #21BFE3 !important;
-//  opacity: 1;
-//}
+.cm-focused {
+  outline: none!important;
+}
+
+.v-breadcrumbs-item--disabled:only-child {
+  color: #21BFE3 !important;
+  opacity: 1;
+}
 
 .v-slide-group-item--active {
   color: #21BFE3 !important;
@@ -136,3 +148,26 @@ html {
     display: none;
   }
 }
+
+.v-btn {
+  .v-btn__overlay,
+  .v-btn__underlay {
+    display: none;
+  }
+}
+
+//.v-btn {
+//  & :deep(.v-btn__overlay) {
+//    display: none;
+//  }
+//}
+//.v-btn::after {
+//  border-radius: 5px;
+//  border: 0;
+//  background: linear-gradient(to bottom, #8533C2 0%, #39B4DE 100%);
+//  z-index: -1;
+//}
+//.v-btn:hover::after,
+//.v-btn:focus::after {
+//  opacity: 1;
+//}

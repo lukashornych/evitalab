@@ -110,11 +110,18 @@ const extensions: Extension[] = [
     }
 
     & :deep(.cm-scroller) {
-      overflow-x: hidden;
+        overflow-x: hidden;
         background: #131323;
         border-radius: 5px;
+
+        &:focus {
+            outline: none;
+        }
     }
 
+    & :deep(.cm-editor) {
+        background: transparent;
+    }
     & :deep(.cm-line) {
         color: white;
         font-weight: bold;

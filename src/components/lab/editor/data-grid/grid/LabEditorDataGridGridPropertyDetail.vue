@@ -22,7 +22,7 @@ const emit = defineEmits<{
         <VClosableCardTitle @close="emit('update:modelValue', false)">
             {{ propertyDescriptor?.title || 'Unknown property' }}
         </VClosableCardTitle>
-        <VDivider />
+        <VDivider class="mt-2 mb-2" />
         <VCardText class="data-grid-cell-detail__body">
             <CodemirrorFull
                 :model-value="propertyValue.toString()"

@@ -21,13 +21,13 @@ const version: string = import.meta.env.VITE_BUILD_VERSION || '?'
             </header>
 
             <div class="editor-welcome-screen-blog">
-                <a href="https://evitadb.io/blog/07-advanced-features-on-developers-portal?lang=evitaql">
+                <a href="https://evitadb.io/blog/07-advanced-features-on-developers-portal?lang=evitaql" target="_blank">
                     <span class="editor-welcome-screen-blog-img__wrap">
                         <img class="Blog_BlogMotive__72hVr" height="160" width="480" src="https://raw.githubusercontent.com/FgForrest/evitaDB/dev/documentation/blog/en/assets/images/07-advanced-features-on-developers-portal.jpg" alt="Image - Discover the Advanced Features on our Developers Portal">
                     </span>
                     <span class="editor-welcome-screen-blog-item__title">Discover the Advanced Features on our Developers Portal</span>
                 </a>
-                <a href="https://evitadb.io/blog/06-document-examples-testing?lang=evitaql">
+                <a href="https://evitadb.io/blog/06-document-examples-testing?lang=evitaql" target="_blank">
                     <span class="editor-welcome-screen-blog-img__wrap">
                         <img class="Blog_BlogMotive__72hVr" height="160" width="480" src="https://raw.githubusercontent.com/FgForrest/evitaDB/dev/documentation/blog/en/assets/images/06-document-examples-testing.png" alt="Image - Validating examples in documentation using JUnit 5 and JShell">
                     </span>

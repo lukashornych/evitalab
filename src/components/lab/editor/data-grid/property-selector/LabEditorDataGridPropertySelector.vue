@@ -174,7 +174,7 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
             <VClosableCardTitle @close="emit('update:modelValue', false)">
                 Displayed properties
             </VClosableCardTitle>
-            <VDivider />
+            <VDivider class="mt-2 mb-2" />
             <VCardText class="selector-body">
                 <Hotkeys
                     :shortcuts="['F']"
@@ -187,7 +187,7 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
                     variant="solo-filled"
                     density="compact"
                     autofocus
-                    :append-inner-icon="filter ? 'mdi-backspace' : null as any"
+                    :append-inner-icon="filter ? 'mdi-close-circle-outline' : null as any"
                     @update:model-value="handleFilterUpdate($event)"
                     @click:append-inner="handleFilterUpdate('')"
                     class="filter-input"

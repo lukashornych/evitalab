@@ -38,7 +38,7 @@ const filteredItems = computed(() => {
             :key="nameSupplier(item)"
         >
             <slot :item="item" />
-            <VDivider v-if="index < filteredItems.length - 1" />
+            <VDivider v-if="index < filteredItems.length - 1" class="mt-2 mb-2"/>
         </template>
 
         <LabEditorSchemaViewerContainerSectionListItem

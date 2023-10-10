@@ -60,19 +60,5 @@ const selectedIcon = computed<string>(() => {
 
 <style lang="scss" scoped>
 
-.v-btn {
-    & :deep(.v-btn__overlay) {
-        display: none;
-    }
-}
-.v-btn::after {
-    border-radius: 5px;
-    border: 0;
-    background: linear-gradient(to bottom, #8533C2 0%, #39B4DE 100%);
-    z-index: -1;
-}
-.v-btn:hover::after,
-.v-btn:focus::after {
-    opacity: 1;
-}
+
 </style>
