@@ -2,7 +2,7 @@ import { inject, InjectionKey } from 'vue'
 import {
     DataGridDataPointer, EntityPropertyDescriptor,
     EntityPropertyKey,
-    EntityPropertyType,
+    EntityPropertyType, EntityPropertyValueSupportedCodeLanguage,
     QueryResult,
     StaticEntityProperties
 } from '@/model/editor/data-grid'
@@ -17,6 +17,14 @@ import { GraphQLQueryExecutor } from '@/services/editor/data-grid-console/graphq
 import { EvitaDBClient } from '@/services/evitadb-client'
 import { AttributeSchemaUnion, EntitySchema } from '@/model/evitadb'
 import { GraphQLClient } from '@/services/graphql-client'
+import { EntityPropertyValueFormatter } from '@/services/editor/data-grid-console/entity-property-value-formatter'
+import { EntityPropertyValueRawFormatter } from '@/services/editor/data-grid-console/entity-property-value-raw-formatter'
+import {
+    EntityPropertyValueJsonFormatter
+} from '@/services/editor/data-grid-console/entity-property-value-json-formatter'
+import {
+    EntityPropertyValueXmlFormatter
+} from '@/services/editor/data-grid-console/entity-property-value-xml-formatter'
 
 export const key: InjectionKey<DataGridConsoleService> = Symbol()
 
@@ -25,8 +33,11 @@ export const key: InjectionKey<DataGridConsoleService> = Symbol()
  */
 export class DataGridConsoleService {
     readonly labService: LabService
+
     readonly queryBuilders: Map<QueryLanguage, QueryBuilder> = new Map<QueryLanguage, QueryBuilder>()
     readonly queryExecutors: Map<QueryLanguage, QueryExecutor> = new Map<QueryLanguage, QueryExecutor>()
+
+    readonly entityPropertyValueFormatters: Map<EntityPropertyValueSupportedCodeLanguage, EntityPropertyValueFormatter> = new Map<EntityPropertyValueSupportedCodeLanguage, EntityPropertyValueFormatter>()
 
     constructor(labService: LabService, evitaDBClient: EvitaDBClient, graphQLClient: GraphQLClient) {
         this.labService = labService
@@ -36,6 +47,10 @@ export class DataGridConsoleService {
 
         this.queryBuilders.set(QueryLanguage.GraphQL, new GraphQLQueryBuilder(this.labService))
         this.queryExecutors.set(QueryLanguage.GraphQL, new GraphQLQueryExecutor(this.labService, graphQLClient))
+
+        this.entityPropertyValueFormatters.set(EntityPropertyValueSupportedCodeLanguage.Raw, new EntityPropertyValueRawFormatter())
+        this.entityPropertyValueFormatters.set(EntityPropertyValueSupportedCodeLanguage.Json, new EntityPropertyValueJsonFormatter())
+        this.entityPropertyValueFormatters.set(EntityPropertyValueSupportedCodeLanguage.Xml, new EntityPropertyValueXmlFormatter())
     }
 
     /**
@@ -111,6 +126,16 @@ export class DataGridConsoleService {
      */
     buildParentEntityFilterBy(language: QueryLanguage, parentPrimaryKey: number): string {
         return this.getQueryBuilder(language).buildParentEntityFilterBy(parentPrimaryKey)
+    }
+
+    /**
+     * Builds filter by clause to find referenced entities by their primary keys in the same collection as successor entity.
+     *
+     * @param language language of query, defines how query will be built and executed
+     * @param predecessorPrimaryKey primary key of predecessor entity
+     */
+    buildPredecessorEntityFilterBy(language: QueryLanguage, predecessorPrimaryKey: number): string {
+        return this.getQueryBuilder(language).buildPredecessorEntityFilterBy(predecessorPrimaryKey)
     }
 
     /**
@@ -201,6 +226,21 @@ export class DataGridConsoleService {
         }
 
         return descriptors
+    }
+
+    /**
+     * Formats given value into string representation in given language. If it fails, it will use fallback formatter.
+     *
+     * @param value raw value to be formatted into string into given language
+     * @param language desired language of formatted value
+     * @param prettyPrint if value should be pretty printed
+     */
+    formatEntityPropertyValue(value: any, language: EntityPropertyValueSupportedCodeLanguage, prettyPrint: boolean = false): string {
+        const formatter: EntityPropertyValueFormatter | undefined = this.entityPropertyValueFormatters.get(language)
+        if (formatter == undefined) {
+            throw new UnexpectedError(undefined, `Property value formatter for language ${language} is not registered.`)
+        }
+        return formatter.format(value, prettyPrint)
     }
 
     private getQueryBuilder(language: QueryLanguage): QueryBuilder {

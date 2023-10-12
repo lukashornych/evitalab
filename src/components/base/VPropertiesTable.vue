@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import VueMarkdown from 'vue-markdown-render'
+import VMarkdown from '@/components/base/VMarkdown.vue'
 
 const props = defineProps<{
     properties: [string, any, ((item?: string) => void)?][]
@@ -42,7 +42,7 @@ const props = defineProps<{
                     </VChip>
                 </VChipGroup>
                 <span v-else>
-                    <VueMarkdown :source="property[1].toString()" />
+                    <VMarkdown :source="property[1].toString()"/>
                 </span>
             </td>
 

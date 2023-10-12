@@ -6,7 +6,7 @@ import {
     EntityPropertyType,
     EntityPropertySectionSelection, DataGridConsoleParams, DataGridConsoleData
 } from '@/model/editor/data-grid'
-import VClosableCardTitle from '@/components/base/VClosableCardTitle.vue'
+import VCardTitleWithActions from '@/components/base/VCardTitleWithActions.vue'
 import LabEditorDataGridPropertySelectorSection from './LabEditorDataGridPropertySelectorSection.vue'
 import LabEditorDataGridPropertySelectorSectionAttributeItem from './LabEditorDataGridPropertySelectorSectionAttributeItem.vue'
 import LabEditorDataGridPropertySelectorSectionAssociatedDataItem from './LabEditorDataGridPropertySelectorSectionAssociatedDataItem.vue'
@@ -171,9 +171,24 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
         </template>
 
         <VCard>
-            <VClosableCardTitle @close="emit('update:modelValue', false)">
-                Displayed properties
-            </VClosableCardTitle>
+            <VCardTitleWithActions>
+                <template #default>
+                    Displayed properties
+                </template>
+                <template #actions>
+                    <VBtn
+                        icon
+                        variant="flat"
+                        density="compact"
+                        @click="emit('update:modelValue', false)"
+                    >
+                        <VIcon>mdi-close</VIcon>
+                        <VTooltip activator="parent">
+                            Close selector
+                        </VTooltip>
+                    </VBtn>
+                </template>
+            </VCardTitleWithActions>
             <VDivider />
             <VCardText class="selector-body">
                 <Hotkeys

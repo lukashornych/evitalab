@@ -4,6 +4,56 @@
  */
 
 /**
+ * List of support scalars supported by evitaDB.
+ */
+export enum Scalar {
+    String = 'String',
+    StringArray = 'StringArray',
+    Byte = 'Byte',
+    ByteArray = 'ByteArray',
+    Short = 'Short',
+    ShortArray = 'ShortArray',
+    Integer = 'Integer',
+    IntegerArray = 'IntegerArray',
+    Long = 'Long',
+    LongArray = 'LongArray',
+    Boolean = 'Boolean',
+    BooleanArray = 'BooleanArray',
+    Character = 'Character',
+    CharacterArray = 'CharacterArray',
+    BigDecimal = 'BigDecimal',
+    BigDecimalArray = 'BigDecimalArray',
+    OffsetDateTime = 'OffsetDateTime',
+    OffsetDateTimeArray = 'OffsetDateTimeArray',
+    LocalDateTime = 'LocalDateTime',
+    LocalDateTimeArray = 'LocalDateTimeArray',
+    LocalDate = 'LocalDate',
+    LocalDateArray = 'LocalDateArray',
+    LocalTime = 'LocalTime',
+    LocalTimeArray = 'LocalTimeArray',
+    DateTimeRange = 'DateTimeRange',
+    DateTimeRangeArray = 'DateTimeRangeArray',
+    BigDecimalNumberRange = 'BigDecimalNumberRange',
+    BigDecimalNumberRangeArray = 'BigDecimalNumberRangeArray',
+    ByteNumberRange = 'ByteNumberRange',
+    ByteNumberRangeArray = 'ByteNumberRangeArray',
+    ShortNumberRange = 'ShortNumberRange',
+    ShortNumberRangeArray = 'ShortNumberRangeArray',
+    IntegerNumberRange = 'IntegerNumberRange',
+    IntegerNumberRangeArray = 'IntegerNumberRangeArray',
+    LongNumberRange = 'LongNumberRange',
+    LongNumberRangeArray = 'LongNumberRangeArray',
+    Locale = 'Locale',
+    LocaleArray = 'LocaleArray',
+    Currency = 'Currency',
+    CurrencyArray = 'CurrencyArray',
+    UUID = 'UUID',
+    UUIDArray = 'UUIDArray',
+    Predecessor = 'Predecessor',
+    ComplexDataObject = 'ComplexDataObject'
+}
+
+/**
  * This is the definition object for associated data that is stored along with entity. Definition objects allow to describe the structure of the entity type so that in any time everyone can consult complete structure of the entity type.  Associated data carry additional data entries that are never used for filtering / sorting but may be needed to be fetched along with entity in order to present data to the target consumer (i.e. user / API / bot). Associated data may be stored in slower storage and may contain wide range of data types - from small ones (i.e. numbers, strings, dates) up to large binary arrays representing entire files (i.e. pictures, documents).
  */
 export interface AssociatedDataSchema {
