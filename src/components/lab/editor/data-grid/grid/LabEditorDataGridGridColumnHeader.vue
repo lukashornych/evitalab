@@ -11,11 +11,17 @@ const props = defineProps<{
 const sortable = computed<boolean>(() => props.column.descriptor?.schema?.sortable)
 const sorted = computed<boolean>(() => props.isSorted(props.column))
 const localized = computed<boolean>(() => props.column.descriptor?.schema?.localized)
+
+function handleClick() {
+    if (sortable.value) {
+        props.toggleSort(props.column)
+    }
+}
 </script>
 
 <template>
     <th
-        @click="toggleSort(column)"
+        @click="handleClick"
         :class="['data-grid-column-header', { 'data-grid-column-header--sortable': sortable }]"
     >
         <div class="data-grid-column-header-content">
