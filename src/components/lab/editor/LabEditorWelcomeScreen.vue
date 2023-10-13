@@ -16,7 +16,7 @@ const version: string = import.meta.env.VITE_BUILD_VERSION || '?'
                     class="mx-auto mb-1 evita-lab-logo"
                 />
                 <h1 class="font-weight-bold mb-2" style="font-size: 70px;">evitaLab</h1>
-                <p class="text-white" style="font-size: 16px;">alpha {{ version }} <a class="text-primary-lightest text-body-2" href="https://github.com/lukashornych/evitalab/releases" target="_blank">(changelog)</a></p>
+                <p class="text-white" style="font-size: 16px;">{{ version }} <a class="text-primary-lightest text-body-2" href="https://github.com/lukashornych/evitalab/releases" target="_blank">(changelog)</a></p>
                 <p class="text-gray-light mb-10" style="font-size: 16px;">evitaDB web client</p>
             </header>
 
