@@ -9,7 +9,7 @@ export class EvitaDBDocsClient extends ApiClient {
 
     async getBlogPosts(): Promise<EvitaDBBlogPost[]> {
         try {
-            const rssResponse: string = await this.httpClient.get('http://localhost:3000/rss.xml').text()
+            const rssResponse: string = await this.httpClient.get('https://evitadb.io/rss.xml').text()
             const rss: Document = new window.DOMParser().parseFromString(rssResponse, 'text/xml')
 
             const items: NodeListOf<Element> | undefined = rss.querySelector('channel')?.querySelectorAll('item')
