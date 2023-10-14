@@ -12,7 +12,10 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <VSheet :class="['value-renderer', { 'value-renderer--fill-space': fillSpace }, { 'value-renderer--with-actions': actions && actions.length > 0 }]">
+    <VSheet
+        :class="['value-renderer', { 'value-renderer--fill-space': fillSpace }, { 'value-renderer--with-actions': actions && actions.length > 0 }]"
+        elevation="0"
+    >
         <div class="value-renderer__body">
             <slot />
         </div>
@@ -24,6 +27,7 @@ const emit = defineEmits<{
         <VSheet
             v-if="actions"
             class="value-renderer__actions"
+            elevation="0"
         >
             <VBtn
                 v-for="action in actions"
