@@ -121,7 +121,7 @@ const formattedValue = computed<string>(() => {
     }
 })
 
-function prettyPrintRangeValue(rawRange: any, prefix: string, endPrettyPrinter: (any) => string): string {
+function prettyPrintRangeValue(rawRange: any, prefix: string, endPrettyPrinter: (end: any) => string): string {
     if (!(props.value instanceof Array) || props.value.length !== 2) {
         throw new UnexpectedError(undefined, 'Invalid DateTimeRange value.')
     }

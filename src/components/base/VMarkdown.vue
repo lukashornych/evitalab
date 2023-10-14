@@ -6,17 +6,11 @@
 import 'highlight.js/styles/default.css'
 import MarkdownIt from 'markdown-it'
 import MarkdownItHighlightJs from 'markdown-it-highlightjs'
-import MarkdownItTaskLists from 'markdown-it-task-lists'
-import MarkdownItSup from 'markdown-it-sup'
-import MarkdownItSub from 'markdown-it-sub'
 import MarkdownItEmoji from 'markdown-it-emoji'
 import { computed } from 'vue'
 
 const markdown: MarkdownIt = new MarkdownIt()
-    .use(MarkdownItTaskLists)
     .use(MarkdownItHighlightJs)
-    .use(MarkdownItSup)
-    .use(MarkdownItSub)
     .use(MarkdownItEmoji)
 
 // todo lho we need proper styling from evitadb.io docs
