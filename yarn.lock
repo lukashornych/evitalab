@@ -115,6 +115,16 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
+"@ddietr/codemirror-themes@^1.4.2":
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@ddietr/codemirror-themes/-/codemirror-themes-1.4.2.tgz#5f3ca219ec3b9889ef6d7b6e19860483f4fd6616"
+  integrity sha512-8U3H3lmtmSWLD5VRlt7jf2HW62URnwgPxjZZDYjBX5EtMpgZ2QnqiIYrNzdQPPjJngT9D43gls3+JlekCBmrfw==
+  dependencies:
+    "@codemirror/language" "^6.0.0"
+    "@codemirror/state" "^6.0.0"
+    "@codemirror/view" "^6.0.0"
+    "@lezer/highlight" "^1.0.0"
+
 "@esbuild/android-arm64@0.17.19":
   version "0.17.19"
   resolved "https://registry.yarnpkg.com/@esbuild/android-arm64/-/android-arm64-0.17.19.tgz#bafb75234a5d3d1b690e7c2956a599345e84a2fd"
@@ -788,11 +798,6 @@ cm6-graphql@^0.0.9:
   integrity sha512-MhdQMuVGwnyEk3I1BiLhpMEhOC7sTxmbq205cjdDtHysB0EtNLBoccy+7+h/+So90otjwJcSaty6vwp22WN6kw==
   dependencies:
     graphql-language-service "^5.1.7"
-
-cm6-theme-material-dark@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/cm6-theme-material-dark/-/cm6-theme-material-dark-0.2.0.tgz#c733243a8a31da5d953fa551b2548f358aa37a64"
-  integrity sha512-H09JZihzg4w0mTtOqo5bQdxItkQWw+ergKlk7BSfwYjaR2nOi+wIN0R+ByAo7bON8GbFODvjTxH3EIqdhovFeA==
 
 codemirror@^6.0.1:
   version "6.0.1"
@@ -1735,11 +1740,6 @@ text-table@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
   integrity sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==
-
-thememirror@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/thememirror/-/thememirror-2.0.1.tgz#ae9eb4ce7e8d0303d4fbabcc860ed38a0b45b079"
-  integrity sha512-d5i6FVvWWPkwrm4cHLI3t9AT1OrkAt7Ig8dtdYSofgF7C/eiyNuq6zQzSTusWTde3jpW9WLvA9J/fzNKMUsd0w==
 
 to-fast-properties@^2.0.0:
   version "2.0.0"
