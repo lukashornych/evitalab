@@ -54,8 +54,9 @@ const actions = computed(() => {
 const formattedValue = computed<string>(() => {
     try {
         return dataGridConsoleService.formatEntityPropertyValue(props.value, props.codeLanguage, prettyPrint.value)
-    } catch (e) {
-        return 'Error: Failed to format value as ' + props.codeLanguage + '.'
+    } catch (e: any) {
+        console.error(e)
+        return `Error: Failed to format value as ${props.codeLanguage}. \r\n\r\n` + (e?.message ? `${e.message}.` : '')
     }
 })
 const codeBlockExtensions = computed<Extension[]>(() => {
