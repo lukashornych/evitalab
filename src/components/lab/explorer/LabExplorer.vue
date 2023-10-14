@@ -67,8 +67,8 @@ const connections = computed<EvitaDBConnection[]>(() => labService.getConnection
 
 <style lang="scss" scoped>
 .btn-add-connection {
-    border: .1px solid rgba(white, .5);
-    border-radius: 18px;
+    border: 0.0625rem solid rgba(white, .5);
+    border-radius: 2rem;
     color: white;
     opacity: 1;
     transition: border-color .2s ease-in-out;

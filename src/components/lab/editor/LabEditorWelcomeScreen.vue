@@ -15,9 +15,9 @@ const version: string = import.meta.env.VITE_BUILD_VERSION || '?'
                     src="/evita-lab-logo.svg"
                     class="mx-auto mb-1 evita-lab-logo"
                 />
-                <h1 class="font-weight-bold mb-2" style="font-size: 70px;">evitaLab</h1>
-                <p class="text-white" style="font-size: 16px;">{{ version }} <a class="text-primary-lightest text-body-2" href="https://github.com/lukashornych/evitalab/releases" target="_blank">(changelog)</a></p>
-                <p class="text-gray-light mb-10" style="font-size: 16px;">evitaDB web client</p>
+                <h1 class="font-weight-bold mb-2" style="font-size: 4.375rem;">evitaLab</h1>
+                <p class="text-white" style="font-size: 1rem;">{{ version }} <a class="text-primary-lightest text-body-2" href="https://github.com/lukashornych/evitalab/releases" target="_blank">(changelog)</a></p>
+                <p class="text-gray-light mb-10" style="font-size: 1rem;">evitaDB web client</p>
             </header>
 
             <div class="editor-welcome-screen-blog">
@@ -49,6 +49,8 @@ const version: string = import.meta.env.VITE_BUILD_VERSION || '?'
 </template>
 
 <style lang="scss" scoped>
+@import "@/styles/colors.scss";
+
 .editor-welcome-screen {
     position: absolute;
     left: 0;
@@ -68,7 +70,7 @@ const version: string = import.meta.env.VITE_BUILD_VERSION || '?'
     height: 100%;
     overflow: auto;
 
-    @media (min-width: 1560px) {
+    @media (min-width: 97.5rem) {
         padding: 0 8rem;
     }
 
@@ -94,12 +96,12 @@ const version: string = import.meta.env.VITE_BUILD_VERSION || '?'
     flex-wrap: wrap;
     width: 100%;
     justify-content: center;
-    margin: auto auto 30px auto;
-    gap: 20px;
+    margin: auto auto 1.875rem auto;
+    gap: 1.25rem;
 
     a {
         text-decoration: none;
-        max-width: 460px;
+        max-width: 28.75rem;
         display: flex;
         align-items: center;
         flex-direction: column;
@@ -125,7 +127,7 @@ const version: string = import.meta.env.VITE_BUILD_VERSION || '?'
 .editor-welcome-screen-blog-img__wrap {
     display: flex;
     overflow: hidden;
-    margin-bottom: 10px;
+    margin-bottom: 0.625rem;
 }
 
 .editor-welcome-screen-blog-item__title {
@@ -134,31 +136,31 @@ const version: string = import.meta.env.VITE_BUILD_VERSION || '?'
 }
 
 .editor-welcome-screen-hr {
-    height: 1px;
+    height: 0.0625rem;
     background: #4F4F4F;
-    margin-top: 30px;
+    margin-top: 1.875rem;
 }
 
 .editor-welcome-screen-hero__links {
     margin: 0 auto;
-    padding: 30px 0;
-    max-width: 675px;
+    padding: 1.875rem 0;
+    max-width: 42.1875rem;
     display: block;
     list-style: none;
 
     li {
         display: inline-flex;
-        margin: 8px 0;
-        font-size: 16px;
+        margin: 0.5rem 0;
+        font-size: 1rem;
 
         +li {
-            margin-left: 30px;
+            margin-left: 1.875rem;
         }
     }
 
     a {
-        margin-left: 8px;
-        color: #21BFE3;
+        margin-left: 0.5rem;
+        color: $primary-lightest;
         transition: all .2s linear;
 
         &:hover {
@@ -169,8 +171,8 @@ const version: string = import.meta.env.VITE_BUILD_VERSION || '?'
 
 @-webkit-keyframes fade-in-fwd {
     0% {
-        -webkit-transform: translateZ(-80px);
-        transform: translateZ(-80px);
+        -webkit-transform: translateZ(-5rem);
+        transform: translateZ(-5rem);
         opacity: 0;
     }
     100% {
@@ -181,8 +183,8 @@ const version: string = import.meta.env.VITE_BUILD_VERSION || '?'
 }
 @keyframes fade-in-fwd {
     0% {
-        -webkit-transform: translateZ(-80px);
-        transform: translateZ(-80px);
+        -webkit-transform: translateZ(-5rem);
+        transform: translateZ(-5rem);
         opacity: 0;
     }
     100% {

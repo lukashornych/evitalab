@@ -29,7 +29,7 @@ const emit = defineEmits<{
 </template>
 
 <style lang="scss" scoped>
-@import "@/styles/settings.scss";
+@import "@/styles/colors.scss";
 .side-tabs {
     background: $primary-dark;
     width: 3rem;

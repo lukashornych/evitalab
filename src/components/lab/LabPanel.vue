@@ -97,6 +97,8 @@ function selectPanel(item: any): void {
 </template>
 
 <style lang="scss" scoped>
+@import '@/styles/colors.scss';
+
 .lab-logo {
     height: 3.5rem;
     display: grid;
@@ -127,7 +129,7 @@ function selectPanel(item: any): void {
         display: none;
     }
     & :deep(.v-list-item__overlay) {
-        background: #21BFE3;
+        background: $primary-lightest;
         opacity: 1;
         border-radius: 50%;
     }

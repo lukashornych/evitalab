@@ -91,6 +91,8 @@ const extensions: Extension[] = [
 </template>
 
 <style lang="scss" scoped>
+@import "@/styles/colors.scss";
+
 .cm-oneline {
     display: inline-grid;
     grid-template-columns: 1fr;
@@ -109,8 +111,8 @@ const extensions: Extension[] = [
 
     & :deep(.cm-scroller) {
         overflow-x: hidden;
-        background: #131323;
-        border-radius: 5px;
+        background: $primary-dark;
+        border-radius: 0.25rem;
 
         &:focus {
             outline: none;
