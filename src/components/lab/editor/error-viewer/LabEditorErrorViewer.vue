@@ -3,6 +3,7 @@ import CodemirrorFull from '@/components/base/CodemirrorFull.vue'
 import { ErrorViewerProps } from '@/model/editor/error-viewer'
 import { computed } from 'vue'
 import { TabComponentEvents, TabComponentProps, VoidTabRequestComponentData } from '@/model/editor/editor'
+import VTabToolbar from '@/components/base/VTabToolbar.vue'
 
 const props = defineProps<TabComponentProps<ErrorViewerProps, VoidTabRequestComponentData>>()
 const emit = defineEmits<TabComponentEvents>()
@@ -23,25 +24,10 @@ emit('ready')
 
 <template>
     <div class="error-viewer">
-        <VToolbar
-            density="compact"
-            elevation="2"
-            class="bg-primary-light error-viewer__header"
+        <VTabToolbar
+            prepend-icon="mdi-alert-outline"
+            :path="[title]"
         >
-            <VAppBarNavIcon
-                icon="mdi-alert-outline"
-                color="white"
-                :disabled="true"
-                style="opacity: 1"
-            />
-
-            <VToolbarTitle class="ml-0 font-weight-bold">
-                <VBreadcrumbs
-                    :items="[title]"
-                    class="pl-0 pr-0 font-weight-bold pt-0 pb-0"
-                />
-            </VToolbarTitle>
-
             <!-- todo lho link to submit an issue to github -->
             <template #append>
                 <VBtn
@@ -54,7 +40,7 @@ emit('ready')
                     </VTooltip>
                 </VBtn>
             </template>
-        </VToolbar>
+        </VTabToolbar>
 
         <VSheet class="error-viewer__body">
             <CodemirrorFull

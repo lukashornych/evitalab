@@ -17,7 +17,8 @@ import { GraphQLConsoleData, GraphQLConsoleParams, GraphQLInstanceType } from '@
 import CodemirrorFull from '@/components/base/CodemirrorFull.vue'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import { TabComponentEvents, TabComponentProps } from '@/model/editor/editor'
-import ExecuteQueryButton from '@/components/base/ExecuteQueryButton.vue'
+import VExecuteQueryButton from '@/components/base/VExecuteQueryButton.vue'
+import VTabToolbar from '@/components/base/VTabToolbar.vue'
 
 const graphQLConsoleService: GraphQLConsoleService = useGraphQLConsoleService()
 const toaster: Toaster = useToaster()
@@ -92,25 +93,10 @@ function initializeSchemaEditor(): void {
         v-if="initialized"
         class="graphql-editor"
     >
-        <VToolbar
-            density="compact"
-            elevation="2"
-            class="bg-primary-light graphql-editor__header"
+        <VTabToolbar
+            prepend-icon="mdi-graphql"
+            :path="path"
         >
-            <VAppBarNavIcon
-                icon="mdi-graphql"
-                :disabled="true"
-                style="opacity: 1"
-                class="ml-0"
-            />
-
-            <VToolbarTitle class="ml-0 font-weight-bold">
-                <VBreadcrumbs
-                    :items="path"
-                    class="pl-0 pr-0 pt-0 pb-0"
-                />
-            </VToolbarTitle>
-
             <template #append>
                 <VBtn
                     icon
@@ -123,9 +109,9 @@ function initializeSchemaEditor(): void {
                     </VTooltip>
                 </VBtn>
 
-                <ExecuteQueryButton @click="executeQuery" />
+                <VExecuteQueryButton @click="executeQuery" />
             </template>
-        </VToolbar>
+        </VTabToolbar>
 
         <div class="graphql-editor__body">
             <VSheet class="graphql-editor-query-sections">
@@ -210,10 +196,6 @@ function initializeSchemaEditor(): void {
 .graphql-editor {
     display: grid;
     grid-template-rows: 3rem 1fr;
-
-    &__header {
-        z-index: 100;
-    }
 
     &__body {
         display: grid;

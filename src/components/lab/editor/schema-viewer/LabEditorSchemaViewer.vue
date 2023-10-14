@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import { SchemaViewerService, useSchemaViewerService } from '@/services/editor/schema-viewer.service'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import { TabComponentEvents, TabComponentProps, VoidTabRequestComponentData } from '@/model/editor/editor'
+import VTabToolbar from '@/components/base/VTabToolbar.vue'
 
 const schemaViewerService: SchemaViewerService = useSchemaViewerService()
 const toaster: Toaster = useToaster()
@@ -29,25 +30,10 @@ schemaViewerService.getSchema(props.params.dataPointer)
         v-if="schemaLoaded"
         class="schema-viewer"
     >
-        <VToolbar
-            density="compact"
-            elevation="2"
-            class="bg-primary-light schema-viewer__header"
-        >
-            <VAppBarNavIcon
-                icon="mdi-file-code"
-                :disabled="true"
-                style="opacity: 1"
-                class="ml-0"
-            />
-
-            <VToolbarTitle class="ml-0 font-weight-bold">
-                <VBreadcrumbs
-                    :items="params.dataPointer.schemaPointer.path()"
-                    class="pl-0 pr-0 pt-0 pb-0"
-                />
-            </VToolbarTitle>
-        </VToolbar>
+        <VTabToolbar
+            prepend-icon="mdi-file-code"
+            :path="params.dataPointer.schemaPointer.path()"
+        />
 
         <VSheet class="schema-viewer__body">
             <component
