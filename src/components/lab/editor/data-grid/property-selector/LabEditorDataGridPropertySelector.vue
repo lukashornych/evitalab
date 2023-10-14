@@ -163,7 +163,7 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
                 density="comfortable"
                 v-bind="props"
             >
-                <VIcon>mdi-view-column</VIcon>
+                <VIcon>mdi-view-column-outline</VIcon>
                 <VTooltip activator="parent">
                     Select displayed properties
                 </VTooltip>
