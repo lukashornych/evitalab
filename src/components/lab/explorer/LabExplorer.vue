@@ -24,7 +24,7 @@ const connections = computed<EvitaDBConnection[]>(() => labService.getConnection
         permanent
         :model-value="modelValue"
         @update:model-value="$emit('update:modelValue', $event)"
-        class="bg-primary border-opacity-25"
+        class="bg-primary"
     >
         <VList
             density="compact"

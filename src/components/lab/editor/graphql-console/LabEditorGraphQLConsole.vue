@@ -19,6 +19,7 @@ import { Toaster, useToaster } from '@/services/editor/toaster'
 import { TabComponentEvents, TabComponentProps } from '@/model/editor/editor'
 import VExecuteQueryButton from '@/components/base/VExecuteQueryButton.vue'
 import VTabToolbar from '@/components/base/VTabToolbar.vue'
+import VSideTabs from '@/components/base/VSideTabs.vue'
 
 const graphQLConsoleService: GraphQLConsoleService = useGraphQLConsoleService()
 const toaster: Toaster = useToaster()
@@ -115,10 +116,9 @@ function initializeSchemaEditor(): void {
 
         <div class="graphql-editor__body">
             <VSheet class="graphql-editor-query-sections">
-                <VTabs
+                <VSideTabs
                     v-model="editorTab"
-                    direction="vertical"
-                    class="graphql-editor-query-sections__tab"
+                    side="left"
                 >
                     <VTab value="query">
                         <VIcon>mdi-database-search</VIcon>
@@ -138,7 +138,7 @@ function initializeSchemaEditor(): void {
                             Schema
                         </VTooltip>
                     </VTab>
-                </VTabs>
+                </VSideTabs>
 
                 <VDivider class="mt-2 mb-2" />
             </VSheet>
@@ -217,9 +217,5 @@ function initializeSchemaEditor(): void {
 .graphql-editor-query-sections {
     display: flex;
     width: 3rem;
-
-    &__tab {
-        width: 3rem;
-    }
 }
 </style>

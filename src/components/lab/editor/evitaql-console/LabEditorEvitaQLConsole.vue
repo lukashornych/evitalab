@@ -17,6 +17,7 @@ import { Toaster, useToaster } from '@/services/editor/toaster'
 import { TabComponentEvents, TabComponentProps } from '@/model/editor/editor'
 import VExecuteQueryButton from '@/components/base/VExecuteQueryButton.vue'
 import VTabToolbar from '@/components/base/VTabToolbar.vue'
+import VSideTabs from '@/components/base/VSideTabs.vue'
 
 const evitaQLConsoleService: EvitaQLConsoleService = useEvitaQLConsoleService()
 const toaster: Toaster = useToaster()
@@ -66,10 +67,9 @@ if (props.params.executeOnOpen) {
 
         <div class="evitaql-editor__body">
             <VSheet class="evitaql-editor-query-sections">
-                <VTabs
+                <VSideTabs
                     v-model="editorTab"
-                    direction="vertical"
-                    class="evitaql-editor-query-sections__tab"
+                    side="left"
                 >
                     <VTab value="query">
                         <VIcon>mdi-database-search</VIcon>
@@ -83,7 +83,7 @@ if (props.params.executeOnOpen) {
                             Variables
                         </VTooltip>
                     </VTab>
-                </VTabs>
+                </VSideTabs>
 
                 <VDivider class="mt-2 mb-2" />
             </VSheet>
@@ -150,10 +150,5 @@ if (props.params.executeOnOpen) {
 .evitaql-editor-query-sections {
     display: flex;
     width: 3rem;
-    background: #131323;
-
-    &__tab {
-        width: 3rem;
-    }
 }
 </style>
