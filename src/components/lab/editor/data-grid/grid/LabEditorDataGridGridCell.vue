@@ -2,6 +2,10 @@
 import { EntityPropertyDescriptor, EntityPropertyType, StaticEntityProperties } from '@/model/editor/data-grid'
 import { computed } from 'vue'
 import { Scalar } from '@/model/evitadb'
+import { Toaster, useToaster } from '@/services/editor/toaster'
+import { UnexpectedError } from '@/model/lab'
+
+const toaster: Toaster = useToaster()
 
 const props = defineProps<{
     propertyDescriptor: EntityPropertyDescriptor | undefined,
@@ -43,12 +47,23 @@ function toPrintablePropertyValue(value: any): string {
         return value.toString()
     }
 }
+
+function copyValue(): void {
+    if (printablePropertyValue.value) {
+        navigator.clipboard.writeText(printablePropertyValue.value).then(() => {
+            toaster.info('Copied to clipboard.')
+        }).catch(() => {
+            toaster.error(new UnexpectedError(undefined, 'Failed to copy to clipboard.'))
+        })
+    }
+}
 </script>
 
 <template>
     <td
         :class="{'data-grid-cell--clickable': printablePropertyValue}"
         @click="emit('click')"
+        @click.middle="copyValue"
     >
         <span class="data-grid-cell__body">
             <template v-if="propertyDescriptor?.schema?.localized && !dataLocale">
