@@ -36,7 +36,7 @@ const props = defineProps<{
                     <VChip
                         v-for="item in property[1]"
                         :key="item"
-                        variant="outlined"
+                        :variant="property[2] ? 'outlined' : 'plain'"
                         @click="property[2]?.(item)"
                     >
                         {{ item }}
