@@ -42,9 +42,9 @@ const props = defineProps<{
                         {{ item }}
                     </VChip>
                 </VChipGroup>
-                <span v-else>
+                <div v-else>
                     <VMarkdown :source="property[1].toString()"/>
-                </span>
+                </div>
             </td>
 
         </tr>
