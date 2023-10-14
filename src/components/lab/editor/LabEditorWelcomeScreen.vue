@@ -1,7 +1,17 @@
 <script setup lang="ts">
 
-const version: string = import.meta.env.VITE_BUILD_VERSION || '?'
+import { LabService, useLabService } from '@/services/lab.service'
+import { EvitaDBBlogPost } from '@/model/lab'
+import { ref } from 'vue'
 
+const labService: LabService = useLabService()
+
+const version: string = import.meta.env.VITE_BUILD_VERSION || '?'
+const blogPosts = ref<EvitaDBBlogPost[]>([])
+
+labService.getBlogPosts().then((posts) => {
+    blogPosts.value = posts
+})
 </script>
 
 <template>
@@ -21,19 +31,25 @@ const version: string = import.meta.env.VITE_BUILD_VERSION || '?'
             </header>
 
             <div class="editor-welcome-screen-blog">
-                <a href="https://evitadb.io/blog/07-advanced-features-on-developers-portal?lang=evitaql" target="_blank">
+                <a
+                    v-for="blogPost in blogPosts"
+                    :key="blogPost.url"
+                    :href="blogPost.url"
+                    target="_blank"
+                >
                     <span class="editor-welcome-screen-blog-img__wrap">
-                        <img class="Blog_BlogMotive__72hVr" height="160" width="480" src="https://raw.githubusercontent.com/FgForrest/evitaDB/dev/documentation/blog/en/assets/images/07-advanced-features-on-developers-portal.jpg" alt="Image - Discover the Advanced Features on our Developers Portal">
+                        <img
+                            class="Blog_BlogMotive__72hVr"
+                            height="160"
+                            width="480"
+                            :src="blogPost.thumbnailUrl"
+                            :alt="`Image - ${blogPost.title}`"
+                        />
                     </span>
-                    <span class="editor-welcome-screen-blog-item__title">Discover the Advanced Features on our Developers Portal</span>
-                </a>
-                <a href="https://evitadb.io/blog/06-document-examples-testing?lang=evitaql" target="_blank">
-                    <span class="editor-welcome-screen-blog-img__wrap">
-                        <img class="Blog_BlogMotive__72hVr" height="160" width="480" src="https://raw.githubusercontent.com/FgForrest/evitaDB/dev/documentation/blog/en/assets/images/06-document-examples-testing.png" alt="Image - Validating examples in documentation using JUnit 5 and JShell">
+                    <span class="editor-welcome-screen-blog-item__title">
+                        {{ blogPost.title }}
                     </span>
-                    <span class="editor-welcome-screen-blog-item__title">Validating examples in documentation using JUnit 5 and JShell</span>
                 </a>
-
             </div>
 
             <span class="editor-welcome-screen-hr">&nbsp;</span>

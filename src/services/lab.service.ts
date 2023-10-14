@@ -1,4 +1,4 @@
-import { EvitaDBConnection, EvitaDBConnectionId, UnexpectedError } from '@/model/lab'
+import { EvitaDBBlogPost, EvitaDBConnection, EvitaDBConnectionId, UnexpectedError } from '@/model/lab'
 import { inject, InjectionKey } from 'vue'
 import { Store } from 'vuex'
 import { State } from '@/store'
@@ -12,6 +12,7 @@ import {
     GlobalAttributeSchema,
     ReferenceSchema, ReferenceSchemas
 } from '@/model/evitadb'
+import { EvitaDBDocsClient } from '@/services/evitadb-docs-client'
 
 export const key: InjectionKey<LabService> = Symbol()
 
@@ -22,10 +23,12 @@ export const key: InjectionKey<LabService> = Symbol()
 export class LabService {
     readonly store: Store<State>
     readonly evitaDBClient: EvitaDBClient
+    readonly evitaDBDocsClient: EvitaDBDocsClient
 
-    constructor(store: Store<State>, evitaDBClient: EvitaDBClient) {
+    constructor(store: Store<State>, evitaDBClient: EvitaDBClient, evitaDBDocsClient: EvitaDBDocsClient) {
         this.store = store
         this.evitaDBClient = evitaDBClient
+        this.evitaDBDocsClient = evitaDBDocsClient
     }
 
     isReadOnly = (): boolean => {
@@ -175,6 +178,18 @@ export class LabService {
         if (schema.indexed) flags.push('indexed')
         if (schema.faceted) flags.push('faceted')
         return flags
+    }
+
+    /**
+     * Returns the latest evitaDB blog posts to display on news page.
+     */
+    getBlogPosts = async (): Promise<EvitaDBBlogPost[]> => {
+        let cachedBlogPosts: EvitaDBBlogPost[] | undefined = this.store.state.lab.blogPosts
+        if (cachedBlogPosts == undefined || cachedBlogPosts.length === 0) {
+            cachedBlogPosts = await this.evitaDBDocsClient.getBlogPosts()
+            this.store.commit('lab/setBlogPosts', cachedBlogPosts)
+        }
+        return cachedBlogPosts
     }
 
     private async fetchCatalogs(connection: EvitaDBConnection): Promise<Catalog[]> {
