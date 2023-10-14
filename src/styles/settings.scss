@@ -16,7 +16,7 @@
   $tooltip-text-color: #fff,
   // table
   $table-row-font-size: 1.4rem,
-  $table-border-color: #5A5B51,
+  $table-border-color: rgba(var(--v-border-color), var(--v-border-opacity)),
 );
 
 $primary-lightest: #21BFE3;
@@ -30,7 +30,6 @@ $primary-light: #23355C;
   --el-color-primary-lightest: #21BFE3;
   --el-color-primary-lightest-500: #1a98b5;
   --v-activated-opacity: 0.08!important;
-  --v-theme-surface: red!important;
 }
 
 
@@ -143,7 +142,7 @@ html {
 .v-expansion-panel--active > .v-expansion-panel-title {
   background: var(--el-color-primary-light);
   opacity: 1;
-  min-height: 48px;
+  min-height: 3rem;
 
   .v-expansion-panel-title__overlay {
     display: none;

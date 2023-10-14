@@ -92,17 +92,15 @@ const extensions: Extension[] = [
 
 <style lang="scss" scoped>
 .cm-oneline {
-    height: 2.75rem;
     display: inline-grid;
     grid-template-columns: 1fr;
-    padding: 0 1rem;
     column-gap: 0.25rem;
     align-items: center;
 
     &--with-prepend-icon {
         grid-template-columns: 1.5rem 1fr;
-        padding: 0 1rem 0 0.625rem;
-        gap: 0 1rem;
+        gap: 0 0.5rem;
+        padding-left: 0.25rem;
     }
 
     &__prepend-inner-icon {

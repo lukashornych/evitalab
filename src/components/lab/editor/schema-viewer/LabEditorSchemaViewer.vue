@@ -38,6 +38,7 @@ schemaViewerService.getSchema(props.params.dataPointer)
                 icon="mdi-file-code"
                 :disabled="true"
                 style="opacity: 1"
+                class="ml-0"
             />
 
             <VToolbarTitle class="ml-0 font-weight-bold">

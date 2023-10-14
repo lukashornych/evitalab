@@ -109,8 +109,8 @@ function selectPanel(item: any): void {
     list-style: none;
     justify-content: center;
     align-items: center;
-    margin: 0 0 20px 0;
-    gap: 20px 0;
+    margin: 0 0 1.25rem 0;
+    gap: 1.25rem 0;
 }
 .lab-nav-links li img {
     opacity: .5;

@@ -17,6 +17,7 @@ import { GraphQLConsoleData, GraphQLConsoleParams, GraphQLInstanceType } from '@
 import CodemirrorFull from '@/components/base/CodemirrorFull.vue'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import { TabComponentEvents, TabComponentProps } from '@/model/editor/editor'
+import ExecuteQueryButton from '@/components/base/ExecuteQueryButton.vue'
 
 const graphQLConsoleService: GraphQLConsoleService = useGraphQLConsoleService()
 const toaster: Toaster = useToaster()
@@ -100,7 +101,7 @@ function initializeSchemaEditor(): void {
                 icon="mdi-graphql"
                 :disabled="true"
                 style="opacity: 1"
-                class="text-primary-lightest ml-0"
+                class="ml-0"
             />
 
             <VToolbarTitle class="ml-0 font-weight-bold">
@@ -122,20 +123,7 @@ function initializeSchemaEditor(): void {
                     </VTooltip>
                 </VBtn>
 
-                <!-- todo lho primary color? -->
-                <VBtn
-                    variant="elevated"
-                    density="compact"
-                    @click="executeQuery"
-                    class="text-primary-lightest font-weight-bold bg-primary-light rounded-lg border-md h-auto py-1 rounded-xl border-opacity-100 border-primary-lightest"
-                >
-                    <VIcon>mdi-play</VIcon>
-
-                    <VTooltip activator="parent">
-                        Execute query
-                    </VTooltip>
-                    Run
-                </VBtn>
+                <ExecuteQueryButton @click="executeQuery" />
             </template>
         </VToolbar>
 

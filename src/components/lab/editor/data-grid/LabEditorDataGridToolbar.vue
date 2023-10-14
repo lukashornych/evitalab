@@ -2,6 +2,7 @@
 /**
  * Toolbar for the LabEditorDataGrid component.
  */
+import ExecuteQueryButton from '@/components/base/ExecuteQueryButton.vue'
 
 const props = defineProps<{
     path: string[]
@@ -34,20 +35,7 @@ const emit = defineEmits<{
         </VToolbarTitle>
 
         <template #append>
-            <VBtn
-                variant="outlined"
-                :loading="loading"
-                density="compact"
-                @click="emit('executeQuery')"
-                class="text-primary-lightest font-weight-bold bg-primary-light rounded-lg border-md h-auto py-1 rounded-xl border-opacity-100 border-primary-lightest"
-            >
-                <VIcon>mdi-play-outline</VIcon>
-
-                <VTooltip activator="parent">
-                    Execute query
-                </VTooltip>
-                Run
-            </VBtn>
+            <ExecuteQueryButton @click="emit('executeQuery')" />
         </template>
 
         <template #extension>

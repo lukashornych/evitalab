@@ -15,6 +15,7 @@ import { EvitaQLConsoleService, useEvitaQLConsoleService } from '@/services/edit
 import { EvitaQLConsoleData, EvitaQLConsoleParams } from '@/model/editor/evitaql-console'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import { TabComponentEvents, TabComponentProps } from '@/model/editor/editor'
+import ExecuteQueryButton from '@/components/base/ExecuteQueryButton.vue'
 
 const evitaQLConsoleService: EvitaQLConsoleService = useEvitaQLConsoleService()
 const toaster: Toaster = useToaster()
@@ -62,7 +63,7 @@ if (props.params.executeOnOpen) {
                 icon="mdi-application-braces-outline"
                 :disabled="true"
                 style="opacity: 1"
-                class="text-primary-lightest ml-0"
+                class="ml-0"
             />
 
             <VToolbarTitle class="ml-0 font-weight-bold">
@@ -73,20 +74,7 @@ if (props.params.executeOnOpen) {
             </VToolbarTitle>
 
             <template #append>
-                <!-- todo lho primary color? -->
-                <VBtn
-                    variant="outlined"
-                    density="compact"
-                    @click="executeQuery"
-                    class="text-primary-lightest font-weight-bold bg-primary-light rounded-lg border-md h-auto py-1 rounded-xl border-opacity-100 border-primary-lightest"
-                >
-                    <VIcon>mdi-play-outline</VIcon>
-
-                    <VTooltip activator="parent">
-                        Execute query
-                    </VTooltip>
-                    Run
-                </VBtn>
+                <ExecuteQueryButton @click="executeQuery" />
             </template>
         </VToolbar>
 
