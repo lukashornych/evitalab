@@ -134,6 +134,10 @@ export class GraphQLQueryBuilder implements QueryBuilder {
         return `entityPrimaryKeyInSet: ${parentPrimaryKey}`
     }
 
+    buildPredecessorEntityFilterBy(predecessorPrimaryKey: number): string {
+        return `entityPrimaryKeyInSet: ${predecessorPrimaryKey}`
+    }
+
     buildReferencedEntityFilterBy(referencedPrimaryKeys: number | number[]): string {
         return `entityPrimaryKeyInSet: [${typeof referencedPrimaryKeys === 'number' ? referencedPrimaryKeys : referencedPrimaryKeys.join(', ')}]`
     }

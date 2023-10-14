@@ -33,6 +33,8 @@ export class Toaster {
     }
 
     error(error: Error | String): void {
+        console.error(error)
+
         if (typeof error === 'string') {
             this.toast.error(error)
             return

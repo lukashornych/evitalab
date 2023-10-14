@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { EntityPropertyDescriptor, EntityPropertyType, StaticEntityProperties } from '@/model/editor/data-grid'
 import { computed } from 'vue'
+import { Scalar } from '@/model/evitadb'
 
 const props = defineProps<{
     propertyDescriptor: EntityPropertyDescriptor | undefined,
@@ -15,6 +16,10 @@ const printablePropertyValue = computed<string>(() => toPrintablePropertyValue(p
 const openableInNewTab = computed<boolean>(() => {
     if (props.propertyDescriptor?.type === EntityPropertyType.Entity && props.propertyDescriptor?.key.name === StaticEntityProperties.ParentPrimaryKey) {
         return true
+    } else if (props.propertyDescriptor?.type === EntityPropertyType.Attributes && props.propertyDescriptor.schema.type === Scalar.Predecessor) {
+        return true
+    } else if (props.propertyDescriptor?.type === EntityPropertyType.AssociatedData && props.propertyDescriptor.schema.type === Scalar.Predecessor) {
+        return true
     } else if (props.propertyDescriptor?.schema?.referencedEntityType) {
         return true
     } else {
@@ -22,6 +27,7 @@ const openableInNewTab = computed<boolean>(() => {
     }
 })
 
+// todo lho we could format certain data types more human readable like we do in markdown pretty printer
 function toPrintablePropertyValue(value: any): string {
     if (value == undefined) {
         return ''
