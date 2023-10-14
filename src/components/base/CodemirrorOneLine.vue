@@ -126,5 +126,9 @@ const extensions: Extension[] = [
         color: white;
         font-weight: bold;
     }
+
+    & :deep(.cm-cursor) {
+        border-left: 1px solid #fff;
+    }
 }
 </style>
