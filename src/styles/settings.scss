@@ -176,11 +176,19 @@ html {
   padding: 0.5rem 0.625rem 0.5rem 1rem;
 }
 
+// toast notifications
+
+.Vue-Toastification__icon {
+  height: 1.625rem;
+  font-size: 1.5rem;
+  line-height: 1.5rem;
+}
+
 .Vue-Toastification__toast--success {
   background-color: rgba(34,164,78,.2);
 
-  .Vue-Toastification__icon path {
-    fill: #22a44e;
+  .Vue-Toastification__icon {
+    color: #22a44e;
   }
 
   .Vue-Toastification__progress-bar {
@@ -191,8 +199,8 @@ html {
 .Vue-Toastification__toast--info {
   background-color: #23355c;
 
-  .Vue-Toastification__icon path {
-    fill: #487ad3;
+  .Vue-Toastification__icon {
+    color: #487ad3;
   }
 
   .Vue-Toastification__progress-bar {
@@ -203,8 +211,8 @@ html {
 .Vue-Toastification__toast--warning {
   background-color: #4c4029;
 
-  .Vue-Toastification__icon path {
-    fill: #f7a729;
+  .Vue-Toastification__icon {
+    color: #f7a729;
   }
 
   .Vue-Toastification__progress-bar {
@@ -215,8 +223,8 @@ html {
 .Vue-Toastification__toast--error {
   background-color: #4c232f;
 
-  .Vue-Toastification__icon path {
-    fill: #E13321;
+  .Vue-Toastification__icon {
+    color: #E13321;
   }
 
   .Vue-Toastification__progress-bar {

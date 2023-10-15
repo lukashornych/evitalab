@@ -110,9 +110,9 @@ function getApiTestedIndicator(result: ApiTestResult): any  {
         case ApiTestResult.NotTested:
             return null
         case ApiTestResult.Success:
-            return 'mdi-check-circle'
+            return 'mdi-check-circle-outline'
         case ApiTestResult.Failure:
-            return 'mdi-close-circle'
+            return 'mdi-close-circle-outline'
     }
 }
 
