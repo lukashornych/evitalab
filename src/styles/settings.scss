@@ -175,3 +175,51 @@ html {
 .v-card-title {
   padding: 0.5rem 0.625rem 0.5rem 1rem;
 }
+
+.Vue-Toastification__toast--success {
+  background-color: rgba(34,164,78,.2);
+
+  .Vue-Toastification__icon path {
+    fill: #22a44e;
+  }
+
+  .Vue-Toastification__progress-bar {
+    background-color: #22a44e;
+  }
+}
+
+.Vue-Toastification__toast--info {
+  background-color: #23355c;
+
+  .Vue-Toastification__icon path {
+    fill: #487ad3;
+  }
+
+  .Vue-Toastification__progress-bar {
+    background-color: #487ad3;
+  }
+}
+
+.Vue-Toastification__toast--warning {
+  background-color: #4c4029;
+
+  .Vue-Toastification__icon path {
+    fill: #f7a729;
+  }
+
+  .Vue-Toastification__progress-bar {
+    background-color: #f7a729;
+  }
+}
+
+.Vue-Toastification__toast--error {
+  background-color: #4c232f;
+
+  .Vue-Toastification__icon path {
+    fill: #E13321;
+  }
+
+  .Vue-Toastification__progress-bar {
+    background-color: #E13321;
+  }
+}
