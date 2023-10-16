@@ -54,6 +54,7 @@ export enum QueryLanguage {
  */
 export type EvitaDBBlogPost = {
     title: string,
+    perex: string,
     url: string,
     thumbnailUrl: string
 }

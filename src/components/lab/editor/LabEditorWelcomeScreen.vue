@@ -3,6 +3,7 @@
 import {LabService, useLabService} from '@/services/lab.service'
 import {EvitaDBBlogPost} from '@/model/lab'
 import {ref} from 'vue'
+import VMarkdown from '@/components/base/VMarkdown.vue'
 
 const labService: LabService = useLabService()
 
@@ -51,11 +52,8 @@ labService.getBlogPosts().then((posts) => {
                     <span class="editor-welcome-screen-blog-item__title">
                         {{ blogPost.title }}
                     </span>
-                    <!-- TODO - LHO - hook on perex pls-->
                     <span class="editor-welcome-screen-blog-item__perex">
-                        The documentation on evitaDB site is getting bigger and bigger. The more examples we add, the
-                        more we're afraid they will become obsolete or broken. How do we tame this beast of hundreds of.
-                        The documentation on evitaDB site is getting bigger and bigger. The more examples we add.
+                        <VMarkdown :source="blogPost.perex" />
                     </span>
                     <span class="editor-welcome-screen-blog-item__btn">Read</span>
                 </a>

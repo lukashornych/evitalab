@@ -22,6 +22,7 @@ export class EvitaDBDocsClient extends ApiClient {
             items.forEach((item: Element) => {
                 blogPosts.push({
                     title: item.querySelector('title')?.textContent ?? '',
+                    perex: item.querySelector('description')?.textContent ?? '',
                     url: item.querySelector('link')?.textContent ?? '',
                     thumbnailUrl: item.querySelector('enclosure')?.getAttribute('url') ?? ''
                 })
