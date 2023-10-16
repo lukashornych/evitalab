@@ -1,8 +1,8 @@
 <script setup lang="ts">
 
-import { LabService, useLabService } from '@/services/lab.service'
-import { EvitaDBBlogPost } from '@/model/lab'
-import { ref } from 'vue'
+import {LabService, useLabService} from '@/services/lab.service'
+import {EvitaDBBlogPost} from '@/model/lab'
+import {ref} from 'vue'
 
 const labService: LabService = useLabService()
 
@@ -26,7 +26,9 @@ labService.getBlogPosts().then((posts) => {
                     class="mx-auto mb-1 evita-lab-logo"
                 />
                 <h1 class="font-weight-bold mb-2" style="font-size: 4.375rem;">evitaLab</h1>
-                <p class="text-white" style="font-size: 1rem;">{{ version }} <a class="text-primary-lightest text-body-2" href="https://github.com/lukashornych/evitalab/releases" target="_blank">(changelog)</a></p>
+                <p class="text-white" style="font-size: 1rem;">{{ version }} <a
+                    class="text-primary-lightest text-body-2" href="https://github.com/lukashornych/evitalab/releases"
+                    target="_blank">(changelog)</a></p>
                 <p class="text-gray-light mb-10" style="font-size: 1rem;">evitaDB web client</p>
             </header>
 
@@ -49,13 +51,21 @@ labService.getBlogPosts().then((posts) => {
                     <span class="editor-welcome-screen-blog-item__title">
                         {{ blogPost.title }}
                     </span>
+                    <!-- TODO - LHO - hook on perex pls-->
+                    <span class="editor-welcome-screen-blog-item__perex">
+                        The documentation on evitaDB site is getting bigger and bigger. The more examples we add, the
+                        more we're afraid they will become obsolete or broken. How do we tame this beast of hundreds of.
+                        The documentation on evitaDB site is getting bigger and bigger. The more examples we add.
+                    </span>
+                    <span class="editor-welcome-screen-blog-item__btn">Read</span>
                 </a>
             </div>
 
             <span class="editor-welcome-screen-hr">&nbsp;</span>
 
             <ul class="editor-welcome-screen-hero__links">
-                <li>Check out the <a href="https://evitadb.io/documentation" target="_blank"> evitaDB documentation</a></li>
+                <li>Check out the <a href="https://evitadb.io/documentation" target="_blank"> evitaDB documentation</a>
+                </li>
                 <li>Give us a ⭐ on <a href="https://github.com/lukashornych/evitalab/" target="_blank"> GitHub</a></li>
                 <li>Reach out to us on <a href="https://discord.gg/VsNBWxgmSw" target="_blank"> Discord</a></li>
                 <li><a href="https://github.com/lukashornych/evitalab/issues" target="_blank"> Submit an issue</a></li>
@@ -115,6 +125,10 @@ labService.getBlogPosts().then((posts) => {
     margin: auto auto 1.875rem auto;
     gap: 1.25rem;
 
+    @media (min-width: 1440px) {
+        gap: 3rem;
+    }
+
     a {
         text-decoration: none;
         max-width: 28.75rem;
@@ -127,6 +141,10 @@ labService.getBlogPosts().then((posts) => {
 
             img {
                 scale: 1.05;
+            }
+
+            .editor-welcome-screen-blog-item__btn {
+                border-color: $white;
             }
         }
     }
@@ -148,7 +166,49 @@ labService.getBlogPosts().then((posts) => {
 
 .editor-welcome-screen-blog-item__title {
     color: white;
-    font-weight: bold;
+    margin-bottom: 1rem;
+    display: block;
+    min-height: 5.8rem;
+    width: 100%;
+    font-size: 22px;
+    line-height: 29px;
+    font-weight: 500;
+    padding: 0 15px;
+}
+
+.editor-welcome-screen-blog-item__perex {
+    margin-bottom: 1.5rem;
+    --tw-text-opacity: 1;
+    color: initial;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    line-height: 1.7;
+    max-height: 5.1;
+    padding: 0 15px;
+    font-weight: normal;
+}
+
+.editor-welcome-screen-blog-item__btn {
+    color: initial;
+    margin-right: auto;
+    margin-left: 15px;
+    border: 1px solid rgba($white, .5);
+    margin-top: auto;
+    display: inline-block;
+    font-weight: 500;
+    position: relative;
+    align-items: center;
+    overflow: hidden;
+    padding: 12px 16px;
+    font-size: 14px;
+    line-height: 1;
+    height: 40px;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: all .4s linear;
 }
 
 .editor-welcome-screen-hr {
@@ -163,13 +223,14 @@ labService.getBlogPosts().then((posts) => {
     max-width: 42.1875rem;
     display: block;
     list-style: none;
+    text-align: center;
 
     li {
         display: inline-flex;
         margin: 0.5rem 0;
         font-size: 1rem;
 
-        +li {
+        + li {
             margin-left: 1.875rem;
         }
     }
@@ -197,6 +258,7 @@ labService.getBlogPosts().then((posts) => {
         opacity: 1;
     }
 }
+
 @keyframes fade-in-fwd {
     0% {
         -webkit-transform: translateZ(-5rem);
@@ -209,6 +271,7 @@ labService.getBlogPosts().then((posts) => {
         opacity: 1;
     }
 }
+
 .evita-lab-logo {
     -webkit-animation: fade-in-fwd 2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
     animation: fade-in-fwd 2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;

@@ -151,4 +151,18 @@ if (props.params.executeOnOpen) {
     display: flex;
     width: 3rem;
 }
+
+.v-slide-group--vertical {
+    & :deep(.v-tab) {
+
+        &:hover {
+            color: var(--el-color-primary-lightest);
+        }
+
+        &.v-tab--selected {
+            color: var(--el-color-primary-lightest);
+        }
+
+    }
+}
 </style>

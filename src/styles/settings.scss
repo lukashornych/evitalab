@@ -11,7 +11,7 @@
 
 @use 'vuetify/settings' with (
   $overlay-opacity: 0.8,
-  $overlay-scrim-background: #131323,
+  $overlay-scrim-background: rgba(35, 53, 92, 0.80),
   // tooltip
   $tooltip-text-color: #fff,
   // table
@@ -36,17 +36,39 @@ $font-family: 'Poppins';
   [class*='text-'] {
     font-family: $font-family, sans-serif !important;
   }
+
   font-family: $font-family, sans-serif !important;
 }
 
 .v-field--variant-solo-filled .v-field__overlay {
-    background-color: $primary-dark!important;
-    opacity: 1!important;
+  background-color: $primary-dark !important;
+  opacity: 1 !important;
 }
+
 // Global/Generic styles
 html {
   font-family: Poppins, sans-serif;
   overflow-y: hidden;
+}
+
+body::after {
+  position: fixed;
+  display: block;
+  content: '';
+  top: 100%;
+  right: 0;
+  transform: translateX(0);
+  width: calc(100vw - 300px);
+  height: 600px;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow:
+          0 0 20px 20px rgba($primary-lightest, 0.2),
+          0 0 40px 40px rgba($primary-lightest, 0.2),
+          0 0 80px 80px rgba($primary-lightest, 0.2),
+          0 0 120px 120px rgba($primary-lightest, 0.2);
+  opacity: .25;
+
 }
 
 .v-tab {
@@ -55,6 +77,10 @@ html {
 
 .v-btn {
   text-transform: none !important;
+
+  &.v-btn--variant-tonal {
+    background: rgba($primary-dark, .5) !important;
+  }
 }
 
 .splitpanes {
@@ -92,7 +118,7 @@ html {
 }
 
 .cm-focused {
-  outline: none!important;
+  outline: none !important;
 }
 
 .v-breadcrumbs-item--disabled:only-child {
@@ -128,7 +154,7 @@ html {
 }
 
 .v-label.v-field-label {
-  color: $gray-light!important;
+  color: $gray-light !important;
   z-index: 1;
 }
 
@@ -163,6 +189,7 @@ html {
   border: 0;
   background: var(--el-color-primary-dark);
 }
+
 // pop up/overlay colors
 .v-overlay__content {
   background: var(--el-color-primary-dark);
@@ -230,4 +257,16 @@ html {
   .Vue-Toastification__progress-bar {
     background-color: #E13321;
   }
+}
+// Overlay
+.v-main {
+  &::after {
+    position: absolute;
+    width: 100%;
+
+  }
+}
+
+.v-overlay__scrim {
+  backdrop-filter: blur(2px);
 }
