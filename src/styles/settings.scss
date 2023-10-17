@@ -20,6 +20,7 @@
 );
 
 @import 'colors';
+@import "md-content";
 
 .v-theme--dark {
   --el-color-primary-dark: #131323;
@@ -68,11 +69,15 @@ body::after {
           0 0 80px 80px rgba($primary-lightest, 0.2),
           0 0 120px 120px rgba($primary-lightest, 0.2);
   opacity: .25;
-
+  z-index: 1;
 }
 
 .v-tab {
   text-transform: none !important;
+}
+
+.v-data-table-footer {
+  z-index: 2;
 }
 
 .v-btn {
