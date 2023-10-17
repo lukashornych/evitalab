@@ -12,7 +12,7 @@
     }
   }
 
-  code {
+  code:not(.hljs) {
     display: inline-flex;
     font-weight: normal;
     padding: 4px 6px;
@@ -26,6 +26,9 @@
     hyphens: auto;
     line-height: 1;
   }
+
+  // hl overrides
+  @import "hl";
 
   ul {
     margin: .5rem 0 1.5rem 0;

@@ -3,7 +3,6 @@
  * Wrapper around Markdown renderer mainly for global styling purposes.
  */
 
-import 'highlight.js/styles/default.css'
 import MarkdownIt from 'markdown-it'
 import MarkdownItHighlightJs from 'markdown-it-highlightjs'
 import MarkdownItEmoji from 'markdown-it-emoji'
