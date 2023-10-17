@@ -271,7 +271,7 @@ const renderedSource = computed<string>(() => markdown.render(props.source))
 </script>
 
 <template>
-    <div v-html="renderedSource" />
+    <div v-html="renderedSource" class="md-content"/>
 </template>
 
 <style lang="scss" scoped>

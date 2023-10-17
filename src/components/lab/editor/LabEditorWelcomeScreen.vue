@@ -53,7 +53,7 @@ labService.getBlogPosts().then((posts) => {
                         {{ blogPost.title }}
                     </span>
                     <span class="editor-welcome-screen-blog-item__perex">
-                        <VMarkdown :source="blogPost.perex" class="md-content" />
+                        <VMarkdown :source="blogPost.perex" />
                     </span>
                     <span class="editor-welcome-screen-blog-item__btn">Read</span>
                 </a>
