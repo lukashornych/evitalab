@@ -10,7 +10,7 @@ import {
     CatalogSchema,
     EntitySchema,
     GlobalAttributeSchema,
-    ReferenceSchema, ReferenceSchemas
+    ReferenceSchema, ReferenceSchemas, Scalar
 } from '@/model/evitadb'
 import { EvitaDBDocsClient } from '@/services/evitadb-docs-client'
 
@@ -96,6 +96,12 @@ export class LabService {
         return entitySchema
     }
 
+    getEntitySchemaFlags = (schema: EntitySchema): string[] => {
+        const flags: string[] = []
+        if (schema.withHierarchy) flags.push('hierarchical')
+        return flags
+    }
+
     getCatalogAttributeSchema = async (connection: EvitaDBConnection, catalogName: string, attributeName: string): Promise<GlobalAttributeSchema> => {
         const catalogSchema: CatalogSchema = await this.getCatalogSchema(connection, catalogName)
         const attributeSchema: GlobalAttributeSchema | undefined = Object.values(catalogSchema.attributes)
@@ -132,6 +138,7 @@ export class LabService {
 
     getAttributeSchemaFlags = (schema: AttributeSchemaUnion): string[] => {
         const flags: string[] = []
+        flags.push(this.formatDataTypeForFlag(schema.type))
         const globalAttribute = 'uniqueGlobally' in schema
         if (globalAttribute && (schema as GlobalAttributeSchema).uniqueGlobally) {
             flags.push('unique globally')
@@ -157,6 +164,7 @@ export class LabService {
 
     getAssociatedDataSchemaFlags = (schema: AssociatedDataSchema): string[] => {
         const flags: string[] = []
+        flags.push(this.formatDataTypeForFlag(schema.type))
         if (schema.localized) flags.push('localized')
         if (schema.nullable) flags.push('nullable')
         return flags
@@ -220,6 +228,12 @@ export class LabService {
         )
 
         return fetchedCatalogSchema
+    }
+
+    private formatDataTypeForFlag(dataType: string): string {
+        return dataType
+            .replace('ComplexDataObject', 'Object')
+            .replace('Array', '[]')
     }
 }
 
