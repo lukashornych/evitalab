@@ -189,7 +189,6 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
                     </VBtn>
                 </template>
             </VCardTitleWithActions>
-            <VDivider class="mt-2 mb-2" />
             <VCardText class="selector-body">
                 <Hotkeys
                     :shortcuts="['F']"
