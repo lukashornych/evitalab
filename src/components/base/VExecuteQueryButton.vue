@@ -10,10 +10,9 @@ const emit = defineEmits<{
 
 <template>
     <VBtn
-        variant="outlined"
         density="compact"
         @click="emit('click')"
-        class="text-primary-lightest font-weight-bold bg-primary-light rounded-lg border-md h-auto py-1 rounded-xl border-opacity-100 border-primary-lightest"
+        class="v-btn--variant-primary"
     >
         <VIcon>mdi-play-outline</VIcon>
 

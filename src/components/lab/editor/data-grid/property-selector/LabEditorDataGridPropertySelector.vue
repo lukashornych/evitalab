@@ -170,7 +170,7 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
             </VBtn>
         </template>
 
-        <VCard>
+        <VCard class="py-8 px-4">
             <VCardTitleWithActions>
                 <template #default>
                     Displayed properties

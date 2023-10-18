@@ -180,6 +180,6 @@ function copyRenderedValue() {
     top: 0;
     bottom: 0;
     overflow: auto;
-    background: #1e1e1e; // evitaDB highlighter simulation
+    // background: #1e1e1e; // evitaDB highlighter simulation
 }
 </style>

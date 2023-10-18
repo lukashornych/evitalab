@@ -142,17 +142,6 @@ resolveDemoCodeSnippet()
 </template>
 
 <style scoped>
-.lab-tab {
-    transition: color 0.2s ease-in-out;
-
-    &:hover {
-        color: var(--el-color-primary-lightest);
-    }
-
-    &.v-slide-group-item--active {
-        color: var(--el-color-primary-lightest);
-    }
-}
 
 .lab-editor {
     display: grid;

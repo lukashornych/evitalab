@@ -152,7 +152,7 @@ if (props.params.executeOnOpen) {
     width: 3rem;
 }
 
-.v-slide-group--vertical {
+.v-slide-group {
     & :deep(.v-tab) {
 
         &:hover {

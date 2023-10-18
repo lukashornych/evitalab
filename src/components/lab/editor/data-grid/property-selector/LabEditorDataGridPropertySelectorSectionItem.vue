@@ -36,6 +36,7 @@ const emit = defineEmits<{
                         v-for="flag in flags"
                         :key="flag"
                         variant="plain"
+                        class="text-sm-body-2"
                     >
                         {{ flag }}
                     </VChip>
