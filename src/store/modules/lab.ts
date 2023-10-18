@@ -82,17 +82,17 @@ const state = (): LabState => {
     const readOnlyCookie: string | undefined = Cookies.get(readonlyCookieName)
     const readOnly: boolean = readOnlyCookie != undefined && atob(readOnlyCookie) === 'true'
 
-    let preconfiguredConnections: EvitaDBConnection[] = []
+    const preconfiguredConnections: EvitaDBConnection[] = []
     // load preconfigured connections from cookie from hosted evitaDB instance
     const preconfiguredConnectionsCookie: string | undefined = Cookies.get(preconfiguredConnectionsCookieName)
-    if (preconfiguredConnectionsCookie != undefined) {
-        try {
-            preconfiguredConnections = (JSON.parse(preconfiguredConnectionsCookie) as Array<any>)
-                .map(connection => EvitaDBConnection.fromJson(connection, true))
-        } catch (e) {
-            console.error('Failed to load preconfigured connections cookie', e)
-        }
-    }
+    // if (preconfiguredConnectionsCookie != undefined) {
+    //     try {
+    //         preconfiguredConnections = (JSON.parse(preconfiguredConnectionsCookie) as Array<any>)
+    //             .map(connection => EvitaDBConnection.fromJson(connection, true))
+    //     } catch (e) {
+    //         console.error('Failed to load preconfigured connections cookie', e)
+    //     }
+    // }
     // automatic demo connection configuration for easier development
     if (import.meta.env.DEV) {
         preconfiguredConnections.push(new EvitaDBConnection(
