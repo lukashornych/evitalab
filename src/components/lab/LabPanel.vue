@@ -84,7 +84,7 @@ function selectPanel(item: any): void {
                     </a>
                 </li>
                 <li>
-                    <a href="https://discord.gg/VsNBWxgmSw" target="_blank">
+                    <a href="https://github.com/lukashornych/evitalab" target="_blank">
                     <img src="/github.svg" alt="GitHub icon">
                         <VTooltip activator="parent">
                             Give us a ⭐️ on GitHub
@@ -129,6 +129,12 @@ function selectPanel(item: any): void {
         display: none;
     }
     & :deep(.v-list-item__overlay) {
+        background: transparent;
+        opacity: 1;
+        border-radius: 50%;
+        transition: background-color .1s ease-in-out;
+    }
+    & :deep(.v-list-item--active > .v-list-item__overlay) {
         background: $primary-lightest;
         opacity: 1;
         border-radius: 50%;
