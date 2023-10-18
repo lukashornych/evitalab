@@ -177,7 +177,6 @@ labService.getBlogPosts().then((posts) => {
 .editor-welcome-screen-blog-item__perex {
     margin-bottom: 1.5rem;
     --tw-text-opacity: 1;
-    color: initial;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
