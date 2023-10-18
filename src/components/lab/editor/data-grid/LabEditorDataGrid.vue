@@ -85,6 +85,9 @@ onBeforeMount(() => {
     dataGridConsoleService.getDataLocales(props.params.dataPointer)
         .then(dl => {
             dataLocales = dl
+            if (!selectedDataLocale.value) {
+                selectedDataLocale.value = getBrowserPreferredDataLocale()
+            }
             return dataGridConsoleService.getEntityPropertyDescriptors(props.params.dataPointer)
         })
         .then(ep => {
@@ -106,6 +109,14 @@ onBeforeMount(() => {
             toaster.error(error)
         })
 })
+
+function getBrowserPreferredDataLocale(): string {
+    for (const browserLanguage of navigator.languages) {
+        if (dataLocales.includes(browserLanguage)) {
+            return browserLanguage
+        }
+    }
+}
 
 async function initializeGridHeaders(entityPropertyDescriptors: EntityPropertyDescriptor[]): Promise<Map<string, any>> {
     const gridHeaders: Map<string, any> = new Map<string, any>()
