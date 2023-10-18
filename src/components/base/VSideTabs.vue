@@ -41,5 +41,15 @@ const emit = defineEmits<{
     &--right {
         border-left: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
     }
+
+    & :deep(.v-btn) {
+        min-width: 3rem;
+        width: 3rem;
+        padding: 0 0 0 1rem !important;
+
+        &:after {
+            width: 3rem;
+        }
+    }
 }
 </style>
