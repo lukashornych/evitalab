@@ -41,6 +41,13 @@ const formats: any[] = [
             prependIcon: 'mdi-xml'
         }
     },
+    {
+        title: 'HTML',
+        value: EntityPropertyValueDesiredOutputFormat.Html,
+        props: {
+            prependIcon: 'mdi-language-html5'
+        }
+    }
 ]
 
 const props = defineProps<{

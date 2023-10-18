@@ -169,7 +169,11 @@ export enum EntityPropertyValueDesiredOutputFormat {
     /**
      * Renders any raw input value as a XML source.
      */
-    Xml = 'xml'
+    Xml = 'xml',
+    /**
+     * Renders HTML in input value.
+     */
+    Html = 'html'
     // we could keep adding more languages here potentially
 }
 

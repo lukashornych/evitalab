@@ -10,6 +10,8 @@ import LabEditorDataGridGridCellDetailCodeRenderer
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailCodeRenderer.vue'
 import LabEditorDataGridGridCellDetailMarkdownRenderer
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailMarkdownRenderer.vue'
+import LabEditorDataGridGridCellDetailHtmlRenderer
+    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailHtmlRenderer.vue'
 
 const props = withDefaults(defineProps<{
     dataType?: Scalar | undefined,
@@ -50,6 +52,11 @@ const props = withDefaults(defineProps<{
         v-else-if="outputFormat === EntityPropertyValueDesiredOutputFormat.Xml"
         :value="value"
         :code-language="EntityPropertyValueSupportedCodeLanguage.Xml"
+        :fill-space="fillSpace"
+    />
+    <LabEditorDataGridGridCellDetailHtmlRenderer
+        v-else-if="outputFormat === EntityPropertyValueDesiredOutputFormat.Html"
+        :value="value"
         :fill-space="fillSpace"
     />
 </template>

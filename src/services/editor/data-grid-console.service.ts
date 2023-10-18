@@ -236,6 +236,7 @@ export class DataGridConsoleService {
      * @param prettyPrint if value should be pretty printed
      */
     formatEntityPropertyValue(value: any, language: EntityPropertyValueSupportedCodeLanguage, prettyPrint: boolean = false): string {
+        // todo lho maybe markdown pretty printing logic should be here as well
         const formatter: EntityPropertyValueFormatter | undefined = this.entityPropertyValueFormatters.get(language)
         if (formatter == undefined) {
             throw new UnexpectedError(undefined, `Property value formatter for language ${language} is not registered.`)

@@ -50,6 +50,7 @@ const emit = defineEmits<{
     min-height: 15rem;
     display: grid;
     grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
     height: 100%;
 
     &--with-actions {
