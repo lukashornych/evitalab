@@ -133,8 +133,10 @@ labService.getBlogPosts().then((posts) => {
         display: flex;
         align-items: center;
         flex-direction: column;
+        color: white;
 
         &:hover {
+            color: white;
             text-decoration: none;
 
             img {
@@ -189,7 +191,6 @@ labService.getBlogPosts().then((posts) => {
 }
 
 .editor-welcome-screen-blog-item__btn {
-    color: initial;
     margin-right: auto;
     margin-left: 15px;
     border: 1px solid rgba($white, .5);
