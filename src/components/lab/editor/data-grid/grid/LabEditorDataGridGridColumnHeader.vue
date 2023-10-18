@@ -10,7 +10,7 @@ const props = defineProps<{
 }>()
 
 const prependIcon = computed<string | undefined>(() => {
-    const propertyType: EntityPropertyType = props.column.descriptor?.type
+    const propertyType: EntityPropertyType | undefined = props.column.descriptor?.type
     if (propertyType === EntityPropertyType.AssociatedData) {
         return 'mdi-package-variant-closed'
     }

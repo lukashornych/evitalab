@@ -27,6 +27,17 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void
 }>()
 
+const headerPrependIcon = computed<string | undefined>(() => {
+    const propertyType: EntityPropertyType | undefined = props.propertyDescriptor?.type
+    if (propertyType === EntityPropertyType.AssociatedData) {
+        return 'mdi-package-variant-closed'
+    }
+    if (propertyType === EntityPropertyType.References) {
+        return 'mdi-link-variant'
+    }
+    return undefined
+})
+
 const globalOutputFormat = ref<EntityPropertyValueDesiredOutputFormat>(EntityPropertyValueDesiredOutputFormat.AutoPrettyPrint)
 
 const rawDataType = computed<string | undefined>(() => {
@@ -60,7 +71,13 @@ const componentDataType = computed<Scalar | undefined>(() => {
     <VCard class="data-grid-cell-detail">
         <VCardTitleWithActions>
             <template #default>
-                {{ propertyDescriptor?.title || 'Unknown property' }}
+                <VIcon
+                    v-if="headerPrependIcon"
+                    class="mr-2"
+                >
+                    {{ headerPrependIcon }}
+                </VIcon>
+                <span>{{ propertyDescriptor?.title || 'Unknown property' }}</span>
             </template>
             <template #actions>
                 <LabEditorDataGridGridCellDetailOutputFormatSelector
