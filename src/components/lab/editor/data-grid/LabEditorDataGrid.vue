@@ -110,12 +110,13 @@ onBeforeMount(() => {
         })
 })
 
-function getBrowserPreferredDataLocale(): string {
+function getBrowserPreferredDataLocale(): string | undefined {
     for (const browserLanguage of navigator.languages) {
         if (dataLocales.includes(browserLanguage)) {
             return browserLanguage
         }
     }
+    return undefined
 }
 
 async function initializeGridHeaders(entityPropertyDescriptors: EntityPropertyDescriptor[]): Promise<Map<string, any>> {
