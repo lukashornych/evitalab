@@ -103,6 +103,14 @@ const state = (): LabState => {
             'https://demo.evitadb.io:5555/rest',
             'https://demo.evitadb.io:5555/gql'
         ))
+        preconfiguredConnections.push(new EvitaDBConnection(
+            'localhost',
+            'Localhost',
+            true,
+            'https://localhost:5555/lab/api',
+            'https://localhost:5555/rest',
+            'https://localhost:5555/gql'
+        ))
     }
 
     // initialize storage for the current instance
