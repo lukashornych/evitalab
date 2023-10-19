@@ -189,7 +189,7 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
                     </VBtn>
                 </template>
             </VCardTitleWithActions>
-            <VCardText class="selector-body">
+            <VCardText class="selector-body pt-0 pl-4 mt-4">
                 <Hotkeys
                     :shortcuts="['F']"
                     @triggered="filterInput?.focus()"
@@ -300,13 +300,16 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
 }
 
 .filter-input {
-    position: fixed;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    background: var(--el-color-primary-dark);
+    padding: 0 0 12px 0;
+    margin-top: -4px;
     z-index: 100;
-    left: 1.5rem;
-    right: 1.5rem;
 }
-
 .property-list {
-    margin-top: 3.5rem;
+    translate: 0 4px;
+    padding: 0 4px;
 }
 </style>
