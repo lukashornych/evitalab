@@ -151,7 +151,7 @@ function preselectEntityProperties(): void {
     }
 
     displayedProperties.value = entityPropertyDescriptors
-        .filter(it => it.key.type === EntityPropertyType.Entity)
+        .filter(it => it.key.type === EntityPropertyType.Entity || it.schema?.representative)
         .map(it => it.key)
 }
 

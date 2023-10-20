@@ -12,7 +12,7 @@ import {
     DataGridConsoleData,
     DataGridConsoleParams,
     EntityPropertyDescriptor,
-    EntityPropertyType,
+    EntityPropertyType, EntityReferenceValue,
     StaticEntityProperties
 } from '@/model/editor/data-grid'
 import { Toaster, useToaster } from '@/services/editor/toaster'
@@ -83,7 +83,7 @@ function handlePropertyClicked(propertyKey: string, value: any): void {
                 queryLanguage: props.queryLanguage,
                 pageNumber: props.pageNumber,
                 pageSize: props.pageSize,
-                filterBy: dataGridConsoleService.buildParentEntityFilterBy(props.queryLanguage, value)
+                filterBy: dataGridConsoleService.buildParentEntityFilterBy(props.queryLanguage, (value as EntityReferenceValue).primaryKey)
             },
             true
         ))
@@ -115,7 +115,12 @@ function handlePropertyClicked(propertyKey: string, value: any): void {
                 queryLanguage: props.queryLanguage,
                 pageNumber: props.pageNumber,
                 pageSize: props.pageSize,
-                filterBy: dataGridConsoleService.buildReferencedEntityFilterBy(props.queryLanguage, value)
+                filterBy: dataGridConsoleService.buildReferencedEntityFilterBy(
+                    props.queryLanguage,
+                    value instanceof Array
+                        ? (value as EntityReferenceValue[]).map(it => it.primaryKey)
+                        : [(value as EntityReferenceValue).primaryKey]
+                )
             },
             true
         ))
