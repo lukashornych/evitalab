@@ -56,7 +56,7 @@ function toPrintablePropertyValue(value: any): string {
             }
         }
         if (flattenedRepresentativeAttributes.length === 0) {
-            return value.primaryKey as string
+            return `${value.primaryKey}`
         } else {
             return `${value.primaryKey}: ${flattenedRepresentativeAttributes.join(', ')}`
         }
