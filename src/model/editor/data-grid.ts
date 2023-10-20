@@ -130,6 +130,19 @@ export enum EntityPropertySectionSelection {
 export type EntityProperty = [EntityPropertyKey, any]
 
 /**
+ * Represents a pointer to a referenced entity in another grid.
+ */
+export class EntityReferenceValue {
+    readonly primaryKey: number
+    readonly representativeAttributes: any[]
+
+    constructor(primaryKey: number, representativeAttributes: any[]) {
+        this.primaryKey = primaryKey
+        this.representativeAttributes = representativeAttributes
+    }
+}
+
+/**
  * Represents a single flattened entity for data table rendering.
  */
 export type FlatEntity = EntityProperty[]

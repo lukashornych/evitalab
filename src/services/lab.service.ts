@@ -7,10 +7,10 @@ import {
     AssociatedDataSchema,
     AttributeSchemaUnion,
     Catalog,
-    CatalogSchema,
+    CatalogSchema, EntityAttributeSchema,
     EntitySchema,
     GlobalAttributeSchema,
-    ReferenceSchema, ReferenceSchemas, Scalar
+    ReferenceSchema
 } from '@/model/evitadb'
 import { EvitaDBDocsClient } from '@/services/evitadb-docs-client'
 
@@ -140,6 +140,10 @@ export class LabService {
         const flags: string[] = []
         flags.push(this.formatDataTypeForFlag(schema.type))
         const globalAttribute = 'uniqueGlobally' in schema
+        const entityAttribute = 'representative' in schema
+        if (entityAttribute && (schema as EntityAttributeSchema).representative) {
+            flags.push('representative')
+        }
         if (globalAttribute && (schema as GlobalAttributeSchema).uniqueGlobally) {
             flags.push('unique globally')
         } else if (schema.unique) {

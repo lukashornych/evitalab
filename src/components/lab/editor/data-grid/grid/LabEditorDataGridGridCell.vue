@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { EntityPropertyDescriptor, EntityPropertyType, StaticEntityProperties } from '@/model/editor/data-grid'
+import {
+    EntityPropertyDescriptor,
+    EntityPropertyType,
+    EntityReferenceValue,
+    StaticEntityProperties
+} from '@/model/editor/data-grid'
 import { computed } from 'vue'
 import { Scalar } from '@/model/evitadb'
 import { Toaster, useToaster } from '@/services/editor/toaster'
@@ -41,6 +46,20 @@ function toPrintablePropertyValue(value: any): string {
             return ''
         }
         return `[${value.map(it => toPrintablePropertyValue(it)).join(', ')}]`
+    } else if (value instanceof EntityReferenceValue) {
+        const flattenedRepresentativeAttributes: string[] = []
+        for (const representativeAttribute of value.representativeAttributes) {
+            if (representativeAttribute instanceof Array) {
+                flattenedRepresentativeAttributes.push(...(representativeAttribute.map(it => toPrintablePropertyValue(it))))
+            } else {
+                flattenedRepresentativeAttributes.push(toPrintablePropertyValue(representativeAttribute))
+            }
+        }
+        if (flattenedRepresentativeAttributes.length === 0) {
+            return value.primaryKey as string
+        } else {
+            return `${value.primaryKey}: ${flattenedRepresentativeAttributes.join(', ')}`
+        }
     } else if (value instanceof Object) {
         return JSON.stringify(value)
     } else {
@@ -76,8 +95,13 @@ function copyValue(): void {
                 <span class="text-disabled">&lt;null&gt;</span>
             </template>
             <template v-else>
-                <VIcon v-if="openableInNewTab">mdi-open-in-new</VIcon>
-                {{ printablePropertyValue }}
+                <VIcon v-if="openableInNewTab" class="mr-1">mdi-open-in-new</VIcon>
+                <span>
+                    {{ printablePropertyValue }}
+                    <VTooltip activator="parent">
+                        {{ printablePropertyValue }}
+                    </VTooltip>
+                </span>
             </template>
         </span>
     </td>
