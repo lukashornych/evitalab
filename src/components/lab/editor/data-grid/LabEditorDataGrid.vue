@@ -191,6 +191,7 @@ async function executeQuery(): Promise<void> {
     >
         <LabEditorDataGridToolbar
             :path="path"
+            :locale="selectedDataLocale"
             :loading="loading"
             @execute-query="executeQuery"
         >
