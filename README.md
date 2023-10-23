@@ -30,7 +30,7 @@ You can try out evitaLab with evitaDB demo dataset at [demo.evitadb.io](https://
 
 evitaLab is currently in early development stage, and features are being added as we go.
 
-The current feature set is:
+evitaLab allows you to:
 
 - [x] inspect schemas
 - [x] browse entities in interactive table
