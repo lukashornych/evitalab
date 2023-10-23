@@ -32,10 +32,10 @@ evitaLab is currently in early development stage, and features are being added a
 
 The current feature set is:
 
-- [x] preview all internal schemas
-- [x] read stored entities in interactive table
-- [x] run queries against GraphQL API
-- [x] run queries against evitaQL
+- [x] inspect schemas
+- [x] browse entities in interactive table
+- [x] execute GraphQL queries
+- [x] execute evitaQL queries
 - [x] manage connections to multiple evitaDB instances
 
 ## Running locally
