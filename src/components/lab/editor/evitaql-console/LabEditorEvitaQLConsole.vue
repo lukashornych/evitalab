@@ -39,12 +39,16 @@ const variablesExtensions: Extension[] = [json()]
 const resultCode = ref<string>('')
 const resultExtensions: Extension[] = [json()]
 
+const loading = ref<boolean>(false)
+
 async function executeQuery(): Promise<void> {
+    loading.value = true
     try {
         resultCode.value = await evitaQLConsoleService.executeEvitaQLQuery(props.params.dataPointer, queryCode.value, JSON.parse(variablesCode.value))
     } catch (error: any) {
         toaster.error(error)
     }
+    loading.value = false
 }
 
 emit('ready')
@@ -61,7 +65,7 @@ if (props.params.executeOnOpen) {
             :path="path"
         >
             <template #append>
-                <VExecuteQueryButton @click="executeQuery" />
+                <VExecuteQueryButton :loading="loading" @click="executeQuery" />
             </template>
         </VTabToolbar>
 
@@ -84,8 +88,6 @@ if (props.params.executeOnOpen) {
                         </VTooltip>
                     </VTab>
                 </VSideTabs>
-
-                <VDivider class="mt-2 mb-2" />
             </VSheet>
 
             <Splitpanes vertical>

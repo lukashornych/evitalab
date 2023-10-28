@@ -85,6 +85,7 @@ export class LabService {
     }
 
     getEntitySchema = async (connection: EvitaDBConnection, catalogName: string, entityType: string): Promise<EntitySchema> => {
+        // todo lho why this logic is in the store if other getters are here?
         let entitySchema: EntitySchema | undefined = this.store.getters['lab/getEntitySchema'](connection.id, catalogName, entityType)
         if (entitySchema == undefined) {
             await this.getCatalogSchema(connection, catalogName)
