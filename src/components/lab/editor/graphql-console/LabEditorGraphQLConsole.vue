@@ -10,7 +10,7 @@ import { Extension } from '@codemirror/state'
 import { graphql } from 'cm6-graphql'
 import { json } from '@codemirror/lang-json'
 
-import { onBeforeMount, ref } from 'vue'
+import { computed, onBeforeMount, ref } from 'vue'
 import { GraphQLConsoleService, useGraphQLConsoleService } from '@/services/editor/graphql-console.service'
 import { GraphQLSchema, printSchema } from 'graphql'
 import { GraphQLConsoleData, GraphQLConsoleParams, GraphQLInstanceType } from '@/model/editor/graphql-console'
@@ -20,7 +20,11 @@ import { TabComponentEvents, TabComponentProps } from '@/model/editor/editor'
 import VExecuteQueryButton from '@/components/base/VExecuteQueryButton.vue'
 import VTabToolbar from '@/components/base/VTabToolbar.vue'
 import VSideTabs from '@/components/base/VSideTabs.vue'
+import { LabService, useLabService } from '@/services/lab.service'
+import LabEditorGraphQLConsoleVisualiser
+    from '@/components/lab/editor/graphql-console/visualiser/LabEditorGraphQLConsoleVisualiser.vue'
 
+const labService: LabService = useLabService()
 const graphQLConsoleService: GraphQLConsoleService = useGraphQLConsoleService()
 const toaster: Toaster = useToaster()
 
@@ -33,6 +37,7 @@ if (props.params.instancePointer.instanceType !== GraphQLInstanceType.SYSTEM) {
 }
 path.value.push(props.params.instancePointer.instanceType) // todo lho i18n
 const editorTab = ref<string>('query')
+const resultTab = ref<string>('raw')
 
 const graphQLSchema = ref<GraphQLSchema>()
 
@@ -49,6 +54,11 @@ const schemaExtensions: Extension[] = [graphql()]
 const resultCode = ref<string>('')
 const resultExtensions: Extension[] = [json()]
 
+const supportsVisualisation = computed<boolean>(() => {
+    return props.params.instancePointer.instanceType === GraphQLInstanceType.DATA
+})
+
+const loading = ref<boolean>(false)
 const initialized = ref<boolean>(false)
 
 onBeforeMount(() => {
@@ -69,11 +79,13 @@ onBeforeMount(() => {
 })
 
 async function executeQuery(): Promise<void> {
+    loading.value = true
     try {
         resultCode.value = await graphQLConsoleService.executeGraphQLQuery(props.params.instancePointer, queryCode.value, JSON.parse(variablesCode.value))
     } catch (error: any) {
         toaster.error(error)
     }
+    loading.value = false
 }
 
 function initializeSchemaEditor(): void {
@@ -110,7 +122,7 @@ function initializeSchemaEditor(): void {
                     </VTooltip>
                 </VBtn>
 
-                <VExecuteQueryButton @click="executeQuery" />
+                <VExecuteQueryButton :loading="loading" @click="executeQuery" />
             </template>
         </VTabToolbar>
 
@@ -139,12 +151,10 @@ function initializeSchemaEditor(): void {
                         </VTooltip>
                     </VTab>
                 </VSideTabs>
-
-                <VDivider class="mt-2 mb-2" />
             </VSheet>
 
             <Splitpanes vertical>
-                <Pane class="graphql-editor-query">
+                <Pane class="graphql-editor-pane">
                     <VWindow
                         v-model="editorTab"
                         direction="vertical"
@@ -179,15 +189,49 @@ function initializeSchemaEditor(): void {
                     </VWindow>
                 </Pane>
 
-                <Pane>
-                    <CodemirrorFull
-                        v-model="resultCode"
-                        placeholder="Results will be displayed here..."
-                        read-only
-                        :additional-extensions="resultExtensions"
-                    />
+                <Pane min-size="20" class="graphql-editor-pane">
+                    <VWindow
+                        v-model="resultTab"
+                        direction="vertical"
+                    >
+                        <VWindowItem value="raw">
+                            <CodemirrorFull
+                                v-model="resultCode"
+                                placeholder="Results will be displayed here..."
+                                read-only
+                                :additional-extensions="resultExtensions"
+                            />
+                        </VWindowItem>
+
+                        <VWindowItem v-if="supportsVisualisation" value="visualiser">
+                            <LabEditorGraphQLConsoleVisualiser
+                                :console-props="props"
+                                :result="JSON.parse(resultCode)"
+                            />
+                        </VWindowItem>
+                    </VWindow>
                 </Pane>
             </Splitpanes>
+
+            <VSheet class="graphql-editor-result-sections">
+                <VSideTabs
+                    v-model="resultTab"
+                    side="right"
+                >
+                    <VTab value="raw">
+                        <VIcon>mdi-code-braces</VIcon>
+                        <VTooltip activator="parent">
+                            Raw JSON result
+                        </VTooltip>
+                    </VTab>
+                    <VTab v-if="supportsVisualisation" value="visualiser">
+                        <VIcon>mdi-file-tree-outline</VIcon>
+                        <VTooltip activator="parent">
+                            Result visualiser
+                        </VTooltip>
+                    </VTab>
+                </VSideTabs>
+            </VSheet>
         </div>
     </div>
 </template>
@@ -199,11 +243,11 @@ function initializeSchemaEditor(): void {
 
     &__body {
         display: grid;
-        grid-template-columns: 3rem 1fr;
+        grid-template-columns: 3rem 1fr 3rem;
     }
 }
 
-.graphql-editor-query {
+.graphql-editor-pane {
     & :deep(.v-window) {
         // we need to override the default tab window styles used in LabEditor
         position: absolute;
@@ -214,7 +258,7 @@ function initializeSchemaEditor(): void {
     }
 }
 
-.graphql-editor-query-sections {
+.graphql-editor-query-sections, .graphql-editor-result-sections {
     display: flex;
     width: 3rem;
 }
