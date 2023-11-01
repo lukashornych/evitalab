@@ -4,7 +4,7 @@
  */
 import { computed, ref, watch } from 'vue'
 import LabEditorGraphQLConsoleVisualiserFacetSummary
-    from '@/components/lab/editor/graphql-console/visualiser/LabEditorGraphQLConsoleVisualiserFacetSummary.vue'
+    from '@/components/lab/editor/graphql-console/visualiser/facet-summary/LabEditorGraphQLConsoleVisualiserFacetSummary.vue'
 import { TabComponentProps } from '@/model/editor/editor'
 import { GraphQLConsoleData, GraphQLConsoleParams } from '@/model/editor/graphql-console'
 import LabEditorGraphQLConsoleVisualiserMissingDataIndicator
@@ -14,9 +14,12 @@ import { LabService, useLabService } from '@/services/lab.service'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import { UnexpectedError } from '@/model/lab'
 import VLoadingCircular from '@/components/base/VLoadingCircular.vue'
+import LabEditorGraphQLConsoleVisualiserHierarchy
+    from '@/components/lab/editor/graphql-console/visualiser/hierarchy/LabEditorGraphQLConsoleVisualiserHierarchy.vue'
 
 enum VisualiserType {
-    FacetSummary = 'facet-summary'
+    FacetSummary = 'facet-summary',
+    Hierarchy = 'hierarchy'
 }
 
 const labService: LabService = useLabService()
@@ -24,20 +27,32 @@ const toaster: Toaster = useToaster()
 
 const props = defineProps<{
     consoleProps: TabComponentProps<GraphQLConsoleParams, GraphQLConsoleData>,
-    result: any
+    result: any | undefined
 }>()
 
-
 const queries = computed<string[]>(() => {
+    if (props.result == undefined) {
+        return []
+    }
     const data: any | undefined = props.result['data']
     if (data == undefined) {
         return []
     }
     // we currently support visualisations only of extra results, so we need only full queries
-    return Object.keys(data).filter(it => it.startsWith('query'))
+    return Object.keys(data)
 })
+watch(queries, (newValue) => {
+    if (selectedQuery.value != undefined && !newValue.includes(selectedQuery.value as string)) {
+        // selected query was removed
+        selectedQuery.value = undefined
+    }
+})
+
 const selectedQuery = ref<string | undefined>()
 const selectedQueryResult = computed<any | undefined>(() => {
+    if (selectedQuery.value == undefined) {
+        return undefined
+    }
     const data: any | undefined = props.result['data']
     if (data == undefined) {
         return undefined
@@ -46,11 +61,11 @@ const selectedQueryResult = computed<any | undefined>(() => {
 })
 const selectedQueryEntitySchema = ref<EntitySchema | undefined>()
 watch(selectedQuery, async () => {
-    if (selectedQuery.value == undefined) {
-        return undefined
-    }
-
+    selectedQueryEntitySchema.value = undefined
     selectedVisualiserType.value = undefined
+    if (selectedQuery.value == undefined) {
+        return
+    }
 
     const entityType: string = (selectedQuery.value as string).replace(/^(get|list|query)/, '')
     const catalogSchema: CatalogSchema = await labService.getCatalogSchema(
@@ -68,7 +83,7 @@ watch(selectedQuery, async () => {
 
 
 const visualiserTypes = computed<any[]>(() => {
-    if (selectedQuery.value == undefined) {
+    if (selectedQuery.value == undefined || selectedQueryResult.value == undefined) {
         return []
     }
 
@@ -82,15 +97,30 @@ const visualiserTypes = computed<any[]>(() => {
                 value: VisualiserType.FacetSummary
             })
         }
+        if (extraResults['hierarchy']) {
+            visualiserTypes.push({
+                title: 'Hierarchy',
+                value: VisualiserType.Hierarchy
+            })
+        }
     }
 
     return visualiserTypes
 })
+watch(visualiserTypes, (newValue) => {
+    if (selectedVisualiserType.value != undefined && !newValue.map(it => it.value).includes(selectedVisualiserType.value as string)) {
+        // selected visualiser type was removed
+        selectedVisualiserType.value = undefined
+    }
+})
 const selectedVisualiserType = ref<string | undefined>()
+
 const resultForVisualiser = computed<any | undefined>(() => {
     switch (selectedVisualiserType.value) {
         case VisualiserType.FacetSummary:
-            return selectedQueryResult.value['extraResults']?.['facetSummary']
+            return selectedQueryResult.value?.['extraResults']?.['facetSummary']
+        case VisualiserType.Hierarchy:
+            return selectedQueryResult.value?.['extraResults']?.['hierarchy']
         default:
             return undefined
     }
@@ -102,6 +132,7 @@ const resultForVisualiser = computed<any | undefined>(() => {
         <header>
             <VSelect
                 v-model="selectedQuery"
+                :disabled="queries.length == 0"
                 prepend-inner-icon="mdi-database-search"
                 label="Query"
                 :items="queries"
@@ -120,13 +151,25 @@ const resultForVisualiser = computed<any | undefined>(() => {
         </header>
 
         <LabEditorGraphQLConsoleVisualiserFacetSummary
-            v-if="selectedVisualiserType == VisualiserType.FacetSummary && selectedQueryEntitySchema != undefined"
+            v-if="selectedVisualiserType == VisualiserType.FacetSummary && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
             :console-props="consoleProps"
             :query-result="selectedQueryResult"
             :facet-summary-result="resultForVisualiser"
             :entity-schema="selectedQueryEntitySchema"
         />
+        <LabEditorGraphQLConsoleVisualiserHierarchy
+            v-if="selectedVisualiserType == VisualiserType.Hierarchy && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
+            :console-props="consoleProps"
+            :query-result="selectedQueryResult"
+            :hierarchy-result="resultForVisualiser"
+            :entity-schema="selectedQueryEntitySchema"
+        />
 
+        <LabEditorGraphQLConsoleVisualiserMissingDataIndicator
+            v-else-if="queries.length == 0"
+            icon="mdi-text-search"
+            title="No queries to visualise"
+        />
         <LabEditorGraphQLConsoleVisualiserMissingDataIndicator
             v-else-if="selectedQuery == undefined"
             icon="mdi-database-search"
@@ -137,7 +180,9 @@ const resultForVisualiser = computed<any | undefined>(() => {
             icon="mdi-format-list-bulleted-type"
             title="Select what to visualise"
         />
-        <VLoadingCircular v-else :size="64" />
+        <LabEditorGraphQLConsoleVisualiserMissingDataIndicator v-else-if="selectedQueryEntitySchema == undefined || resultForVisualiser == undefined">
+            <VLoadingCircular :size="64" />
+        </LabEditorGraphQLConsoleVisualiserMissingDataIndicator>
     </div>
 </template>
 

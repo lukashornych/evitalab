@@ -4,15 +4,17 @@
  */
 
 const props = defineProps<{
-    icon: string,
-    title: string
+    icon?: string,
+    title?: string
 }>()
 </script>
 
 <template>
     <div class="missing-data-indicator text-disabled">
-        <VIcon>{{ icon }}</VIcon>
-        <span>{{ title }}</span>
+        <slot>
+            <VIcon>{{ icon }}</VIcon>
+            <span>{{ title }}</span>
+        </slot>
     </div>
 </template>
 
