@@ -8,23 +8,23 @@ import VMarkdown from '@/components/base/VMarkdown.vue'
 import { UnexpectedError } from '@/model/lab'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import LabEditorGraphQLConsoleVisualiserFacetStatistics
-    from '@/components/lab/editor/graphql-console/visualiser/LabEditorGraphQLConsoleVisualiserFacetStatistics.vue'
+    from '@/components/lab/editor/graphql-console/visualiser/facet-summary/LabEditorGraphQLConsoleVisualiserFacetStatistics.vue'
 
 const toaster: Toaster = useToaster()
 
 const props = defineProps<{
     queryResult: any,
-    group: any | undefined,
+    groupResult: any | undefined,
     groupRepresentativeAttributes: string[],
     facetRepresentativeAttributes: string[]
 }>()
 
 
 const primaryKey = computed<number | undefined>(() => {
-    return props.group['groupEntity']?.['primaryKey']
+    return props.groupResult['groupEntity']?.['primaryKey']
 })
 const title = computed<string | undefined>(() => {
-    const groupEntity = props.group['groupEntity']
+    const groupEntity = props.groupResult['groupEntity']
     if (!groupEntity) {
         return undefined
     }
@@ -46,16 +46,16 @@ const title = computed<string | undefined>(() => {
 
 
 const count = computed<number | undefined>(() => {
-    return props.group['count']
+    return props.groupResult['count']
 })
 
 
 const facetsInitialized = ref<boolean>(false)
-const facets = computed<any[]>(() => {
+const facetResults = computed<any[]>(() => {
     if (!facetsInitialized.value) {
         return []
     }
-    return props.group['facetStatistics'] || []
+    return props.groupResult['facetStatistics'] || []
 })
 
 
@@ -100,10 +100,11 @@ function copyPrimaryKey(): void {
                 <VListItemTitle class="group-title">
                     <span
                         v-if="primaryKey != undefined"
-                        class="text-disabled"
+                        class="text-disabled d-flex align-center"
                         @click.stop="copyPrimaryKey"
                     >
-                    {{ primaryKey }}:
+                         <VIcon size="20" class="mr-1">mdi-key</VIcon>
+                        {{ primaryKey }}{{ title ? ':' : '' }}
                     </span>
                     <span>
                         {{ title ?? 'Unknown' }}
@@ -130,10 +131,10 @@ function copyPrimaryKey(): void {
 
         <template v-if="facetsInitialized">
             <LabEditorGraphQLConsoleVisualiserFacetStatistics
-                v-for="(facet, index) in facets"
+                v-for="(facetResult, index) in facetResults"
                 :key="index"
                 :query-result="queryResult"
-                :facet="facet"
+                :facet-result="facetResult"
                 :facet-representative-attributes="facetRepresentativeAttributes"
             />
         </template>

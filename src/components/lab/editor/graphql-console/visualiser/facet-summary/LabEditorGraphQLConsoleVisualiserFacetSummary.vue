@@ -12,7 +12,7 @@ import { Toaster, useToaster } from '@/services/editor/toaster'
 import LabEditorGraphQLConsoleVisualiserMissingDataIndicator
     from '@/components/lab/editor/graphql-console/visualiser/LabEditorGraphQLConsoleVisualiserMissingDataIndicator.vue'
 import LabEditorGraphQLConsoleVisualiserReferenceFacetGroupStatistics
-    from '@/components/lab/editor/graphql-console/visualiser/LabEditorGraphQLConsoleVisualiserReferenceFacetGroupStatistics.vue'
+    from '@/components/lab/editor/graphql-console/visualiser/facet-summary/LabEditorGraphQLConsoleVisualiserReferenceFacetGroupStatistics.vue'
 import { UnexpectedError } from '@/model/lab'
 
 const labService: LabService = useLabService()
@@ -25,32 +25,32 @@ const props = defineProps<{
     entitySchema: EntitySchema,
 }>()
 
-const groups = computed<[ReferenceSchema, any][]>(() => {
-    const referenceGroups: [ReferenceSchema, any][] = []
+const referencesWithGroups = computed<[ReferenceSchema, any][]>(() => {
+    const referencesWithGroups: [ReferenceSchema, any][] = []
     for (const referenceName of Object.keys(props.facetSummaryResult)) {
         const referenceSchema: ReferenceSchema | undefined = Object.values(props.entitySchema.references)
             .find(reference => reference.nameVariants.camelCase === referenceName)
         if (referenceSchema == undefined) {
             throw new UnexpectedError(props.consoleProps.params.instancePointer.connection, `Reference '${referenceName}' not found in entity '${props.entitySchema.name}' in catalog '${props.consoleProps.params.instancePointer.catalogName}'.`)
         }
-        referenceGroups.push([referenceSchema, props.facetSummaryResult[referenceName]])
+        referencesWithGroups.push([referenceSchema, props.facetSummaryResult[referenceName]])
     }
-    return referenceGroups
+    return referencesWithGroups
 })
 </script>
 
 <template>
-    <VExpansionPanels v-if="groups && groups.length > 0" variant="accordion">
-        <VExpansionPanel v-for="group in groups" :key="group[0].name">
+    <VExpansionPanels v-if="referencesWithGroups && referencesWithGroups.length > 0" variant="accordion">
+        <VExpansionPanel v-for="referenceWithGroup in referencesWithGroups" :key="referenceWithGroup[0].name">
             <VExpansionPanelTitle>
-                {{ group[0].name }} ({{ group[1].length }})
+                {{ referenceWithGroup[0].name }} ({{ referenceWithGroup[1].length }})
             </VExpansionPanelTitle>
             <VExpansionPanelText>
                 <LabEditorGraphQLConsoleVisualiserReferenceFacetGroupStatistics
                     :console-props="consoleProps"
                     :query-result="queryResult"
-                    :reference-schema="group[0]"
-                    :groups="group[1]"
+                    :reference-schema="referenceWithGroup[0]"
+                    :group-results="referenceWithGroup[1]"
                 />
             </VExpansionPanelText>
         </VExpansionPanel>

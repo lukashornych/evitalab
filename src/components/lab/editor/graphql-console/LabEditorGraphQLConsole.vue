@@ -206,7 +206,7 @@ function initializeSchemaEditor(): void {
                         <VWindowItem v-if="supportsVisualisation" value="visualiser">
                             <LabEditorGraphQLConsoleVisualiser
                                 :console-props="props"
-                                :result="JSON.parse(resultCode)"
+                                :result="resultCode == undefined || !resultCode ? undefined : JSON.parse(resultCode)"
                             />
                         </VWindowItem>
                     </VWindow>

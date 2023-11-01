@@ -9,9 +9,9 @@ import { Toaster, useToaster } from '@/services/editor/toaster'
 import { TabComponentProps } from '@/model/editor/editor'
 import { GraphQLConsoleData, GraphQLConsoleParams } from '@/model/editor/graphql-console'
 import LabEditorGraphQLConsoleVisualiserFacetGroupStatistics
-    from '@/components/lab/editor/graphql-console/visualiser/LabEditorGraphQLConsoleVisualiserFacetGroupStatistics.vue'
+    from '@/components/lab/editor/graphql-console/visualiser/facet-summary/LabEditorGraphQLConsoleVisualiserFacetGroupStatistics.vue'
 import LabEditorGraphQLConsoleVisualiserFacetStatistics
-    from '@/components/lab/editor/graphql-console/visualiser/LabEditorGraphQLConsoleVisualiserFacetStatistics.vue'
+    from '@/components/lab/editor/graphql-console/visualiser/facet-summary/LabEditorGraphQLConsoleVisualiserFacetStatistics.vue'
 
 const labService: LabService = useLabService()
 const toaster: Toaster = useToaster()
@@ -19,7 +19,7 @@ const toaster: Toaster = useToaster()
 const props = defineProps<{
     consoleProps: TabComponentProps<GraphQLConsoleParams, GraphQLConsoleData>,
     queryResult: any,
-    groups: any,
+    groupResults: any,
     referenceSchema: ReferenceSchema
 }>()
 
@@ -35,10 +35,10 @@ const facets = computed<any[] | undefined>(() => {
     if (isGroupedFacets.value) {
         return undefined
     }
-    if (props.groups.length === 0) {
+    if (props.groupResults.length === 0) {
         return []
     }
-    return props.groups[0]['facetStatistics']
+    return props.groupResults[0]['facetStatistics']
 })
 
 function initialize() {
@@ -84,11 +84,11 @@ initialize()
     <VList v-if="initialized" density="compact">
         <template v-if="isGroupedFacets">
             <LabEditorGraphQLConsoleVisualiserFacetGroupStatistics
-                v-for="(group, index) in groups"
+                v-for="(groupResult, index) in groupResults"
                 :key="index"
                 :console-props="consoleProps"
                 :query-result="queryResult"
-                :group="group"
+                :group-result="groupResult"
                 :group-representative-attributes="groupRepresentativeAttributes"
                 :facet-representative-attributes="facetRepresentativeAttributes"
             />
@@ -98,7 +98,7 @@ initialize()
                 v-for="(facet, index) in facets"
                 :key="index"
                 :query-result="queryResult"
-                :facet="facet"
+                :facet-result="facet"
                 :facet-representative-attributes="facetRepresentativeAttributes"
             />
         </template>

@@ -12,21 +12,21 @@ const toaster: Toaster = useToaster()
 
 const props = defineProps<{
     queryResult: any
-    facet: any,
+    facetResult: any,
     facetRepresentativeAttributes: string[]
 }>()
 
 
 const requested = computed<boolean | undefined>(() => {
-    return props.facet['requested']
+    return props.facetResult['requested']
 })
 
 
 const primaryKey = computed<number | undefined>(() => {
-    return props.facet['facetEntity']?.['primaryKey']
+    return props.facetResult['facetEntity']?.['primaryKey']
 })
 const title = computed<string | undefined>(() => {
-    const facetEntity = props.facet['facetEntity']
+    const facetEntity = props.facetResult['facetEntity']
     if (!facetEntity) {
         return undefined
     }
@@ -51,7 +51,7 @@ const numberOfEntities = computed<number | undefined>(() => {
     return props.queryResult['recordPage']?.['totalRecordCount'] ?? props.queryResult['recordStrip']?.['totalRecordCount']
 })
 const impactDifference = computed<string | undefined>(() => {
-    const difference: number | undefined = props.facet['impact']?.['difference']
+    const difference: number | undefined = props.facetResult['impact']?.['difference']
     if (difference == undefined) {
         return undefined
     }
@@ -59,10 +59,10 @@ const impactDifference = computed<string | undefined>(() => {
     return `${difference > 0 ? '+' : ''}${difference}`
 })
 const impactMatchCount = computed<number | undefined>(() => {
-    return props.facet['impact']?.['matchCount']
+    return props.facetResult['impact']?.['matchCount']
 })
 const count = computed<number | undefined>(() => {
-    return props.facet['count']
+    return props.facetResult['count']
 })
 
 
@@ -115,11 +115,12 @@ function copyPrimaryKey(): void {
             <VListItemTitle class="facet-title">
                 <span
                     v-if="primaryKey != undefined"
-                    class="text-disabled"
+                    class="text-disabled d-flex align-center"
                     style="cursor: pointer;"
                     @click.stop="copyPrimaryKey"
                 >
-                    {{ primaryKey }}:
+                    <VIcon size="20" class="mr-1">mdi-key</VIcon>
+                    {{ primaryKey }}{{ title ? ':' : '' }}
                 </span>
                 <span :class="{ 'text-disabled': impactMatchCount === 0 }">
                     {{ title || 'Unknown' }}
