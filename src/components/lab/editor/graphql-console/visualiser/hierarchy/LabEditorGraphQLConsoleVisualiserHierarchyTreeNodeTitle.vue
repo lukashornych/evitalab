@@ -4,14 +4,14 @@
  */
 
 import VMarkdown from '@/components/base/VMarkdown.vue'
-import { HierarchyTreeNode } from '@/model/editor/graphql-console'
 import { UnexpectedError } from '@/model/lab'
 import { Toaster, useToaster } from '@/services/editor/toaster'
+import { VisualisedHierarchyTreeNode } from '@/model/editor/result-visualiser'
 
 const toaster: Toaster = useToaster()
 
 const props = defineProps<{
-    node: HierarchyTreeNode
+    node: VisualisedHierarchyTreeNode
 }>()
 
 function copyPrimaryKey(): void {

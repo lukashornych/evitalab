@@ -9,81 +9,57 @@ import { UnexpectedError } from '@/model/lab'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import LabEditorGraphQLConsoleVisualiserFacetStatistics
     from '@/components/lab/editor/graphql-console/visualiser/facet-summary/LabEditorGraphQLConsoleVisualiserFacetStatistics.vue'
+import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
+import { Result, VisualisedFacetGroupStatistics } from '@/model/editor/result-visualiser'
 
 const toaster: Toaster = useToaster()
 
 const props = defineProps<{
-    queryResult: any,
-    groupResult: any | undefined,
+    visualiserService: ResultVisualiserService,
+    queryResult: Result,
+    groupStatisticsResult: Result | undefined,
     groupRepresentativeAttributes: string[],
     facetRepresentativeAttributes: string[]
 }>()
 
-
-const primaryKey = computed<number | undefined>(() => {
-    return props.groupResult['groupEntity']?.['primaryKey']
-})
-const title = computed<string | undefined>(() => {
-    const groupEntity = props.groupResult['groupEntity']
-    if (!groupEntity) {
+const groupStatistics = computed<VisualisedFacetGroupStatistics | undefined>(() => {
+    if (props.groupStatisticsResult == undefined) {
         return undefined
     }
-
-    const actualGroupRepresentativeAttributes: (string | undefined)[] = []
-    const groupAttributes = groupEntity['attributes'] || {}
-    for (const groupAttributeName in groupAttributes) {
-        if (!props.groupRepresentativeAttributes.includes(groupAttributeName) && groupAttributeName !== 'title') {
-            continue;
-        }
-        actualGroupRepresentativeAttributes.push(toPrintableAttributeValue(groupAttributes[groupAttributeName]))
-    }
-
-    if (actualGroupRepresentativeAttributes.length === 0) {
+    try {
+        return props.visualiserService
+            .getFacetSummaryService()
+            .resolveFacetGroupStatistics(props.groupStatisticsResult, props.groupRepresentativeAttributes)
+    } catch (e: any) {
+        toaster.error(e)
         return undefined
     }
-    return actualGroupRepresentativeAttributes.filter(it => it != undefined).join(', ')
 })
 
-
-const count = computed<number | undefined>(() => {
-    return props.groupResult['count']
-})
-
-
-const facetsInitialized = ref<boolean>(false)
-const facetResults = computed<any[]>(() => {
-    if (!facetsInitialized.value) {
+const facetStatisticsInitialized = ref<boolean>(false)
+const facetStatisticsResults = computed<Result[]>(() => {
+    if (props.groupStatisticsResult == undefined || !facetStatisticsInitialized.value) {
         return []
     }
-    return props.groupResult['facetStatistics'] || []
+    try {
+        return props.visualiserService
+            .getFacetSummaryService()
+            .findFacetStatisticsResults(props.groupStatisticsResult)
+    } catch (e: any) {
+        toaster.error(e)
+        return []
+    }
 })
 
 
 function initializeFacets(): void {
     // todo lho this makes quick hide of the facet group, it looks weird
-    facetsInitialized.value = !facetsInitialized.value
-}
-
-// todo lho refactor into common function
-function toPrintableAttributeValue(attributeValue: any): string | undefined {
-    if (attributeValue == undefined) {
-        return undefined
-    }
-    if (attributeValue instanceof Array) {
-        if (attributeValue.length === 0) {
-            return undefined
-        }
-        return `[${attributeValue.map(it => toPrintableAttributeValue(it)).join(', ')}]`
-    } else if (attributeValue instanceof Object) {
-        return JSON.stringify(attributeValue)
-    } else {
-        return attributeValue.toString()
-    }
+    facetStatisticsInitialized.value = !facetStatisticsInitialized.value
 }
 
 function copyPrimaryKey(): void {
-    if (primaryKey.value != undefined) {
-        navigator.clipboard.writeText(`${primaryKey.value}`).then(() => {
+    if (groupStatistics.value?.primaryKey != undefined) {
+        navigator.clipboard.writeText(`${groupStatistics.value?.primaryKey}`).then(() => {
             toaster.info('Primary key copied to clipboard.')
         }).catch(() => {
             toaster.error(new UnexpectedError(undefined, 'Failed to copy to clipboard.'))
@@ -99,16 +75,16 @@ function copyPrimaryKey(): void {
             <VListItem v-bind="props" @click="initializeFacets">
                 <VListItemTitle class="group-title">
                     <span
-                        v-if="primaryKey != undefined"
+                        v-if="groupStatistics?.primaryKey != undefined"
                         class="text-disabled d-flex align-center"
                         @click.stop="copyPrimaryKey"
                     >
                          <VIcon size="20" class="mr-1">mdi-key</VIcon>
-                        {{ primaryKey }}{{ title ? ':' : '' }}
+                        {{ groupStatistics?.primaryKey }}{{ groupStatistics?.title ? ':' : '' }}
                     </span>
                     <span>
-                        {{ title ?? 'Unknown' }}
-                        <VTooltip v-if="!title" activator="parent">
+                        {{ groupStatistics?.title ?? 'Unknown' }}
+                        <VTooltip v-if="!groupStatistics?.title" activator="parent">
                             <VMarkdown source="No `primaryKey` property or representative attributes were fetched." />
                         </VTooltip>
                     </span>
@@ -116,9 +92,9 @@ function copyPrimaryKey(): void {
                     <VChipGroup>
                         <VChip prepend-icon="mdi-counter">
                             <span>
-                                {{ count ?? '-' }}
+                                {{ groupStatistics?.count ?? '-' }}
                                 <VTooltip activator="parent">
-                                    <VMarkdown v-if="count == undefined" source="No `count` property was fetched." />
+                                    <VMarkdown v-if="groupStatistics?.count == undefined" source="No `count` property was fetched." />
                                     <!-- todo jno review explanation -->
                                     <span v-else>The total number of entities matching any facet from this group without user filter.</span>
                                 </VTooltip>
@@ -129,12 +105,13 @@ function copyPrimaryKey(): void {
             </VListItem>
         </template>
 
-        <template v-if="facetsInitialized">
+        <template v-if="facetStatisticsInitialized">
             <LabEditorGraphQLConsoleVisualiserFacetStatistics
-                v-for="(facetResult, index) in facetResults"
+                v-for="(facetStatisticsResult, index) in facetStatisticsResults"
                 :key="index"
+                :visualiser-service="visualiserService"
                 :query-result="queryResult"
-                :facet-result="facetResult"
+                :facet-statistics-result="facetStatisticsResult"
                 :facet-representative-attributes="facetRepresentativeAttributes"
             />
         </template>

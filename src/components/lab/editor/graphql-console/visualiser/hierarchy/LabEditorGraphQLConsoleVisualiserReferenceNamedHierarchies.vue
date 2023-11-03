@@ -8,16 +8,18 @@ import { LabService, useLabService } from '@/services/lab.service'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import { TabComponentProps } from '@/model/editor/editor'
 import { GraphQLConsoleData, GraphQLConsoleParams } from '@/model/editor/graphql-console'
-import LabEditorGraphQLConsoleVisualiserHierarchyTree
-    from '@/components/lab/editor/graphql-console/visualiser/hierarchy/LabEditorGraphQLConsoleVisualiserHierarchyTree.vue'
+import LabEditorGraphQLConsoleVisualiserNamedHierarchy
+    from '@/components/lab/editor/graphql-console/visualiser/hierarchy/LabEditorGraphQLConsoleVisualiserNamedHierarchy.vue'
+import { Result } from '@/model/editor/result-visualiser'
+import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 
 const labService: LabService = useLabService()
 const toaster: Toaster = useToaster()
 
 const props = defineProps<{
     consoleProps: TabComponentProps<GraphQLConsoleParams, GraphQLConsoleData>,
-    queryResult: any,
-    hierarchyResults: any,
+    visualiserService: ResultVisualiserService,
+    namedHierarchiesResult: Result,
     parentEntitySchema: EntitySchema,
     referenceSchema: ReferenceSchema | undefined
 }>()
@@ -49,23 +51,24 @@ function initialize() {
             })
     }
 
-    pipeline.then((representativeAttributes: string[]) => {
-        entityRepresentativeAttributes.push(...representativeAttributes)
-        initialized.value = true
-    })
+    pipeline
+        .then((representativeAttributes: string[]) => {
+            entityRepresentativeAttributes.push(...representativeAttributes)
+            initialized.value = true
+        })
+        .catch((e: Error) => toaster.error(e))
 }
 initialize()
 </script>
 
 <template>
     <VList v-if="initialized" density="compact">
-        <LabEditorGraphQLConsoleVisualiserHierarchyTree
-            v-for="(hierarchyTreeResult, name) in hierarchyResults"
+        <LabEditorGraphQLConsoleVisualiserNamedHierarchy
+            v-for="(namedHierarchyResult, name) in namedHierarchiesResult"
             :key="name"
-            :console-props="consoleProps"
-            :query-result="queryResult"
+            :visualiser-service="visualiserService"
             :name="name as string"
-            :hierarchy-tree-result="hierarchyTreeResult"
+            :named-hierarchy-result="namedHierarchyResult as Result[]"
             :entity-representative-attributes="entityRepresentativeAttributes"
         />
     </VList>

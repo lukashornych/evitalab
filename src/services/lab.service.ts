@@ -21,9 +21,9 @@ export const key: InjectionKey<LabService> = Symbol()
  * and so on.
  */
 export class LabService {
-    readonly store: Store<State>
-    readonly evitaDBClient: EvitaDBClient
-    readonly evitaDBDocsClient: EvitaDBDocsClient
+    private readonly store: Store<State>
+    private readonly evitaDBClient: EvitaDBClient
+    private readonly evitaDBDocsClient: EvitaDBDocsClient
 
     constructor(store: Store<State>, evitaDBClient: EvitaDBClient, evitaDBDocsClient: EvitaDBDocsClient) {
         this.store = store

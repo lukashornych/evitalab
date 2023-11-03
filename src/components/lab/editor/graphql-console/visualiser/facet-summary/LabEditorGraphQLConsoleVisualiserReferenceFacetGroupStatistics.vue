@@ -12,14 +12,17 @@ import LabEditorGraphQLConsoleVisualiserFacetGroupStatistics
     from '@/components/lab/editor/graphql-console/visualiser/facet-summary/LabEditorGraphQLConsoleVisualiserFacetGroupStatistics.vue'
 import LabEditorGraphQLConsoleVisualiserFacetStatistics
     from '@/components/lab/editor/graphql-console/visualiser/facet-summary/LabEditorGraphQLConsoleVisualiserFacetStatistics.vue'
+import { Result } from '@/model/editor/result-visualiser'
+import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 
 const labService: LabService = useLabService()
 const toaster: Toaster = useToaster()
 
 const props = defineProps<{
     consoleProps: TabComponentProps<GraphQLConsoleParams, GraphQLConsoleData>,
-    queryResult: any,
-    groupResults: any,
+    visualiserService: ResultVisualiserService,
+    queryResult: Result,
+    groupStatisticsResults: Result[],
     referenceSchema: ReferenceSchema
 }>()
 
@@ -31,14 +34,21 @@ const isGroupedFacets = computed<boolean>(() => {
     return props.referenceSchema.referencedGroupType != undefined
 })
 
-const facets = computed<any[] | undefined>(() => {
+const facetStatisticsResults = computed<Result[] | undefined>(() => {
     if (isGroupedFacets.value) {
         return undefined
     }
-    if (props.groupResults.length === 0) {
+    if (props.groupStatisticsResults.length === 0) {
         return []
     }
-    return props.groupResults[0]['facetStatistics']
+    try {
+        return props.visualiserService
+            .getFacetSummaryService()
+            .findFacetStatisticsResults(props.groupStatisticsResults[0])
+    } catch (e: any) {
+        toaster.error(e)
+        return undefined
+    }
 })
 
 function initialize() {
@@ -76,6 +86,9 @@ function initialize() {
             facetRepresentativeAttributes.push(...representativeAttributes)
             initialized.value = true
         })
+        .catch((e) => {
+            toaster.error(e)
+        })
 }
 initialize()
 </script>
@@ -84,21 +97,23 @@ initialize()
     <VList v-if="initialized" density="compact">
         <template v-if="isGroupedFacets">
             <LabEditorGraphQLConsoleVisualiserFacetGroupStatistics
-                v-for="(groupResult, index) in groupResults"
+                v-for="(groupStatisticsResult, index) in groupStatisticsResults"
                 :key="index"
                 :console-props="consoleProps"
+                :visualiser-service="visualiserService"
                 :query-result="queryResult"
-                :group-result="groupResult"
+                :group-statistics-result="groupStatisticsResult"
                 :group-representative-attributes="groupRepresentativeAttributes"
                 :facet-representative-attributes="facetRepresentativeAttributes"
             />
         </template>
         <template v-else>
             <LabEditorGraphQLConsoleVisualiserFacetStatistics
-                v-for="(facet, index) in facets"
+                v-for="(facetStatisticsResult, index) in facetStatisticsResults"
                 :key="index"
+                :visualiser-service="visualiserService"
                 :query-result="queryResult"
-                :facet-result="facet"
+                :facet-statistics-result="facetStatisticsResult"
                 :facet-representative-attributes="facetRepresentativeAttributes"
             />
         </template>

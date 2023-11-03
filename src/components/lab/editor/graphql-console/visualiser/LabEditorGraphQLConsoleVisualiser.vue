@@ -9,37 +9,33 @@ import { TabComponentProps } from '@/model/editor/editor'
 import { GraphQLConsoleData, GraphQLConsoleParams } from '@/model/editor/graphql-console'
 import LabEditorGraphQLConsoleVisualiserMissingDataIndicator
     from '@/components/lab/editor/graphql-console/visualiser/LabEditorGraphQLConsoleVisualiserMissingDataIndicator.vue'
-import { CatalogSchema, EntitySchema } from '@/model/evitadb'
-import { LabService, useLabService } from '@/services/lab.service'
+import { EntitySchema } from '@/model/evitadb'
 import { Toaster, useToaster } from '@/services/editor/toaster'
-import { UnexpectedError } from '@/model/lab'
 import VLoadingCircular from '@/components/base/VLoadingCircular.vue'
 import LabEditorGraphQLConsoleVisualiserHierarchy
     from '@/components/lab/editor/graphql-console/visualiser/hierarchy/LabEditorGraphQLConsoleVisualiserHierarchy.vue'
+import { Result, VisualiserType, VisualiserTypeType } from '@/model/editor/result-visualiser'
+import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 
-enum VisualiserType {
-    FacetSummary = 'facet-summary',
-    Hierarchy = 'hierarchy'
-}
-
-const labService: LabService = useLabService()
 const toaster: Toaster = useToaster()
 
 const props = defineProps<{
     consoleProps: TabComponentProps<GraphQLConsoleParams, GraphQLConsoleData>,
-    result: any | undefined
+    visualiserService: ResultVisualiserService,
+    result: Result | undefined
 }>()
+
 
 const queries = computed<string[]>(() => {
     if (props.result == undefined) {
         return []
     }
-    const data: any | undefined = props.result['data']
-    if (data == undefined) {
+    try {
+        return props.visualiserService.findQueries(props.result)
+    } catch (e: any) {
+        toaster.error(e)
         return []
     }
-    // we currently support visualisations only of extra results, so we need only full queries
-    return Object.keys(data)
 })
 watch(queries, (newValue) => {
     if (selectedQuery.value != undefined && !newValue.includes(selectedQuery.value as string)) {
@@ -49,15 +45,16 @@ watch(queries, (newValue) => {
 })
 
 const selectedQuery = ref<string | undefined>()
-const selectedQueryResult = computed<any | undefined>(() => {
-    if (selectedQuery.value == undefined) {
+const selectedQueryResult = computed<Result | undefined>(() => {
+    if (props.result == undefined || selectedQuery.value == undefined) {
         return undefined
     }
-    const data: any | undefined = props.result['data']
-    if (data == undefined) {
+    try {
+        return props.visualiserService.findQueryResult(props.result, selectedQuery.value as string)
+    } catch (e: any) {
+        toaster.error(e)
         return undefined
     }
-    return data[selectedQuery.value]
 })
 const selectedQueryEntitySchema = ref<EntitySchema | undefined>()
 watch(selectedQuery, async () => {
@@ -67,62 +64,47 @@ watch(selectedQuery, async () => {
         return
     }
 
-    const entityType: string = (selectedQuery.value as string).replace(/^(get|list|query)/, '')
-    const catalogSchema: CatalogSchema = await labService.getCatalogSchema(
-        props.consoleProps.params.instancePointer.connection,
-        props.consoleProps.params.instancePointer.catalogName
-    )
-    const entitySchema: EntitySchema | undefined = Object.values(catalogSchema.entitySchemas)
-        .find(it => it.nameVariants.pascalCase === entityType)
-    if (entitySchema == undefined) {
-        toaster.error(new UnexpectedError(props.consoleProps.params.instancePointer.connection, `Entity schema '${entityType}' not found in catalog '${props.consoleProps.params.instancePointer.catalogName}'.`))
+    try {
+        selectedQueryEntitySchema.value = await props.visualiserService.getEntitySchemaForQuery(
+            selectedQuery.value as string,
+            props.consoleProps.params.instancePointer.connection,
+            props.consoleProps.params.instancePointer.catalogName
+        )
+    } catch (e: any) {
+        toaster.error(e)
     }
-
-    selectedQueryEntitySchema.value = entitySchema
 })
 
 
-const visualiserTypes = computed<any[]>(() => {
+const visualiserTypes = computed<VisualiserType[]>(() => {
     if (selectedQuery.value == undefined || selectedQueryResult.value == undefined) {
         return []
     }
-
-    const visualiserTypes: any | undefined = []
-
-    const extraResults = selectedQueryResult.value['extraResults']
-    if (extraResults) {
-        if (extraResults['facetSummary']) {
-            visualiserTypes.push({
-                title: 'Facet summary',
-                value: VisualiserType.FacetSummary
-            })
-        }
-        if (extraResults['hierarchy']) {
-            visualiserTypes.push({
-                title: 'Hierarchy',
-                value: VisualiserType.Hierarchy
-            })
-        }
+    try {
+        return props.visualiserService.findVisualiserTypes(selectedQueryResult.value)
+    } catch (e: any) {
+        toaster.error(e)
+        return []
     }
-
-    return visualiserTypes
 })
 watch(visualiserTypes, (newValue) => {
-    if (selectedVisualiserType.value != undefined && !newValue.map(it => it.value).includes(selectedVisualiserType.value as string)) {
-        // selected visualiser type was removed
+    if (selectedVisualiserType.value != undefined && !newValue.map(it => it.value).includes(selectedVisualiserType.value as VisualiserTypeType)) {
+        // selected result-visualiser type was removed
         selectedVisualiserType.value = undefined
     }
 })
-const selectedVisualiserType = ref<string | undefined>()
+const selectedVisualiserType = ref<VisualiserTypeType | undefined>()
 
-const resultForVisualiser = computed<any | undefined>(() => {
-    switch (selectedVisualiserType.value) {
-        case VisualiserType.FacetSummary:
-            return selectedQueryResult.value?.['extraResults']?.['facetSummary']
-        case VisualiserType.Hierarchy:
-            return selectedQueryResult.value?.['extraResults']?.['hierarchy']
-        default:
-            return undefined
+const resultForVisualiser = computed<Result | undefined>(() => {
+    if (selectedQueryResult.value == undefined || selectedVisualiserType.value == undefined) {
+        return undefined
+    }
+    try {
+        return props.visualiserService
+            .findResultForVisualiser(selectedQueryResult.value, selectedVisualiserType.value as VisualiserTypeType)
+    } catch (e: any) {
+        toaster.error(e)
+        return undefined
     }
 })
 </script>
@@ -151,16 +133,17 @@ const resultForVisualiser = computed<any | undefined>(() => {
         </header>
 
         <LabEditorGraphQLConsoleVisualiserFacetSummary
-            v-if="selectedVisualiserType == VisualiserType.FacetSummary && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
+            v-if="selectedVisualiserType == VisualiserTypeType.FacetSummary && selectedQueryResult != undefined && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
             :console-props="consoleProps"
+            :visualiser-service="visualiserService"
             :query-result="selectedQueryResult"
             :facet-summary-result="resultForVisualiser"
             :entity-schema="selectedQueryEntitySchema"
         />
         <LabEditorGraphQLConsoleVisualiserHierarchy
-            v-if="selectedVisualiserType == VisualiserType.Hierarchy && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
+            v-if="selectedVisualiserType == VisualiserTypeType.Hierarchy && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
             :console-props="consoleProps"
-            :query-result="selectedQueryResult"
+            :visualiser-service="visualiserService"
             :hierarchy-result="resultForVisualiser"
             :entity-schema="selectedQueryEntitySchema"
         />
@@ -180,7 +163,7 @@ const resultForVisualiser = computed<any | undefined>(() => {
             icon="mdi-format-list-bulleted-type"
             title="Select what to visualise"
         />
-        <LabEditorGraphQLConsoleVisualiserMissingDataIndicator v-else-if="selectedQueryEntitySchema == undefined || resultForVisualiser == undefined">
+        <LabEditorGraphQLConsoleVisualiserMissingDataIndicator v-else-if="selectedQueryResult == undefined || selectedQueryEntitySchema == undefined || resultForVisualiser == undefined">
             <VLoadingCircular :size="64" />
         </LabEditorGraphQLConsoleVisualiserMissingDataIndicator>
     </div>

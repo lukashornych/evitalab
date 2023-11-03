@@ -3,12 +3,12 @@
  * Visualises hierarchy tree node from raw JSON.
  */
 
-import { HierarchyTreeNode } from '@/model/editor/graphql-console'
 import LabEditorGraphQLConsoleVisualiserHierarchyTreeNodeTitle
     from '@/components/lab/editor/graphql-console/visualiser/hierarchy/LabEditorGraphQLConsoleVisualiserHierarchyTreeNodeTitle.vue'
+import { VisualisedHierarchyTreeNode } from '@/model/editor/result-visualiser'
 
 const props = defineProps<{
-    node: HierarchyTreeNode,
+    node: VisualisedHierarchyTreeNode,
     entityRepresentativeAttributes: string[]
 }>()
 
@@ -23,9 +23,9 @@ const props = defineProps<{
         </template>
 
         <LabEditorGraphQLConsoleVisualiserHierarchyTreeNode
-            v-for="(node, index) in node.children"
+            v-for="(childNode, index) in node.children"
             :key="index"
-            :node="node"
+            :node="childNode"
             :entity-representative-attributes="entityRepresentativeAttributes"
         />
     </VListGroup>

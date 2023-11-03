@@ -36,33 +36,3 @@ export interface GraphQLConsoleData extends TabRequestComponentData {
     readonly query?: string
     readonly variables?: string
 }
-
-/**
- * Single hierarchical node of evitaDB hierarchy.
- */
-export class HierarchyTreeNode {
-    readonly primaryKey?: number
-    readonly parentPrimaryKey?: number
-    readonly title?: string
-    readonly childrenCount?: number
-    readonly queriedEntityCount?: number
-    readonly children: HierarchyTreeNode[]
-
-    constructor(primaryKey: number | undefined,
-                parentPrimaryKey: number | undefined,
-                title: string | undefined,
-                childrenCount: number | undefined,
-                queriedEntityCount: number | undefined,
-                children: HierarchyTreeNode[]) {
-        this.primaryKey = primaryKey
-        this.parentPrimaryKey = parentPrimaryKey
-        this.title = title
-        this.childrenCount = childrenCount
-        this.queriedEntityCount = queriedEntityCount
-        this.children = children
-    }
-
-    isLeaf(): boolean {
-        return this.children.length === 0
-    }
-}

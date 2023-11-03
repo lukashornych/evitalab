@@ -20,13 +20,16 @@ import { TabComponentEvents, TabComponentProps } from '@/model/editor/editor'
 import VExecuteQueryButton from '@/components/base/VExecuteQueryButton.vue'
 import VTabToolbar from '@/components/base/VTabToolbar.vue'
 import VSideTabs from '@/components/base/VSideTabs.vue'
-import { LabService, useLabService } from '@/services/lab.service'
 import LabEditorGraphQLConsoleVisualiser
     from '@/components/lab/editor/graphql-console/visualiser/LabEditorGraphQLConsoleVisualiser.vue'
+import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
+import {
+    useGraphqlResultVisualiserService
+} from '@/services/editor/result-visualiser/graphql-result-visualiser.service'
 
-const labService: LabService = useLabService()
 const graphQLConsoleService: GraphQLConsoleService = useGraphQLConsoleService()
 const toaster: Toaster = useToaster()
+const visualiserService: ResultVisualiserService = useGraphqlResultVisualiserService()
 
 const props = defineProps<TabComponentProps<GraphQLConsoleParams, GraphQLConsoleData>>()
 const emit = defineEmits<TabComponentEvents>()
@@ -206,6 +209,7 @@ function initializeSchemaEditor(): void {
                         <VWindowItem v-if="supportsVisualisation" value="visualiser">
                             <LabEditorGraphQLConsoleVisualiser
                                 :console-props="props"
+                                :visualiser-service="visualiserService"
                                 :result="resultCode == undefined || !resultCode ? undefined : JSON.parse(resultCode)"
                             />
                         </VWindowItem>
