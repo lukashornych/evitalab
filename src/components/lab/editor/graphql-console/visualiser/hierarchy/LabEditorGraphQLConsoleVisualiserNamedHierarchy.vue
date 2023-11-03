@@ -9,6 +9,7 @@ import LabEditorGraphQLConsoleVisualiserHierarchyTreeNode
     from '@/components/lab/editor/graphql-console/visualiser/hierarchy/LabEditorGraphQLConsoleVisualiserHierarchyTreeNode.vue'
 import { Result, VisualisedNamedHierarchy } from '@/model/editor/result-visualiser'
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
+import VMarkdown from '@/components/base/VMarkdown.vue'
 
 const toaster: Toaster = useToaster()
 
@@ -54,6 +55,15 @@ function initialize(): void {
                                     <span>The number of actually fetched nodes.</span>
                                 </VTooltip>
                             </span>
+                        </VChip>
+
+                        <VChip v-if="namedHierarchy?.requestedNode" prepend-icon="mdi-filter">
+                            {{ namedHierarchy?.requestedNode?.primaryKey != undefined ? `${namedHierarchy?.requestedNode?.primaryKey}: ` : '' }}
+                            {{ namedHierarchy?.requestedNode?.title }}
+                            <VTooltip activator="parent">
+                                <!-- todo jno review explanation -->
+                                <VMarkdown source="An entity representing a hierarchy node in this tree that was filtered by `hierarchyWithin`." />
+                            </VTooltip>
                         </VChip>
                     </VChipGroup>
                 </VListItemTitle>

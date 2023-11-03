@@ -239,12 +239,13 @@ export class GraphQLHierarchyVisualiserService implements HierarchyVisualiserSer
 
     resolveNamedHierarchy(namedHierarchyResult: Result[], entityRepresentativeAttributes: string[]): VisualisedNamedHierarchy {
         const count: number | undefined = namedHierarchyResult.length
-        const nodes: VisualisedHierarchyTreeNode[] = this.getHierarchyTrees(namedHierarchyResult, entityRepresentativeAttributes)
-        return { count, trees: nodes }
+        const trees: [VisualisedHierarchyTreeNode[], VisualisedHierarchyTreeNode | undefined] = this.resolveHierarchyTrees(namedHierarchyResult, entityRepresentativeAttributes)
+        return { count, trees: trees[0], requestedNode: trees[1] }
     }
 
-    private getHierarchyTrees(namedHierarchyResult: Result[], entityRepresentativeAttributes: string[]): VisualisedHierarchyTreeNode[] {
+    private resolveHierarchyTrees(namedHierarchyResult: Result[], entityRepresentativeAttributes: string[]): [VisualisedHierarchyTreeNode[], VisualisedHierarchyTreeNode | undefined] {
         const nodes: VisualisedHierarchyTreeNode[] = []
+        let requestedNode: VisualisedHierarchyTreeNode | undefined = undefined
 
         let currentLevel: number = -1
         const nodesStack: VisualisedHierarchyTreeNode[] = []
@@ -256,6 +257,7 @@ export class GraphQLHierarchyVisualiserService implements HierarchyVisualiserSer
             // only root nodes should display parents, we know parents in nested nodes from the direct parent in the tree
             const parentPrimaryKey: number | undefined = level === 1 ? nodeEntity?.['parentPrimaryKey'] : undefined
             const title: string | undefined = this.resolveNodeTitle(nodeEntity, entityRepresentativeAttributes)
+            const requested: boolean | undefined = nodeResult['requested']
             const childrenCount: number | undefined = nodeResult['childrenCount']
             const queriedEntityCount: number | undefined = nodeResult['queriedEntityCount']
 
@@ -269,8 +271,19 @@ export class GraphQLHierarchyVisualiserService implements HierarchyVisualiserSer
 
             currentLevel = level
             // prepare current node into the stack
-            // todo lho mark requested node, display requested node in header
-            nodesStack.push(new VisualisedHierarchyTreeNode(primaryKey, parentPrimaryKey, title, childrenCount, queriedEntityCount, []))
+            const node = new VisualisedHierarchyTreeNode(
+                primaryKey,
+                parentPrimaryKey,
+                title,
+                requested,
+                childrenCount,
+                queriedEntityCount,
+                [] // will be filled during children flush
+            )
+            nodesStack.push(node)
+            if (requested) {
+                requestedNode = node
+            }
         }
 
         // flush remaining nodes
@@ -278,7 +291,7 @@ export class GraphQLHierarchyVisualiserService implements HierarchyVisualiserSer
             this.flushCurrentNodeToUpper(nodes, nodesStack)
         }
 
-        return nodes
+        return [nodes, requestedNode]
     }
 
     private flushCurrentNodeToUpper(nodes: VisualisedHierarchyTreeNode[], stack: VisualisedHierarchyTreeNode[]): void {

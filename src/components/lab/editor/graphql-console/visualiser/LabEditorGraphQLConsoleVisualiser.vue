@@ -116,7 +116,7 @@ const resultForVisualiser = computed<Result | undefined>(() => {
                 v-model="selectedQuery"
                 :disabled="queries.length == 0"
                 prepend-inner-icon="mdi-database-search"
-                label="Query"
+                label="From"
                 :items="queries"
                 class="visualiser__select"
                 hide-details

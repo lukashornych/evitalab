@@ -58,7 +58,7 @@ function copyParentPrimaryKey(): void {
             <VIcon size="20" class="mr-1">mdi-arrow-up-left</VIcon>
             {{ node.parentPrimaryKey }}{{ node.title ? ':' : '' }}
         </span>
-        <span>
+        <span :class="{ 'node-title--requested': node.requested }">
             {{ node.title || 'Unknown' }}
             <VTooltip v-if="!node.title" activator="parent">
                 <VMarkdown source="No `primaryKey` property or representative attributes were fetched." />
@@ -66,6 +66,14 @@ function copyParentPrimaryKey(): void {
         </span>
 
         <VChipGroup>
+            <VChip v-if="node.requested" prepend-icon="mdi-filter">
+                Requested
+                <VTooltip activator="parent">
+                    <!-- todo jno review explanation -->
+                    <VMarkdown source="The entity representing this hierarchy node was filtered by `hierarchyWithin`." />
+                </VTooltip>
+            </VChip>
+
             <VChip prepend-icon="mdi-file-tree">
                 {{ node.childrenCount ?? '-' }}
                 <VTooltip activator="parent">
@@ -99,11 +107,16 @@ function copyParentPrimaryKey(): void {
 </template>
 
 <style lang="scss" scoped>
+@import "@/styles/colors.scss";
 // todo lho better handling for small widths
 .node-title {
     display: flex;
     column-gap: 0.5rem;
     align-items: center;
     flex-wrap: wrap;
+
+    &--requested {
+        color: $primary-lightest!important;
+    }
 }
 </style>
