@@ -1,26 +1,23 @@
 import {
-    ResultVisualiserService,
     FacetSummaryVisualiserService,
     HierarchyVisualiserService
 } from '@/services/editor/result-visualiser/result-visualiser.service'
-import {
-    Result,
-    VisualisedFacetGroupStatistics,
-    VisualisedFacetStatistics, VisualisedNamedHierarchy, VisualisedHierarchyTreeNode,
-    VisualiserType,
-    VisualiserTypeType
-} from '@/model/editor/result-visualiser'
-import { CatalogSchema, EntitySchema, ReferenceSchema } from '@/model/evitadb'
+import { Result, VisualisedHierarchyTreeNode, VisualisedNamedHierarchy } from '@/model/editor/result-visualiser'
+import { CatalogSchema, EntitySchema } from '@/model/evitadb'
 import { EvitaDBConnection, UnexpectedError } from '@/model/lab'
 import {  LabService } from '@/services/lab.service'
 import { inject, InjectionKey } from 'vue'
+import {
+    JsonFacetSummaryVisualiserService, JsonHierarchyVisualiserService,
+    JsonResultVisualiserService
+} from '@/services/editor/result-visualiser/json-result-visualiser.service'
 
-export const key: InjectionKey<GraphqlResultVisualiserService> = Symbol()
+export const key: InjectionKey<GraphQLResultVisualiserService> = Symbol()
 
 /**
  * {@link ResultVisualiserService} for GraphQL query language.
  */
-export class GraphqlResultVisualiserService extends ResultVisualiserService {
+export class GraphQLResultVisualiserService extends JsonResultVisualiserService {
     private readonly labService: LabService
     private facetSummaryVisualiserService: GraphQLFacetSummaryVisualiserService | undefined = undefined
     private hierarchyVisualiserService: GraphQLHierarchyVisualiserService | undefined = undefined
@@ -34,7 +31,7 @@ export class GraphqlResultVisualiserService extends ResultVisualiserService {
         return true
     }
 
-    findQueries(result: Result): string[] {
+    findQueries(inputQuery: string, result: Result): string[] {
         if (result == undefined) {
             return []
         }
@@ -65,37 +62,24 @@ export class GraphqlResultVisualiserService extends ResultVisualiserService {
         return entitySchema
     }
 
-    findVisualiserTypes(queryResult: Result): VisualiserType[] {
-        const visualiserTypes: VisualiserType[] = []
-
-        const extraResults = queryResult['extraResults']
-        if (extraResults) {
-            if (extraResults['facetSummary']) {
-                visualiserTypes.push({
-                    title: 'Facet summary',
-                    value: VisualiserTypeType.FacetSummary
-                })
-            }
-            if (extraResults['hierarchy']) {
-                visualiserTypes.push({
-                    title: 'Hierarchy',
-                    value: VisualiserTypeType.Hierarchy
-                })
-            }
+    resolveRepresentativeTitleForEntityResult(entityResult: Result | undefined, representativeAttributes: string[]): string | undefined {
+        if (!entityResult) {
+            return undefined
         }
 
-        return visualiserTypes
-    }
-
-    findResultForVisualiser(queryResult: Result, visualiserType: string): Result | undefined {
-        switch (visualiserType) {
-            case VisualiserTypeType.FacetSummary:
-                return queryResult?.['extraResults']?.['facetSummary']
-            case VisualiserTypeType.Hierarchy:
-                return queryResult?.['extraResults']?.['hierarchy']
-            default:
-                return undefined
+        const actualRepresentativeAttributes: (string | undefined)[] = []
+        const attributes = entityResult['attributes'] || {}
+        for (const attributeName in attributes) {
+            if (!representativeAttributes.includes(attributeName) && attributeName !== 'title') {
+                continue;
+            }
+            actualRepresentativeAttributes.push(this.toPrintableAttributeValue(attributes[attributeName]))
         }
+
+        if (actualRepresentativeAttributes.length === 0) {
+            return undefined
+        }
+        return actualRepresentativeAttributes.filter(it => it != undefined).join(', ')
     }
 
     getFacetSummaryService(): FacetSummaryVisualiserService {
@@ -116,135 +100,24 @@ export class GraphqlResultVisualiserService extends ResultVisualiserService {
 /**
  * {@link FacetSummaryVisualiserService} for GraphQL query language.
  */
-export class GraphQLFacetSummaryVisualiserService implements FacetSummaryVisualiserService {
-    private readonly visualiserService: GraphqlResultVisualiserService
-
-    constructor(visualiserService: GraphqlResultVisualiserService) {
-        this.visualiserService = visualiserService
+export class GraphQLFacetSummaryVisualiserService extends JsonFacetSummaryVisualiserService<GraphQLResultVisualiserService> {
+    constructor(visualiserService: GraphQLResultVisualiserService) {
+        super(visualiserService)
     }
-
-    findFacetGroupStatisticsByReferencesResults(facetSummaryResult: Result, entitySchema: EntitySchema): [ReferenceSchema, Result[]][] {
-        const referencesWithGroups: [ReferenceSchema, Result[]][] = []
-        for (const referenceName of Object.keys(facetSummaryResult)) {
-            const referenceSchema: ReferenceSchema | undefined = Object.values(entitySchema.references)
-                .find(reference => reference.nameVariants.camelCase === referenceName)
-            if (referenceSchema == undefined) {
-                throw new UnexpectedError(undefined, `Reference '${referenceName}' not found in entity '${entitySchema.name}'.`)
-            }
-            referencesWithGroups.push([referenceSchema, facetSummaryResult[referenceName]])
-        }
-        return referencesWithGroups
-    }
-
-    resolveFacetGroupStatistics(groupStatisticsResult: Result, groupRepresentativeAttributes: string[]): VisualisedFacetGroupStatistics {
-        const count: number | undefined = groupStatisticsResult['count']
-
-        const groupEntityResult: Result | undefined = groupStatisticsResult['groupEntity']
-        if (!groupEntityResult) {
-            return { count }
-        }
-
-        const primaryKey: number | undefined = groupEntityResult['primaryKey']
-
-        const actualGroupRepresentativeAttributes: (string | undefined)[] = []
-        const groupAttributes = groupEntityResult['attributes'] || {}
-        for (const groupAttributeName in groupAttributes) {
-            if (!groupRepresentativeAttributes.includes(groupAttributeName) && groupAttributeName !== 'title') {
-                continue;
-            }
-            actualGroupRepresentativeAttributes.push(this.visualiserService.toPrintableAttributeValue(groupAttributes[groupAttributeName]))
-        }
-
-        let title: string | undefined = undefined
-        if (actualGroupRepresentativeAttributes.length > 0) {
-            title = actualGroupRepresentativeAttributes.filter(it => it != undefined).join(', ')
-        }
-
-        return { primaryKey, title, count }
-    }
-
-    findFacetStatisticsResults(groupStatisticsResult: Result): Result[] {
-        return groupStatisticsResult['facetStatistics'] || []
-    }
-
-    resolveFacetStatistics(queryResult: Result, facetStatisticsResult: Result, facetRepresentativeAttributes: string[]): VisualisedFacetStatistics {
-        const facetEntityResult: Result | undefined = facetStatisticsResult['facetEntity']
-
-        const requested: boolean | undefined = facetStatisticsResult['requested']
-
-        const primaryKey: number | undefined = facetEntityResult?.['primaryKey']
-
-        let title : string | undefined = undefined
-        if (facetEntityResult) {
-            const actualFacetRepresentativeAttributes: (string | undefined)[] = []
-            const facetAttributes = facetEntityResult['attributes'] || {}
-            for (const facetAttributeName in facetAttributes) {
-                if (!facetRepresentativeAttributes.includes(facetAttributeName) && facetAttributeName !== 'title') {
-                    continue;
-                }
-                actualFacetRepresentativeAttributes.push(this.visualiserService.toPrintableAttributeValue(facetAttributes[facetAttributeName]))
-            }
-
-            if (actualFacetRepresentativeAttributes.length > 0) {
-                title = actualFacetRepresentativeAttributes.filter(it => it != undefined).join(', ')
-            }
-        }
-
-        const numberOfEntities: number | undefined = queryResult['recordPage']?.['totalRecordCount'] ?? queryResult['recordStrip']?.['totalRecordCount']
-
-        const impactResult: Result | undefined = facetStatisticsResult['impact']
-        const impactDifference: string | undefined = (() => {
-            const difference: number | undefined = impactResult?.['difference']
-            if (difference == undefined) {
-                return undefined
-            }
-
-            return `${difference > 0 ? '+' : ''}${difference}`
-        })()
-        const impactMatchCount: number | undefined = impactResult?.['matchCount']
-        const count: number | undefined = facetStatisticsResult['count']
-
-        return { requested, primaryKey, title, numberOfEntities, impactDifference, impactMatchCount, count }
-    }
-
 }
 
 /**
  * {@link HierarchyVisualiserService} for GraphQL query language.
  */
-export class GraphQLHierarchyVisualiserService implements HierarchyVisualiserService {
-    private readonly visualiserService: GraphqlResultVisualiserService
+export class GraphQLHierarchyVisualiserService extends JsonHierarchyVisualiserService<GraphQLResultVisualiserService> {
 
-    constructor(visualiserService: GraphqlResultVisualiserService) {
-        this.visualiserService = visualiserService
-    }
-
-    findNamedHierarchiesByReferencesResults(hierarchyResult: Result, entitySchema: EntitySchema): [(ReferenceSchema | undefined), Result][] {
-        const referencesWithHierarchies: [ReferenceSchema | undefined, Result][] = []
-        for (const referenceName of Object.keys(hierarchyResult)) {
-            const namedHierarchiesResult: Result = hierarchyResult[referenceName]
-            if (referenceName === 'self') {
-                referencesWithHierarchies.push([undefined, namedHierarchiesResult])
-            } else {
-                const referenceSchema: ReferenceSchema | undefined = Object.values(entitySchema.references)
-                    .find(reference => reference.nameVariants.camelCase === referenceName)
-                if (referenceSchema == undefined) {
-                    throw new UnexpectedError(undefined, `Reference '${referenceName}' not found in entity '${entitySchema.name}'.`)
-                }
-                referencesWithHierarchies.push([referenceSchema, namedHierarchiesResult])
-            }
-        }
-        return referencesWithHierarchies
+    constructor(visualiserService: GraphQLResultVisualiserService) {
+        super(visualiserService)
     }
 
     resolveNamedHierarchy(namedHierarchyResult: Result[], entityRepresentativeAttributes: string[]): VisualisedNamedHierarchy {
         const count: number | undefined = namedHierarchyResult.length
-        const trees: [VisualisedHierarchyTreeNode[], VisualisedHierarchyTreeNode | undefined] = this.resolveHierarchyTrees(namedHierarchyResult, entityRepresentativeAttributes)
-        return { count, trees: trees[0], requestedNode: trees[1] }
-    }
-
-    private resolveHierarchyTrees(namedHierarchyResult: Result[], entityRepresentativeAttributes: string[]): [VisualisedHierarchyTreeNode[], VisualisedHierarchyTreeNode | undefined] {
-        const nodes: VisualisedHierarchyTreeNode[] = []
+        const trees: VisualisedHierarchyTreeNode[] = []
         let requestedNode: VisualisedHierarchyTreeNode | undefined = undefined
 
         let currentLevel: number = -1
@@ -256,7 +129,10 @@ export class GraphQLHierarchyVisualiserService implements HierarchyVisualiserSer
             const primaryKey: number | undefined = nodeEntity?.['primaryKey']
             // only root nodes should display parents, we know parents in nested nodes from the direct parent in the tree
             const parentPrimaryKey: number | undefined = level === 1 ? nodeEntity?.['parentPrimaryKey'] : undefined
-            const title: string | undefined = this.resolveNodeTitle(nodeEntity, entityRepresentativeAttributes)
+            const title: string | undefined = this.visualiserService.resolveRepresentativeTitleForEntityResult(
+                nodeEntity,
+                entityRepresentativeAttributes
+            )
             const requested: boolean | undefined = nodeResult['requested']
             const childrenCount: number | undefined = nodeResult['childrenCount']
             const queriedEntityCount: number | undefined = nodeResult['queriedEntityCount']
@@ -265,13 +141,13 @@ export class GraphQLHierarchyVisualiserService implements HierarchyVisualiserSer
                 // flush lower nodes as well as previous neighbour of the current node
                 const levelDiff = currentLevel - level + 1
                 for (let i = 0; i < levelDiff; i++) {
-                    this.flushCurrentNodeToUpper(nodes, nodesStack)
+                    this.flushCurrentNodeToUpper(trees, nodesStack)
                 }
             }
 
             currentLevel = level
             // prepare current node into the stack
-            const node = new VisualisedHierarchyTreeNode(
+            const node: VisualisedHierarchyTreeNode = new VisualisedHierarchyTreeNode(
                 primaryKey,
                 parentPrimaryKey,
                 title,
@@ -288,45 +164,25 @@ export class GraphQLHierarchyVisualiserService implements HierarchyVisualiserSer
 
         // flush remaining nodes
         while (nodesStack.length > 0) {
-            this.flushCurrentNodeToUpper(nodes, nodesStack)
+            this.flushCurrentNodeToUpper(trees, nodesStack)
         }
 
-        return [nodes, requestedNode]
+        return { count, trees, requestedNode }
     }
 
-    private flushCurrentNodeToUpper(nodes: VisualisedHierarchyTreeNode[], stack: VisualisedHierarchyTreeNode[]): void {
+    private flushCurrentNodeToUpper(trees: VisualisedHierarchyTreeNode[], stack: VisualisedHierarchyTreeNode[]): void {
         const prevNode: VisualisedHierarchyTreeNode = stack.pop() as VisualisedHierarchyTreeNode;
         if (stack.length === 0) {
             // root node flush to final node collection
-            nodes.push(prevNode);
+            trees.push(prevNode);
         } else {
             // todo lho this should be needed
             // @ts-ignore
             stack.at(-1).children.push(prevNode);
         }
     }
-
-    private resolveNodeTitle(nodeEntity: Result | undefined, entityRepresentativeAttributes: string[]): string | undefined {
-        if (!nodeEntity) {
-            return undefined
-        }
-
-        const actualEntityRepresentativeAttributes: (string | undefined)[] = []
-        const entityAttributes = nodeEntity['attributes'] || {}
-        for (const entityAttributeName in entityAttributes) {
-            if (!entityRepresentativeAttributes.includes(entityAttributeName) && entityAttributeName !== 'title') {
-                continue;
-            }
-            actualEntityRepresentativeAttributes.push(this.visualiserService.toPrintableAttributeValue(entityAttributes[entityAttributeName]))
-        }
-
-        if (actualEntityRepresentativeAttributes.length === 0) {
-            return undefined
-        }
-        return actualEntityRepresentativeAttributes.filter(it => it != undefined).join(', ')
-    }
 }
 
-export const useGraphqlResultVisualiserService = (): GraphqlResultVisualiserService => {
-    return inject(key) as GraphqlResultVisualiserService
+export const useGraphQLResultVisualiserService = (): GraphQLResultVisualiserService => {
+    return inject(key) as GraphQLResultVisualiserService
 }

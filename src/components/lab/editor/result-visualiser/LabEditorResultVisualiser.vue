@@ -21,25 +21,41 @@ const toaster: Toaster = useToaster()
 const props = defineProps<{
     catalogPointer: CatalogPointer,
     visualiserService: ResultVisualiserService,
+    inputQuery: string,
     result: Result | undefined
 }>()
 
-
+const supportsMultipleQueries = computed<boolean>(() => {
+    try {
+        return props.visualiserService.supportsMultipleQueries()
+    } catch (e: any) {
+        toaster.error(e)
+        return false
+    }
+})
 const queries = computed<string[]>(() => {
     if (props.result == undefined) {
         return []
     }
     try {
-        return props.visualiserService.findQueries(props.result)
+        return props.visualiserService.findQueries(props.inputQuery, props.result)
     } catch (e: any) {
         toaster.error(e)
         return []
     }
 })
 watch(queries, (newValue) => {
-    if (selectedQuery.value != undefined && !newValue.includes(selectedQuery.value as string)) {
-        // selected query was removed
-        selectedQuery.value = undefined
+    if (!supportsMultipleQueries.value) {
+        if (newValue.length > 0) {
+            selectedQuery.value = newValue[0]
+        } else {
+            selectedQuery.value = undefined
+        }
+    } else {
+        if (selectedQuery.value != undefined && !newValue.includes(selectedQuery.value as string)) {
+            // selected query was removed
+            selectedQuery.value = undefined
+        }
     }
 })
 
@@ -112,6 +128,7 @@ const resultForVisualiser = computed<Result | undefined>(() => {
     <div class="visualiser">
         <header>
             <VSelect
+                v-if="supportsMultipleQueries"
                 v-model="selectedQuery"
                 :disabled="queries.length == 0"
                 prepend-inner-icon="mdi-database-search"

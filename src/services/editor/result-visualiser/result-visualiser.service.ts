@@ -20,7 +20,7 @@ export abstract class ResultVisualiserService {
     /**
      * Tries to find queries in the root result.
      */
-    abstract findQueries(result: Result): string[]
+    abstract findQueries(inputQuery: string, result: Result): string[]
     /**
      * Tries to find query result in the root result by selected query name.
      */
