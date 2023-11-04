@@ -66,7 +66,7 @@ function copyParentPrimaryKey(): void {
         </span>
 
         <VChipGroup>
-            <VChip v-if="node.requested" prepend-icon="mdi-filter">
+            <VChip v-if="node.requested" prepend-icon="mdi-target">
                 Requested
                 <VTooltip activator="parent">
                     <!-- todo jno review explanation -->

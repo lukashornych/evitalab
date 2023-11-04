@@ -57,7 +57,7 @@ function initialize(): void {
                             </span>
                         </VChip>
 
-                        <VChip v-if="namedHierarchy?.requestedNode" prepend-icon="mdi-filter">
+                        <VChip v-if="namedHierarchy?.requestedNode" prepend-icon="mdi-target">
                             {{ namedHierarchy?.requestedNode?.primaryKey != undefined ? `${namedHierarchy?.requestedNode?.primaryKey}: ` : '' }}
                             {{ namedHierarchy?.requestedNode?.title }}
                             <VTooltip activator="parent">
