@@ -76,37 +76,42 @@ function copyPrimaryKey(): void {
     <VListGroup>
         <template #activator="{ props }">
             <VListItem v-bind="props" @click="initializeFacets">
-                <VListItemTitle class="group-title">
-                    <span
-                        v-if="groupStatistics?.primaryKey != undefined"
-                        class="text-disabled d-flex align-center"
-                        @click.stop="copyPrimaryKey"
-                    >
-                         <VIcon size="20" class="mr-1">mdi-key</VIcon>
-                        {{ groupStatistics?.primaryKey }}{{ groupStatistics?.title ? ':' : '' }}
-                    </span>
-                    <span>
-                        {{ groupStatistics?.title ?? 'Unknown' }}
-                        <VTooltip v-if="!groupStatistics?.title" activator="parent">
-                            <VMarkdown source="No `primaryKey` property or representative attributes were fetched." />
-                        </VTooltip>
-                    </span>
+                <template #prepend>
+                    <VIcon>mdi-format-list-group</VIcon>
+                </template>
+                <template #title>
+                    <VListItemTitle class="group-title">
+                        <span
+                            v-if="groupStatistics?.primaryKey != undefined"
+                            class="text-disabled d-flex align-center"
+                            @click.stop="copyPrimaryKey"
+                        >
+                             <VIcon size="20" class="mr-1">mdi-key</VIcon>
+                            {{ groupStatistics?.primaryKey }}{{ groupStatistics?.title ? ':' : '' }}
+                        </span>
+                        <span>
+                            {{ groupStatistics?.title ?? 'Unknown' }}
+                            <VTooltip v-if="!groupStatistics?.title" activator="parent">
+                                <VMarkdown source="No `primaryKey` property or representative attributes were fetched." />
+                            </VTooltip>
+                        </span>
 
-                    <VLazy>
-                        <VChipGroup>
-                            <VChip prepend-icon="mdi-counter">
-                                <span>
-                                    {{ groupStatistics?.count ?? '-' }}
-                                    <VTooltip activator="parent">
-                                        <VMarkdown v-if="groupStatistics?.count == undefined" source="No `count` property was fetched." />
-                                        <!-- todo jno review explanation -->
-                                        <span v-else>The total number of entities matching any facet from this group without user filter.</span>
-                                    </VTooltip>
-                                </span>
-                            </VChip>
-                        </VChipGroup>
-                    </VLazy>
-                </VListItemTitle>
+                        <VLazy>
+                            <VChipGroup>
+                                <VChip prepend-icon="mdi-counter">
+                                    <span>
+                                        {{ groupStatistics?.count ?? '-' }}
+                                        <VTooltip activator="parent">
+                                            <VMarkdown v-if="groupStatistics?.count == undefined" source="No `count` property was fetched." />
+                                            <!-- todo jno review explanation -->
+                                            <span v-else>The total number of entities matching any facet from this group without user filter.</span>
+                                        </VTooltip>
+                                    </span>
+                                </VChip>
+                            </VChipGroup>
+                        </VLazy>
+                    </VListItemTitle>
+                </template>
             </VListItem>
         </template>
 
