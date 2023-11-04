@@ -11,6 +11,9 @@ import LabEditorResultVisualiserFacetStatistics
     from '@/components/lab/editor/result-visualiser/facet-summary/LabEditorResultVisualiserFacetStatistics.vue'
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 import { Result, VisualisedFacetGroupStatistics } from '@/model/editor/result-visualiser'
+import VListItemLazyIterator from '@/components/base/VListItemLazyIterator.vue'
+
+const facetStatisticsPageSize: number = 10
 
 const toaster: Toaster = useToaster()
 
@@ -50,7 +53,7 @@ const facetStatisticsResults = computed<Result[]>(() => {
         return []
     }
 })
-
+const facetStatisticsResultsPage = ref<number>(1)
 
 function initializeFacets(): void {
     // todo lho this makes quick hide of the facet group, it looks weird
@@ -89,31 +92,39 @@ function copyPrimaryKey(): void {
                         </VTooltip>
                     </span>
 
-                    <VChipGroup>
-                        <VChip prepend-icon="mdi-counter">
-                            <span>
-                                {{ groupStatistics?.count ?? '-' }}
-                                <VTooltip activator="parent">
-                                    <VMarkdown v-if="groupStatistics?.count == undefined" source="No `count` property was fetched." />
-                                    <!-- todo jno review explanation -->
-                                    <span v-else>The total number of entities matching any facet from this group without user filter.</span>
-                                </VTooltip>
-                            </span>
-                        </VChip>
-                    </VChipGroup>
+                    <VLazy>
+                        <VChipGroup>
+                            <VChip prepend-icon="mdi-counter">
+                                <span>
+                                    {{ groupStatistics?.count ?? '-' }}
+                                    <VTooltip activator="parent">
+                                        <VMarkdown v-if="groupStatistics?.count == undefined" source="No `count` property was fetched." />
+                                        <!-- todo jno review explanation -->
+                                        <span v-else>The total number of entities matching any facet from this group without user filter.</span>
+                                    </VTooltip>
+                                </span>
+                            </VChip>
+                        </VChipGroup>
+                    </VLazy>
                 </VListItemTitle>
             </VListItem>
         </template>
 
         <template v-if="facetStatisticsInitialized">
-            <LabEditorResultVisualiserFacetStatistics
-                v-for="(facetStatisticsResult, index) in facetStatisticsResults"
-                :key="index"
-                :visualiser-service="visualiserService"
-                :query-result="queryResult"
-                :facet-statistics-result="facetStatisticsResult"
-                :facet-representative-attributes="facetRepresentativeAttributes"
-            />
+            <VListItemLazyIterator
+                :items="facetStatisticsResults"
+                v-model:page="facetStatisticsResultsPage"
+                :page-size="facetStatisticsPageSize"
+            >
+                <template #item="{ item: facetStatisticsResult }">
+                    <LabEditorResultVisualiserFacetStatistics
+                        :visualiser-service="visualiserService"
+                        :query-result="queryResult"
+                        :facet-statistics-result="facetStatisticsResult"
+                        :facet-representative-attributes="facetRepresentativeAttributes"
+                    />
+                </template>
+            </VListItemLazyIterator>
         </template>
     </VListGroup>
 </template>

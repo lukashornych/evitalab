@@ -81,45 +81,47 @@ function copyPrimaryKey(): void {
                     </VTooltip>
                 </span>
 
-                <VChipGroup>
-                    <VChip prepend-icon="mdi-numeric-positive-1">
-                        <span>
-                            {{ facetStatistics?.numberOfEntities ?? '-' }}
-                            <VTooltip activator="parent">
-                                <VMarkdown v-if="facetStatistics?.numberOfEntities == undefined" source="The `totalRecordCount` property was not found in neither `recordPage` nor `recordStrip`." />
-                                <!-- todo jno review explanation -->
-                                <span v-else>The total number of entities matching the user filter.</span>
-                            </VTooltip>
-                        </span>
-                        <span>&nbsp;/&nbsp;</span>
-                        <span>
-                            {{ facetStatistics?.impactDifference ?? '-' }}
-                            <VTooltip activator="parent">
-                                <VMarkdown v-if="facetStatistics?.impactDifference == undefined" source="The `impact.difference` property was not found." />
-                                <!-- todo jno review explanation -->
-                                <span v-else>The difference from the current number of entities matching the user filter if this facet was requested.</span>
-                            </VTooltip>
-                        </span>
-                    </VChip>
+                <VLazy>
+                    <VChipGroup>
+                        <VChip prepend-icon="mdi-numeric-positive-1">
+                            <span>
+                                {{ facetStatistics?.numberOfEntities ?? '-' }}
+                                <VTooltip activator="parent">
+                                    <VMarkdown v-if="facetStatistics?.numberOfEntities == undefined" source="The `totalRecordCount` property was not found in neither `recordPage` nor `recordStrip`." />
+                                    <!-- todo jno review explanation -->
+                                    <span v-else>The total number of entities matching the user filter.</span>
+                                </VTooltip>
+                            </span>
+                            <span>&nbsp;/&nbsp;</span>
+                            <span>
+                                {{ facetStatistics?.impactDifference ?? '-' }}
+                                <VTooltip activator="parent">
+                                    <VMarkdown v-if="facetStatistics?.impactDifference == undefined" source="The `impact.difference` property was not found." />
+                                    <!-- todo jno review explanation -->
+                                    <span v-else>The difference from the current number of entities matching the user filter if this facet was requested.</span>
+                                </VTooltip>
+                            </span>
+                        </VChip>
 
-                    <VChip prepend-icon="mdi-set-none">
-                        {{ facetStatistics?.impactMatchCount ?? '-' }}
-                        <VTooltip activator="parent">
-                            <VMarkdown v-if="facetStatistics?.impactMatchCount == undefined" source="The `impact.matchCount` property was not found." />
-                            <!-- todo jno review explanation -->
-                            <span v-else>The total number of entities matching the user filter if this facet was requested.</span>
-                        </VTooltip>
-                    </VChip>
+                        <VChip prepend-icon="mdi-set-none">
+                            {{ facetStatistics?.impactMatchCount ?? '-' }}
+                            <VTooltip activator="parent">
+                                <VMarkdown v-if="facetStatistics?.impactMatchCount == undefined" source="The `impact.matchCount` property was not found." />
+                                <!-- todo jno review explanation -->
+                                <span v-else>The total number of entities matching the user filter if this facet was requested.</span>
+                            </VTooltip>
+                        </VChip>
 
-                    <VChip prepend-icon="mdi-counter">
-                        {{ facetStatistics?.count ?? '-' }}
-                        <VTooltip activator="parent">
-                            <VMarkdown v-if="facetStatistics?.count == undefined" source="The `count` property was not found." />
-                            <!-- todo jno review explanation -->
-                            <span v-else>The total number of entities matching this facet without the user filter.</span>
-                        </VTooltip>
-                    </VChip>
-                </VChipGroup>
+                        <VChip prepend-icon="mdi-counter">
+                            {{ facetStatistics?.count ?? '-' }}
+                            <VTooltip activator="parent">
+                                <VMarkdown v-if="facetStatistics?.count == undefined" source="The `count` property was not found." />
+                                <!-- todo jno review explanation -->
+                                <span v-else>The total number of entities matching this facet without the user filter.</span>
+                            </VTooltip>
+                        </VChip>
+                    </VChipGroup>
+                </VLazy>
             </VListItemTitle>
         </template>
     </VListItem>
