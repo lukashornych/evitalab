@@ -12,6 +12,7 @@ import LabEditorResultVisualiserFacetStatistics
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 import { Result, VisualisedFacetGroupStatistics } from '@/model/editor/result-visualiser'
 import VListItemLazyIterator from '@/components/base/VListItemLazyIterator.vue'
+import { ReferenceSchema } from '@/model/evitadb'
 
 const facetStatisticsPageSize: number = 10
 
@@ -19,6 +20,7 @@ const toaster: Toaster = useToaster()
 
 const props = defineProps<{
     visualiserService: ResultVisualiserService,
+    referenceSchema: ReferenceSchema
     queryResult: Result,
     groupStatisticsResult: Result | undefined,
     groupRepresentativeAttributes: string[],
@@ -108,6 +110,12 @@ function copyPrimaryKey(): void {
                                         </VTooltip>
                                     </span>
                                 </VChip>
+                                <VChip v-if="!referenceSchema.referencedGroupTypeManaged" prepend-icon="mdi-open-in-new">
+                                    External
+                                    <VTooltip activator="parent">
+                                        This is only a reference to an external entity that is managed by external system.
+                                    </VTooltip>
+                                </VChip>
                             </VChipGroup>
                         </VLazy>
                     </VListItemTitle>
@@ -124,6 +132,7 @@ function copyPrimaryKey(): void {
                 <template #item="{ item: facetStatisticsResult }">
                     <LabEditorResultVisualiserFacetStatistics
                         :visualiser-service="visualiserService"
+                        :reference-schema="referenceSchema"
                         :query-result="queryResult"
                         :facet-statistics-result="facetStatisticsResult"
                         :facet-representative-attributes="facetRepresentativeAttributes"

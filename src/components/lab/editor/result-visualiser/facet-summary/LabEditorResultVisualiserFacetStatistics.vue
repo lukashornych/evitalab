@@ -9,11 +9,13 @@ import { UnexpectedError } from '@/model/lab'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 import { Result, VisualisedFacetStatistics } from '@/model/editor/result-visualiser'
+import { ReferenceSchema } from '@/model/evitadb'
 
 const toaster: Toaster = useToaster()
 
 const props = defineProps<{
     visualiserService: ResultVisualiserService,
+    referenceSchema: ReferenceSchema,
     queryResult: Result
     facetStatisticsResult: Result,
     facetRepresentativeAttributes: string[]
@@ -98,42 +100,49 @@ function copyPrimaryKey(): void {
                                     <span>{{ facetStatistics?.count ?? '-' }}</span>
                                 </div>
                             </div>
+
+                            <VTooltip activator="parent">
+                                <VIcon>mdi-set-right</VIcon>
+                                <br/>
+
+                                <VMarkdown v-if="facetStatistics?.numberOfEntities == undefined" source="The `totalRecordCount` property was not found in neither `recordPage` nor `recordStrip`." />
+                                <!-- todo jno review explanation -->
+                                <span v-else>The total number of entities matching the user filter.</span>
+
+                                <br/>
+
+                                <VMarkdown v-if="facetStatistics?.impactDifference == undefined" source="The `impact.difference` property was not found." />
+                                <!-- todo jno review explanation -->
+                                <span v-else>The difference from the current number of entities matching the user filter if this facet was requested.</span>
+
+                                <br/>
+                                <br/>
+
+                                <VIcon>mdi-set-all</VIcon>
+                                <br/>
+
+                                <VMarkdown v-if="facetStatistics?.impactMatchCount == undefined" source="The `impact.matchCount` property was not found." />
+                                <!-- todo jno review explanation -->
+                                <span v-else>The total number of entities matching the user filter if this facet was requested.</span>
+
+                                <br/>
+                                <br/>
+
+                                <VIcon>mdi-counter</VIcon>
+                                <br/>
+
+                                <VMarkdown v-if="facetStatistics?.count == undefined" source="The `count` property was not found." />
+                                <!-- todo jno review explanation -->
+                                <span v-else>The total number of entities matching this facet without the user filter.</span>
+                            </VTooltip>
                         </VChip>
 
-                        <VTooltip activator="parent">
-                            <VIcon>mdi-set-right</VIcon>
-                            <br/>
-
-                            <VMarkdown v-if="facetStatistics?.numberOfEntities == undefined" source="The `totalRecordCount` property was not found in neither `recordPage` nor `recordStrip`." />
-                            <!-- todo jno review explanation -->
-                            <span v-else>The total number of entities matching the user filter.</span>
-
-                            <br/>
-
-                            <VMarkdown v-if="facetStatistics?.impactDifference == undefined" source="The `impact.difference` property was not found." />
-                            <!-- todo jno review explanation -->
-                            <span v-else>The difference from the current number of entities matching the user filter if this facet was requested.</span>
-
-                            <br/>
-                            <br/>
-
-                            <VIcon>mdi-set-all</VIcon>
-                            <br/>
-
-                            <VMarkdown v-if="facetStatistics?.impactMatchCount == undefined" source="The `impact.matchCount` property was not found." />
-                            <!-- todo jno review explanation -->
-                            <span v-else>The total number of entities matching the user filter if this facet was requested.</span>
-
-                            <br/>
-                            <br/>
-
-                            <VIcon>mdi-counter</VIcon>
-                            <br/>
-
-                            <VMarkdown v-if="facetStatistics?.count == undefined" source="The `count` property was not found." />
-                            <!-- todo jno review explanation -->
-                            <span v-else>The total number of entities matching this facet without the user filter.</span>
-                        </VTooltip>
+                        <VChip v-if="!referenceSchema.referencedEntityTypeManaged" prepend-icon="mdi-open-in-new">
+                            External
+                            <VTooltip activator="parent">
+                                This is only a reference to an external entity that is managed by external system.
+                            </VTooltip>
+                        </VChip>
                     </VChipGroup>
                 </VLazy>
             </VListItemTitle>

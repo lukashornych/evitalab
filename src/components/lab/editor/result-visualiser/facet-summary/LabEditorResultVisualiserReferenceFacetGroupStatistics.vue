@@ -108,6 +108,7 @@ initialize()
                 <template #item="{ item: groupStatisticsResult }">
                     <LabEditorResultVisualiserFacetGroupStatistics
                         :visualiser-service="visualiserService"
+                        :reference-schema="referenceSchema"
                         :query-result="queryResult"
                         :group-statistics-result="groupStatisticsResult"
                         :group-representative-attributes="groupRepresentativeAttributes"
@@ -125,6 +126,7 @@ initialize()
                 <template #item="{ item: facetStatisticsResult }">
                     <LabEditorResultVisualiserFacetStatistics
                         :visualiser-service="visualiserService"
+                        :reference-schema="referenceSchema"
                         :query-result="queryResult"
                         :facet-statistics-result="facetStatisticsResult"
                         :facet-representative-attributes="facetRepresentativeAttributes"
