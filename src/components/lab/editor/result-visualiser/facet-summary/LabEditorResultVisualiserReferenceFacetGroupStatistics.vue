@@ -6,12 +6,11 @@ import { computed, ref } from 'vue'
 import { EntitySchema, ReferenceSchema } from '@/model/evitadb'
 import { LabService, useLabService } from '@/services/lab.service'
 import { Toaster, useToaster } from '@/services/editor/toaster'
-import { TabComponentProps } from '@/model/editor/editor'
-import { GraphQLConsoleData, GraphQLConsoleParams } from '@/model/editor/graphql-console'
-import LabEditorGraphQLConsoleVisualiserFacetGroupStatistics
-    from '@/components/lab/editor/graphql-console/visualiser/facet-summary/LabEditorGraphQLConsoleVisualiserFacetGroupStatistics.vue'
-import LabEditorGraphQLConsoleVisualiserFacetStatistics
-    from '@/components/lab/editor/graphql-console/visualiser/facet-summary/LabEditorGraphQLConsoleVisualiserFacetStatistics.vue'
+import { CatalogPointer } from '@/model/editor/editor'
+import LabEditorResultVisualiserFacetGroupStatistics
+    from '@/components/lab/editor/result-visualiser/facet-summary/LabEditorResultVisualiserFacetGroupStatistics.vue'
+import LabEditorResultVisualiserFacetStatistics
+    from '@/components/lab/editor/result-visualiser/facet-summary/LabEditorResultVisualiserFacetStatistics.vue'
 import { Result } from '@/model/editor/result-visualiser'
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 
@@ -19,7 +18,7 @@ const labService: LabService = useLabService()
 const toaster: Toaster = useToaster()
 
 const props = defineProps<{
-    consoleProps: TabComponentProps<GraphQLConsoleParams, GraphQLConsoleData>,
+    catalogPointer: CatalogPointer,
     visualiserService: ResultVisualiserService,
     queryResult: Result,
     groupStatisticsResults: Result[],
@@ -57,8 +56,8 @@ function initialize() {
         pipeline = new Promise(resolve => resolve([]))
     } else {
         pipeline = labService.getEntitySchema(
-            props.consoleProps.params.instancePointer.connection,
-            props.consoleProps.params.instancePointer.catalogName,
+            props.catalogPointer.connection,
+            props.catalogPointer.catalogName,
             props.referenceSchema.referencedGroupType as string
         )
             .then((entitySchema: EntitySchema) => {
@@ -73,8 +72,8 @@ function initialize() {
             groupRepresentativeAttributes.push(...representativeAttributes)
 
             return labService.getEntitySchema(
-                props.consoleProps.params.instancePointer.connection,
-                props.consoleProps.params.instancePointer.catalogName,
+                props.catalogPointer.connection,
+                props.catalogPointer.catalogName,
                 props.referenceSchema.referencedEntityType as string
             ).then((entitySchema: EntitySchema) => {
                 return Object.values(entitySchema.attributes)
@@ -96,10 +95,9 @@ initialize()
 <template>
     <VList v-if="initialized" density="compact">
         <template v-if="isGroupedFacets">
-            <LabEditorGraphQLConsoleVisualiserFacetGroupStatistics
+            <LabEditorResultVisualiserFacetGroupStatistics
                 v-for="(groupStatisticsResult, index) in groupStatisticsResults"
                 :key="index"
-                :console-props="consoleProps"
                 :visualiser-service="visualiserService"
                 :query-result="queryResult"
                 :group-statistics-result="groupStatisticsResult"
@@ -108,7 +106,7 @@ initialize()
             />
         </template>
         <template v-else>
-            <LabEditorGraphQLConsoleVisualiserFacetStatistics
+            <LabEditorResultVisualiserFacetStatistics
                 v-for="(facetStatisticsResult, index) in facetStatisticsResults"
                 :key="index"
                 :visualiser-service="visualiserService"

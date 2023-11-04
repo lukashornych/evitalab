@@ -6,10 +6,9 @@ import { ref } from 'vue'
 import { EntitySchema, ReferenceSchema } from '@/model/evitadb'
 import { LabService, useLabService } from '@/services/lab.service'
 import { Toaster, useToaster } from '@/services/editor/toaster'
-import { TabComponentProps } from '@/model/editor/editor'
-import { GraphQLConsoleData, GraphQLConsoleParams } from '@/model/editor/graphql-console'
-import LabEditorGraphQLConsoleVisualiserNamedHierarchy
-    from '@/components/lab/editor/graphql-console/visualiser/hierarchy/LabEditorGraphQLConsoleVisualiserNamedHierarchy.vue'
+import { CatalogPointer } from '@/model/editor/editor'
+import LabEditorResultVisualiserNamedHierarchy
+    from '@/components/lab/editor/result-visualiser/hierarchy/LabEditorResultVisualiserNamedHierarchy.vue'
 import { Result } from '@/model/editor/result-visualiser'
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 
@@ -17,7 +16,7 @@ const labService: LabService = useLabService()
 const toaster: Toaster = useToaster()
 
 const props = defineProps<{
-    consoleProps: TabComponentProps<GraphQLConsoleParams, GraphQLConsoleData>,
+    catalogPointer: CatalogPointer,
     visualiserService: ResultVisualiserService,
     namedHierarchiesResult: Result,
     parentEntitySchema: EntitySchema,
@@ -40,8 +39,8 @@ function initialize() {
         pipeline = new Promise(resolve => resolve([]))
     } else {
         pipeline = labService.getEntitySchema(
-            props.consoleProps.params.instancePointer.connection,
-            props.consoleProps.params.instancePointer.catalogName,
+            props.catalogPointer.connection,
+            props.catalogPointer.catalogName,
             props.referenceSchema.referencedEntityType as string
         )
             .then((entitySchema: EntitySchema) => {
@@ -63,7 +62,7 @@ initialize()
 
 <template>
     <VList v-if="initialized" density="compact">
-        <LabEditorGraphQLConsoleVisualiserNamedHierarchy
+        <LabEditorResultVisualiserNamedHierarchy
             v-for="(namedHierarchyResult, name) in namedHierarchiesResult"
             :key="name"
             :visualiser-service="visualiserService"

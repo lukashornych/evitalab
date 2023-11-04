@@ -5,8 +5,8 @@
 
 import { computed, ref } from 'vue'
 import { Toaster, useToaster } from '@/services/editor/toaster'
-import LabEditorGraphQLConsoleVisualiserHierarchyTreeNode
-    from '@/components/lab/editor/graphql-console/visualiser/hierarchy/LabEditorGraphQLConsoleVisualiserHierarchyTreeNode.vue'
+import LabEditorResultVisualiserHierarchyTreeNode
+    from '@/components/lab/editor/result-visualiser/hierarchy/LabEditorResultVisualiserHierarchyTreeNode.vue'
 import { Result, VisualisedNamedHierarchy } from '@/model/editor/result-visualiser'
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 import VMarkdown from '@/components/base/VMarkdown.vue'
@@ -71,7 +71,7 @@ function initialize(): void {
         </template>
 
         <template v-if="initialized">
-            <LabEditorGraphQLConsoleVisualiserHierarchyTreeNode
+            <LabEditorResultVisualiserHierarchyTreeNode
                 v-for="(tree, index) in namedHierarchy?.trees"
                 :key="index"
                 :node="tree"

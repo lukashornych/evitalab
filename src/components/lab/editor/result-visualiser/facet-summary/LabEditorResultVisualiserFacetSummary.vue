@@ -4,21 +4,20 @@
  */
 
 import { EntitySchema, ReferenceSchema } from '@/model/evitadb'
-import { TabComponentProps } from '@/model/editor/editor'
-import { GraphQLConsoleData, GraphQLConsoleParams } from '@/model/editor/graphql-console'
+import { CatalogPointer } from '@/model/editor/editor'
 import { computed } from 'vue'
 import { Toaster, useToaster } from '@/services/editor/toaster'
-import LabEditorGraphQLConsoleVisualiserMissingDataIndicator
-    from '@/components/lab/editor/graphql-console/visualiser/LabEditorGraphQLConsoleVisualiserMissingDataIndicator.vue'
-import LabEditorGraphQLConsoleVisualiserReferenceFacetGroupStatistics
-    from '@/components/lab/editor/graphql-console/visualiser/facet-summary/LabEditorGraphQLConsoleVisualiserReferenceFacetGroupStatistics.vue'
+import LabEditorResultVisualiserMissingDataIndicator
+    from '@/components/lab/editor/result-visualiser/LabEditorResultVisualiserMissingDataIndicator.vue'
+import LabEditorResultVisualiserReferenceFacetGroupStatistics
+    from '@/components/lab/editor/result-visualiser/facet-summary/LabEditorResultVisualiserReferenceFacetGroupStatistics.vue'
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 import { Result } from '@/model/editor/result-visualiser'
 
 const toaster: Toaster = useToaster()
 
 const props = defineProps<{
-    consoleProps: TabComponentProps<GraphQLConsoleParams, GraphQLConsoleData>,
+    catalogPointer: CatalogPointer,
     visualiserService: ResultVisualiserService,
     queryResult: Result,
     facetSummaryResult: Result,
@@ -44,8 +43,8 @@ const referencesWithGroupStatisticsResults = computed<[ReferenceSchema, Result[]
                 {{ referenceWithGroup[0].name }} ({{ referenceWithGroup[1].length }})
             </VExpansionPanelTitle>
             <VExpansionPanelText>
-                <LabEditorGraphQLConsoleVisualiserReferenceFacetGroupStatistics
-                    :console-props="consoleProps"
+                <LabEditorResultVisualiserReferenceFacetGroupStatistics
+                    :catalog-pointer="catalogPointer"
                     :visualiser-service="visualiserService"
                     :query-result="queryResult"
                     :reference-schema="referenceWithGroup[0]"
@@ -55,7 +54,7 @@ const referencesWithGroupStatisticsResults = computed<[ReferenceSchema, Result[]
         </VExpansionPanel>
     </VExpansionPanels>
 
-    <LabEditorGraphQLConsoleVisualiserMissingDataIndicator
+    <LabEditorResultVisualiserMissingDataIndicator
         v-else
         icon="mdi-text-search"
         title="No facet summary groups found."

@@ -3,8 +3,8 @@
  * Visualises hierarchy tree node from raw JSON.
  */
 
-import LabEditorGraphQLConsoleVisualiserHierarchyTreeNodeTitle
-    from '@/components/lab/editor/graphql-console/visualiser/hierarchy/LabEditorGraphQLConsoleVisualiserHierarchyTreeNodeTitle.vue'
+import LabEditorResultVisualiserHierarchyTreeNodeTitle
+    from '@/components/lab/editor/result-visualiser/hierarchy/LabEditorResultVisualiserHierarchyTreeNodeTitle.vue'
 import { VisualisedHierarchyTreeNode } from '@/model/editor/result-visualiser'
 
 const props = defineProps<{
@@ -18,11 +18,11 @@ const props = defineProps<{
     <VListGroup v-if="!node.isLeaf()">
         <template #activator="{ props }">
             <VListItem v-bind="props">
-                <LabEditorGraphQLConsoleVisualiserHierarchyTreeNodeTitle :node="node" />
+                <LabEditorResultVisualiserHierarchyTreeNodeTitle :node="node" />
             </VListItem>
         </template>
 
-        <LabEditorGraphQLConsoleVisualiserHierarchyTreeNode
+        <LabEditorResultVisualiserHierarchyTreeNode
             v-for="(childNode, index) in node.children"
             :key="index"
             :node="childNode"
@@ -30,7 +30,7 @@ const props = defineProps<{
         />
     </VListGroup>
     <VListItem v-else>
-        <LabEditorGraphQLConsoleVisualiserHierarchyTreeNodeTitle :node="node" />
+        <LabEditorResultVisualiserHierarchyTreeNodeTitle :node="node" />
     </VListItem>
 </template>
 

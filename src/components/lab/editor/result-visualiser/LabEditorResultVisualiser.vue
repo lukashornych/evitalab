@@ -3,24 +3,23 @@
  * Visualises the raw JSON result of a GraphQL queries in human-readable GUI.
  */
 import { computed, ref, watch } from 'vue'
-import LabEditorGraphQLConsoleVisualiserFacetSummary
-    from '@/components/lab/editor/graphql-console/visualiser/facet-summary/LabEditorGraphQLConsoleVisualiserFacetSummary.vue'
-import { TabComponentProps } from '@/model/editor/editor'
-import { GraphQLConsoleData, GraphQLConsoleParams } from '@/model/editor/graphql-console'
-import LabEditorGraphQLConsoleVisualiserMissingDataIndicator
-    from '@/components/lab/editor/graphql-console/visualiser/LabEditorGraphQLConsoleVisualiserMissingDataIndicator.vue'
+import LabEditorResultVisualiserFacetSummary
+    from '@/components/lab/editor/result-visualiser/facet-summary/LabEditorResultVisualiserFacetSummary.vue'
+import { CatalogPointer } from '@/model/editor/editor'
+import LabEditorResultVisualiserMissingDataIndicator
+    from '@/components/lab/editor/result-visualiser/LabEditorResultVisualiserMissingDataIndicator.vue'
 import { EntitySchema } from '@/model/evitadb'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import VLoadingCircular from '@/components/base/VLoadingCircular.vue'
-import LabEditorGraphQLConsoleVisualiserHierarchy
-    from '@/components/lab/editor/graphql-console/visualiser/hierarchy/LabEditorGraphQLConsoleVisualiserHierarchy.vue'
+import LabEditorResultVisualiserHierarchy
+    from '@/components/lab/editor/result-visualiser/hierarchy/LabEditorResultVisualiserHierarchy.vue'
 import { Result, VisualiserType, VisualiserTypeType } from '@/model/editor/result-visualiser'
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 
 const toaster: Toaster = useToaster()
 
 const props = defineProps<{
-    consoleProps: TabComponentProps<GraphQLConsoleParams, GraphQLConsoleData>,
+    catalogPointer: CatalogPointer,
     visualiserService: ResultVisualiserService,
     result: Result | undefined
 }>()
@@ -67,8 +66,8 @@ watch(selectedQuery, async () => {
     try {
         selectedQueryEntitySchema.value = await props.visualiserService.getEntitySchemaForQuery(
             selectedQuery.value as string,
-            props.consoleProps.params.instancePointer.connection,
-            props.consoleProps.params.instancePointer.catalogName
+            props.catalogPointer.connection,
+            props.catalogPointer.catalogName
         )
     } catch (e: any) {
         toaster.error(e)
@@ -89,7 +88,7 @@ const visualiserTypes = computed<VisualiserType[]>(() => {
 })
 watch(visualiserTypes, (newValue) => {
     if (selectedVisualiserType.value != undefined && !newValue.map(it => it.value).includes(selectedVisualiserType.value as VisualiserTypeType)) {
-        // selected result-visualiser type was removed
+        // selected result-result-visualiser type was removed
         selectedVisualiserType.value = undefined
     }
 })
@@ -132,40 +131,40 @@ const resultForVisualiser = computed<Result | undefined>(() => {
             />
         </header>
 
-        <LabEditorGraphQLConsoleVisualiserFacetSummary
+        <LabEditorResultVisualiserFacetSummary
             v-if="selectedVisualiserType == VisualiserTypeType.FacetSummary && selectedQueryResult != undefined && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
-            :console-props="consoleProps"
+            :catalog-pointer="catalogPointer"
             :visualiser-service="visualiserService"
             :query-result="selectedQueryResult"
             :facet-summary-result="resultForVisualiser"
             :entity-schema="selectedQueryEntitySchema"
         />
-        <LabEditorGraphQLConsoleVisualiserHierarchy
+        <LabEditorResultVisualiserHierarchy
             v-if="selectedVisualiserType == VisualiserTypeType.Hierarchy && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
-            :console-props="consoleProps"
+            :catalog-pointer="catalogPointer"
             :visualiser-service="visualiserService"
             :hierarchy-result="resultForVisualiser"
             :entity-schema="selectedQueryEntitySchema"
         />
 
-        <LabEditorGraphQLConsoleVisualiserMissingDataIndicator
+        <LabEditorResultVisualiserMissingDataIndicator
             v-else-if="queries.length == 0"
             icon="mdi-text-search"
             title="No queries to visualise"
         />
-        <LabEditorGraphQLConsoleVisualiserMissingDataIndicator
+        <LabEditorResultVisualiserMissingDataIndicator
             v-else-if="selectedQuery == undefined"
             icon="mdi-database-search"
             title="Select query to visualise"
         />
-        <LabEditorGraphQLConsoleVisualiserMissingDataIndicator
+        <LabEditorResultVisualiserMissingDataIndicator
             v-else-if="selectedVisualiserType == undefined"
             icon="mdi-format-list-bulleted-type"
             title="Select what to visualise"
         />
-        <LabEditorGraphQLConsoleVisualiserMissingDataIndicator v-else-if="selectedQueryResult == undefined || selectedQueryEntitySchema == undefined || resultForVisualiser == undefined">
+        <LabEditorResultVisualiserMissingDataIndicator v-else-if="selectedQueryResult == undefined || selectedQueryEntitySchema == undefined || resultForVisualiser == undefined">
             <VLoadingCircular :size="64" />
-        </LabEditorGraphQLConsoleVisualiserMissingDataIndicator>
+        </LabEditorResultVisualiserMissingDataIndicator>
     </div>
 </template>
 

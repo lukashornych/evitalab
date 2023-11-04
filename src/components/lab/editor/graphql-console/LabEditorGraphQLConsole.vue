@@ -20,8 +20,8 @@ import { TabComponentEvents, TabComponentProps } from '@/model/editor/editor'
 import VExecuteQueryButton from '@/components/base/VExecuteQueryButton.vue'
 import VTabToolbar from '@/components/base/VTabToolbar.vue'
 import VSideTabs from '@/components/base/VSideTabs.vue'
-import LabEditorGraphQLConsoleVisualiser
-    from '@/components/lab/editor/graphql-console/visualiser/LabEditorGraphQLConsoleVisualiser.vue'
+import LabEditorResultVisualiser
+    from '@/components/lab/editor/result-visualiser/LabEditorResultVisualiser.vue'
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 import {
     useGraphqlResultVisualiserService
@@ -207,8 +207,8 @@ function initializeSchemaEditor(): void {
                         </VWindowItem>
 
                         <VWindowItem v-if="supportsVisualisation" value="visualiser">
-                            <LabEditorGraphQLConsoleVisualiser
-                                :console-props="props"
+                            <LabEditorResultVisualiser
+                                :catalog-pointer="params.instancePointer"
                                 :visualiser-service="visualiserService"
                                 :result="resultCode == undefined || !resultCode ? undefined : JSON.parse(resultCode)"
                             />

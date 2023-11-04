@@ -31,11 +31,11 @@ export abstract class ResultVisualiserService {
     abstract getEntitySchemaForQuery(query: string, connection: EvitaDBConnection, catalogName: string): Promise<EntitySchema>
 
     /**
-     * Tries to find result-visualiser types in the root result.
+     * Tries to find result-result-visualiser types in the root result.
      */
     abstract findVisualiserTypes(queryResult: Result): VisualiserType[]
     /**
-     * Tries to find result-visualiser result in the root result by selected result-visualiser type.
+     * Tries to find result-result-visualiser result in the root result by selected result-result-visualiser type.
      */
     abstract findResultForVisualiser(queryResult: Result, visualiserType: string): Result | undefined
 

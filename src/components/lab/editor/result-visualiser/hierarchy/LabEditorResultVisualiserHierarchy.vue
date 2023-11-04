@@ -4,21 +4,20 @@
  */
 
 import { EntitySchema, ReferenceSchema } from '@/model/evitadb'
-import { TabComponentProps } from '@/model/editor/editor'
-import { GraphQLConsoleData, GraphQLConsoleParams } from '@/model/editor/graphql-console'
+import { CatalogPointer } from '@/model/editor/editor'
 import { computed } from 'vue'
 import { Toaster, useToaster } from '@/services/editor/toaster'
-import LabEditorGraphQLConsoleVisualiserMissingDataIndicator
-    from '@/components/lab/editor/graphql-console/visualiser/LabEditorGraphQLConsoleVisualiserMissingDataIndicator.vue'
-import LabEditorGraphQLConsoleVisualiserReferenceNamedHierarchies
-    from '@/components/lab/editor/graphql-console/visualiser/hierarchy/LabEditorGraphQLConsoleVisualiserReferenceNamedHierarchies.vue'
+import LabEditorResultVisualiserMissingDataIndicator
+    from '@/components/lab/editor/result-visualiser/LabEditorResultVisualiserMissingDataIndicator.vue'
+import LabEditorResultVisualiserReferenceNamedHierarchies
+    from '@/components/lab/editor/result-visualiser/hierarchy/LabEditorResultVisualiserReferenceNamedHierarchies.vue'
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 import { Result } from '@/model/editor/result-visualiser'
 
 const toaster: Toaster = useToaster()
 
 const props = defineProps<{
-    consoleProps: TabComponentProps<GraphQLConsoleParams, GraphQLConsoleData>,
+    catalogPointer: CatalogPointer,
     visualiserService: ResultVisualiserService,
     hierarchyResult: Result,
     entitySchema: EntitySchema,
@@ -50,8 +49,8 @@ function getPanelKey(referenceSchema: ReferenceSchema | undefined): string {
                 {{ referenceWithNamedHierarchResult[0]?.name ?? `${entitySchema.name} (self)` }} ({{ Object.values(referenceWithNamedHierarchResult[1]).length }})
             </VExpansionPanelTitle>
             <VExpansionPanelText>
-                <LabEditorGraphQLConsoleVisualiserReferenceNamedHierarchies
-                    :console-props="consoleProps"
+                <LabEditorResultVisualiserReferenceNamedHierarchies
+                    :catalog-pointer="catalogPointer"
                     :visualiser-service="visualiserService"
                     :parent-entity-schema="entitySchema"
                     :reference-schema="referenceWithNamedHierarchResult[0]"
@@ -61,7 +60,7 @@ function getPanelKey(referenceSchema: ReferenceSchema | undefined): string {
         </VExpansionPanel>
     </VExpansionPanels>
 
-    <LabEditorGraphQLConsoleVisualiserMissingDataIndicator
+    <LabEditorResultVisualiserMissingDataIndicator
         v-else
         icon="mdi-text-search"
         title="No hierarchies found."

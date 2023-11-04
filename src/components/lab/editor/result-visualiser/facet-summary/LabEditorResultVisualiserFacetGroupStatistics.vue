@@ -7,8 +7,8 @@ import { computed, ref } from 'vue'
 import VMarkdown from '@/components/base/VMarkdown.vue'
 import { UnexpectedError } from '@/model/lab'
 import { Toaster, useToaster } from '@/services/editor/toaster'
-import LabEditorGraphQLConsoleVisualiserFacetStatistics
-    from '@/components/lab/editor/graphql-console/visualiser/facet-summary/LabEditorGraphQLConsoleVisualiserFacetStatistics.vue'
+import LabEditorResultVisualiserFacetStatistics
+    from '@/components/lab/editor/result-visualiser/facet-summary/LabEditorResultVisualiserFacetStatistics.vue'
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 import { Result, VisualisedFacetGroupStatistics } from '@/model/editor/result-visualiser'
 
@@ -106,7 +106,7 @@ function copyPrimaryKey(): void {
         </template>
 
         <template v-if="facetStatisticsInitialized">
-            <LabEditorGraphQLConsoleVisualiserFacetStatistics
+            <LabEditorResultVisualiserFacetStatistics
                 v-for="(facetStatisticsResult, index) in facetStatisticsResults"
                 :key="index"
                 :visualiser-service="visualiserService"
