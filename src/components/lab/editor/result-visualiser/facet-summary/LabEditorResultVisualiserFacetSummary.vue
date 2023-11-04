@@ -51,6 +51,7 @@ function getCountForReference(referenceSchema: ReferenceSchema, groupStatisticsR
     <VExpansionPanels v-if="referencesWithGroupStatisticsResults && referencesWithGroupStatisticsResults.length > 0" variant="accordion">
         <VExpansionPanel v-for="referenceWithGroup in referencesWithGroupStatisticsResults" :key="referenceWithGroup[0].name">
             <VExpansionPanelTitle>
+                <VIcon class="mr-8">mdi-link-variant</VIcon>
                 {{ referenceWithGroup[0].name }} ({{ getCountForReference(referenceWithGroup[0], referenceWithGroup[1]) }})
             </VExpansionPanelTitle>
             <VExpansionPanelText>

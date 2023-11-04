@@ -47,32 +47,37 @@ function initialize(): void {
     <VListGroup>
         <template #activator="{ props }">
             <VListItem v-bind="props" @click="initialize">
-                <VListItemTitle class="group-title">
-                    <span>{{ name }}</span>
+                <template #prepend>
+                    <VIcon>mdi-file-tree</VIcon>
+                </template>
+                <template #title>
+                    <VListItemTitle class="named-hierarchy-title">
+                        <span>{{ name }}</span>
 
-                    <VLazy>
-                        <VChipGroup>
-                            <VChip prepend-icon="mdi-file-tree">
-                                <span>
-                                    {{ namedHierarchy?.count }}
+                        <VLazy>
+                            <VChipGroup>
+                                <VChip prepend-icon="mdi-file-tree">
+                                    <span>
+                                        {{ namedHierarchy?.count }}
+                                        <VTooltip activator="parent">
+                                            <!-- todo jno is this what we want to display? At this point we don't have total number of children. -->
+                                            <span>The number of actually fetched nodes.</span>
+                                        </VTooltip>
+                                    </span>
+                                </VChip>
+
+                                <VChip v-if="namedHierarchy?.requestedNode" prepend-icon="mdi-target">
+                                    {{ namedHierarchy?.requestedNode?.primaryKey != undefined ? `${namedHierarchy?.requestedNode?.primaryKey}: ` : '' }}
+                                    {{ namedHierarchy?.requestedNode?.title }}
                                     <VTooltip activator="parent">
-                                        <!-- todo jno is this what we want to display? At this point we don't have total number of children. -->
-                                        <span>The number of actually fetched nodes.</span>
+                                        <!-- todo jno review explanation -->
+                                        <VMarkdown source="An entity representing a hierarchy node in this tree that was filtered by `hierarchyWithin`." />
                                     </VTooltip>
-                                </span>
-                            </VChip>
-
-                            <VChip v-if="namedHierarchy?.requestedNode" prepend-icon="mdi-target">
-                                {{ namedHierarchy?.requestedNode?.primaryKey != undefined ? `${namedHierarchy?.requestedNode?.primaryKey}: ` : '' }}
-                                {{ namedHierarchy?.requestedNode?.title }}
-                                <VTooltip activator="parent">
-                                    <!-- todo jno review explanation -->
-                                    <VMarkdown source="An entity representing a hierarchy node in this tree that was filtered by `hierarchyWithin`." />
-                                </VTooltip>
-                            </VChip>
-                        </VChipGroup>
-                    </VLazy>
-                </VListItemTitle>
+                                </VChip>
+                            </VChipGroup>
+                        </VLazy>
+                    </VListItemTitle>
+                </template>
             </VListItem>
         </template>
 
@@ -95,7 +100,7 @@ function initialize(): void {
 
 <style lang="scss" scoped>
 // todo lho better handling for small widths
-.group-title {
+.named-hierarchy-title {
     display: flex;
     gap: 0.5rem;
     align-items: center;
