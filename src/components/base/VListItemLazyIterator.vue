@@ -26,7 +26,7 @@ const pageOfItems = computed<any[]>(() => {
     <template v-for="(item, index) in pageOfItems" :key="index">
         <slot name="item" :item="item" :index="index" />
     </template>
-    <VListItem v-if="lastPage > 1 && page < lastPage>">
+    <VListItem v-if="lastPage > 1 && page < lastPage">
         <VBtn
             variant="outlined"
             @click="emit('update:page', page + 1)"
