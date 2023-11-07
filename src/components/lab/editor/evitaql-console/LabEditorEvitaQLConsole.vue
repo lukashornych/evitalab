@@ -63,11 +63,12 @@ async function executeQuery(): Promise<void> {
     loading.value = true
     try {
         resultCode.value = await evitaQLConsoleService.executeEvitaQLQuery(props.params.dataPointer, queryCode.value, JSON.parse(variablesCode.value))
+        loading.value = false
         enteredQueryCode.value = queryCode.value
     } catch (error: any) {
         toaster.error(error)
+        loading.value = false
     }
-    loading.value = false
 }
 
 emit('ready')

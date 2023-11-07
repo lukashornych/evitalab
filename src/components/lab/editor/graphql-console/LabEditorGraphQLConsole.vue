@@ -97,11 +97,12 @@ async function executeQuery(): Promise<void> {
     loading.value = true
     try {
         resultCode.value = await graphQLConsoleService.executeGraphQLQuery(props.params.instancePointer, queryCode.value, JSON.parse(variablesCode.value))
+        loading.value = false
         enteredQueryCode.value = queryCode.value
     } catch (error: any) {
+        loading.value = false
         toaster.error(error)
     }
-    loading.value = false
 }
 
 function initializeSchemaEditor(): void {
