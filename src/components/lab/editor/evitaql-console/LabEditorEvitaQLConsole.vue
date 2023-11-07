@@ -141,6 +141,7 @@ if (props.params.executeOnOpen) {
                     >
                         <VWindowItem :value="ResultTabType.Raw">
                             <CodemirrorFull
+                                v-if="resultTab === ResultTabType.Raw"
                                 v-model="resultCode"
                                 placeholder="Results will be displayed here..."
                                 read-only
@@ -150,6 +151,7 @@ if (props.params.executeOnOpen) {
 
                         <VWindowItem :value="ResultTabType.Visualiser">
                             <LabEditorResultVisualiser
+                                v-if="resultTab === ResultTabType.Visualiser"
                                 :catalog-pointer="params.dataPointer"
                                 :visualiser-service="visualiserService"
                                 :input-query="enteredQueryCode || ''"
