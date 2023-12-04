@@ -143,7 +143,7 @@ function handleAction(action: string) {
             <VTreeViewItem
                 v-else
                 v-bind="props"
-                prepend-icon="mdi-book-open"
+                prepend-icon="mdi-menu"
                 class="text-red"
             >
                 {{ catalog.name }}
