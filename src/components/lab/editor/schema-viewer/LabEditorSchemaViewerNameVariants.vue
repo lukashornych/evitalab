@@ -14,11 +14,11 @@ const props = withDefaults(defineProps<{
 const name = props.prefix ? `${props.prefix} name variants` : 'Name variants'
 
 const properties: Property[] = [
-    { name: 'camelCase', value: new PropertyValue(props.nameVariants.camelCase as String) },
-    { name: 'kebab-case', value: new PropertyValue(props.nameVariants.kebabCase as String) },
-    { name: 'PascalCase', value: new PropertyValue(props.nameVariants.pascalCase as String) },
-    { name: 'snake_case', value: new PropertyValue(props.nameVariants.snakeCase as String) },
-    { name: 'UPPER_CASE', value: new PropertyValue(props.nameVariants.upperSnakeCase as String) }
+    { name: 'camelCase', value: new PropertyValue(props.nameVariants.camelCase) },
+    { name: 'kebab-case', value: new PropertyValue(props.nameVariants.kebabCase) },
+    { name: 'PascalCase', value: new PropertyValue(props.nameVariants.pascalCase) },
+    { name: 'snake_case', value: new PropertyValue(props.nameVariants.snakeCase) },
+    { name: 'UPPER_CASE', value: new PropertyValue(props.nameVariants.upperSnakeCase) }
 ]
 </script>
 
