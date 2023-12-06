@@ -72,7 +72,20 @@ if (globalAttribute) {
             break
     }
 }
-properties.push({ name: 'Filterable', value: new PropertyValue(props.schema.filterable as boolean) })
+properties.push({
+    name: 'Filterable',
+    value: new PropertyValue(
+        (globalAttribute && (props.schema as GlobalAttributeSchema).globalUniquenessType != GlobalAttributeUniquenessType.NotUnique) ||
+        props.schema.uniquenessType != AttributeUniquenessType.NotUnique ||
+        props.schema.filterable,
+        (
+            (globalAttribute && (props.schema as GlobalAttributeSchema).globalUniquenessType != GlobalAttributeUniquenessType.NotUnique) ||
+            props.schema.uniquenessType != AttributeUniquenessType.NotUnique
+        )
+            ? 'The attribute is automatically filterable because it is unique.'
+            : undefined
+    )
+})
 properties.push({ name: 'Sortable', value: new PropertyValue(props.schema.sortable as boolean) })
 properties.push({ name: 'Localized', value: new PropertyValue(props.schema.localized as boolean) })
 properties.push({ name: 'Nullable', value: new PropertyValue(props.schema.nullable as boolean) })

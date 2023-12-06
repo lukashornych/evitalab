@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import VPropertyTableValue from '@/components/base/VPropertyTableValue.vue'
+import VPropertiesTableValue from '@/components/base/VPropertiesTableValue.vue'
 
 import { Property } from '@/model/properties-table'
 
@@ -16,8 +16,8 @@ const props = defineProps<{
             class="properties-table__row"
         >
             <td class="text-medium-emphasis">{{ property.name }}</td>
-            <td>
-                <VPropertyTableValue :property="property" :property-value="property.value" />
+            <td class="d-flex align-center">
+                <VPropertiesTableValue :property="property" :property-value="property.value" />
             </td>
         </tr>
     </table>

@@ -47,6 +47,7 @@ const props = defineProps<{
             disabled
             density="compact"
             hide-details
+            class="flex-grow-0"
             @click="propertyValue.action?.(undefined)"
         />
 
@@ -81,13 +82,14 @@ const props = defineProps<{
         </span>
 
         <!-- side note for the value -->
-        <span v-if="propertyValue.note">
-            <VIcon icon="mdi-alert-outline">
+        <div v-if="propertyValue.note">
+            <span>
+                <VIcon icon="mdi-alert-outline" color="warning" />
                 <VTooltip activator="parent">
-                    {{ propertyValue.note }}
+                    <span>{{ propertyValue.note }}</span>
                 </VTooltip>
-            </VIcon>
-        </span>
+            </span>
+        </div>
     </template>
 
 </template>
