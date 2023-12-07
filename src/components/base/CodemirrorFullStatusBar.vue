@@ -12,6 +12,7 @@ const props = defineProps<{
 </script>
 
 <template>
+    <VDivider />
     <div v-if="state" class="status-bar">
         <span v-if="state.selection.ranges.length > 1">
             {{ state.selection.ranges.length }} selections
@@ -32,6 +33,7 @@ const props = defineProps<{
     display: flex;
     column-gap: 1rem;
     align-items: center;
+    justify-content: right;
     padding: 0 0.5rem;
 }
 </style>

@@ -77,9 +77,4 @@ const state = ref<EditorState>()
     top: 0;
     bottom: 2rem;
 }
-
-.status-bar {
-    display: flex;
-    justify-content: right;
-}
 </style>
