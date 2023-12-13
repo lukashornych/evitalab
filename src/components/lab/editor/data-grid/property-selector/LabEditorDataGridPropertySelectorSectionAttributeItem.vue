@@ -6,7 +6,7 @@ import {
     EntityPropertyDescriptor
 } from '@/model/editor/data-grid'
 import { LabService, useLabService } from '@/services/lab.service'
-import LabEditorDataGridPropertyListItem from './LabEditorDataGridPropertySelectorSectionItem.vue'
+import LabEditorDataGridPropertySelectorSectionItem from './LabEditorDataGridPropertySelectorSectionItem.vue'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import { SchemaViewerRequest } from '@/model/editor/schema-viewer-request'
 import { EntityAttributeSchemaPointer } from '@/model/editor/schema-viewer'
@@ -41,7 +41,7 @@ function openSchema(): void {
 </script>
 
 <template>
-    <LabEditorDataGridPropertyListItem
+    <LabEditorDataGridPropertySelectorSectionItem
         :value="propertyDescriptor.key"
         :title="propertyDescriptor.title"
         :description="propertyDescriptor.schema?.description"
