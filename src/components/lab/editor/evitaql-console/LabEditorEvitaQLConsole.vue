@@ -23,6 +23,7 @@ import {
     useEvitaQLResultVisualiserService
 } from '@/services/editor/result-visualiser/evitaql-result-visualiser.service'
 import LabEditorResultVisualiser from '@/components/lab/editor/result-visualiser/LabEditorResultVisualiser.vue'
+import { evitaQL } from '@lukashornych/codemirror-lang-evitaql'
 
 enum EditorTabType {
     Query = 'query',
@@ -48,7 +49,7 @@ const editorTab = ref<EditorTabType>(EditorTabType.Query)
 const resultTab = ref<ResultTabType>(ResultTabType.Raw)
 
 const queryCode = ref<string>(props.data?.query ? props.data.query : `// Write your EvitaQL query for catalog ${props.params.dataPointer.catalogName} here.\n`)
-const queryExtensions = ref<any[]>([])
+const queryExtensions: Extension[] = [evitaQL()]
 
 const variablesCode = ref<string>(props.data?.variables ? props.data.variables : '{\n  \n}')
 const variablesExtensions: Extension[] = [json()]
