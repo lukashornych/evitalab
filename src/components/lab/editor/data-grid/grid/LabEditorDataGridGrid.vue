@@ -20,13 +20,13 @@ import { QueryLanguage, UnexpectedError } from '@/model/lab'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import { DataGridRequest } from '@/model/editor/data-grid-request'
 import { TabComponentProps } from '@/model/editor/editor'
-import { DataGridConsoleService, useDataGridConsoleService } from '@/services/editor/data-grid-console.service'
+import { DataGridService, useDataGridService } from '@/services/editor/data-grid.service'
 import LabEditorDataGridGridColumnHeader
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridColumnHeader.vue'
 import { Scalar } from '@/model/evitadb'
 
 const editorService: EditorService = useEditorService()
-const dataGridConsoleService: DataGridConsoleService = useDataGridConsoleService()
+const dataGridService: DataGridService = useDataGridService()
 const toaster: Toaster = useToaster()
 
 const pageSizeOptions: any[] = [10, 25, 50, 100, 250, 500, 1000].map(it => ({ title: it.toString(10), value: it }))
@@ -83,7 +83,7 @@ function handlePropertyClicked(propertyKey: string, value: any): void {
                 queryLanguage: props.queryLanguage,
                 pageNumber: props.pageNumber,
                 pageSize: props.pageSize,
-                filterBy: dataGridConsoleService.buildParentEntityFilterBy(props.queryLanguage, (value as EntityReferenceValue).primaryKey)
+                filterBy: dataGridService.buildParentEntityFilterBy(props.queryLanguage, (value as EntityReferenceValue).primaryKey)
             },
             true
         ))
@@ -100,7 +100,7 @@ function handlePropertyClicked(propertyKey: string, value: any): void {
                 queryLanguage: props.queryLanguage,
                 pageNumber: props.pageNumber,
                 pageSize: props.pageSize,
-                filterBy: dataGridConsoleService.buildPredecessorEntityFilterBy(props.queryLanguage, value)
+                filterBy: dataGridService.buildPredecessorEntityFilterBy(props.queryLanguage, value)
             },
             true
         ))
@@ -115,7 +115,7 @@ function handlePropertyClicked(propertyKey: string, value: any): void {
                 queryLanguage: props.queryLanguage,
                 pageNumber: props.pageNumber,
                 pageSize: props.pageSize,
-                filterBy: dataGridConsoleService.buildReferencedEntityFilterBy(
+                filterBy: dataGridService.buildReferencedEntityFilterBy(
                     props.queryLanguage,
                     value instanceof Array
                         ? (value as EntityReferenceValue[]).map(it => it.primaryKey)

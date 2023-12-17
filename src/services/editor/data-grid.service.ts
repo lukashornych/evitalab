@@ -26,12 +26,12 @@ import {
     EntityPropertyValueXmlFormatter
 } from '@/services/editor/data-grid-console/entity-property-value-xml-formatter'
 
-export const key: InjectionKey<DataGridConsoleService> = Symbol()
+export const key: InjectionKey<DataGridService> = Symbol()
 
 /**
  * Service for running the data grid console component.
  */
-export class DataGridConsoleService {
+export class DataGridService {
     private readonly labService: LabService
 
     private readonly queryBuilders: Map<QueryLanguage, QueryBuilder> = new Map<QueryLanguage, QueryBuilder>()
@@ -263,6 +263,6 @@ export class DataGridConsoleService {
     }
 }
 
-export const useDataGridConsoleService = (): DataGridConsoleService => {
-    return inject(key) as DataGridConsoleService
+export const useDataGridService = (): DataGridService => {
+    return inject(key) as DataGridService
 }
