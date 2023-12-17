@@ -60,6 +60,11 @@ export enum StaticEntityProperties {
 }
 
 /**
+ * List of {@link StaticEntityProperties} that are sortable.
+ */
+export const sortableStaticEntityProperties: string[] = [StaticEntityProperties.PrimaryKey]
+
+/**
  * Represents key of a single typed entity property.
  */
 export class EntityPropertyKey {
@@ -110,11 +115,26 @@ export class EntityPropertyKey {
 /**
  * Full description of a single entity property
  */
-export type EntityPropertyDescriptor = {
-    type: EntityPropertyType,
-    key: EntityPropertyKey,
-    title: string,
-    schema: any | undefined
+export class EntityPropertyDescriptor {
+    readonly type: EntityPropertyType
+    readonly key: EntityPropertyKey
+    readonly title: string
+    readonly schema: any | undefined
+
+    constructor(type: EntityPropertyType, key: EntityPropertyKey, title: string, schema: any | undefined) {
+        this.type = type
+        this.key = key
+        this.title = title
+        this.schema = schema
+    }
+
+    isSortable(): boolean {
+        return sortableStaticEntityProperties.includes(this.key.toString()) || this.schema?.sortable || false
+    }
+
+    isLocalized(): boolean {
+        return this.schema?.localized || false
+    }
 }
 
 /**

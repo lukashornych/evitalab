@@ -177,6 +177,10 @@ export class GraphQLQueryBuilder implements QueryBuilder {
         `
     }
 
+    buildPrimaryKeyOrderBy(orderDirection: string): string {
+        return `entityPrimaryKeyNatural: ${orderDirection.toUpperCase()}`
+    }
+
     buildAttributeOrderBy(attributeSchema: AttributeSchemaUnion, orderDirection: string): string {
         return `attribute${attributeSchema.nameVariants.pascalCase}Natural: ${orderDirection.toUpperCase()}`
     }

@@ -161,6 +161,10 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
         return `query(${constraints.join(',')})`
     }
 
+    buildPrimaryKeyOrderBy(orderDirection: string): string {
+        return `entityPrimaryKeyNatural(${orderDirection.toUpperCase()})`
+    }
+
     buildAttributeOrderBy(attributeSchema: AttributeSchemaUnion, orderDirection: string): string {
         return `attributeNatural('${attributeSchema.name}', ${orderDirection.toUpperCase()})`
     }

@@ -19,9 +19,9 @@ const prependIcon = computed<string | undefined>(() => {
     }
     return undefined
 })
-const sortable = computed<boolean>(() => props.column.descriptor?.schema?.sortable)
+const sortable = computed<boolean>(() => props.column.descriptor?.isSortable())
 const sorted = computed<boolean>(() => props.isSorted(props.column))
-const localized = computed<boolean>(() => props.column.descriptor?.schema?.localized)
+const localized = computed<boolean>(() => props.column.descriptor?.isLocalized())
 
 function handleClick() {
     if (sortable.value) {

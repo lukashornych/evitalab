@@ -10,7 +10,7 @@ import {
     DataGridConsoleData,
     DataGridConsoleParams, EntityPropertyDescriptor,
     EntityPropertyKey, EntityPropertyType,
-    QueryResult,
+    QueryResult
 } from '@/model/editor/data-grid'
 import { DataGridConsoleService, useDataGridConsoleService } from '@/services/editor/data-grid-console.service'
 import { QueryLanguage } from '@/model/lab'
@@ -115,7 +115,7 @@ async function initializeGridHeaders(entityPropertyDescriptors: EntityPropertyDe
             {
                 key: propertyDescriptor.key.toString(),
                 title: propertyDescriptor.title,
-                sortable: propertyDescriptor.schema?.sortable || false,
+                sortable: propertyDescriptor.isSortable(),
                 descriptor: propertyDescriptor
             }
         )

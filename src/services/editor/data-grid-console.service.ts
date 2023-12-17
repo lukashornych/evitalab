@@ -102,7 +102,9 @@ export class DataGridConsoleService {
         const orderBy: string[] = []
         for (const column of columns) {
             const propertyKey: EntityPropertyKey = EntityPropertyKey.fromString(column.key)
-            if (propertyKey.type === EntityPropertyType.Attributes) {
+            if (propertyKey.type === EntityPropertyType.Entity && propertyKey.name === StaticEntityProperties.PrimaryKey) {
+                orderBy.push(queryBuilder.buildPrimaryKeyOrderBy(column.order))
+            } else if (propertyKey.type === EntityPropertyType.Attributes) {
                 const attributeSchema: AttributeSchemaUnion | undefined = Object.values(entitySchema.attributes)
                     .find(attributeSchema => attributeSchema.nameVariants.camelCase === propertyKey.name)
                 if (attributeSchema == undefined) {
@@ -162,67 +164,67 @@ export class DataGridConsoleService {
     async getEntityPropertyDescriptors(dataPointer: DataGridDataPointer): Promise<EntityPropertyDescriptor[]> {
         const entitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, dataPointer.entityType)
         const descriptors: EntityPropertyDescriptor[] = []
-        descriptors.push({
-            type: EntityPropertyType.Entity,
-            key: EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey),
-            title: 'Primary key',
-            schema: undefined
-        })
+        descriptors.push(new EntityPropertyDescriptor(
+            EntityPropertyType.Entity,
+            EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey),
+            'Primary key',
+            undefined
+        ))
         if (entitySchema.withHierarchy) {
-            descriptors.push({
-                type: EntityPropertyType.Entity,
-                key: EntityPropertyKey.entity(StaticEntityProperties.ParentPrimaryKey),
-                title: 'Parent',
-                schema: undefined
-            })
+            descriptors.push(new EntityPropertyDescriptor(
+                EntityPropertyType.Entity,
+                EntityPropertyKey.entity(StaticEntityProperties.ParentPrimaryKey),
+                'Parent',
+                undefined
+            ))
         }
         if (entitySchema.locales.length > 0) {
-            descriptors.push({
-                type: EntityPropertyType.Entity,
-                key: EntityPropertyKey.entity(StaticEntityProperties.Locales),
-                title: 'Locales',
-                schema: undefined
-            })
-            descriptors.push({
-                type: EntityPropertyType.Entity,
-                key: EntityPropertyKey.entity(StaticEntityProperties.AllLocales),
-                title: 'All locales',
-                schema: undefined
-            })
+            descriptors.push(new EntityPropertyDescriptor(
+                EntityPropertyType.Entity,
+                EntityPropertyKey.entity(StaticEntityProperties.Locales),
+                'Locales',
+                undefined
+            ))
+            descriptors.push(new EntityPropertyDescriptor(
+                EntityPropertyType.Entity,
+                EntityPropertyKey.entity(StaticEntityProperties.AllLocales),
+                'All locales',
+                undefined
+            ))
         }
         if (entitySchema.withPrice) {
-            descriptors.push({
-                type: EntityPropertyType.Entity,
-                key: EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling),
-                title: 'Price inner record handling',
-                schema: undefined
-            })
+            descriptors.push(new EntityPropertyDescriptor(
+                EntityPropertyType.Entity,
+                EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling),
+                'Price inner record handling',
+                undefined
+            ))
         }
 
         for (const attributeSchema of Object.values(entitySchema.attributes)) {
-            descriptors.push({
-                type: EntityPropertyType.Attributes,
-                key: EntityPropertyKey.attributes(attributeSchema.nameVariants.camelCase),
-                title: attributeSchema.name,
-                schema: attributeSchema
-            })
+            descriptors.push(new EntityPropertyDescriptor(
+                EntityPropertyType.Attributes,
+                EntityPropertyKey.attributes(attributeSchema.nameVariants.camelCase),
+                attributeSchema.name,
+                attributeSchema
+            ))
         }
 
         for (const associatedDataSchema of Object.values(entitySchema.associatedData)) {
-            descriptors.push({
-                type: EntityPropertyType.AssociatedData,
-                key: EntityPropertyKey.associatedData(associatedDataSchema.nameVariants.camelCase),
-                title: `${associatedDataSchema.name}`,
-                schema: associatedDataSchema
-            })
+            descriptors.push(new EntityPropertyDescriptor(
+                EntityPropertyType.AssociatedData,
+                EntityPropertyKey.associatedData(associatedDataSchema.nameVariants.camelCase),
+                `${associatedDataSchema.name}`,
+                associatedDataSchema
+            ))
         }
         for (const referenceSchema of Object.values(entitySchema.references)) {
-            descriptors.push({
-                type: EntityPropertyType.References,
-                key: EntityPropertyKey.references(referenceSchema.nameVariants.camelCase),
-                title: `${referenceSchema.name}`,
-                schema: referenceSchema
-            })
+            descriptors.push(new EntityPropertyDescriptor(
+                EntityPropertyType.References,
+                EntityPropertyKey.references(referenceSchema.nameVariants.camelCase),
+                `${referenceSchema.name}`,
+                referenceSchema
+            ))
         }
 
         return descriptors
