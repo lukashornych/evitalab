@@ -10,7 +10,7 @@ import { Extension } from '@codemirror/state';
 import { json } from '@codemirror/lang-json'
 
 import { ref } from 'vue'
-import CodemirrorFull from '@/components/base/CodemirrorFull.vue'
+import VStandardCodeMirror from '@/components/base/VStandardCodemirror.vue'
 import { EvitaQLConsoleService, useEvitaQLConsoleService } from '@/services/editor/evitaql-console.service'
 import { EvitaQLConsoleData, EvitaQLConsoleParams } from '@/model/editor/evitaql-console'
 import { Toaster, useToaster } from '@/services/editor/toaster'
@@ -118,7 +118,7 @@ if (props.params.executeOnOpen) {
                         direction="vertical"
                     >
                         <VWindowItem :value="EditorTabType.Query">
-                            <CodemirrorFull
+                            <VStandardCodeMirror
                                 v-model="queryCode"
                                 :additional-extensions="queryExtensions"
                                 @execute="executeQuery"
@@ -126,7 +126,7 @@ if (props.params.executeOnOpen) {
                         </VWindowItem>
 
                         <VWindowItem :value="EditorTabType.Variables">
-                            <CodemirrorFull
+                            <VStandardCodeMirror
                                 v-model="variablesCode"
                                 :additional-extensions="variablesExtensions"
                                 @execute="executeQuery"
@@ -141,7 +141,7 @@ if (props.params.executeOnOpen) {
                         direction="vertical"
                     >
                         <VWindowItem :value="ResultTabType.Raw">
-                            <CodemirrorFull
+                            <VStandardCodeMirror
                                 v-if="resultTab === ResultTabType.Raw"
                                 v-model="resultCode"
                                 placeholder="Results will be displayed here..."

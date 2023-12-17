@@ -3,7 +3,7 @@
  * Query input for the LabEditorDataGrid component.
  */
 
-import CodemirrorOneLine from '@/components/base/CodemirrorOneLine.vue'
+import VSingleLineCodeMirror from '@/components/base/VSingleLineCodemirror.vue'
 import { QueryLanguage } from '@/model/lab'
 import { ref } from 'vue'
 import LabEditorDataGridEntityPropertiesSelector
@@ -49,7 +49,7 @@ const showPropertiesSelect = ref<boolean>(false)
         />
 
         <div class="query-input__input">
-            <CodemirrorOneLine
+            <VSingleLineCodeMirror
                 :model-value="filterBy"
                 prepend-inner-icon="mdi-filter-outline"
                 placeholder="Filter by"
@@ -60,7 +60,7 @@ const showPropertiesSelect = ref<boolean>(false)
         </div>
 
         <div class="query-input__input">
-            <CodemirrorOneLine
+            <VSingleLineCodeMirror
                 :model-value="orderBy"
                 prepend-inner-icon="mdi-sort"
                 placeholder="Order by"

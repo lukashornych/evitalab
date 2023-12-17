@@ -4,7 +4,7 @@
  */
 
 import { EditorState } from '@codemirror/state'
-import CodemirrorFullStatusBarSelection from '@/components/base/CodemirrorFullStatusBarSelection.vue'
+import VStandardCodemirrorStatusBarSelection from '@/components/base/VStandardCodemirrorStatusBarSelection.vue'
 
 const props = defineProps<{
     state?: EditorState
@@ -18,7 +18,7 @@ const props = defineProps<{
             {{ state.selection.ranges.length }} selections
         </span>
         <span v-else-if="state.selection.ranges.length === 1">
-            <CodemirrorFullStatusBarSelection :doc="state.doc" :selection-range="state.selection.ranges[0]" />
+            <VStandardCodemirrorStatusBarSelection :doc="state.doc" :selection-range="state.selection.ranges[0]" />
         </span>
 
         <span class="text-no-wrap">

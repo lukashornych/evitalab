@@ -6,7 +6,7 @@ import { keymap } from '@codemirror/view'
 import { basicSetup } from 'codemirror'
 import { dracula } from '@ddietr/codemirror-themes/dracula.js'
 import { ref } from 'vue'
-import CodemirrorFullStatusBar from '@/components/base/CodemirrorFullStatusBar.vue'
+import VStandardCodemirrorStatusBar from '@/components/base/VStandardCodemirrorStatusBar.vue'
 
 const props = withDefaults(
     defineProps<{
@@ -63,7 +63,7 @@ const state = ref<EditorState>()
             style="height: 100%; cursor: text;"
         />
         <VSheet v-if="statusBar" class="status-bar">
-            <CodemirrorFullStatusBar :state="state" />
+            <VStandardCodemirrorStatusBar :state="state" />
         </VSheet>
     </div>
 </template>

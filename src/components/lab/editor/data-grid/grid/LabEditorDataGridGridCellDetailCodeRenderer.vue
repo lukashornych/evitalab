@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import CodemirrorFull from '@/components/base/CodemirrorFull.vue'
+import VStandardCodeMirror from '@/components/base/VStandardCodemirror.vue'
 import { EntityPropertyValueSupportedCodeLanguage } from '@/model/editor/data-grid'
 import { computed, ref } from 'vue'
 import { Toaster, useToaster } from '@/services/editor/toaster'
@@ -102,7 +102,7 @@ function copyRenderedValue() {
         :actions="actions"
         @click:action="handleActionClick"
     >
-        <CodemirrorFull
+        <VStandardCodeMirror
             :model-value="formattedValue"
             read-only
             :additional-extensions="codeBlockExtensions"
