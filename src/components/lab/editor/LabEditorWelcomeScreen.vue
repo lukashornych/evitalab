@@ -190,7 +190,6 @@ labService.getBlogPosts().then((posts) => {
     color: white;
     margin-bottom: 1rem;
     display: block;
-    min-height: 3.625rem;
     width: 100%;
     font-size: 22px;
     line-height: 29px;
