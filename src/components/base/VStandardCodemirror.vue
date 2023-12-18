@@ -48,7 +48,7 @@ if (props.readOnly) {
     extensions.push(EditorState.readOnly.of(true))
 }
 
-const state = ref<EditorState>()
+const editorState = ref<EditorState>()
 </script>
 
 <template>
@@ -58,12 +58,12 @@ const state = ref<EditorState>()
             :extensions="extensions"
             :placeholder="placeholder"
             :disabled="disabled"
-            @update="state = $event.state"
+            @update="editorState = $event.state"
             @update:model-value="$emit('update:modelValue', $event)"
             style="height: 100%; cursor: text;"
         />
         <VSheet v-if="statusBar" class="status-bar">
-            <VStandardCodemirrorStatusBar :state="state" />
+            <VStandardCodemirrorStatusBar :state="editorState" />
         </VSheet>
     </div>
 </template>

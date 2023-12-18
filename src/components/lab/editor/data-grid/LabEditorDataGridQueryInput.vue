@@ -5,7 +5,7 @@
 
 import VSingleLineCodeMirror from '@/components/base/VSingleLineCodemirror.vue'
 import { QueryLanguage } from '@/model/lab'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import LabEditorDataGridEntityPropertiesSelector
     from '@/components/lab/editor/data-grid/property-selector/LabEditorDataGridPropertySelector.vue'
 import {
@@ -18,6 +18,9 @@ import LabEditorDataGridDataLocaleSelector
 import LabEditorDataGridQueryLanguageSelector
     from '@/components/lab/editor/data-grid/LabEditorDataGridQueryLanguageSelector.vue'
 import { TabComponentProps } from '@/model/editor/editor'
+import { Compartment, Extension } from '@codemirror/state'
+import { ConstraintListType, evitaQL, EvitaQLConstraintListMode } from '@lukashornych/codemirror-lang-evitaql'
+import { EditorView } from 'codemirror'
 
 const props = defineProps<{
     gridProps: TabComponentProps<DataGridConsoleParams, DataGridConsoleData>,
@@ -38,6 +41,40 @@ const emit = defineEmits<{
     (e: 'update:selectedEntityPropertyKeys', value: EntityPropertyKey[]): void
 }>()
 
+// todo this approach to autocompletion in grid is temporary until i'm able to pass the entire query with cropped view
+const filterByInputView = ref<EditorView>()
+const filterByInputLangSupportCompartment = new Compartment()
+const filterByInputExtensions: Extension[] = [filterByInputLangSupportCompartment.of(createFilterByLangSupportExtension(props.selectedQueryLanguage))]
+
+const orderByInputView = ref<EditorView>()
+const orderByInputLangSupportCompartment = new Compartment()
+const orderByInputExtensions: Extension[] = [orderByInputLangSupportCompartment.of(createOrderByLangSupportExtension(props.selectedQueryLanguage))]
+
+watch(() => props.selectedQueryLanguage, (newValue) => {
+    filterByInputView.value?.dispatch({
+        effects: filterByInputLangSupportCompartment.reconfigure(createFilterByLangSupportExtension(newValue))
+    })
+    orderByInputView.value?.dispatch({
+        effects: orderByInputLangSupportCompartment.reconfigure(createOrderByLangSupportExtension(newValue))
+    })
+})
+
+function createFilterByLangSupportExtension(queryLanguage: QueryLanguage): Extension {
+    if (queryLanguage === QueryLanguage.EvitaQL) {
+        return evitaQL({ mode: new EvitaQLConstraintListMode(ConstraintListType.Filter) })
+    } else {
+        return []
+    }
+}
+
+function createOrderByLangSupportExtension(queryLanguage: QueryLanguage): Extension {
+    if (queryLanguage === QueryLanguage.EvitaQL) {
+        return evitaQL({ mode: new EvitaQLConstraintListMode(ConstraintListType.Order) })
+    } else {
+        return []
+    }
+}
+
 const showPropertiesSelect = ref<boolean>(false)
 </script>
 
@@ -54,6 +91,8 @@ const showPropertiesSelect = ref<boolean>(false)
                 prepend-inner-icon="mdi-filter-outline"
                 placeholder="Filter by"
                 @update:model-value="emit('update:filterBy', $event)"
+                @update="filterByInputView = $event.view"
+                :additional-extensions="filterByInputExtensions"
                 @execute="emit('executeQuery')"
                 class="text-gray-light"
             />
@@ -65,6 +104,8 @@ const showPropertiesSelect = ref<boolean>(false)
                 prepend-inner-icon="mdi-sort"
                 placeholder="Order by"
                 @update:model-value="emit('update:orderBy', $event)"
+                @update="orderByInputView = $event.view"
+                :additional-extensions="orderByInputExtensions"
                 @execute="emit('executeQuery')"
                 class="text-gray-light"
             />

@@ -3,10 +3,10 @@
  * EvitaQL console. Allows to execute EvitaQL queries against a evitaDB instance.
  */
 
-import { Splitpanes, Pane } from 'splitpanes'
+import { Pane, Splitpanes } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 
-import { Extension } from '@codemirror/state';
+import { Extension } from '@codemirror/state'
 import { json } from '@codemirror/lang-json'
 
 import { ref } from 'vue'
