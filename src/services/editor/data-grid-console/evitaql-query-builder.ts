@@ -37,14 +37,14 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
 
         const constraints: string[] = []
 
-        constraints.push(`collection('${dataPointer.entityType}')`)
+        constraints.push(`collection("${dataPointer.entityType}")`)
 
         const filterByContainer: string[] = []
         if (filterBy) {
             filterByContainer.push(filterBy)
         }
         if (dataLocale) {
-            filterByContainer.push(`entityLocaleEquals('${dataLocale}')`)
+            filterByContainer.push(`entityLocaleEquals("${dataLocale}")`)
         }
         if (filterByContainer.length > 0) {
             constraints.push(`filterBy(${filterByContainer.join(',')})`)
@@ -76,7 +76,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                     if (representativeAttributes.length === 0) {
                         entityFetchRequires.push(`hierarchyContent(stopAt(distance(1)))`)
                     } else {
-                        entityFetchRequires.push(`hierarchyContent(stopAt(distance(1)), entityFetch(attributeContent(${representativeAttributes.map(attributeSchema => `'${attributeSchema.name}'`).join(',')})))`)
+                        entityFetchRequires.push(`hierarchyContent(stopAt(distance(1)), entityFetch(attributeContent(${representativeAttributes.map(attributeSchema => `"${attributeSchema.name}"`).join(',')})))`)
                     }
                 } else if (it === StaticEntityProperties.PriceInnerRecordHandling) {
                     entityFetchRequires.push(`priceContent(NONE)`)
@@ -92,7 +92,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                 if (attributeSchema == undefined) {
                     throw new UnexpectedError(undefined, `Could not find attribute '${it}' in '${dataPointer.entityType}'.`)
                 }
-                return `'${attributeSchema.name}'`
+                return `"${attributeSchema.name}"`
             })
         if (requiredAttributes.length > 0) {
             entityFetchRequires.push(`attributeContent(${requiredAttributes.join(',')})`)
@@ -107,7 +107,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                 if (associatedDataSchema == undefined) {
                     throw new UnexpectedError(undefined, `Could not find associated data '${it}' in '${dataPointer.entityType}'.`)
                 }
-                return `'${associatedDataSchema.name}'`
+                return `"${associatedDataSchema.name}"`
             })
         if (requiredAssociatedData.length > 0) {
             entityFetchRequires.push(`associatedDataContent(${requiredAssociatedData.join(',')})`)
@@ -135,12 +135,12 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                     })
 
                 if (representativeAttributes.length === 0) {
-                    entityFetchRequires.push(`referenceContent('${referenceSchema.name}')`)
+                    entityFetchRequires.push(`referenceContent("${referenceSchema.name}")`)
                 } else {
-                    entityFetchRequires.push(`referenceContent('${referenceSchema.name}', entityFetch(attributeContent(${representativeAttributes.map(attributeSchema => `'${attributeSchema.name}'`).join(',')})))`)
+                    entityFetchRequires.push(`referenceContent("${referenceSchema.name}", entityFetch(attributeContent(${representativeAttributes.map(attributeSchema => `"${attributeSchema.name}"`).join(',')})))`)
                 }
             } else {
-                entityFetchRequires.push(`referenceContent('${referenceSchema.name}')`)
+                entityFetchRequires.push(`referenceContent("${referenceSchema.name}")`)
             }
         }
 
@@ -148,7 +148,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
             requiredProperties.findIndex(propertyKey => this.entityBodyProperties.has(propertyKey.toString())) > -1) {
             // we need to specify locale only if we want data
             if (dataLocale !== undefined) {
-                entityFetchRequires.push(`dataInLocales('${dataLocale}')`)
+                entityFetchRequires.push(`dataInLocales("${dataLocale}")`)
             }
 
             requireConstraints.push(`entityFetch(${entityFetchRequires.join(',')})`)
@@ -166,7 +166,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
     }
 
     buildAttributeOrderBy(attributeSchema: AttributeSchemaUnion, orderDirection: string): string {
-        return `attributeNatural('${attributeSchema.name}', ${orderDirection.toUpperCase()})`
+        return `attributeNatural("${attributeSchema.name}", ${orderDirection.toUpperCase()})`
     }
 
     buildParentEntityFilterBy(parentPrimaryKey: number): string {
