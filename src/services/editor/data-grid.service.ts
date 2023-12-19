@@ -7,24 +7,24 @@ import {
     StaticEntityProperties
 } from '@/model/editor/data-grid'
 import { QueryLanguage, UnexpectedError } from '@/model/lab'
-import { QueryExecutor } from '@/services/editor/data-grid-console/query-executor'
-import { QueryBuilder } from '@/services/editor/data-grid-console/query-builder'
-import { EvitaQLQueryBuilder } from '@/services/editor/data-grid-console/evitaql-query-builder'
-import { EvitaQLQueryExecutor } from '@/services/editor/data-grid-console/evitaql-query-executor'
+import { QueryExecutor } from '@/services/editor/data-grid/query-executor'
+import { QueryBuilder } from '@/services/editor/data-grid/query-builder'
+import { EvitaQLQueryBuilder } from '@/services/editor/data-grid/evitaql-query-builder'
+import { EvitaQLQueryExecutor } from '@/services/editor/data-grid/evitaql-query-executor'
 import { LabService } from '@/services/lab.service'
-import { GraphQLQueryBuilder } from '@/services/editor/data-grid-console/graphql-query-builder'
-import { GraphQLQueryExecutor } from '@/services/editor/data-grid-console/graphql-query-executor'
+import { GraphQLQueryBuilder } from '@/services/editor/data-grid/graphql-query-builder'
+import { GraphQLQueryExecutor } from '@/services/editor/data-grid/graphql-query-executor'
 import { EvitaDBClient } from '@/services/evitadb-client'
 import { AttributeSchemaUnion, EntitySchema } from '@/model/evitadb'
 import { GraphQLClient } from '@/services/graphql-client'
-import { EntityPropertyValueFormatter } from '@/services/editor/data-grid-console/entity-property-value-formatter'
-import { EntityPropertyValueRawFormatter } from '@/services/editor/data-grid-console/entity-property-value-raw-formatter'
+import { EntityPropertyValueFormatter } from '@/services/editor/data-grid/entity-property-value-formatter'
+import { EntityPropertyValueRawFormatter } from '@/services/editor/data-grid/entity-property-value-raw-formatter'
 import {
     EntityPropertyValueJsonFormatter
-} from '@/services/editor/data-grid-console/entity-property-value-json-formatter'
+} from '@/services/editor/data-grid/entity-property-value-json-formatter'
 import {
     EntityPropertyValueXmlFormatter
-} from '@/services/editor/data-grid-console/entity-property-value-xml-formatter'
+} from '@/services/editor/data-grid/entity-property-value-xml-formatter'
 
 export const key: InjectionKey<DataGridService> = Symbol()
 
@@ -168,14 +168,18 @@ export class DataGridService {
             EntityPropertyType.Entity,
             EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey),
             'Primary key',
-            undefined
+            'Primary key',
+            undefined,
+            []
         ))
         if (entitySchema.withHierarchy) {
             descriptors.push(new EntityPropertyDescriptor(
                 EntityPropertyType.Entity,
                 EntityPropertyKey.entity(StaticEntityProperties.ParentPrimaryKey),
                 'Parent',
-                undefined
+                'Parent',
+                undefined,
+                []
             ))
         }
         if (entitySchema.locales.length > 0) {
@@ -183,13 +187,17 @@ export class DataGridService {
                 EntityPropertyType.Entity,
                 EntityPropertyKey.entity(StaticEntityProperties.Locales),
                 'Locales',
-                undefined
+                'Locales',
+                undefined,
+                []
             ))
             descriptors.push(new EntityPropertyDescriptor(
                 EntityPropertyType.Entity,
                 EntityPropertyKey.entity(StaticEntityProperties.AllLocales),
                 'All locales',
-                undefined
+                'All locales',
+                undefined,
+                []
             ))
         }
         if (entitySchema.withPrice) {
@@ -197,7 +205,9 @@ export class DataGridService {
                 EntityPropertyType.Entity,
                 EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling),
                 'Price inner record handling',
-                undefined
+                'Price inner record handling',
+                undefined,
+                []
             ))
         }
 
@@ -206,7 +216,9 @@ export class DataGridService {
                 EntityPropertyType.Attributes,
                 EntityPropertyKey.attributes(attributeSchema.nameVariants.camelCase),
                 attributeSchema.name,
-                attributeSchema
+                attributeSchema.name,
+                attributeSchema,
+                []
             ))
         }
 
@@ -214,16 +226,29 @@ export class DataGridService {
             descriptors.push(new EntityPropertyDescriptor(
                 EntityPropertyType.AssociatedData,
                 EntityPropertyKey.associatedData(associatedDataSchema.nameVariants.camelCase),
-                `${associatedDataSchema.name}`,
-                associatedDataSchema
+                associatedDataSchema.name,
+                associatedDataSchema.name,
+                associatedDataSchema,
+                []
             ))
         }
         for (const referenceSchema of Object.values(entitySchema.references)) {
             descriptors.push(new EntityPropertyDescriptor(
                 EntityPropertyType.References,
                 EntityPropertyKey.references(referenceSchema.nameVariants.camelCase),
-                `${referenceSchema.name}`,
-                referenceSchema
+                referenceSchema.name,
+                referenceSchema.name,
+                referenceSchema,
+                Object.values(referenceSchema.attributes).map(attributeSchema => {
+                    return new EntityPropertyDescriptor(
+                        EntityPropertyType.ReferenceAttributes,
+                        EntityPropertyKey.referenceAttributes(referenceSchema.nameVariants.camelCase, attributeSchema.nameVariants.camelCase),
+                        attributeSchema.name,
+                        `${referenceSchema.name}: ${attributeSchema.name}`,
+                        attributeSchema,
+                        []
+                    )
+                })
             ))
         }
 

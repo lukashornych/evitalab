@@ -34,6 +34,8 @@ const path = ref<string[]>([
 
 let sortedEntityPropertyKeys: string[] = []
 let entityPropertyDescriptors: EntityPropertyDescriptor[] = []
+const entityPropertyDescriptorIndex: Map<string, EntityPropertyDescriptor> = new Map<string, EntityPropertyDescriptor>()
+
 let gridHeaders: Map<string, any> = new Map<string, any>()
 let dataLocales: string[] = []
 
@@ -89,7 +91,17 @@ onBeforeMount(() => {
         })
         .then(ep => {
             entityPropertyDescriptors = ep
-            sortedEntityPropertyKeys = entityPropertyDescriptors.map(it => it.key.toString())
+            for (const entityPropertyDescriptor of entityPropertyDescriptors) {
+                entityPropertyDescriptorIndex.set(entityPropertyDescriptor.key.toString(), entityPropertyDescriptor)
+                entityPropertyDescriptor.children.forEach(childPropertyDescriptor => {
+                    entityPropertyDescriptorIndex.set(childPropertyDescriptor.key.toString(), childPropertyDescriptor)
+                })
+
+                sortedEntityPropertyKeys.push(entityPropertyDescriptor.key.toString())
+                for (const childEntityPropertyDescriptor of entityPropertyDescriptor.children) {
+                    sortedEntityPropertyKeys.push(childEntityPropertyDescriptor.key.toString())
+                }
+            }
             return initializeGridHeaders(entityPropertyDescriptors)
         })
         .then(gh => {
@@ -114,11 +126,22 @@ async function initializeGridHeaders(entityPropertyDescriptors: EntityPropertyDe
             propertyDescriptor.key.toString(),
             {
                 key: propertyDescriptor.key.toString(),
-                title: propertyDescriptor.title,
+                title: propertyDescriptor.flattenedTitle,
                 sortable: propertyDescriptor.isSortable(),
                 descriptor: propertyDescriptor
             }
         )
+        for (const childPropertyDescriptor of propertyDescriptor.children) {
+            gridHeaders.set(
+                childPropertyDescriptor.key.toString(),
+                {
+                    key: childPropertyDescriptor.key.toString(),
+                    title: childPropertyDescriptor.flattenedTitle,
+                    sortable: childPropertyDescriptor.schema?.sortable || false,
+                    descriptor: childPropertyDescriptor
+                }
+            )
+        }
     }
     return gridHeaders
 }
@@ -203,7 +226,7 @@ async function executeQuery(): Promise<void> {
                     v-model:order-by="orderByCode"
                     :data-locales="dataLocales"
                     v-model:selected-data-locale="selectedDataLocale"
-                    :entity-property-descriptors="entityPropertyDescriptors"
+                    :entity-property-descriptor-index="entityPropertyDescriptorIndex"
                     v-model:selected-entity-property-keys="displayedProperties"
                     @execute-query="executeQuery"
                 />
@@ -212,7 +235,7 @@ async function executeQuery(): Promise<void> {
 
         <LabEditorDataGridGrid
             :grid-props="props"
-            :entity-property-descriptors="entityPropertyDescriptors"
+            :entity-property-descriptor-index="entityPropertyDescriptorIndex"
             :displayed-grid-headers="displayedGridHeaders"
             :data-locale="selectedDataLocale"
             :query-language="selectedQueryLanguage"
