@@ -33,7 +33,7 @@ const pageSizeOptions: any[] = [10, 25, 50, 100, 250, 500, 1000].map(it => ({ ti
 
 const props = defineProps<{
     gridProps: TabComponentProps<DataGridConsoleParams, DataGridConsoleData>,
-    entityPropertyDescriptors: EntityPropertyDescriptor[],
+    entityPropertyDescriptorIndex: Map<String, EntityPropertyDescriptor>,
     dataLocale: string | undefined,
     queryLanguage: QueryLanguage,
     displayedGridHeaders: any[],
@@ -47,15 +47,13 @@ const emit = defineEmits<{
     (e: 'gridUpdated', value: { page: number, itemsPerPage: number, sortBy: any[] }): void
 }>()
 
-const entityPropertyDescriptorIndex: Map<string, EntityPropertyDescriptor> = new Map<string, EntityPropertyDescriptor>()
-props.entityPropertyDescriptors.forEach(it => entityPropertyDescriptorIndex.set(it.key.toString(), it))
 
 const showPropertyDetail = ref<boolean>(false)
 const propertyDetailDescriptor = ref<EntityPropertyDescriptor | undefined>()
 const propertyDetailValue = ref<any>()
 
 function getPropertyDescriptor(key: string): EntityPropertyDescriptor | undefined {
-    const descriptor = entityPropertyDescriptorIndex.get(key)
+    const descriptor = props.entityPropertyDescriptorIndex.get(key)
     if (descriptor == undefined) {
         toaster.error(new UnexpectedError(props.gridProps.params.dataPointer.connection, 'Failed to find property descriptor for key: ' + key))
     }

@@ -6,7 +6,7 @@
 import VSingleLineCodeMirror from '@/components/base/VSingleLineCodemirror.vue'
 import { QueryLanguage } from '@/model/lab'
 import { ref, watch } from 'vue'
-import LabEditorDataGridEntityPropertiesSelector
+import LabEditorDataGridEntityPropertySelector
     from '@/components/lab/editor/data-grid/property-selector/LabEditorDataGridPropertySelector.vue'
 import {
     DataGridConsoleData, DataGridConsoleParams,
@@ -29,7 +29,7 @@ const props = defineProps<{
     orderBy: string,
     dataLocales: string[],
     selectedDataLocale: string | undefined,
-    entityPropertyDescriptors: EntityPropertyDescriptor[],
+    entityPropertyDescriptorIndex: Map<string, EntityPropertyDescriptor>,
     selectedEntityPropertyKeys: EntityPropertyKey[]
 }>()
 const emit = defineEmits<{
@@ -117,10 +117,10 @@ const showPropertiesSelect = ref<boolean>(false)
             :data-locales="dataLocales"
         />
 
-        <LabEditorDataGridEntityPropertiesSelector
+        <LabEditorDataGridEntityPropertySelector
             v-model="showPropertiesSelect"
             :grid-props="gridProps"
-            :property-descriptors="entityPropertyDescriptors"
+            :property-descriptor-index="entityPropertyDescriptorIndex"
             :selected="selectedEntityPropertyKeys"
             @update:selected="emit('update:selectedEntityPropertyKeys', $event)"
             @schema-open="showPropertiesSelect = false"
