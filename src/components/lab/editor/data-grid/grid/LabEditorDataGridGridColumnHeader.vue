@@ -14,7 +14,7 @@ const prependIcon = computed<string | undefined>(() => {
     if (propertyType === EntityPropertyType.AssociatedData) {
         return 'mdi-package-variant-closed'
     }
-    if (propertyType === EntityPropertyType.References) {
+    if (propertyType === EntityPropertyType.References || propertyType === EntityPropertyType.ReferenceAttributes) {
         return 'mdi-link-variant'
     }
     return undefined
