@@ -59,8 +59,8 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
 
         const entityFetchRequires: string[] = []
         this.buildEntityBodyFetchRequires(requiredProperties, entitySchema, dataLocale, entityFetchRequires)
-        this.buildAttributesFetchRequires(requiredProperties, entitySchema, dataPointer, entityFetchRequires)
-        this.buildAssociatedDataFetchRequires(requiredProperties, entitySchema, dataPointer, entityFetchRequires)
+        this.buildAttributesFetchRequires(requiredProperties, entitySchema, dataPointer, dataLocale, entityFetchRequires)
+        this.buildAssociatedDataFetchRequires(requiredProperties, entitySchema, dataPointer, dataLocale, entityFetchRequires)
         await this.buildReferencesFetchRequires(requiredProperties, entitySchema, dataPointer, dataLocale, entityFetchRequires)
         if (entityFetchRequires.length > 0 ||
             requiredProperties.findIndex(propertyKey => this.entityBodyProperties.has(propertyKey.toString())) > -1) {
@@ -101,6 +101,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
     private buildAttributesFetchRequires(requiredProperties: EntityPropertyKey[],
                                          entitySchema: EntitySchema,
                                          dataPointer: DataGridDataPointer,
+                                         dataLocale: string | undefined,
                                          entityFetchRequires: string[]) {
         const requiredAttributes: string[] = requiredProperties
             .filter(({ type }) => type === EntityPropertyType.Attributes)
@@ -111,8 +112,15 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                 if (attributeSchema == undefined) {
                     throw new UnexpectedError(dataPointer.connection, `Could not find attribute '${it}' in '${dataPointer.entityType}'.`)
                 }
+                if (!dataLocale && attributeSchema.localized) {
+                    // we don't want try to fetch localized attributes when no locale is specified, that would throw an error in evitaDB
+                    return undefined
+                }
                 return attributeSchema.name
             })
+            .filter(it => it != undefined)
+            .map(it => it as string)
+
         if (requiredAttributes.length > 0) {
             entityFetchRequires.push(`attributeContent(${requiredAttributes.map(it => `"${it}"`).join(',')})`)
         }
@@ -121,6 +129,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
     private buildAssociatedDataFetchRequires(requiredProperties: EntityPropertyKey[],
                                              entitySchema: EntitySchema,
                                              dataPointer: DataGridDataPointer,
+                                             dataLocale: string | undefined,
                                              entityFetchRequires: string[]) {
         const requiredAssociatedData: string[] = requiredProperties
             .filter(({ type }) => type === EntityPropertyType.AssociatedData)
@@ -131,8 +140,15 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                 if (associatedDataSchema == undefined) {
                     throw new UnexpectedError(dataPointer.connection, `Could not find associated data '${it}' in '${dataPointer.entityType}'.`)
                 }
+                if (!dataLocale && associatedDataSchema.localized) {
+                    // we don't want try to fetch localized associated data when no locale is specified, that would throw an error in evitaDB
+                    return undefined
+                }
                 return associatedDataSchema.name
             })
+            .filter(it => it != undefined)
+            .map(it => it as string)
+
         if (requiredAssociatedData.length > 0) {
             entityFetchRequires.push(`associatedDataContent(${requiredAssociatedData.map(it => `"${it}"`).join(',')})`)
         }
@@ -141,7 +157,8 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
     private async buildReferencesFetchRequires(requiredProperties: EntityPropertyKey[],
                                                entitySchema: EntitySchema,
                                                dataPointer: DataGridDataPointer,
-                                               dataLocale: string | undefined, entityFetchRequires: string[]) {
+                                               dataLocale: string | undefined,
+                                               entityFetchRequires: string[]) {
         const requiredReferences: string[] = []
         for (const requiredProperty of requiredProperties) {
             if (requiredProperty.type === EntityPropertyType.References) {
@@ -178,8 +195,14 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                     if (attributeSchema == undefined) {
                         throw new UnexpectedError(dataPointer.connection, `Could not find attribute '${referenceAttribute}' in reference '${requiredReference}' in '${dataPointer.entityType}'.`)
                     }
+                    if (!dataLocale && attributeSchema.localized) {
+                        // we don't want try to fetch localized attributes when no locale is specified, that would throw an error in evitaDB
+                        return undefined
+                    }
                     return attributeSchema.name
                 })
+                .filter(it => it != undefined)
+                .map(it => it as string)
 
             let requiredRepresentativeAttributes: string[] = []
             if (referenceSchema.referencedEntityTypeManaged) {
