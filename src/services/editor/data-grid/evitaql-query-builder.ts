@@ -93,7 +93,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                     hierarchyContentConstraintBuilder += ')'
                     entityFetchRequires.push(hierarchyContentConstraintBuilder)
                 } else if (it === StaticEntityProperties.PriceInnerRecordHandling) {
-                    entityFetchRequires.push(`priceContent(NONE)`)
+                    entityFetchRequires.push(`priceContentRespectingFilter()`)
                 }
             })
     }
