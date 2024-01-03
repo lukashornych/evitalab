@@ -26,7 +26,7 @@ const actions = ref<object[]>([
         value: ActionType.OpenEvitaQLConsole,
         title: 'Open EvitaQL console',
         props: {
-            prependIcon: 'mdi-console'
+            prependIcon: 'mdi-variable'
         }
     },
     {
