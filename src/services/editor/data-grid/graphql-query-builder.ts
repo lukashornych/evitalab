@@ -52,113 +52,23 @@ export class GraphQLQueryBuilder implements QueryBuilder {
                 group = []
                 groupedPropertyKeys.set(propertyKey.type, group)
             }
-            // todo lho this may not work anymore
             group.push(propertyKey.name)
         }
 
         const entityOutputFields: string[] = []
-        for (const [propertyType, properties] of groupedPropertyKeys) {
+        for (const [propertyType, requiredDataInGroup] of groupedPropertyKeys) {
             switch (propertyType) {
                 case EntityPropertyType.Entity:
-                    for (const property of properties) {
-                        if (property === StaticEntityProperties.ParentPrimaryKey) {
-                            const representativeAttributes: AttributeSchemaUnion[] = Object.values(entitySchema.attributes)
-                                .filter(attributeSchema => 'representative' in attributeSchema && attributeSchema.representative)
-                                .filter(attributeSchema => {
-                                    if (!dataLocale) {
-                                        return !attributeSchema.localized
-                                    }
-                                    return true
-                                })
-
-                            if (representativeAttributes.length === 0) {
-                                entityOutputFields.push(`parents(stopAt: { distance: 1 }) {`)
-                                entityOutputFields.push('  primaryKey')
-                                entityOutputFields.push('}')
-                            } else {
-                                entityOutputFields.push(`parents(stopAt: { distance: 1 }) {`)
-                                entityOutputFields.push('   primaryKey')
-                                entityOutputFields.push('   attributes {')
-                                entityOutputFields.push(`       ${representativeAttributes.map(attributeSchema => `${attributeSchema.nameVariants.camelCase}`).join(',') }`)
-                                entityOutputFields.push('   }')
-                                entityOutputFields.push('}')
-                            }
-                        } else {
-                            entityOutputFields.push(property)
-                        }
-                    }
+                    this.buildEntityBodyProperties(requiredDataInGroup, entitySchema, dataLocale, entityOutputFields)
                     break
                 case EntityPropertyType.Attributes:
-                    if (dataLocale !== undefined) {
-                        entityOutputFields.push(`attributes(locale: ${dataLocale.replace('-', '_')}) {`)
-                    } else {
-                        entityOutputFields.push(`attributes {`)
-                    }
-
-                    for (const property of properties) {
-                        const attributeSchema: AttributeSchemaUnion | undefined = Object.values(entitySchema.attributes)
-                            .find(attribute => attribute.nameVariants.camelCase === property)
-                        if (attributeSchema == undefined) {
-                            throw new UnexpectedError(undefined, `Attribute ${property} not found in entity ${entitySchema.name}`)
-                        }
-                        if (!attributeSchema.localized || dataLocale !== undefined) {
-                            entityOutputFields.push(property)
-                        }
-                    }
-
-                    entityOutputFields.push('}')
+                    this.buildAttributesProperty(requiredDataInGroup, entitySchema, dataLocale, entityOutputFields)
                     break
                 case EntityPropertyType.AssociatedData:
-                    if (dataLocale !== undefined) {
-                        entityOutputFields.push(`associatedData(locale: ${dataLocale.replace('-', '_')}) {`)
-                    } else {
-                        entityOutputFields.push(`associatedData {`)
-                    }
-
-                    for (const property of properties) {
-                        const associatedDataSchema: AssociatedDataSchema | undefined = Object.values(entitySchema.associatedData)
-                            .find(associatedData => associatedData.nameVariants.camelCase === property)
-                        if (associatedDataSchema == undefined) {
-                            throw new UnexpectedError(undefined, `Associated data ${property} not found in entity ${entitySchema.name}`)
-                        }
-                        if (!associatedDataSchema.localized || dataLocale !== undefined) {
-                            entityOutputFields.push(property)
-                        }
-                    }
-
-                    entityOutputFields.push('}')
+                    this.buildAssociatedDataProperty(requiredDataInGroup, entitySchema, dataLocale, entityOutputFields)
                     break
                 case EntityPropertyType.References:
-                    for (const referenceProperty of properties) {
-                        const referenceSchema: ReferenceSchema | undefined = Object.values(entitySchema.references)
-                            .find(referenceSchema => referenceSchema.nameVariants.camelCase === referenceProperty)
-                        if (referenceSchema == undefined) {
-                            throw new UnexpectedError(undefined, `Could not find reference '${referenceProperty}' in '${dataPointer.entityType}'.`)
-                        }
-
-                        entityOutputFields.push(`reference_${referenceProperty}: ${referenceProperty} {`)
-                        entityOutputFields.push('   referencedPrimaryKey')
-                        if (referenceSchema.referencedEntityTypeManaged) {
-                            const referencedEntitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, referenceSchema.referencedEntityType)
-                            const representativeAttributes: AttributeSchemaUnion[] = Object.values(referencedEntitySchema.attributes)
-                                .filter(attributeSchema => 'representative' in attributeSchema && attributeSchema.representative)
-                                .filter(attributeSchema => {
-                                    if (!dataLocale) {
-                                        return !attributeSchema.localized
-                                    }
-                                    return true
-                                })
-
-                            if (representativeAttributes.length > 0) {
-                                entityOutputFields.push('   referencedEntity {')
-                                entityOutputFields.push('       attributes {')
-                                entityOutputFields.push(`           ${representativeAttributes.map(attributeSchema => `${attributeSchema.nameVariants.camelCase}`).join(',') }`)
-                                entityOutputFields.push('       }')
-                                entityOutputFields.push('   }')
-                            }
-                        }
-                        entityOutputFields.push('}')
-                    }
+                    await this.buildReferenceProperties(requiredDataInGroup, entitySchema, dataPointer, dataLocale, entityOutputFields)
                     break
             }
         }
@@ -176,6 +86,142 @@ export class GraphQLQueryBuilder implements QueryBuilder {
             }
         }
         `
+    }
+
+    private buildEntityBodyProperties(requiredDataInGroup: string[],
+                                      entitySchema: EntitySchema,
+                                      dataLocale: string | undefined,
+                                      entityOutputFields: string[]): void {
+        for (const requireDatum of requiredDataInGroup) {
+            if (requireDatum === StaticEntityProperties.ParentPrimaryKey) {
+                const representativeAttributes: AttributeSchemaUnion[] = Object.values(entitySchema.attributes)
+                    .filter(attributeSchema => 'representative' in attributeSchema && attributeSchema.representative)
+                    .filter(attributeSchema => {
+                        if (!dataLocale) {
+                            return !attributeSchema.localized
+                        }
+                        return true
+                    })
+
+                if (representativeAttributes.length === 0) {
+                    entityOutputFields.push(`parents(stopAt: { distance: 1 }) {`)
+                    entityOutputFields.push('  primaryKey')
+                    entityOutputFields.push('}')
+                } else {
+                    entityOutputFields.push(`parents(stopAt: { distance: 1 }) {`)
+                    entityOutputFields.push('   primaryKey')
+                    entityOutputFields.push('   attributes {')
+                    entityOutputFields.push(`       ${representativeAttributes.map(attributeSchema => `${attributeSchema.nameVariants.camelCase}`).join(',')}`)
+                    entityOutputFields.push('   }')
+                    entityOutputFields.push('}')
+                }
+            } else {
+                entityOutputFields.push(requireDatum)
+            }
+        }
+    }
+
+    private buildAttributesProperty(requiredDataInGroup: string[],
+                                    entitySchema: EntitySchema,
+                                    dataLocale: string | undefined,
+                                    entityOutputFields: string[]) {
+        const requiredAttributes: string[] = requiredDataInGroup
+            .map(requiredDatum => {
+                const attributeSchema: AttributeSchemaUnion | undefined = Object.values(entitySchema.attributes)
+                    .find(attribute => attribute.nameVariants.camelCase === requiredDatum)
+                if (attributeSchema == undefined) {
+                    throw new UnexpectedError(undefined, `Attribute ${requiredDatum} not found in entity ${entitySchema.name}`)
+                }
+                if (!dataLocale && attributeSchema.localized) {
+                    // we don't want try to fetch localized attributes when no locale is specified, that would throw an error in evitaDB
+                    return undefined
+                }
+                return requiredDatum
+            })
+            .filter(it => it != undefined)
+            .map(it => it as string)
+        if (requiredAttributes.length === 0) {
+            return
+        }
+
+        if (dataLocale !== undefined) {
+            entityOutputFields.push(`attributes(locale: ${dataLocale.replace('-', '_')}) {`)
+        } else {
+            entityOutputFields.push(`attributes {`)
+        }
+        requiredAttributes.forEach(requiredAttribute => entityOutputFields.push(requiredAttribute))
+        entityOutputFields.push('}')
+    }
+
+    private buildAssociatedDataProperty(requiredDataInGroup: string[],
+                                        entitySchema: EntitySchema,
+                                        dataLocale: string | undefined,
+                                        entityOutputFields: string[]) {
+        const requiredAssociatedData: string[] = requiredDataInGroup
+            .map(requiredDatum => {
+                const associatedDataSchema: AssociatedDataSchema | undefined = Object.values(entitySchema.associatedData)
+                    .find(associatedData => associatedData.nameVariants.camelCase === requiredDatum)
+                if (associatedDataSchema == undefined) {
+                    throw new UnexpectedError(undefined, `Associated data ${requiredDatum} not found in entity ${entitySchema.name}`)
+                }
+                if (!dataLocale && associatedDataSchema.localized) {
+                    // we don't want try to fetch localized associated data when no locale is specified, that would throw an error in evitaDB
+                    return undefined
+                }
+                return requiredDatum
+            })
+            .filter(it => it != undefined)
+            .map(it => it as string)
+        if (requiredAssociatedData.length === 0) {
+            return
+        }
+
+        if (dataLocale !== undefined) {
+            entityOutputFields.push(`associatedData(locale: ${dataLocale.replace('-', '_')}) {`)
+        } else {
+            entityOutputFields.push(`associatedData {`)
+        }
+        requiredAssociatedData.forEach(requiredAssociatedDatum => entityOutputFields.push(requiredAssociatedDatum))
+        entityOutputFields.push('}')
+    }
+
+    private async buildReferenceProperties(requiredDataInGroup: string[],
+                                           entitySchema: EntitySchema,
+                                           dataPointer: DataGridDataPointer,
+                                           dataLocale: string | undefined,
+                                           entityOutputFields: string[]) {
+        for (const requiredDatum of requiredDataInGroup) {
+            const referenceSchema: ReferenceSchema | undefined = Object.values(entitySchema.references)
+                .find(referenceSchema => referenceSchema.nameVariants.camelCase === requiredDatum)
+            if (referenceSchema == undefined) {
+                throw new UnexpectedError(undefined, `Could not find reference '${requiredDatum}' in '${dataPointer.entityType}'.`)
+            }
+
+            entityOutputFields.push(`reference_${requiredDatum}: ${requiredDatum} {`)
+            entityOutputFields.push('   referencedPrimaryKey')
+            if (referenceSchema.referencedEntityTypeManaged) {
+                const referencedEntitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, referenceSchema.referencedEntityType)
+                const representativeAttributes: AttributeSchemaUnion[] = Object.values(referencedEntitySchema.attributes)
+                    .filter(attributeSchema => 'representative' in attributeSchema && attributeSchema.representative)
+                    .filter(attributeSchema => {
+                        if (!dataLocale) {
+                            return !attributeSchema.localized
+                        }
+                        return true
+                    })
+
+                if (representativeAttributes.length > 0) {
+                    entityOutputFields.push('   referencedEntity {')
+                    entityOutputFields.push('       attributes {')
+                    entityOutputFields.push(`           ${representativeAttributes.map(attributeSchema => `${attributeSchema.nameVariants.camelCase}`).join(',')}`)
+                    entityOutputFields.push('       }')
+                    entityOutputFields.push('   }')
+                }
+
+                // todo referenced attributes support
+            }
+            entityOutputFields.push('}')
+        }
     }
 
     buildPrimaryKeyOrderBy(orderDirection: string): string {
