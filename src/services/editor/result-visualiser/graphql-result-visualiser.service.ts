@@ -1,6 +1,7 @@
 import {
+    AttributeHistogramsVisualiserService,
     FacetSummaryVisualiserService,
-    HierarchyVisualiserService
+    HierarchyVisualiserService, PriceHistogramVisualiserService
 } from '@/services/editor/result-visualiser/result-visualiser.service'
 import { Result, VisualisedHierarchyTreeNode, VisualisedNamedHierarchy } from '@/model/editor/result-visualiser'
 import { CatalogSchema, EntitySchema } from '@/model/evitadb'
@@ -8,7 +9,8 @@ import { EvitaDBConnection, UnexpectedError } from '@/model/lab'
 import {  LabService } from '@/services/lab.service'
 import { inject, InjectionKey } from 'vue'
 import {
-    JsonFacetSummaryVisualiserService, JsonHierarchyVisualiserService,
+    JsonAttributeHistogramsVisualiserService,
+    JsonFacetSummaryVisualiserService, JsonHierarchyVisualiserService, JsonPriceHistogramVisualiserService,
     JsonResultVisualiserService
 } from '@/services/editor/result-visualiser/json-result-visualiser.service'
 
@@ -21,6 +23,8 @@ export class GraphQLResultVisualiserService extends JsonResultVisualiserService 
     private readonly labService: LabService
     private facetSummaryVisualiserService: GraphQLFacetSummaryVisualiserService | undefined = undefined
     private hierarchyVisualiserService: GraphQLHierarchyVisualiserService | undefined = undefined
+    private attributeHistogramsVisualiserService: GraphQLAttributeHistogramsVisualiserService | undefined = undefined
+    private priceHistogramVisualiserService: GraphQLPriceHistogramVisualiserService | undefined = undefined
 
     constructor(labService: LabService) {
         super()
@@ -102,6 +106,20 @@ export class GraphQLResultVisualiserService extends JsonResultVisualiserService 
             this.hierarchyVisualiserService = new GraphQLHierarchyVisualiserService(this)
         }
         return this.hierarchyVisualiserService
+    }
+
+    getAttributeHistogramsService(): AttributeHistogramsVisualiserService {
+        if (!this.attributeHistogramsVisualiserService) {
+            this.attributeHistogramsVisualiserService = new GraphQLAttributeHistogramsVisualiserService(this)
+        }
+        return this.attributeHistogramsVisualiserService
+    }
+
+    getPriceHistogramService(): PriceHistogramVisualiserService {
+        if (!this.priceHistogramVisualiserService) {
+            this.priceHistogramVisualiserService = new GraphQLPriceHistogramVisualiserService(this)
+        }
+        return this.priceHistogramVisualiserService
     }
 }
 
@@ -188,6 +206,24 @@ export class GraphQLHierarchyVisualiserService extends JsonHierarchyVisualiserSe
             // @ts-ignore
             stack.at(-1).children.push(prevNode);
         }
+    }
+}
+
+/**
+ * {@link AttributeHistogramsVisualiserService} for GraphQL query language.
+ */
+export class GraphQLAttributeHistogramsVisualiserService extends JsonAttributeHistogramsVisualiserService<GraphQLResultVisualiserService> {
+    constructor(visualiserService: GraphQLResultVisualiserService) {
+        super(visualiserService)
+    }
+}
+
+/**
+ * {@link PriceHistogramVisualiserService} for GraphQL query language.
+ */
+export class GraphQLPriceHistogramVisualiserService extends JsonPriceHistogramVisualiserService<GraphQLResultVisualiserService> {
+    constructor(visualiserService: GraphQLResultVisualiserService) {
+        super(visualiserService)
     }
 }
 

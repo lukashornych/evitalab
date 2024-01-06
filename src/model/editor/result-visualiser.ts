@@ -10,7 +10,9 @@ export type Result = {
  */
 export enum VisualiserTypeType {
     FacetSummary = 'facet-summary',
-    Hierarchy = 'hierarchy'
+    Hierarchy = 'hierarchy',
+    AttributeHistograms = 'attribute-histograms',
+    PriceHistogram = 'price-histogram'
 }
 
 /**
@@ -82,5 +84,51 @@ export class VisualisedHierarchyTreeNode {
 
     isLeaf(): boolean {
         return this.children.length === 0
+    }
+}
+
+/**
+ * Single returned histogram DTO ready for visualisation.
+ */
+export class VisualisedHistogram {
+    readonly min?: string
+    readonly max?: string
+    readonly overallCount?: number
+    readonly buckets: VisualisedHistogramBucket[]
+
+    constructor(min: string | undefined,
+                max: string | undefined,
+                overallCount: number | undefined,
+                buckets: VisualisedHistogramBucket[]) {
+        this.min = min
+        this.max = max
+        this.overallCount = overallCount
+        this.buckets = buckets
+    }
+
+    static fromJson(json: any): VisualisedHistogram {
+        const buckets = json.buckets.map((bucket: any) => VisualisedHistogramBucket.fromJson(bucket))
+        return new VisualisedHistogram(json.min, json.max, json.overallCount, buckets)
+    }
+}
+
+/**
+ * Single histogram bucket DTO ready for visualisation.
+ */
+export class VisualisedHistogramBucket {
+    readonly threshold?: string
+    readonly occurrences?: number
+    readonly requested?: boolean
+
+    constructor(threshold: string | undefined,
+                occurrences: number | undefined,
+                requested: boolean | undefined) {
+        this.threshold = threshold
+        this.occurrences = occurrences
+        this.requested = requested
+    }
+
+    static fromJson(json: any): VisualisedHistogramBucket {
+        return new VisualisedHistogramBucket(json.threshold, json.occurrences, json.requested)
     }
 }

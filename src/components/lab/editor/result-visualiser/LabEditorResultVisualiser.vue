@@ -15,6 +15,10 @@ import LabEditorResultVisualiserHierarchy
     from '@/components/lab/editor/result-visualiser/hierarchy/LabEditorResultVisualiserHierarchy.vue'
 import { Result, VisualiserType, VisualiserTypeType } from '@/model/editor/result-visualiser'
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
+import LabEditorResultVisualiserAttributeHistograms
+    from '@/components/lab/editor/result-visualiser/histogram/LabEditorResultVisualiserAttributeHistograms.vue'
+import LabEditorResultVisualiserPriceHistogram
+    from '@/components/lab/editor/result-visualiser/histogram/LabEditorResultVisualiserPriceHistogram.vue'
 
 const toaster: Toaster = useToaster()
 
@@ -179,11 +183,22 @@ const resultForVisualiser = computed<Result | undefined>(() => {
             :entity-schema="selectedQueryEntitySchema"
         />
         <LabEditorResultVisualiserHierarchy
-            v-if="selectedVisualiserType == VisualiserTypeType.Hierarchy && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
+            v-if="selectedVisualiserType == VisualiserTypeType.Hierarchy && selectedQueryResult != undefined && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
             :catalog-pointer="catalogPointer"
             :visualiser-service="visualiserService"
             :hierarchy-result="resultForVisualiser"
             :entity-schema="selectedQueryEntitySchema"
+        />
+        <LabEditorResultVisualiserAttributeHistograms
+            v-if="selectedVisualiserType == VisualiserTypeType.AttributeHistograms && selectedQueryResult != undefined && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
+            :visualiser-service="visualiserService"
+            :attribute-histograms-result="resultForVisualiser"
+            :entity-schema="selectedQueryEntitySchema"
+        />
+        <LabEditorResultVisualiserPriceHistogram
+            v-if="selectedVisualiserType == VisualiserTypeType.PriceHistogram && selectedQueryResult != undefined && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
+            :visualiser-service="visualiserService"
+            :price-histogram-result="resultForVisualiser"
         />
 
         <LabEditorResultVisualiserMissingDataIndicator
