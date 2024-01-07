@@ -9,7 +9,7 @@ const labService: LabService = useLabService()
 
 const version = computed(() => {
     const actualVersion: string = import.meta.env.VITE_BUILD_VERSION
-    if (actualVersion == undefined) {
+    if (actualVersion == undefined || actualVersion.length === 0) {
         return '?'
     }
     return actualVersion.substring(1) // remove v prefix
