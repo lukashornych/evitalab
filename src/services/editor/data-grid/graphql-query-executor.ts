@@ -1,7 +1,7 @@
 import { QueryExecutor } from '@/services/editor/data-grid/query-executor'
 import { LabService } from '@/services/lab.service'
 import {
-    DataGridDataPointer, EntityProperty, EntityPropertyKey,
+    DataGridDataPointer, EntityPrice, EntityPrices, EntityProperty, EntityPropertyKey,
     EntityPropertyType, EntityReferenceValue, FlatEntity,
     QueryResult,
     StaticEntityProperties
@@ -37,25 +37,26 @@ export class GraphQLQueryExecutor extends QueryExecutor {
      * Converts original rich entity into simplified flat entity that is displayable in table
      */
     private flattenEntity(dataPointer: DataGridDataPointer, entity: any): FlatEntity {
-        const flattenedEntity: FlatEntity = []
+        const flattenedEntity: (EntityProperty | undefined)[] = []
 
-        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey), entity[StaticEntityProperties.PrimaryKey]])
+        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.PrimaryKey])])
         flattenedEntity.push(this.flattenParent(dataPointer, entity))
-        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.Locales), entity[StaticEntityProperties.Locales]])
-        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.AllLocales), entity[StaticEntityProperties.AllLocales]])
-        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling), entity[StaticEntityProperties.PriceInnerRecordHandling]])
+        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.Locales), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.Locales])])
+        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.AllLocales), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.AllLocales])])
+        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.PriceInnerRecordHandling])])
 
         flattenedEntity.push(...this.flattenAttributes(entity))
         flattenedEntity.push(...this.flattenAssociatedData(entity))
+        flattenedEntity.push(this.flattenPrices(entity))
         flattenedEntity.push(...this.flattenReferences(entity))
 
-        return flattenedEntity
+        return flattenedEntity.filter(it => it != undefined) as FlatEntity
     }
 
-    private flattenParent(dataPointer: DataGridDataPointer, entity: any): EntityProperty {
+    private flattenParent(dataPointer: DataGridDataPointer, entity: any): EntityProperty | undefined {
         const parentEntities: any[] | undefined = entity['parents']
         if (!parentEntities || parentEntities.length == 0) {
-            return [EntityPropertyKey.entity(StaticEntityProperties.ParentPrimaryKey), null]
+            return undefined
         }
         if (parentEntities.length > 1) {
             throw new UnexpectedError(dataPointer.connection, `There are more than one parent entity.`)
@@ -79,7 +80,7 @@ export class GraphQLQueryExecutor extends QueryExecutor {
 
         const attributes = entity[EntityPropertyType.Attributes] || {}
         for (const attributeName in attributes) {
-            flattenedAttributes.push([EntityPropertyKey.attributes(attributeName), attributes[attributeName]])
+            flattenedAttributes.push([EntityPropertyKey.attributes(attributeName), this.wrapRawValueIntoNativeValue(attributes[attributeName])])
         }
 
         return flattenedAttributes
@@ -90,10 +91,24 @@ export class GraphQLQueryExecutor extends QueryExecutor {
 
         const associatedData = entity[EntityPropertyType.AssociatedData] || {}
         for (const associatedDataName in associatedData) {
-            flattenedAssociatedData.push([EntityPropertyKey.associatedData(associatedDataName), associatedData[associatedDataName]])
+            flattenedAssociatedData.push([EntityPropertyKey.associatedData(associatedDataName), this.wrapRawValueIntoNativeValue(associatedData[associatedDataName])])
         }
 
         return flattenedAssociatedData
+    }
+
+    private flattenPrices(entity: any): EntityProperty | undefined {
+        const priceForSale: any | undefined = entity['priceForSale']
+        const prices: any[] | undefined = entity[EntityPropertyType.Prices]
+        if (priceForSale == undefined && prices == undefined) {
+            return undefined
+        }
+
+        const entityPrices: EntityPrices = new EntityPrices(
+            priceForSale != undefined ? EntityPrice.fromJson(priceForSale) : undefined,
+            prices?.map(it => EntityPrice.fromJson(it)) || []
+        )
+        return [EntityPropertyKey.prices(), entityPrices]
     }
 
     private flattenReferences(entity: any): EntityProperty[] {
@@ -112,7 +127,7 @@ export class GraphQLQueryExecutor extends QueryExecutor {
 
                 flattenedReferences.push([EntityPropertyKey.references(referenceName), representativeValues])
             } else {
-                const representativeValue = this.resolveReferenceRepresentativeValue(referencesOfName)
+                const representativeValue: EntityReferenceValue = this.resolveReferenceRepresentativeValue(referencesOfName)
                 flattenedReferences.push([EntityPropertyKey.references(referenceName), representativeValue])
             }
         }
@@ -121,7 +136,6 @@ export class GraphQLQueryExecutor extends QueryExecutor {
     }
 
     private resolveReferenceRepresentativeValue(reference: any): EntityReferenceValue {
-        console.log(reference)
         const referencedPrimaryKey: number = reference['referencedPrimaryKey']
         const representativeAttributes: any[] = []
 

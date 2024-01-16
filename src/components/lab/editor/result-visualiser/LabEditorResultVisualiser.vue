@@ -153,7 +153,7 @@ const resultForVisualiser = computed<Result | undefined>(() => {
 <template>
     <div class="visualiser">
         <header>
-            <VSelect
+            <VCombobox
                 v-if="supportsMultipleQueries"
                 v-model="selectedQuery"
                 :disabled="queries.length == 0"
@@ -163,7 +163,7 @@ const resultForVisualiser = computed<Result | undefined>(() => {
                 class="visualiser__select"
                 hide-details
             />
-            <VSelect
+            <VCombobox
                 v-model="selectedVisualiserType"
                 :disabled="selectedQuery == undefined"
                 prepend-inner-icon="mdi-format-list-bulleted-type"

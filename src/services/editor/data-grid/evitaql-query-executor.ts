@@ -1,7 +1,7 @@
 import { QueryExecutor } from '@/services/editor/data-grid/query-executor'
 import { LabService } from '@/services/lab.service'
 import {
-    DataGridDataPointer, EntityProperty, EntityPropertyKey,
+    DataGridDataPointer, EntityPrice, EntityPrices, EntityProperty, EntityPropertyKey,
     EntityPropertyType, EntityReferenceValue, FlatEntity,
     QueryResult,
     StaticEntityProperties
@@ -33,25 +33,26 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
      * Converts original rich entity into simplified flat entity that is displayable in table
      */
     private flattenEntity(entity: any): FlatEntity {
-        const flattenedEntity: FlatEntity = []
+        const flattenedEntity: (EntityProperty | undefined)[] = []
 
-        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey), entity[StaticEntityProperties.PrimaryKey]])
+        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.PrimaryKey])])
         flattenedEntity.push(this.flattenParent(entity))
-        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.Locales), entity[StaticEntityProperties.Locales] || []])
-        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.AllLocales), entity[StaticEntityProperties.AllLocales] || []])
-        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling), entity[StaticEntityProperties.PriceInnerRecordHandling] || 'UNKNOWN'])
+        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.Locales), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.Locales] || [])])
+        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.AllLocales), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.AllLocales] || [])])
+        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.PriceInnerRecordHandling] || 'UNKNOWN')])
 
         flattenedEntity.push(...this.flattenAttributes(entity))
         flattenedEntity.push(...this.flattenAssociatedData(entity))
+        flattenedEntity.push(this.flattenPrices(entity))
         flattenedEntity.push(...this.flattenReferences(entity))
 
-        return flattenedEntity
+        return flattenedEntity.filter(it => it != undefined) as FlatEntity
     }
 
-    private flattenParent(entity: any): EntityProperty {
+    private flattenParent(entity: any): EntityProperty | undefined {
         const parentEntity: any | undefined = entity['parentEntity']
-        if (!parentEntity) {
-            return [EntityPropertyKey.entity(StaticEntityProperties.ParentPrimaryKey), null]
+        if (parentEntity == undefined) {
+            return undefined
         }
 
         const parentPrimaryKey: number = parentEntity[StaticEntityProperties.PrimaryKey]
@@ -75,14 +76,14 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
 
         const globalAttributes = entity[EntityPropertyType.Attributes]?.['global'] || {}
         for (const attributeName in globalAttributes) {
-            flattenedAttributes.push([EntityPropertyKey.attributes(attributeName), globalAttributes[attributeName]])
+            flattenedAttributes.push([EntityPropertyKey.attributes(attributeName), this.wrapRawValueIntoNativeValue(globalAttributes[attributeName])])
         }
         const localizedAttributes = entity[EntityPropertyType.Attributes]?.['localized'] || {}
         for (const locale in localizedAttributes) {
             // this expects that we support only one locale
             const attributesInLocale = localizedAttributes[locale]
             for (const attributeName in attributesInLocale) {
-                flattenedAttributes.push([EntityPropertyKey.attributes(attributeName), attributesInLocale[attributeName]])
+                flattenedAttributes.push([EntityPropertyKey.attributes(attributeName), this.wrapRawValueIntoNativeValue(attributesInLocale[attributeName])])
             }
         }
 
@@ -94,18 +95,32 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
 
         const globalAssociatedData = entity[EntityPropertyType.AssociatedData]?.['global'] || {}
         for (const associatedDataName in globalAssociatedData) {
-            flattenedAssociatedData.push([EntityPropertyKey.associatedData(associatedDataName), globalAssociatedData[associatedDataName]])
+            flattenedAssociatedData.push([EntityPropertyKey.associatedData(associatedDataName), this.wrapRawValueIntoNativeValue(globalAssociatedData[associatedDataName])])
         }
         const localizedAssociatedData = entity[EntityPropertyType.AssociatedData]?.['localized'] || {}
         for (const locale in localizedAssociatedData) {
             // this expects that we support only one locale
             const associatedDataInLocale = localizedAssociatedData[locale]
             for (const associatedDataName in associatedDataInLocale) {
-                flattenedAssociatedData.push([EntityPropertyKey.associatedData(associatedDataName), associatedDataInLocale[associatedDataName]])
+                flattenedAssociatedData.push([EntityPropertyKey.associatedData(associatedDataName), this.wrapRawValueIntoNativeValue(associatedDataInLocale[associatedDataName])])
             }
         }
 
         return flattenedAssociatedData
+    }
+
+    private flattenPrices(entity: any): EntityProperty | undefined {
+        const priceForSale: any | undefined = entity['priceForSale']
+        const prices: any[] | undefined = entity[EntityPropertyType.Prices]
+        if (priceForSale == undefined && prices == undefined) {
+            return undefined
+        }
+
+        const entityPrices: EntityPrices = new EntityPrices(
+            priceForSale != undefined ? EntityPrice.fromJson(priceForSale) : undefined,
+            prices?.map(it => EntityPrice.fromJson(it)) || []
+        )
+        return [EntityPropertyKey.prices(), entityPrices]
     }
 
     private flattenReferences(entity: any): EntityProperty[] {
@@ -137,14 +152,14 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
                         new Map<string, EntityReferenceValue[]>()
                     )
                 mergedReferenceAttributesByName.forEach((attributeValues, attributeName) => {
-                    flattenedReferences.push([EntityPropertyKey.referenceAttributes(referenceName, attributeName), attributeValues])
+                    flattenedReferences.push([EntityPropertyKey.referenceAttributes(referenceName, attributeName), this.wrapRawValueIntoNativeValue(attributeValues)])
                 })
             } else {
                 const representativeValue: EntityReferenceValue = this.resolveReferenceRepresentativeValue(referencesOfName)
                 flattenedReferences.push([EntityPropertyKey.references(referenceName), representativeValue])
 
                 this.flattenAttributesForSingleReference(referencesOfName).forEach(([attributeName, attributeValue]) => {
-                    flattenedReferences.push([EntityPropertyKey.referenceAttributes(referenceName, attributeName), attributeValue])
+                    flattenedReferences.push([EntityPropertyKey.referenceAttributes(referenceName, attributeName), this.wrapRawValueIntoNativeValue(attributeValue)])
                 })
             }
         }
