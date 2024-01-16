@@ -47,7 +47,9 @@ function openDataGrid() {
     editorService.createTabRequest(DataGridRequest.createNew(
         connection as EvitaDBConnection,
         catalogSchema.value.name,
-        props.entitySchema.name
+        props.entitySchema.name,
+        undefined,
+        true // we want to display data to user right away, there is no malicious code here
     ))
 }
 

@@ -53,7 +53,7 @@ watch(selectedQueryLanguage, (newValue, oldValue) => {
     filterByCode.value = ''
     orderByCode.value = ''
 
-    executeQuery()
+    executeQueryAutomatically()
 })
 
 const loading = ref<boolean>(false)
@@ -67,10 +67,10 @@ const orderByCode = ref<string>(props.data?.orderBy ? props.data.orderBy : '')
 
 const selectedDataLocale = ref<string | undefined>(props.data?.dataLocale ? props.data.dataLocale : undefined)
 provide(dataLocaleKey, readonly(selectedDataLocale))
-watch(selectedDataLocale, () => executeQuery())
+watch(selectedDataLocale, () => executeQueryAutomatically())
 
 const selectedPriceType = ref<QueryPriceMode | undefined>(props.data?.priceType ? props.data.priceType : undefined)
-watch(selectedPriceType, () => executeQuery())
+watch(selectedPriceType, () => executeQueryAutomatically())
 provide(priceTypeKey, readonly(selectedPriceType))
 
 const displayedProperties = ref<EntityPropertyKey[]>(props.data?.displayedProperties ? props.data.displayedProperties : [])
@@ -80,7 +80,7 @@ watch(displayedProperties, (newValue, oldValue) => {
     // re-fetch entities only if new properties were added, only in such case there could be missing data when displaying
     // the new properties
     if (newValue.length > oldValue.length) {
-        executeQuery()
+        executeQueryAutomatically()
     }
 })
 
@@ -89,6 +89,7 @@ const resultEntities = ref<FlatEntity[]>([])
 const totalResultCount = ref<number>(0)
 
 const initialized = ref<boolean>(false)
+const queryExecutedManually = ref<boolean>(false)
 
 const currentData = computed<DataGridData>(() => {
     return new DataGridData(
@@ -138,7 +139,7 @@ onBeforeMount(() => {
             emit('ready')
 
             if (props.params.executeOnOpen) {
-                executeQuery()
+                executeQueryAutomatically()
             }
         })
         .catch(error => {
@@ -213,9 +214,36 @@ async function gridUpdated({ page, itemsPerPage, sortBy }: { page: number, items
         }
     }
 
+    await executeQueryAutomatically()
+}
+
+/**
+ * Executes query. Should be used only by functions which are triggered directly by user action (e.g. by clicking on button).
+ */
+async function executeQueryManually(): Promise<void> {
+    if (!queryExecutedManually.value) {
+        queryExecutedManually.value = true
+    }
     await executeQuery()
 }
 
+/**
+ * Executes query. Should be used only by functions which are triggered either automatically by components itself or indirectly
+ * by user action (e.g. by changing page number).
+ */
+async function executeQueryAutomatically(): Promise<void> {
+    // We can execute query automatically only if it was already executed manually by user or if it was requested by
+    // params.
+    // Otherwise, we need to wait for the user because the query may contain malicious code which we don't want to execute
+    // automatically before user gave consent with manual execution.
+    if (queryExecutedManually.value || props.params.executeOnOpen) {
+        await executeQuery()
+    }
+}
+
+/**
+ * Actual query execution, shouldn't be used directly. Only through {@link executeQueryManually()} or {@link executeQueryAutomatically()}.
+ */
 async function executeQuery(): Promise<void> {
     loading.value = true
 
@@ -254,11 +282,10 @@ async function executeQuery(): Promise<void> {
         class="data-grid"
     >
         <LabEditorDataGridToolbar
-            :grid-props="props"
             :current-data="currentData"
             :path="path"
             :loading="loading"
-            @execute-query="executeQuery"
+            @execute-query="executeQueryManually"
         >
             <template #query>
                 <LabEditorDataGridQueryInput
@@ -269,7 +296,7 @@ async function executeQuery(): Promise<void> {
                     v-model:selected-data-locale="selectedDataLocale"
                     v-model:selected-price-type="selectedPriceType"
                     v-model:selected-entity-property-keys="displayedProperties"
-                    @execute-query="executeQuery"
+                    @execute-query="executeQueryManually"
                 />
             </template>
         </LabEditorDataGridToolbar>
