@@ -6,24 +6,28 @@
 import { Pane, Splitpanes } from 'splitpanes'
 import { VDataTableServer } from 'vuetify/labs/VDataTable'
 import LabEditorDataGridGridCellDetail from './LabEditorDataGridGridCellDetail.vue'
-import { ref } from 'vue'
+import { inject, ref } from 'vue'
 import LabEditorDataGridGridCell from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCell.vue'
 import {
-    DataGridConsoleData,
-    DataGridConsoleParams,
-    EntityPropertyDescriptor,
-    EntityPropertyType, EntityReferenceValue,
+    dataLocaleKey,
+    EntityPropertyDescriptor, entityPropertyDescriptorIndexKey,
+    EntityPropertyType,
+    EntityPropertyValue,
+    EntityReferenceValue,
+    FlatEntity, gridParamsKey,
+    NativeValue,
+    queryLanguageKey,
     StaticEntityProperties
 } from '@/model/editor/data-grid'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import { QueryLanguage, UnexpectedError } from '@/model/lab'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import { DataGridRequest } from '@/model/editor/data-grid-request'
-import { TabComponentProps } from '@/model/editor/editor'
 import { DataGridService, useDataGridService } from '@/services/editor/data-grid.service'
 import LabEditorDataGridGridColumnHeader
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridColumnHeader.vue'
 import { Scalar } from '@/model/evitadb'
+import { mandatoryInject } from '@/helpers/reactivity'
 
 const editorService: EditorService = useEditorService()
 const dataGridService: DataGridService = useDataGridService()
@@ -32,13 +36,9 @@ const toaster: Toaster = useToaster()
 const pageSizeOptions: any[] = [10, 25, 50, 100, 250, 500, 1000].map(it => ({ title: it.toString(10), value: it }))
 
 const props = defineProps<{
-    gridProps: TabComponentProps<DataGridConsoleParams, DataGridConsoleData>,
-    entityPropertyDescriptorIndex: Map<String, EntityPropertyDescriptor>,
-    dataLocale: string | undefined,
-    queryLanguage: QueryLanguage,
     displayedGridHeaders: any[],
     loading: boolean,
-    resultEntities: any[],
+    resultEntities: FlatEntity[],
     totalResultCount: number,
     pageNumber: number,
     pageSize: number
@@ -46,26 +46,29 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'gridUpdated', value: { page: number, itemsPerPage: number, sortBy: any[] }): void
 }>()
-
+const gridParams = mandatoryInject(gridParamsKey)
+const entityPropertyDescriptorIndex = mandatoryInject(entityPropertyDescriptorIndexKey)
+const queryLanguage = inject(queryLanguageKey, ref<QueryLanguage | undefined>(QueryLanguage.EvitaQL))
+const dataLocale = inject(dataLocaleKey)
 
 const showPropertyDetail = ref<boolean>(false)
 const propertyDetailDescriptor = ref<EntityPropertyDescriptor | undefined>()
-const propertyDetailValue = ref<any>()
+const propertyDetailValue = ref<EntityPropertyValue | EntityPropertyValue[] | undefined>()
 
 function getPropertyDescriptor(key: string): EntityPropertyDescriptor | undefined {
-    const descriptor = props.entityPropertyDescriptorIndex.get(key)
+    const descriptor = entityPropertyDescriptorIndex.value.get(key)
     if (descriptor == undefined) {
-        toaster.error(new UnexpectedError(props.gridProps.params.dataPointer.connection, 'Failed to find property descriptor for key: ' + key))
+        toaster.error(new UnexpectedError(gridParams.dataPointer.connection, 'Failed to find property descriptor for key: ' + key))
     }
     return descriptor
 }
 
-function handlePropertyClicked(propertyKey: string, value: any): void {
-    if (!value) {
+function handlePropertyClicked(propertyKey: string, value: EntityPropertyValue | EntityPropertyValue[]): void {
+    if (value.valueOf() == undefined) {
         return
     }
     const propertyDescriptor: EntityPropertyDescriptor | undefined = getPropertyDescriptor(propertyKey)
-    if (!value || (value instanceof Array && value.length === 0)){
+    if (value instanceof Array && value.length === 0) {
         // do nothing with empty value
         return
     } else if (propertyDescriptor &&
@@ -73,15 +76,15 @@ function handlePropertyClicked(propertyKey: string, value: any): void {
         propertyDescriptor.key.name === StaticEntityProperties.ParentPrimaryKey) {
         // we want to open parent entity in appropriate new grid
         editorService.createTabRequest(new DataGridRequest(
-            props.gridProps.params.dataPointer.connection,
-            props.gridProps.params.dataPointer.catalogName,
-            props.gridProps.params.dataPointer.entityType,
+            gridParams.dataPointer.connection,
+            gridParams.dataPointer.catalogName,
+            gridParams.dataPointer.entityType,
             {
-                dataLocale: props.dataLocale,
-                queryLanguage: props.queryLanguage,
+                dataLocale: dataLocale?.value,
+                queryLanguage: queryLanguage?.value,
                 pageNumber: props.pageNumber,
                 pageSize: props.pageSize,
-                filterBy: dataGridService.buildParentEntityFilterBy(props.queryLanguage, (value as EntityReferenceValue).primaryKey)
+                filterBy: dataGridService.buildParentEntityFilterBy(queryLanguage.value as QueryLanguage, (value as EntityReferenceValue).primaryKey)
             },
             true
         ))
@@ -90,31 +93,31 @@ function handlePropertyClicked(propertyKey: string, value: any): void {
         (propertyDescriptor.type === EntityPropertyType.AssociatedData && propertyDescriptor.schema.type === Scalar.Predecessor))) {
         // we want references to open referenced entities in appropriate new grid for referenced collection
         editorService.createTabRequest(new DataGridRequest(
-            props.gridProps.params.dataPointer.connection,
-            props.gridProps.params.dataPointer.catalogName,
-            props.gridProps.params.dataPointer.entityType,
+            gridParams.dataPointer.connection,
+            gridParams.dataPointer.catalogName,
+            gridParams.dataPointer.entityType,
             {
-                dataLocale: props.dataLocale,
-                queryLanguage: props.queryLanguage,
+                dataLocale: dataLocale?.value,
+                queryLanguage: queryLanguage.value,
                 pageNumber: props.pageNumber,
                 pageSize: props.pageSize,
-                filterBy: dataGridService.buildPredecessorEntityFilterBy(props.queryLanguage, value)
+                filterBy: dataGridService.buildPredecessorEntityFilterBy(queryLanguage.value as QueryLanguage, (value as NativeValue).value() as number)
             },
             true
         ))
     } else if (propertyDescriptor && propertyDescriptor.type === EntityPropertyType.References) {
         // we want references to open referenced entities in appropriate new grid for referenced collection
         editorService.createTabRequest(new DataGridRequest(
-            props.gridProps.params.dataPointer.connection,
-            props.gridProps.params.dataPointer.catalogName,
+            gridParams.dataPointer.connection,
+            gridParams.dataPointer.catalogName,
             propertyDescriptor.schema.referencedEntityType,
             {
-                dataLocale: props.dataLocale,
-                queryLanguage: props.queryLanguage,
+                dataLocale: dataLocale?.value,
+                queryLanguage: queryLanguage.value,
                 pageNumber: props.pageNumber,
                 pageSize: props.pageSize,
                 filterBy: dataGridService.buildReferencedEntityFilterBy(
-                    props.queryLanguage,
+                    queryLanguage.value as QueryLanguage,
                     value instanceof Array
                         ? (value as EntityReferenceValue[]).map(it => it.primaryKey)
                         : [(value as EntityReferenceValue).primaryKey]
@@ -158,6 +161,7 @@ function closePropertyDetail(): void {
                 :items-per-page="pageSize"
                 :items-per-page-Options="pageSizeOptions"
                 @update:options="emit('gridUpdated', $event)"
+                class="data-grid__grid"
             >
                 <template #headers="{ columns, isSorted, getSortIcon, toggleSort }">
                     <tr>
@@ -177,7 +181,6 @@ function closePropertyDetail(): void {
                             v-for="(propertyValue, propertyKey) in item.columns"
                             :key="propertyKey"
                             :property-descriptor="entityPropertyDescriptorIndex.get(propertyKey as string)"
-                            :data-locale="dataLocale"
                             :property-value="propertyValue"
                             @click="handlePropertyClicked(propertyKey as string, propertyValue)"
                         />
@@ -209,8 +212,10 @@ function closePropertyDetail(): void {
         grid-template-rows: 1fr;
         overflow-x: auto;
     }
+}
 
-    & :deep(th) {
+.data-grid__grid {
+    & :deep(th[class^="data-grid-column-header"]) {
         border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
     }
 

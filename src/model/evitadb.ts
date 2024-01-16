@@ -4,6 +4,11 @@
  */
 
 /**
+ * Represents a precise float number from evitaDB represented as string.
+ */
+export type BigDecimal = string;
+
+/**
  * List of support scalars supported by evitaDB.
  */
 export enum Scalar {
@@ -1072,4 +1077,9 @@ export interface SortableAttributeCompoundSchema {
  */
 export interface SortableAttributeCompoundSchemas extends Record<string, SortableAttributeCompoundSchema> {
     [key: string]: SortableAttributeCompoundSchema;
+}
+
+export enum QueryPriceMode {
+    WithTax = 'WITH_TAX',
+    WithoutTax = 'WITHOUT_TAX'
 }

@@ -1,5 +1,5 @@
 import { DataGridDataPointer, EntityPropertyKey } from '@/model/editor/data-grid'
-import { AttributeSchemaUnion } from '@/model/evitadb'
+import { AttributeSchemaUnion, QueryPriceMode } from '@/model/evitadb'
 
 /**
  * Builds query from arguments based on language of implementation.
@@ -13,6 +13,7 @@ export interface QueryBuilder {
      * @param filterBy filter by part of query in language of implementation
      * @param orderBy order by part of query in language of implementation
      * @param dataLocale locale of data in query, if undefined, only global data are returned
+     * @param priceType price type of data in query, undefined if the target collection doesn't support prices
      * @param requiredData defines which data should be fetched from collection as entity fields
      * @param pageNumber page number of query result
      * @param pageSize page size of query result
@@ -21,6 +22,7 @@ export interface QueryBuilder {
                filterBy: string,
                orderBy: string,
                dataLocale: string | undefined,
+               priceType: QueryPriceMode | undefined,
                requiredData: EntityPropertyKey[],
                pageNumber: number,
                pageSize: number): Promise<string>

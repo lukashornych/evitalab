@@ -4,22 +4,23 @@
  */
 import VExecuteQueryButton from '@/components/base/VExecuteQueryButton.vue'
 import VTabToolbar from '@/components/base/VTabToolbar.vue'
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
+import { dataLocaleKey } from '@/model/editor/data-grid'
 
 const props = defineProps<{
     path: string[],
-    locale: string | undefined,
     loading: boolean
 }>()
 const emit = defineEmits<{
     (e: 'executeQuery'): void
 }>()
+const dataLocale = inject(dataLocaleKey)
 
 const flags = computed<any>(() => {
     const flags: any[] = []
-    if (props.locale) {
+    if (dataLocale?.value != undefined) {
         flags.push({
-            title: props.locale,
+            title: dataLocale.value,
             prependIcon: 'mdi-translate',
         })
     }

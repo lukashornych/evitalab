@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * Entity property value renderer that tries to render the value as Markdown.
+ */
 
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import { UnexpectedError } from '@/model/lab'
@@ -7,6 +10,7 @@ import LabEditorDataGridGridCellDetailValueRenderer
 import VMarkdown from '@/components/base/VMarkdown.vue'
 import { computed, ref } from 'vue'
 import { Scalar } from '@/model/evitadb'
+import { EntityPropertyValue, ExtraEntityObjectType } from '@/model/editor/data-grid'
 
 const toaster: Toaster = useToaster()
 
@@ -23,8 +27,8 @@ enum ActionType {
 }
 
 const props = withDefaults(defineProps<{
-    value: any,
-    dataType: Scalar | undefined,
+    value: EntityPropertyValue | EntityPropertyValue[],
+    dataType: Scalar | ExtraEntityObjectType | undefined,
     fillSpace?: boolean
 }>(), {
     fillSpace: true
@@ -50,12 +54,12 @@ const actions = computed(() => {
     ]
 })
 const formattedValue = computed<string>(() => {
-    if (!prettyPrint.value || !props.dataType) {
-        return props.value.toString()
+    if (!prettyPrint.value || !props.dataType || (props.value instanceof EntityPropertyValue && props.value.isEmpty())) {
+        return props.value instanceof Array ? `[${props.value.map(it => it.toPreviewString()).join(', ')}]` : (props.value as EntityPropertyValue).toPreviewString()
     }
     switch (props.dataType) {
         case Scalar.String: {
-            const stringValue: string = (props.value as string).trim()
+            const stringValue: string = ((props.value as EntityPropertyValue).value() as string).trim()
             if (stringValue.startsWith('{') || stringValue.startsWith('[')) {
                 // probably JSON
                 return '```json\r\n' + stringValue + "\r\n```"
@@ -78,20 +82,20 @@ const formattedValue = computed<string>(() => {
         case Scalar.Character:
         case Scalar.BigDecimal:
         case Scalar.UUID:
-            return '`' + props.value.toString() + '`'
+            return '`' + (props.value as EntityPropertyValue).value().toString() + '`'
         case Scalar.OffsetDateTime:
-            return '📅 `' + offsetDateTimeFormatter.format(new Date(props.value.toString())) + '`'
+            return '📅 `' + offsetDateTimeFormatter.format(new Date((props.value as EntityPropertyValue).value().toString())) + '`'
         case Scalar.LocalDateTime:
-            return '📅 `' + localDateTimeFormatter.format(new Date(props.value.toString())) + '`'
+            return '📅 `' + localDateTimeFormatter.format(new Date((props.value as EntityPropertyValue).value().toString())) + '`'
         case Scalar.LocalDate:
-            return '📅 `' + localDateFormatter.format(new Date(props.value.toString())) + '`'
+            return '📅 `' + localDateFormatter.format(new Date((props.value as EntityPropertyValue).value().toString())) + '`'
         case Scalar.LocalTime:
-            return '📅 `' + localTimeFormatter.format( new Date('1970-01-01' + props.value.toString())) + '`'
+            return '📅 `' + localTimeFormatter.format( new Date('1970-01-01' + (props.value as EntityPropertyValue).value().toString())) + '`'
         case Scalar.DateTimeRange:
             return prettyPrintRangeValue(
                 props.value,
                 '📅 ',
-                (end: string): string => offsetDateTimeFormatter.format(new Date(end))
+                (end: EntityPropertyValue): string => offsetDateTimeFormatter.format(new Date(end.value()))
             )
         case Scalar.ByteNumberRange:
         case Scalar.ShortNumberRange:
@@ -99,38 +103,39 @@ const formattedValue = computed<string>(() => {
             return prettyPrintRangeValue(
                 props.value,
                 '',
-                (end: string): string => end.toString()
+                (end: EntityPropertyValue): string => end.value().toString()
             )
         case Scalar.BigDecimalNumberRange:
         case Scalar.LongNumberRange:
             return prettyPrintRangeValue(
                 props.value,
                 '',
-                (end: string): string => end
+                (end: EntityPropertyValue): string => end.value().toString()
             )
         case Scalar.Locale:
-            return '🌐 `' + props.value.toString() + '`'
+            return '🌐 `' + (props.value as EntityPropertyValue).value().toString() + '`'
         case Scalar.Currency:
-            return '💰 `' + props.value.toString() + '`'
+            return '💰 `' + (props.value as EntityPropertyValue).value().toString() + '`'
         case Scalar.Predecessor:
-            return '↻ `' + props.value.toString() + '`'
+            return '↻ `' + (props.value as EntityPropertyValue).value().toString() + '`'
         case Scalar.ComplexDataObject:
-            return '```json\r\n' + JSON.stringify(props.value, null, 2) + '\r\n```'
+        case ExtraEntityObjectType.Prices:
+            return '```json\r\n' + JSON.stringify((props.value as EntityPropertyValue).value(), null, 2) + '\r\n```'
         default:
-            return props.value.toString()
+            return props.value instanceof Array ? `[${props.value.map(it => it.toPreviewString()).join(', ')}]` : (props.value as EntityPropertyValue).toPreviewString()
     }
 })
 
-function prettyPrintRangeValue(rawRange: any, prefix: string, endPrettyPrinter: (end: any) => string): string {
-    if (!(props.value instanceof Array) || props.value.length !== 2) {
+function prettyPrintRangeValue(rawRange: any, prefix: string, endPrettyPrinter: (end: EntityPropertyValue) => string): string {
+    if (!(rawRange instanceof Array) || rawRange.length !== 2) {
         throw new UnexpectedError(undefined, 'Invalid DateTimeRange value.')
     }
-    const range: any[] = props.value as any[]
-    const from: any = range[0]
-    const to: any = range[1]
+    const range: EntityPropertyValue[] = rawRange as EntityPropertyValue[]
+    const from: EntityPropertyValue = range[0]
+    const to: EntityPropertyValue = range[1]
 
-    const formatEnd = (end: any): string => {
-        if (end == null) {
+    const formatEnd = (end: EntityPropertyValue): string => {
+        if (end.isEmpty()) {
             return '∞'
         }
         return endPrettyPrinter(end)

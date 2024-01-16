@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Allows pagination in form of a "show more" button for lists.
+ * Allows pagination in form of a "show more" button for expansion panels.
  */
 
 import { computed } from 'vue'
@@ -26,14 +26,15 @@ const pageOfItems = computed<any[]>(() => {
     <template v-for="(item, index) in pageOfItems" :key="index">
         <slot name="item" :item="item" :index="index" />
     </template>
-    <VListItem v-if="lastPage > 1 && page < lastPage">
+    <div class="pt-2">
         <VBtn
+            v-if="lastPage > 1 && page < lastPage"
             variant="outlined"
             @click="emit('update:page', page + 1)"
         >
             Show more
         </VBtn>
-    </VListItem>
+    </div>
 </template>
 
 <style lang="scss" scoped>

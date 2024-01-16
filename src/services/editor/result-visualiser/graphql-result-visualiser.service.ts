@@ -202,7 +202,7 @@ export class GraphQLHierarchyVisualiserService extends JsonHierarchyVisualiserSe
             // root node flush to final node collection
             trees.push(prevNode);
         } else {
-            // todo lho this should be needed
+            // todo lho this shouldn't be needed
             // @ts-ignore
             stack.at(-1).children.push(prevNode);
         }

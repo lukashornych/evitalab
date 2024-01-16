@@ -7,6 +7,7 @@ import { VisualisedHistogram, VisualisedHistogramBucket } from '@/model/editor/r
 import { computed } from 'vue'
 import LabEditorResultVisualiserHistogramNote
     from '@/components/lab/editor/result-visualiser/histogram/LabEditorResultVisualiserHistogramNote.vue'
+import { BigDecimal } from '@/model/evitadb'
 
 const props = defineProps<{
     histogram: VisualisedHistogram
@@ -48,13 +49,13 @@ const rangeInfo = computed<RangeInfo>(() => {
             const middle = (min + max) / 2
 
             // const step = roundStep((max - min) / props.histogram.buckets.length, getRequiredDecimalPlaces(props.histogram.buckets))
-            const leftRequestedThreshold: string | undefined = props.histogram.buckets.find((bucket) => bucket.requested)?.threshold
+            const leftRequestedThreshold: BigDecimal | undefined = props.histogram.buckets.find((bucket) => bucket.requested)?.threshold
             let rightRequestedThreshold: number | undefined = undefined
             if (leftRequestedThreshold != undefined) {
                 // there must be last requested bucket if there is first requested bucket, even if it's the same bucket
                 const rightRequestedIndex = props.histogram.buckets.findLastIndex((bucket) => bucket.requested)!
                 if (rightRequestedIndex < props.histogram.buckets.length - 1) {
-                    rightRequestedThreshold = parseFloat(props.histogram.buckets[rightRequestedIndex + 1].threshold)
+                    rightRequestedThreshold = parseFloat(props.histogram.buckets[rightRequestedIndex + 1]!.threshold!)
                 } else {
                     rightRequestedThreshold = max
                 }
