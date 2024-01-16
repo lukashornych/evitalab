@@ -26,7 +26,7 @@ const gridParams = mandatoryInject(gridParamsKey)
 
 function openSchema(): void {
     editorService.createTabRequest(
-        new SchemaViewerRequest(
+        SchemaViewerRequest.createNew(
             gridParams.dataPointer.connection,
             new EntitySchemaPointer(
                 gridParams.dataPointer.catalogName,

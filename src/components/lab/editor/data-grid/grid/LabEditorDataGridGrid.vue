@@ -9,6 +9,7 @@ import LabEditorDataGridGridCellDetail from './LabEditorDataGridGridCellDetail.v
 import { inject, ref } from 'vue'
 import LabEditorDataGridGridCell from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCell.vue'
 import {
+    DataGridData,
     dataLocaleKey,
     EntityPropertyDescriptor, entityPropertyDescriptorIndexKey,
     EntityPropertyType,
@@ -95,12 +96,12 @@ function handlePropertyClicked(propertyKey: string, value: EntityPropertyValue |
         (propertyDescriptor.type === EntityPropertyType.AssociatedData && propertyDescriptor.schema.type === Scalar.Predecessor))) {
         // we want references to open referenced entities in appropriate new grid for referenced collection
         editorService.createTabRequest(DataGridRequest.createNew(
-            props.gridProps.params.dataPointer.connection,
-            props.gridProps.params.dataPointer.catalogName,
-            props.gridProps.params.dataPointer.entityType,
+            gridParams.dataPointer.connection,
+            gridParams.dataPointer.catalogName,
+            gridParams.dataPointer.entityType,
             new DataGridData(
                 queryLanguage.value,
-                dataGridService.buildPredecessorEntityFilterBy(queryLanguage.value as QueryLanguage, value),
+                dataGridService.buildPredecessorEntityFilterBy(queryLanguage.value as QueryLanguage, (value as NativeValue).value() as number),
                 undefined,
                 dataLocale?.value,
                 undefined,
@@ -112,8 +113,8 @@ function handlePropertyClicked(propertyKey: string, value: EntityPropertyValue |
     } else if (propertyDescriptor && propertyDescriptor.type === EntityPropertyType.References) {
         // we want references to open referenced entities in appropriate new grid for referenced collection
         editorService.createTabRequest(DataGridRequest.createNew(
-            gridParams.params.dataPointer.connection,
-            gridParams.params.dataPointer.catalogName,
+            gridParams.dataPointer.connection,
+            gridParams.dataPointer.catalogName,
             propertyDescriptor.schema.referencedEntityType,
             new DataGridData(
                 queryLanguage.value,

@@ -2,7 +2,7 @@ import { QueryExecutor } from '@/services/editor/data-grid/query-executor'
 import { LabService } from '@/services/lab.service'
 import {
     DataGridDataPointer, EntityPrice, EntityPrices, EntityProperty, EntityPropertyKey,
-    EntityPropertyType, EntityReferenceValue, FlatEntity,
+    EntityPropertyType, EntityReferenceValue, FlatEntity, NativeValue,
     QueryResult,
     StaticEntityProperties
 } from '@/model/editor/data-grid'
@@ -65,13 +65,13 @@ export class GraphQLQueryExecutor extends QueryExecutor {
 
         const parentPrimaryKey: number = parentEntity[StaticEntityProperties.PrimaryKey]
 
-        const representativeAttributes: any[] = []
+        const representativeAttributes: (NativeValue | NativeValue[])[] = []
         const attributes = parentEntity[EntityPropertyType.Attributes] || {}
         for (const attributeName in attributes) {
-            representativeAttributes.push(attributes[attributeName])
+            representativeAttributes.push(this.wrapRawValueIntoNativeValue(attributes[attributeName]))
         }
 
-        const parentReference: EntityReferenceValue = new EntityReferenceValue(parentPrimaryKey, representativeAttributes)
+        const parentReference: EntityReferenceValue = new EntityReferenceValue(parentPrimaryKey, representativeAttributes.flat())
         return [EntityPropertyKey.entity(StaticEntityProperties.ParentPrimaryKey), parentReference]
     }
 
@@ -137,13 +137,13 @@ export class GraphQLQueryExecutor extends QueryExecutor {
 
     private resolveReferenceRepresentativeValue(reference: any): EntityReferenceValue {
         const referencedPrimaryKey: number = reference['referencedPrimaryKey']
-        const representativeAttributes: any[] = []
+        const representativeAttributes: (NativeValue | NativeValue[])[] = []
 
         const attributes = reference['referencedEntity']?.[EntityPropertyType.Attributes] || {}
         for (const attributeName in attributes) {
-            representativeAttributes.push(attributes[attributeName])
+            representativeAttributes.push(this.wrapRawValueIntoNativeValue(attributes[attributeName]))
         }
 
-        return new EntityReferenceValue(referencedPrimaryKey, representativeAttributes)
+        return new EntityReferenceValue(referencedPrimaryKey, representativeAttributes.flat())
     }
 }

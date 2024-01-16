@@ -62,7 +62,7 @@ export class DataGridData implements TabRequestComponentData, SerializableTabReq
     readonly filterBy?: string
     readonly orderBy?: string
     readonly dataLocale?: string
-    readonly priceType?: QueryPriceMode,
+    readonly priceType?: QueryPriceMode
     readonly displayedProperties?: EntityPropertyKey[]
     readonly pageSize?: number
     readonly pageNumber?: number
@@ -136,7 +136,7 @@ export class DataGridDataPointer extends CatalogPointer {
 /**
  * Dependency injection key for data grid parameters
  */
-export const gridParamsKey = Symbol('gridParams') as InjectionKey<DataGridConsoleParams>
+export const gridParamsKey = Symbol('gridParams') as InjectionKey<DataGridParams>
 /**
  * Dependency injection key for index of available entity property descriptors
  */
@@ -419,8 +419,6 @@ export class EntityReferenceValue extends EntityPropertyValue {
             const representativeAttributeValue = representativeAttribute.value()
             if (representativeAttributeValue == undefined) {
                 return super.emptyEntityPropertyValuePlaceholder
-            } else if (representativeAttributeValue instanceof Array) {
-                flattenedRepresentativeAttributes.push(...representativeAttributeValue.map(it => it.toString()))
             } else {
                 flattenedRepresentativeAttributes.push(representativeAttributeValue.toString())
             }
