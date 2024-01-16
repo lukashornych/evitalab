@@ -77,9 +77,43 @@ export interface ExecutableTabRequest extends TabRequestComponentParams {
 }
 
 /**
+ * Serializable DTO for storing {@link TabRequestComponentParams} in a storage or link.
+ */
+export interface SerializableTabRequestComponentParams<DTO extends TabRequestComponentParamsDto> {
+
+    /**
+     * Converts the params to a DTO that can be safely serialized.
+     */
+    toSerializable(): DTO
+}
+
+/**
+ * Serializable DTO for storing {@link TabRequestComponentParams} in a storage or link.
+ */
+export interface TabRequestComponentParamsDto {
+}
+
+/**
+ * Serializable DTO for storing {@link TabRequestComponentData} in a storage or link.
+ */
+export interface SerializableTabRequestComponentData<DTO extends TabRequestComponentDataDto> {
+
+    /**
+     * Converts the params to a DTO that can be safely serialized.
+     */
+    toSerializable(): DTO
+}
+
+/**
+ * Serializable DTO for storing {@link TabRequestComponentData} in a storage or link.
+ */
+export interface TabRequestComponentDataDto {
+}
+
+/**
  * Represents injectable/storable data of a component that doesn't support any user data.
  */
-export interface VoidTabRequestComponentData extends TabRequestComponentData {}
+export class VoidTabRequestComponentData implements TabRequestComponentData {}
 
 /**
  * Represents basic events every tab component should emit.
@@ -91,6 +125,9 @@ export interface TabComponentEvents {
     (e: 'ready'): void
 }
 
+/**
+ * Points to concrete evitaDB catalog in specific connection.
+ */
 export abstract class CatalogPointer {
     readonly connection: EvitaDBConnection
     readonly catalogName: string

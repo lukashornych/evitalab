@@ -1,8 +1,8 @@
 <script setup lang="ts">
 
 import {
-    DataGridConsoleData,
-    DataGridConsoleParams,
+    DataGridData,
+    DataGridParams,
     EntityPropertyDescriptor,
     EntityPropertyKey,
     EntityPropertySectionSelection,
@@ -13,7 +13,7 @@ import { TabComponentProps } from '@/model/editor/editor'
 import VListItemDivider from '@/components/base/VListItemDivider.vue'
 
 const props = defineProps<{
-    gridProps: TabComponentProps<DataGridConsoleParams, DataGridConsoleData>,
+    gridProps: TabComponentProps<DataGridParams, DataGridData>,
     title: string, // todo lho this could be deleted when i18n is implemented, we could use the property type to resolve title
     propertyType: EntityPropertyType,
     selected: EntityPropertyKey[],

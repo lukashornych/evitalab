@@ -9,7 +9,7 @@ import { ref, watch } from 'vue'
 import LabEditorDataGridEntityPropertySelector
     from '@/components/lab/editor/data-grid/property-selector/LabEditorDataGridPropertySelector.vue'
 import {
-    DataGridConsoleData, DataGridConsoleParams,
+    DataGridData, DataGridParams,
     EntityPropertyDescriptor,
     EntityPropertyKey
 } from '@/model/editor/data-grid'
@@ -23,7 +23,7 @@ import { ConstraintListType, evitaQL, EvitaQLConstraintListMode } from '@lukasho
 import { EditorView } from 'codemirror'
 
 const props = defineProps<{
-    gridProps: TabComponentProps<DataGridConsoleParams, DataGridConsoleData>,
+    gridProps: TabComponentProps<DataGridParams, DataGridData>,
     selectedQueryLanguage: QueryLanguage,
     filterBy: string,
     orderBy: string,

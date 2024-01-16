@@ -4,7 +4,7 @@ import {
     EntityPropertyDescriptor,
     EntityPropertyKey,
     EntityPropertyType,
-    EntityPropertySectionSelection, DataGridConsoleParams, DataGridConsoleData,
+    EntityPropertySectionSelection, DataGridParams, DataGridData,
     parentEntityPropertyType
 } from '@/model/editor/data-grid'
 import VCardTitleWithActions from '@/components/base/VCardTitleWithActions.vue'
@@ -33,7 +33,7 @@ const topLevelSections: EntityPropertyType[] = [
 const toaster: Toaster = useToaster()
 
 const props = defineProps<{
-    gridProps: TabComponentProps<DataGridConsoleParams, DataGridConsoleData>,
+    gridProps: TabComponentProps<DataGridParams, DataGridData>,
     modelValue: boolean,
     selected: EntityPropertyKey[],
     propertyDescriptorIndex: Map<string, EntityPropertyDescriptor>,

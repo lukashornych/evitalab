@@ -1,8 +1,8 @@
 <script setup lang="ts">
 
 import {
-    DataGridConsoleData,
-    DataGridConsoleParams,
+    DataGridData,
+    DataGridParams,
     EntityPropertyDescriptor
 } from '@/model/editor/data-grid'
 import LabEditorDataGridPropertyListItem from './LabEditorDataGridPropertySelectorSectionItem.vue'
@@ -14,7 +14,7 @@ import { TabComponentProps } from '@/model/editor/editor'
 const editorService: EditorService = useEditorService()
 
 const props = defineProps<{
-    gridProps: TabComponentProps<DataGridConsoleParams, DataGridConsoleData>,
+    gridProps: TabComponentProps<DataGridParams, DataGridData>,
     propertyDescriptor: EntityPropertyDescriptor
 }>()
 const emit = defineEmits<{
@@ -23,7 +23,7 @@ const emit = defineEmits<{
 
 function openSchema(): void {
     editorService.createTabRequest(
-        new SchemaViewerRequest(
+        SchemaViewerRequest.createNew(
             props.gridProps.params.dataPointer.connection,
             new EntitySchemaPointer(
                 props.gridProps.params.dataPointer.catalogName,

@@ -110,7 +110,7 @@ const chartOptions = {
     },
     tooltip: {
         theme: 'dark',
-        custom: ({ dataPointIndex }) => {
+        custom: ({ dataPointIndex }: { dataPointIndex: number }) => {
             const bucket: VisualisedHistogramBucket = props.histogram.buckets[dataPointIndex]
             return `
                 <div class="histogram-tooltip">

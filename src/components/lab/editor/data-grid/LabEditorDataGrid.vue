@@ -5,10 +5,10 @@
 
 import 'splitpanes/dist/splitpanes.css'
 
-import { onBeforeMount, ref, watch } from 'vue'
+import { computed, onBeforeMount, ref, watch } from 'vue'
 import {
-    DataGridConsoleData,
-    DataGridConsoleParams, EntityPropertyDescriptor,
+    DataGridData,
+    DataGridParams, EntityPropertyDescriptor,
     EntityPropertyKey, EntityPropertyType,
     QueryResult
 } from '@/model/editor/data-grid'
@@ -23,7 +23,7 @@ import LabEditorDataGridGrid from '@/components/lab/editor/data-grid/grid/LabEdi
 const dataGridService: DataGridService = useDataGridService()
 const toaster: Toaster = useToaster()
 
-const props = defineProps<TabComponentProps<DataGridConsoleParams, DataGridConsoleData>>()
+const props = defineProps<TabComponentProps<DataGridParams, DataGridData>>()
 const emit = defineEmits<TabComponentEvents>()
 
 // static data
@@ -78,6 +78,18 @@ const resultEntities = ref<any[]>([])
 const totalResultCount = ref<number>(0)
 
 const initialized = ref<boolean>(false)
+
+const currentData = computed<DataGridData>(() => {
+    return new DataGridData(
+        selectedQueryLanguage.value,
+        filterByCode.value,
+        orderByCode.value,
+        selectedDataLocale.value,
+        displayedProperties.value,
+        pageSize.value,
+        pageNumber.value
+    )
+})
 
 emit('ready')
 onBeforeMount(() => {
@@ -158,6 +170,8 @@ async function updateDisplayedGridHeaders(): Promise<void> {
 function preselectEntityProperties(): void {
     if (displayedProperties.value.length > 0) {
         // already preselected by initiator
+        // but because we don't trigger the watch to update the headers, we need to do it manually
+        updateDisplayedGridHeaders()
         return
     }
 
@@ -169,10 +183,12 @@ function preselectEntityProperties(): void {
 async function gridUpdated({ page, itemsPerPage, sortBy }: { page: number, itemsPerPage: number, sortBy: any[] }): Promise<void> {
     pageNumber.value = page
     pageSize.value = itemsPerPage
-    try {
-        orderByCode.value = await dataGridService.buildOrderByFromGridColumns(props.params.dataPointer, selectedQueryLanguage.value, sortBy)
-    } catch (error: any) {
-        toaster.error(error)
+    if (sortBy.length > 0) {
+        try {
+            orderByCode.value = await dataGridService.buildOrderByFromGridColumns(props.params.dataPointer, selectedQueryLanguage.value, sortBy)
+        } catch (error: any) {
+            toaster.error(error)
+        }
     }
 
     await executeQuery()
@@ -213,6 +229,8 @@ async function executeQuery(): Promise<void> {
         class="data-grid"
     >
         <LabEditorDataGridToolbar
+            :grid-props="props"
+            :current-data="currentData"
             :path="path"
             :locale="selectedDataLocale"
             :loading="loading"

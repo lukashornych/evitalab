@@ -5,8 +5,14 @@
 import VExecuteQueryButton from '@/components/base/VExecuteQueryButton.vue'
 import VTabToolbar from '@/components/base/VTabToolbar.vue'
 import { computed } from 'vue'
+import { TabType } from '@/model/editor/share-tab-object'
+import LabEditorTabShareButton from '@/components/lab/editor/tab/LabEditorTabShareButton.vue'
+import { TabComponentProps } from '@/model/editor/editor'
+import { DataGridData, DataGridParams } from '@/model/editor/data-grid'
 
 const props = defineProps<{
+    gridProps: TabComponentProps<DataGridParams, DataGridData>,
+    currentData: DataGridData,
     path: string[],
     locale: string | undefined,
     loading: boolean
@@ -35,6 +41,13 @@ const flags = computed<any>(() => {
         :flags="flags"
     >
         <template #append>
+            <LabEditorTabShareButton
+                :tab-type="TabType.DataGrid"
+                :tab-params="gridProps.params"
+                :tab-data="currentData"
+                :disabled="!gridProps.params.dataPointer.connection.preconfigured"
+            />
+
             <VExecuteQueryButton :loading="loading" @click="emit('executeQuery')" />
         </template>
 

@@ -89,6 +89,7 @@ const state = (): LabState => {
         try {
             preconfiguredConnections = (JSON.parse(atob(preconfiguredConnectionsCookie)) as Array<any>)
                 .map(connection => EvitaDBConnection.fromJson(connection, true))
+            // todo validate duplicate connections, move this to Lab component to have access to Toaster
         } catch (e) {
             console.error('Failed to load preconfigured connections cookie', e)
         }
@@ -97,7 +98,7 @@ const state = (): LabState => {
     if (import.meta.env.DEV) {
         preconfiguredConnections.push(new EvitaDBConnection(
             'demo',
-            'Demo',
+            'Demo (dev)',
             true,
             'https://demo.evitadb.io/lab/api',
             'https://demo.evitadb.io:5555/rest',
@@ -105,7 +106,7 @@ const state = (): LabState => {
         ))
         preconfiguredConnections.push(new EvitaDBConnection(
             'localhost',
-            'Localhost',
+            'Localhost (dev)',
             true,
             'https://localhost:5555/lab/api',
             'https://localhost:5555/rest',
@@ -145,6 +146,7 @@ const getters: LabGetters = {
     },
     getConnection(state: LabState): (id: EvitaDBConnectionId) => EvitaDBConnection | undefined {
         return (id: EvitaDBConnectionId) => {
+            // todo index by id
             return [...state.preconfiguredConnections, ...state.userConnections].find((c: any) => c.id === id)
         }
     },

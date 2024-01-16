@@ -3,18 +3,21 @@
 import { computed, ref, watch } from 'vue'
 import { TabRequest } from '@/model/editor/editor'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import LabEditorTabWindow from './LabEditorTabWindow.vue'
+import LabEditorTabWindow from './tab/LabEditorTabWindow.vue'
 import { ellipsis } from '@/utils/text-utils'
 import LabEditorWelcomeScreen from './LabEditorWelcomeScreen.vue'
-import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router'
+import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-router'
 import { useToaster } from '@/services/editor/toaster'
 import { DemoSnippetResolver, useDemoSnippetResolver } from '@/services/editor/demo-snippet-resolver.service'
-import { DemoSnippetRequest } from '@/model/editor/demo-snippet-request'
+import { SharedTabResolver, useSharedTabResolver } from '@/services/editor/shared-tab-resolver.service'
+import LabEditorTabSharedDialog from '@/components/lab/editor/tab/LabEditorTabSharedDialog.vue'
 
+const router: Router = useRouter()
 const currentRoute: RouteLocationNormalizedLoaded = useRoute()
 const toaster = useToaster()
 const editorService: EditorService = useEditorService()
 const demoCodeSnippetResolver: DemoSnippetResolver = useDemoSnippetResolver()
+const sharedTabResolver: SharedTabResolver = useSharedTabResolver()
 
 const tabs = computed<TabRequest<any, any>[]>(() => {
     return editorService.getTabRequests()
@@ -45,6 +48,10 @@ function closeTab(tabId: string) {
     }
 }
 
+async function removeParamsFromUrl() {
+    await router.replace({ path: currentRoute.path })
+}
+
 /**
  * open demo code snippet if requested
  */
@@ -55,18 +62,44 @@ async function resolveDemoCodeSnippet(): Promise<TabRequest<any, any> | undefine
     }
 
     try {
-        const demoSnippetRequest: DemoSnippetRequest = JSON.parse(atob(demoSnippetRequestSerialized)) as DemoSnippetRequest
-        return await demoCodeSnippetResolver.resolve(demoSnippetRequest)
+        const tabRequest = await demoCodeSnippetResolver.resolve(demoSnippetRequestSerialized)
+        await removeParamsFromUrl()
+        return tabRequest
     } catch (e: any) {
         toaster.error(e)
     }
 }
-resolveDemoCodeSnippet()
-    .then(tabRequest => {
-        if (tabRequest) {
-            editorService.createTabRequest(tabRequest)
-        }
-    })
+resolveDemoCodeSnippet().then(tabRequest => {
+    if (tabRequest != undefined) {
+        editorService.createTabRequest(tabRequest)
+    }
+})
+
+/**
+ * Open shared tab if requested
+ */
+async function resolveSharedTab(): Promise<TabRequest<any, any> | undefined> {
+    const sharedTabSerialized: string | undefined = currentRoute.query.sharedTab as string | undefined
+    if (sharedTabSerialized == undefined) {
+        return undefined
+    }
+
+    try {
+        const tabRequest = await sharedTabResolver.resolve(sharedTabSerialized)
+        await removeParamsFromUrl()
+        return tabRequest
+    } catch (e: any) {
+        toaster.error(e)
+    }
+}
+const sharedTabDialogOpen = ref<boolean>(false)
+const sharedTabRequest = ref<TabRequest<any, any> | undefined>()
+resolveSharedTab().then(tabRequest => {
+    if (tabRequest != undefined) {
+        sharedTabRequest.value = tabRequest
+        sharedTabDialogOpen.value = true
+    }
+})
 </script>
 
 <template>
@@ -139,6 +172,12 @@ resolveDemoCodeSnippet()
             <LabEditorWelcomeScreen/>
         </div>
     </VMain>
+
+    <LabEditorTabSharedDialog
+        v-if="sharedTabRequest"
+        :tab-request="sharedTabRequest"
+        @resolve="sharedTabRequest = undefined"
+    />
 </template>
 
 <style scoped>

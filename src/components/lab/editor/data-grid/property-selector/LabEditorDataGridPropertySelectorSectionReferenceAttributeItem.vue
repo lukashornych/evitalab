@@ -1,8 +1,8 @@
 <script setup lang="ts">
 
 import {
-    DataGridConsoleData,
-    DataGridConsoleParams,
+    DataGridData,
+    DataGridParams,
     EntityPropertyDescriptor, EntityPropertyKey
 } from '@/model/editor/data-grid'
 import { LabService, useLabService } from '@/services/lab.service'
@@ -16,7 +16,7 @@ const labService: LabService = useLabService()
 const editorService: EditorService = useEditorService()
 
 const props = defineProps<{
-    gridProps: TabComponentProps<DataGridConsoleParams, DataGridConsoleData>,
+    gridProps: TabComponentProps<DataGridParams, DataGridData>,
     referencePropertyDescriptor: EntityPropertyDescriptor,
     attributePropertyDescriptor: EntityPropertyDescriptor
 }>()
@@ -29,7 +29,7 @@ const flags: string[] = labService.getAttributeSchemaFlags(props.attributeProper
 
 function openSchema(): void {
     editorService.createTabRequest(
-        new SchemaViewerRequest(
+        SchemaViewerRequest.createNew(
             props.gridProps.params.dataPointer.connection,
             new ReferenceAttributeSchemaPointer(
                 props.gridProps.params.dataPointer.catalogName,

@@ -44,7 +44,7 @@ const connection = inject<EvitaDBConnection>('connection') as EvitaDBConnection
 const catalogSchema = inject<Ref<CatalogSchema | undefined>>('catalogSchema') as Ref<CatalogSchema>
 
 function openDataGrid() {
-    editorService.createTabRequest(new DataGridRequest(
+    editorService.createTabRequest(DataGridRequest.createNew(
         connection as EvitaDBConnection,
         catalogSchema.value.name,
         props.entitySchema.name
@@ -58,7 +58,7 @@ function handleAction(action: string) {
             break
         case ActionType.ViewSchema:
             editorService.createTabRequest(
-                new SchemaViewerRequest(
+                SchemaViewerRequest.createNew(
                     connection,
                     new EntitySchemaPointer(
                         catalogSchema.value.name,

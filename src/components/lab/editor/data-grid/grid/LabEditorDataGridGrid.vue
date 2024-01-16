@@ -9,8 +9,8 @@ import LabEditorDataGridGridCellDetail from './LabEditorDataGridGridCellDetail.v
 import { ref } from 'vue'
 import LabEditorDataGridGridCell from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCell.vue'
 import {
-    DataGridConsoleData,
-    DataGridConsoleParams,
+    DataGridData,
+    DataGridParams,
     EntityPropertyDescriptor,
     EntityPropertyType, EntityReferenceValue,
     StaticEntityProperties
@@ -32,7 +32,7 @@ const toaster: Toaster = useToaster()
 const pageSizeOptions: any[] = [10, 25, 50, 100, 250, 500, 1000].map(it => ({ title: it.toString(10), value: it }))
 
 const props = defineProps<{
-    gridProps: TabComponentProps<DataGridConsoleParams, DataGridConsoleData>,
+    gridProps: TabComponentProps<DataGridParams, DataGridData>,
     entityPropertyDescriptorIndex: Map<String, EntityPropertyDescriptor>,
     dataLocale: string | undefined,
     queryLanguage: QueryLanguage,
@@ -72,54 +72,60 @@ function handlePropertyClicked(propertyKey: string, value: any): void {
         propertyDescriptor.type === EntityPropertyType.Entity &&
         propertyDescriptor.key.name === StaticEntityProperties.ParentPrimaryKey) {
         // we want to open parent entity in appropriate new grid
-        editorService.createTabRequest(new DataGridRequest(
+        editorService.createTabRequest(DataGridRequest.createNew(
             props.gridProps.params.dataPointer.connection,
             props.gridProps.params.dataPointer.catalogName,
             props.gridProps.params.dataPointer.entityType,
-            {
-                dataLocale: props.dataLocale,
-                queryLanguage: props.queryLanguage,
-                pageNumber: props.pageNumber,
-                pageSize: props.pageSize,
-                filterBy: dataGridService.buildParentEntityFilterBy(props.queryLanguage, (value as EntityReferenceValue).primaryKey)
-            },
+            new DataGridData(
+                props.queryLanguage,
+                dataGridService.buildParentEntityFilterBy(props.queryLanguage, (value as EntityReferenceValue).primaryKey),
+                undefined,
+                props.dataLocale,
+                undefined,
+                props.pageSize,
+                props.pageNumber
+            ),
             true
         ))
     } else if (propertyDescriptor &&
         ((propertyDescriptor.type === EntityPropertyType.Attributes && propertyDescriptor.schema.type === Scalar.Predecessor) ||
         (propertyDescriptor.type === EntityPropertyType.AssociatedData && propertyDescriptor.schema.type === Scalar.Predecessor))) {
         // we want references to open referenced entities in appropriate new grid for referenced collection
-        editorService.createTabRequest(new DataGridRequest(
+        editorService.createTabRequest(DataGridRequest.createNew(
             props.gridProps.params.dataPointer.connection,
             props.gridProps.params.dataPointer.catalogName,
             props.gridProps.params.dataPointer.entityType,
-            {
-                dataLocale: props.dataLocale,
-                queryLanguage: props.queryLanguage,
-                pageNumber: props.pageNumber,
-                pageSize: props.pageSize,
-                filterBy: dataGridService.buildPredecessorEntityFilterBy(props.queryLanguage, value)
-            },
+            new DataGridData(
+                props.queryLanguage,
+                dataGridService.buildPredecessorEntityFilterBy(props.queryLanguage, value),
+                undefined,
+                props.dataLocale,
+                undefined,
+                props.pageSize,
+                props.pageNumber
+            ),
             true
         ))
     } else if (propertyDescriptor && propertyDescriptor.type === EntityPropertyType.References) {
         // we want references to open referenced entities in appropriate new grid for referenced collection
-        editorService.createTabRequest(new DataGridRequest(
+        editorService.createTabRequest(DataGridRequest.createNew(
             props.gridProps.params.dataPointer.connection,
             props.gridProps.params.dataPointer.catalogName,
             propertyDescriptor.schema.referencedEntityType,
-            {
-                dataLocale: props.dataLocale,
-                queryLanguage: props.queryLanguage,
-                pageNumber: props.pageNumber,
-                pageSize: props.pageSize,
-                filterBy: dataGridService.buildReferencedEntityFilterBy(
+            new DataGridData(
+                props.queryLanguage,
+                dataGridService.buildReferencedEntityFilterBy(
                     props.queryLanguage,
                     value instanceof Array
                         ? (value as EntityReferenceValue[]).map(it => it.primaryKey)
                         : [(value as EntityReferenceValue).primaryKey]
-                )
-            },
+                ),
+                undefined,
+                props.dataLocale,
+                undefined,
+                props.pageSize,
+                props.pageNumber
+            ),
             true
         ))
     } else {

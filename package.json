@@ -26,6 +26,7 @@
     "highlight.js": "^11.9.0",
     "js-cookie": "^3.0.5",
     "ky": "^0.33.3",
+    "lz-string": "^1.5.0",
     "markdown-it": "^13.0.2",
     "markdown-it-emoji": "^2.0.2",
     "markdown-it-highlightjs": "^4.0.1",
@@ -42,7 +43,8 @@
     "vuetify": "^3.1.0",
     "vuex": "^4.0.2",
     "webfontloader": "^1.0.0",
-    "xml-formatter": "^3.5.0"
+    "xml-formatter": "^3.5.0",
+    "xxhashjs": "^0.2.2"
   },
   "devDependencies": {
     "@babel/types": "^7.21.4",
@@ -50,6 +52,7 @@
     "@types/splitpanes": "^2.2.1",
     "@types/uuid": "^9.0.2",
     "@types/webfontloader": "^1.6.35",
+    "@types/xxhashjs": "^0.2.4",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vue/eslint-config-typescript": "^11.0.0",
     "eslint": "^8.22.0",
