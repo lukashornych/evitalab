@@ -30,7 +30,7 @@ const flags: string[] = labService.getAttributeSchemaFlags(props.attributeProper
 
 function openSchema(): void {
     editorService.createTabRequest(
-        new SchemaViewerRequest(
+        SchemaViewerRequest.createNew(
             gridParams.dataPointer.connection,
             new ReferenceAttributeSchemaPointer(
                 gridParams.dataPointer.catalogName,

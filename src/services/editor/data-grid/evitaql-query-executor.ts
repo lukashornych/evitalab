@@ -2,7 +2,7 @@ import { QueryExecutor } from '@/services/editor/data-grid/query-executor'
 import { LabService } from '@/services/lab.service'
 import {
     DataGridDataPointer, EntityPrice, EntityPrices, EntityProperty, EntityPropertyKey,
-    EntityPropertyType, EntityReferenceValue, FlatEntity,
+    EntityPropertyType, EntityPropertyValue, EntityReferenceValue, FlatEntity, NativeValue,
     QueryResult,
     StaticEntityProperties
 } from '@/model/editor/data-grid'
@@ -22,7 +22,6 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
 
     async executeQuery(dataPointer: DataGridDataPointer, query: string): Promise<QueryResult> {
         const result: Response = await this.evitaDBClient.queryEntities(dataPointer.connection, dataPointer.catalogName, query)
-
         return {
             entities: result?.recordPage?.data.map((entity: any) => this.flattenEntity(entity)) || [],
             totalEntitiesCount: result?.recordPage?.totalRecordCount || 0
@@ -57,17 +56,17 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
 
         const parentPrimaryKey: number = parentEntity[StaticEntityProperties.PrimaryKey]
 
-        const representativeAttributes: any[] = []
+        const representativeAttributes: (NativeValue | NativeValue[])[] = []
         const globalRepresentativeAttributes = parentEntity?.['attributes']?.['global'] || {}
         for (const attributeName in globalRepresentativeAttributes) {
-            representativeAttributes.push(globalRepresentativeAttributes[attributeName])
+            representativeAttributes.push(this.wrapRawValueIntoNativeValue(globalRepresentativeAttributes[attributeName]))
         }
         const localizedRepresentativeAttributes = parentEntity?.['attributes']?.['localized'] || {}
         for (const attributeName in localizedRepresentativeAttributes) {
-            representativeAttributes.push(localizedRepresentativeAttributes[attributeName])
+            representativeAttributes.push(this.wrapRawValueIntoNativeValue(localizedRepresentativeAttributes[attributeName]))
         }
 
-        const parentReference: EntityReferenceValue = new EntityReferenceValue(parentPrimaryKey, representativeAttributes)
+        const parentReference: EntityReferenceValue = new EntityReferenceValue(parentPrimaryKey, representativeAttributes.flat())
         return [EntityPropertyKey.entity(StaticEntityProperties.ParentPrimaryKey), parentReference]
     }
 
@@ -152,14 +151,14 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
                         new Map<string, EntityReferenceValue[]>()
                     )
                 mergedReferenceAttributesByName.forEach((attributeValues, attributeName) => {
-                    flattenedReferences.push([EntityPropertyKey.referenceAttributes(referenceName, attributeName), this.wrapRawValueIntoNativeValue(attributeValues)])
+                    flattenedReferences.push([EntityPropertyKey.referenceAttributes(referenceName, attributeName), attributeValues])
                 })
             } else {
                 const representativeValue: EntityReferenceValue = this.resolveReferenceRepresentativeValue(referencesOfName)
                 flattenedReferences.push([EntityPropertyKey.references(referenceName), representativeValue])
 
                 this.flattenAttributesForSingleReference(referencesOfName).forEach(([attributeName, attributeValue]) => {
-                    flattenedReferences.push([EntityPropertyKey.referenceAttributes(referenceName, attributeName), this.wrapRawValueIntoNativeValue(attributeValue)])
+                    flattenedReferences.push([EntityPropertyKey.referenceAttributes(referenceName, attributeName), attributeValue])
                 })
             }
         }
@@ -169,19 +168,19 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
 
     private resolveReferenceRepresentativeValue(reference: any): EntityReferenceValue {
         const referencedPrimaryKey: number = reference['referencedPrimaryKey']
-        const representativeAttributes: any[] = []
+        const representativeAttributes: (EntityPropertyValue | EntityPropertyValue[])[] = []
 
         const globalRepresentativeAttributes = reference['referencedEntity']?.[EntityPropertyType.Attributes]?.['global'] || {}
         for (const attributeName in globalRepresentativeAttributes) {
-            representativeAttributes.push(globalRepresentativeAttributes[attributeName])
+            representativeAttributes.push(this.wrapRawValueIntoNativeValue(globalRepresentativeAttributes[attributeName]))
         }
 
         const localizedRepresentativeAttributes = reference['referencedEntity']?.[EntityPropertyType.Attributes]?.['localized'] || {}
         for (const attributeName in localizedRepresentativeAttributes) {
-            representativeAttributes.push(localizedRepresentativeAttributes[attributeName])
+            representativeAttributes.push(this.wrapRawValueIntoNativeValue(localizedRepresentativeAttributes[attributeName]))
         }
 
-        return new EntityReferenceValue(referencedPrimaryKey, representativeAttributes)
+        return new EntityReferenceValue(referencedPrimaryKey, representativeAttributes.flat())
     }
 
     private flattenAttributesForSingleReference(reference: any): [string, EntityReferenceValue][] {
@@ -190,14 +189,16 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
 
         const globalAttributes = reference[EntityPropertyType.Attributes]?.['global'] || {}
         for (const attributeName in globalAttributes) {
-            flattenedAttributes.push([attributeName, new EntityReferenceValue(referencedPrimaryKey, [globalAttributes[attributeName]])])
+            const wrappedValue: NativeValue | NativeValue[] = this.wrapRawValueIntoNativeValue(globalAttributes[attributeName])
+            flattenedAttributes.push([attributeName, new EntityReferenceValue(referencedPrimaryKey, wrappedValue instanceof Array ? wrappedValue : [wrappedValue])])
         }
         const localizedAttributes = reference[EntityPropertyType.Attributes]?.['localized'] || {}
         for (const locale in localizedAttributes) {
             // this expects that we support only one locale
             const attributesInLocale = localizedAttributes[locale]
             for (const attributeName in attributesInLocale) {
-                flattenedAttributes.push([attributeName, new EntityReferenceValue(referencedPrimaryKey, [attributesInLocale[attributeName]])])
+                const wrappedValue: NativeValue | NativeValue[] = this.wrapRawValueIntoNativeValue(attributesInLocale[attributeName])
+                flattenedAttributes.push([attributeName, new EntityReferenceValue(referencedPrimaryKey, wrappedValue instanceof Array ? wrappedValue : [wrappedValue])])
             }
         }
 

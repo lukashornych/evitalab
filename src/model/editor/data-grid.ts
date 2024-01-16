@@ -1,17 +1,130 @@
-import { EvitaDBConnection, QueryLanguage, UnexpectedError } from '@/model/lab'
+import { EvitaDBConnection, EvitaDBConnectionId, QueryLanguage, UnexpectedError } from '@/model/lab'
 import {
     CatalogPointer,
-    ExecutableTabRequest,
-    TabRequestComponentData,
-    TabRequestComponentParams
+    ExecutableTabRequest, SerializableTabRequestComponentData, SerializableTabRequestComponentParams,
+    TabRequestComponentData, TabRequestComponentDataDto,
+    TabRequestComponentParams, TabRequestComponentParamsDto
 } from '@/model/editor/editor'
+import { LabService } from '@/services/lab.service'
+
+/**
+ * Represents props of the LabEditorDataGrid component.
+ */
+export class DataGridParams implements TabRequestComponentParams, SerializableTabRequestComponentParams<DataGridParamsDto>, ExecutableTabRequest {
+    readonly dataPointer: DataGridDataPointer
+    readonly executeOnOpen: boolean
+
+    constructor(dataPointer: DataGridDataPointer, executeOnOpen: boolean = false) {
+        this.dataPointer = dataPointer
+        this.executeOnOpen = executeOnOpen
+    }
+
+    static restoreFromSerializable(labService: LabService, json: any): DataGridParams {
+        const dto: DataGridParamsDto = json as DataGridParamsDto
+        return new DataGridParams(
+            new DataGridDataPointer(
+                labService.getConnection(dto.connectionId),
+                dto.catalogName,
+                dto.entityType
+            ),
+            // We don't want to execute query on open if it's restored from a storage or link.
+            // If from storage, there may a lots of tabs to restore, and we don't want to execute them all for performance reasons.
+            // If from link, the query may be dangerous or something.
+            false
+        )
+    }
+
+    toSerializable(): DataGridParamsDto {
+        return {
+            connectionId: this.dataPointer.connection.id,
+            catalogName: this.dataPointer.catalogName,
+            entityType: this.dataPointer.entityType
+        }
+    }
+}
 import { BigDecimal, QueryPriceMode } from '@/model/evitadb'
 import { InjectionKey, Ref } from 'vue'
 
 /**
+ * Serializable DTO for storing {@link DataGridParams} in a storage or link.
+ */
+interface DataGridParamsDto extends TabRequestComponentParamsDto {
+    readonly connectionId: EvitaDBConnectionId
+    readonly catalogName: string
+    readonly entityType: string
+}
+
+/**
+ * Represents injectable/storable user data of the LabEditorConsoleDataGrid component.
+ */
+export class DataGridData implements TabRequestComponentData, SerializableTabRequestComponentData<DataGridDataDto> {
+    readonly queryLanguage?: QueryLanguage
+    readonly filterBy?: string
+    readonly orderBy?: string
+    readonly dataLocale?: string
+    readonly priceType?: QueryPriceMode
+    readonly displayedProperties?: EntityPropertyKey[]
+    readonly pageSize?: number
+    readonly pageNumber?: number
+
+    constructor(queryLanguage?: QueryLanguage,
+                filterBy?: string,
+                orderBy?: string,
+                dataLocale?: string,
+                displayedProperties?: EntityPropertyKey[],
+                pageSize?: number,
+                pageNumber?: number) {
+        this.queryLanguage = queryLanguage
+        this.filterBy = filterBy
+        this.orderBy = orderBy
+        this.dataLocale = dataLocale
+        this.displayedProperties = displayedProperties
+        this.pageSize = pageSize
+        this.pageNumber = pageNumber
+    }
+
+    static restoreFromSerializable(json: any): DataGridData {
+        return new DataGridData(
+            json.queryLanguage,
+            json.filterBy,
+            json.orderBy,
+            json.dataLocale,
+            json.displayedProperties.map((key: string) => EntityPropertyKey.fromString(key)),
+            json.pageSize,
+            json.pageNumber
+        )
+    }
+
+    toSerializable(): DataGridDataDto {
+        return {
+            queryLanguage: this.queryLanguage,
+            filterBy: this.filterBy,
+            orderBy: this.orderBy,
+            dataLocale: this.dataLocale,
+            displayedProperties: this.displayedProperties?.map(key => key.toString()),
+            pageSize: this.pageSize,
+            pageNumber: this.pageNumber
+        }
+    }
+}
+
+/**
+ * Serializable DTO for storing {@link DataGridData} in a storage or link.
+ */
+interface DataGridDataDto extends TabRequestComponentDataDto {
+    readonly queryLanguage?: QueryLanguage
+    readonly filterBy?: string
+    readonly orderBy?: string
+    readonly dataLocale?: string
+    readonly displayedProperties?: string[]
+    readonly pageSize?: number
+    readonly pageNumber?: number
+}
+
+/**
  * Points to concrete evitaDB collection to fetch data from.
  */
-export class DataGridDataPointer extends CatalogPointer implements TabRequestComponentParams {
+export class DataGridDataPointer extends CatalogPointer {
     readonly entityType: string
 
     constructor(connection: EvitaDBConnection, catalogName: string, entityType: string) {
@@ -21,30 +134,9 @@ export class DataGridDataPointer extends CatalogPointer implements TabRequestCom
 }
 
 /**
- * Represents props of the LabEditorConsoleDataGrid component.
- */
-export interface DataGridConsoleParams extends TabRequestComponentParams, ExecutableTabRequest {
-    readonly dataPointer: DataGridDataPointer
-}
-
-/**
- * Represents injectable/storable user data of the LabEditorConsoleDataGrid component.
- */
-export interface DataGridConsoleData extends TabRequestComponentData {
-    readonly queryLanguage?: QueryLanguage
-    readonly filterBy?: string
-    readonly orderBy?: string
-    readonly dataLocale?: string
-    readonly priceType?: QueryPriceMode,
-    readonly displayedProperties?: EntityPropertyKey[]
-    readonly pageSize?: number
-    readonly pageNumber?: number
-}
-
-/**
  * Dependency injection key for data grid parameters
  */
-export const gridParamsKey = Symbol('gridParams') as InjectionKey<DataGridConsoleParams>
+export const gridParamsKey = Symbol('gridParams') as InjectionKey<DataGridParams>
 /**
  * Dependency injection key for index of available entity property descriptors
  */
@@ -327,8 +419,6 @@ export class EntityReferenceValue extends EntityPropertyValue {
             const representativeAttributeValue = representativeAttribute.value()
             if (representativeAttributeValue == undefined) {
                 return super.emptyEntityPropertyValuePlaceholder
-            } else if (representativeAttributeValue instanceof Array) {
-                flattenedRepresentativeAttributes.push(...representativeAttributeValue.map(it => it.toString()))
             } else {
                 flattenedRepresentativeAttributes.push(representativeAttributeValue.toString())
             }

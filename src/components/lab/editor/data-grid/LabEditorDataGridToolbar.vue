@@ -5,15 +5,21 @@
 import VExecuteQueryButton from '@/components/base/VExecuteQueryButton.vue'
 import VTabToolbar from '@/components/base/VTabToolbar.vue'
 import { computed, inject } from 'vue'
+import { TabType } from '@/model/editor/share-tab-object'
+import LabEditorTabShareButton from '@/components/lab/editor/tab/LabEditorTabShareButton.vue'
+import { DataGridData, gridParamsKey } from '@/model/editor/data-grid'
 import { dataLocaleKey } from '@/model/editor/data-grid'
+import { mandatoryInject } from '@/helpers/reactivity'
 
 const props = defineProps<{
+    currentData: DataGridData,
     path: string[],
     loading: boolean
 }>()
 const emit = defineEmits<{
     (e: 'executeQuery'): void
 }>()
+const gridParams = mandatoryInject(gridParamsKey)
 const dataLocale = inject(dataLocaleKey)
 
 const flags = computed<any>(() => {
@@ -36,6 +42,13 @@ const flags = computed<any>(() => {
         :flags="flags"
     >
         <template #append>
+            <LabEditorTabShareButton
+                :tab-type="TabType.DataGrid"
+                :tab-params="gridParams"
+                :tab-data="currentData"
+                :disabled="!gridParams.dataPointer.connection.preconfigured"
+            />
+
             <VExecuteQueryButton :loading="loading" @click="emit('executeQuery')" />
         </template>
 

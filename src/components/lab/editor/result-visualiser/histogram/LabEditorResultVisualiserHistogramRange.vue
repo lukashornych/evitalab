@@ -55,7 +55,7 @@ const rangeInfo = computed<RangeInfo>(() => {
                 // there must be last requested bucket if there is first requested bucket, even if it's the same bucket
                 const rightRequestedIndex = props.histogram.buckets.findLastIndex((bucket) => bucket.requested)!
                 if (rightRequestedIndex < props.histogram.buckets.length - 1) {
-                    rightRequestedThreshold = parseFloat(props.histogram.buckets[rightRequestedIndex + 1]!.threshold!)
+                    rightRequestedThreshold = parseFloat(props.histogram.buckets[rightRequestedIndex + 1].threshold!)
                 } else {
                     rightRequestedThreshold = max
                 }

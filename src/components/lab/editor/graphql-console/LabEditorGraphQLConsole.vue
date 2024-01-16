@@ -26,6 +26,8 @@ import { ResultVisualiserService } from '@/services/editor/result-visualiser/res
 import {
     useGraphQLResultVisualiserService
 } from '@/services/editor/result-visualiser/graphql-result-visualiser.service'
+import LabEditorTabShareButton from '@/components/lab/editor/tab/LabEditorTabShareButton.vue'
+import { TabType } from '@/model/editor/share-tab-object'
 
 enum EditorTabType {
     Query = 'query',
@@ -46,7 +48,7 @@ const props = defineProps<TabComponentProps<GraphQLConsoleParams, GraphQLConsole
 const emit = defineEmits<TabComponentEvents>()
 
 const path = ref<string[]>([])
-if (props.params.instancePointer.instanceType !== GraphQLInstanceType.SYSTEM) {
+if (props.params.instancePointer.instanceType !== GraphQLInstanceType.System) {
     path.value.push(props.params.instancePointer.catalogName)
 }
 path.value.push(props.params.instancePointer.instanceType) // todo lho i18n
@@ -70,11 +72,15 @@ const resultCode = ref<string>('')
 const resultExtensions: Extension[] = [json()]
 
 const supportsVisualisation = computed<boolean>(() => {
-    return props.params.instancePointer.instanceType === GraphQLInstanceType.DATA
+    return props.params.instancePointer.instanceType === GraphQLInstanceType.Data
 })
 
 const loading = ref<boolean>(false)
 const initialized = ref<boolean>(false)
+
+const currentData = computed<GraphQLConsoleData>(() => {
+    return new GraphQLConsoleData(queryCode.value, variablesCode.value)
+})
 
 onBeforeMount(() => {
     graphQLConsoleService.getGraphQLSchema(props.params.instancePointer)
@@ -128,10 +134,16 @@ function initializeSchemaEditor(): void {
             :path="path"
         >
             <template #append>
+                <LabEditorTabShareButton
+                    :tab-type="TabType.GraphQLConsole"
+                    :tab-params="params"
+                    :tab-data="currentData"
+                    :disabled="!params.instancePointer.connection.preconfigured"
+                />
+
                 <VBtn
                     icon
                     density="compact"
-                    class="mr-3"
                 >
                     <VIcon>mdi-information</VIcon>
                     <VTooltip activator="parent">

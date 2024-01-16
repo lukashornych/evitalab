@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import LabEditorLoadingScreen from '@/components/lab/editor/LabEditorLoadingScreen.vue'
+import LabEditorTabLoadingScreen from '@/components/lab/editor/tab/LabEditorTabLoadingScreen.vue'
 
 const props = defineProps<{
     component: any,
@@ -19,7 +19,7 @@ const componentReady = ref<boolean>(false)
             @ready="componentReady = true"
         />
     </KeepAlive>
-    <LabEditorLoadingScreen v-if="!componentReady" />
+    <LabEditorTabLoadingScreen v-if="!componentReady" />
 </template>
 
 <style lang="scss" scoped>

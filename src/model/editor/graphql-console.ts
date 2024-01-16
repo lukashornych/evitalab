@@ -1,10 +1,88 @@
-import { EvitaDBConnection } from '@/model/lab'
+import { EvitaDBConnection, EvitaDBConnectionId, UnexpectedError } from '@/model/lab'
 import {
     CatalogPointer,
-    ExecutableTabRequest,
-    TabRequestComponentData,
-    TabRequestComponentParams
+    ExecutableTabRequest, SerializableTabRequestComponentData, SerializableTabRequestComponentParams,
+    TabRequestComponentData, TabRequestComponentDataDto,
+    TabRequestComponentParams, TabRequestComponentParamsDto
 } from '@/model/editor/editor'
+import { LabService } from '@/services/lab.service'
+
+/**
+ * Represents props of the LabEditorConsoleGraphQL component.
+ */
+export class GraphQLConsoleParams implements TabRequestComponentParams, SerializableTabRequestComponentParams<GraphQLConsoleParamsDto>, ExecutableTabRequest {
+    readonly instancePointer: GraphQLInstancePointer
+    readonly executeOnOpen: boolean
+
+    constructor(instancePointer: GraphQLInstancePointer, executeOnOpen: boolean = false) {
+        this.instancePointer = instancePointer
+        this.executeOnOpen = executeOnOpen
+    }
+
+    static restoreFromSerializable(labService: LabService, json: any): GraphQLConsoleParams {
+        const dto: GraphQLConsoleParamsDto = json as GraphQLConsoleParamsDto
+        return new GraphQLConsoleParams(
+            new GraphQLInstancePointer(
+                labService.getConnection(dto.connectionId),
+                dto.catalogName,
+                dto.instanceType
+            ),
+            // We don't want to execute query on open if it's restored from a storage or link.
+            // If from storage, there may a lots of tabs to restore, and we don't want to execute them all for performance reasons.
+            // If from link, the query may be dangerous or something.
+            false
+        )
+    }
+
+    toSerializable(): GraphQLConsoleParamsDto {
+        return {
+            connectionId: this.instancePointer.connection.id,
+            catalogName: this.instancePointer.catalogName,
+            instanceType: this.instancePointer.instanceType
+        }
+    }
+}
+
+/**
+ * Serializable DTO for storing {@link GraphQLConsoleParams} in a storage or link.
+ */
+interface GraphQLConsoleParamsDto extends TabRequestComponentParamsDto{
+    readonly connectionId: EvitaDBConnectionId
+    readonly catalogName: string
+    readonly instanceType: GraphQLInstanceType
+}
+
+/**
+ * Represents injectable/storable user data of the LabEditorConsoleGraphQL component.
+ */
+export class GraphQLConsoleData implements TabRequestComponentData, SerializableTabRequestComponentData<GraphQLConsoleDataDto> {
+    readonly query?: string
+    readonly variables?: string
+
+    constructor(query?: string, variables?: string) {
+        this.query = query
+        this.variables = variables
+    }
+
+    static restoreFromSerializable(json: any): GraphQLConsoleData {
+        return new GraphQLConsoleData(json.query, json.variables)
+    }
+
+    toSerializable(): GraphQLConsoleDataDto {
+        return {
+            query: this.query,
+            variables: this.variables
+        }
+    }
+}
+
+/**
+ * Serializable DTO for storing {@link GraphQLConsoleData} in a storage or link.
+ */
+interface GraphQLConsoleDataDto extends TabRequestComponentDataDto {
+    readonly query?: string
+    readonly variables?: string
+}
 
 /**
  * Points to concrete evitaDB GraphQL instance
@@ -19,22 +97,7 @@ export class GraphQLInstancePointer extends CatalogPointer {
 }
 
 export enum GraphQLInstanceType {
-    SYSTEM = 'system',
-    DATA = 'data',
-    SCHEMA = 'schema'
-}
-
-/**
- * Represents props of the LabEditorConsoleGraphQL component.
- */
-export interface GraphQLConsoleParams extends TabRequestComponentParams, ExecutableTabRequest {
-    readonly instancePointer: GraphQLInstancePointer
-}
-
-/**
- * Represents injectable/storable user data of the LabEditorConsoleGraphQL component.
- */
-export interface GraphQLConsoleData extends TabRequestComponentData {
-    readonly query?: string
-    readonly variables?: string
+    System = 'system',
+    Data = 'data',
+    Schema = 'schema'
 }

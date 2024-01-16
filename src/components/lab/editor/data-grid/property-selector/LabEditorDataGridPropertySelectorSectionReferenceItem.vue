@@ -32,7 +32,7 @@ const flags: string[] = labService.getReferenceSchemaFlags(props.propertyDescrip
 
 function openSchema(): void {
     editorService.createTabRequest(
-        new SchemaViewerRequest(
+        SchemaViewerRequest.createNew(
             gridParams.dataPointer.connection,
             new ReferenceSchemaPointer(
                 gridParams.dataPointer.catalogName,

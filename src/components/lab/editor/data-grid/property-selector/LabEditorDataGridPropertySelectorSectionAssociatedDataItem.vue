@@ -28,7 +28,7 @@ const flags: string[] = labService.getAssociatedDataSchemaFlags(props.propertyDe
 
 function openSchema(): void {
     editorService.createTabRequest(
-        new SchemaViewerRequest(
+        SchemaViewerRequest.createNew(
             gridParams.dataPointer.connection,
             new AssociatedDataSchemaPointer(
                 gridParams.dataPointer.catalogName,

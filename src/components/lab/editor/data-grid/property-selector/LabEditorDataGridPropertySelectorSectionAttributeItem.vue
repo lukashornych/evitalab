@@ -28,7 +28,7 @@ const flags: string[] = labService.getAttributeSchemaFlags(props.propertyDescrip
 
 function openSchema(): void {
     editorService.createTabRequest(
-        new SchemaViewerRequest(
+        SchemaViewerRequest.createNew(
             gridParams.dataPointer.connection,
             new EntityAttributeSchemaPointer(
                 gridParams.dataPointer.catalogName,

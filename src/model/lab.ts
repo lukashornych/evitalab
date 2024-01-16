@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid'
+import XXH from 'xxhashjs'
 
 /**
  * Represents unique identifier of a single evitaDB server connection.
@@ -17,7 +17,7 @@ export class EvitaDBConnection {
     readonly gqlUrl?: string
 
     constructor(id: EvitaDBConnectionId | undefined, name: string, preconfigured: boolean, labApiUrl?: string, restUrl?: string, gqlUrl?: string) {
-        this.id = id ? id : uuidv4()
+        this.id = id ? id : XXH.h64(name, Math.random()).toString(16)
         this.name = name
         this.preconfigured = preconfigured
         this.labApiUrl = this.normalizeApiUrl(labApiUrl)
