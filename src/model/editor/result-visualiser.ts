@@ -1,3 +1,5 @@
+import { BigDecimal } from '@/model/evitadb'
+
 /**
  * Represents query execution result object.
  */
@@ -91,13 +93,13 @@ export class VisualisedHierarchyTreeNode {
  * Single returned histogram DTO ready for visualisation.
  */
 export class VisualisedHistogram {
-    readonly min?: string
-    readonly max?: string
+    readonly min?: BigDecimal
+    readonly max?: BigDecimal
     readonly overallCount?: number
     readonly buckets: VisualisedHistogramBucket[]
 
-    constructor(min: string | undefined,
-                max: string | undefined,
+    constructor(min: BigDecimal | undefined,
+                max: BigDecimal | undefined,
                 overallCount: number | undefined,
                 buckets: VisualisedHistogramBucket[]) {
         this.min = min
@@ -116,11 +118,11 @@ export class VisualisedHistogram {
  * Single histogram bucket DTO ready for visualisation.
  */
 export class VisualisedHistogramBucket {
-    readonly threshold?: string
+    readonly threshold?: BigDecimal
     readonly occurrences?: number
     readonly requested?: boolean
 
-    constructor(threshold: string | undefined,
+    constructor(threshold: BigDecimal | undefined,
                 occurrences: number | undefined,
                 requested: boolean | undefined) {
         this.threshold = threshold

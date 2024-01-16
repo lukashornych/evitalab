@@ -67,7 +67,7 @@ const schemaEditorInitialized = ref<boolean>(false)
 const schemaCode = ref<string>('')
 const schemaExtensions: Extension[] = [graphql()]
 
-const enteredQueryCode = ref<string>('')
+const lastAppliedQueryCode = ref<string>('')
 const resultCode = ref<string>('')
 const resultExtensions: Extension[] = [json()]
 
@@ -104,7 +104,7 @@ async function executeQuery(): Promise<void> {
     try {
         resultCode.value = await graphQLConsoleService.executeGraphQLQuery(props.params.instancePointer, queryCode.value, JSON.parse(variablesCode.value))
         loading.value = false
-        enteredQueryCode.value = queryCode.value
+        lastAppliedQueryCode.value = queryCode.value
     } catch (error: any) {
         loading.value = false
         toaster.error(error)
@@ -238,7 +238,7 @@ function initializeSchemaEditor(): void {
                                 v-if="resultTab === ResultTabType.Visualiser"
                                 :catalog-pointer="params.instancePointer"
                                 :visualiser-service="visualiserService"
-                                :input-query="enteredQueryCode || ''"
+                                :input-query="lastAppliedQueryCode || ''"
                                 :result="resultCode == undefined || !resultCode ? undefined : JSON.parse(resultCode)"
                             />
                         </VWindowItem>

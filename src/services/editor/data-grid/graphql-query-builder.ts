@@ -2,11 +2,35 @@ import { QueryBuilder } from '@/services/editor/data-grid/query-builder'
 import {
     DataGridDataPointer,
     EntityPropertyKey,
-    EntityPropertyType, StaticEntityProperties
+    EntityPropertyType,
+    StaticEntityProperties
 } from '@/model/editor/data-grid'
 import { LabService } from '@/services/lab.service'
-import { AssociatedDataSchema, AttributeSchemaUnion, EntitySchema, ReferenceSchema } from '@/model/evitadb'
+import {
+    AssociatedDataSchema,
+    AttributeSchemaUnion,
+    EntitySchema,
+    QueryPriceMode,
+    ReferenceSchema
+} from '@/model/evitadb'
 import { UnexpectedError } from '@/model/lab'
+
+const priceInPriceListsConstraintPattern = /priceInPriceLists\s*:\s*\[?\s*"[A-Za-z0-9_.\-~]+"/
+const priceInCurrencyConstraintPattern = /priceInCurrency\s*:\s*[A-Z_]+/
+const priceObjectFieldsTemplate =
+    `
+    {
+        priceId
+        priceList
+        currency
+        innerRecordId
+        sellable
+        validity
+        priceWithoutTax
+        priceWithTax
+        taxRate
+    }
+    `
 
 /**
  * Query builder for GraphQL language.
@@ -22,6 +46,7 @@ export class GraphQLQueryBuilder implements QueryBuilder {
                      filterBy: string,
                      orderBy: string,
                      dataLocale: string | undefined,
+                     priceType: QueryPriceMode | undefined,
                      requiredData: EntityPropertyKey[],
                      pageNumber: number,
                      pageSize: number): Promise<string> {
@@ -30,29 +55,32 @@ export class GraphQLQueryBuilder implements QueryBuilder {
         const headerArguments: string[] = []
 
         const filterByContainer: string[] = []
-        if (filterBy) {
+        if (filterBy.length > 0) {
             filterByContainer.push(filterBy)
         }
-        if (dataLocale) {
+        if (dataLocale != undefined) {
             filterByContainer.push(`entityLocaleEquals: ${dataLocale}`)
         }
         if (filterByContainer.length > 0) {
             headerArguments.push(`filterBy: { ${filterByContainer.join(',')} }`)
         }
 
-        if (orderBy) {
+        if (orderBy.length > 0) {
             headerArguments.push(`orderBy: { ${orderBy} }`)
+        }
+
+        if (priceType != undefined) {
+            headerArguments.push(`require: { priceType: ${priceType} }`)
         }
 
         const groupedPropertyKeys: Map<EntityPropertyType, string[]> = new Map<EntityPropertyType, string[]>()
         for (const propertyKey of requiredData) {
-
             let group: string[] | undefined = groupedPropertyKeys.get(propertyKey.type)
             if (group == undefined) {
                 group = []
                 groupedPropertyKeys.set(propertyKey.type, group)
             }
-            group.push(propertyKey.name)
+            group.push(propertyKey.supportsName() ? propertyKey.name : '')
         }
 
         const entityOutputFields: string[] = []
@@ -66,6 +94,9 @@ export class GraphQLQueryBuilder implements QueryBuilder {
                     break
                 case EntityPropertyType.AssociatedData:
                     this.buildAssociatedDataProperty(requiredDataInGroup, entitySchema, dataLocale, entityOutputFields)
+                    break
+                case EntityPropertyType.Prices:
+                    this.buildPricesProperty(requiredDataInGroup, filterBy, entityOutputFields)
                     break
                 case EntityPropertyType.References:
                     await this.buildReferenceProperties(requiredDataInGroup, entitySchema, dataPointer, dataLocale, entityOutputFields)
@@ -183,6 +214,20 @@ export class GraphQLQueryBuilder implements QueryBuilder {
         }
         requiredAssociatedData.forEach(requiredAssociatedDatum => entityOutputFields.push(requiredAssociatedDatum))
         entityOutputFields.push('}')
+    }
+
+    private buildPricesProperty(requiredDataInGroup: string[],
+                                filterBy: string,
+                                entityOutputFields: string[]): void {
+        if (requiredDataInGroup.length > 0) {
+            entityOutputFields.push(`prices ${priceObjectFieldsTemplate}`)
+
+            const priceListDefined: boolean = priceInPriceListsConstraintPattern.exec(filterBy) != undefined
+            const currencyDefined: boolean = priceInCurrencyConstraintPattern.exec(filterBy) != undefined
+            if (priceListDefined && currencyDefined) {
+                entityOutputFields.push(`priceForSale ${priceObjectFieldsTemplate}`)
+            }
+        }
     }
 
     private async buildReferenceProperties(requiredDataInGroup: string[],

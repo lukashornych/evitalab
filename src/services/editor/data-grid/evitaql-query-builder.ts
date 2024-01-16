@@ -6,7 +6,13 @@ import {
     StaticEntityProperties
 } from '@/model/editor/data-grid'
 import { LabService } from '@/services/lab.service'
-import { AssociatedDataSchema, AttributeSchemaUnion, EntitySchema, ReferenceSchema } from '@/model/evitadb'
+import {
+    AssociatedDataSchema,
+    AttributeSchemaUnion,
+    EntitySchema,
+    QueryPriceMode,
+    ReferenceSchema
+} from '@/model/evitadb'
 import { UnexpectedError } from '@/model/lab'
 
 /**
@@ -30,6 +36,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                      filterBy: string,
                      orderBy: string,
                      dataLocale: string | undefined,
+                     priceType: QueryPriceMode | undefined,
                      requiredProperties: EntityPropertyKey[],
                      pageNumber: number,
                      pageSize: number): Promise<string> {
@@ -61,10 +68,15 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
         this.buildEntityBodyFetchRequires(requiredProperties, entitySchema, dataLocale, entityFetchRequires)
         this.buildAttributesFetchRequires(requiredProperties, entitySchema, dataPointer, dataLocale, entityFetchRequires)
         this.buildAssociatedDataFetchRequires(requiredProperties, entitySchema, dataPointer, dataLocale, entityFetchRequires)
+        this.buildPriceFetchRequires(requiredProperties, entityFetchRequires)
         await this.buildReferencesFetchRequires(requiredProperties, entitySchema, dataPointer, dataLocale, entityFetchRequires)
         if (entityFetchRequires.length > 0 ||
             requiredProperties.findIndex(propertyKey => this.entityBodyProperties.has(propertyKey.toString())) > -1) {
             requireConstraints.push(`entityFetch(${entityFetchRequires.join(',')})`)
+        }
+
+        if (priceType != undefined) {
+            requireConstraints.push(`priceType(${priceType})`)
         }
 
         if (requireConstraints.length > 0) {
@@ -92,8 +104,6 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                     }
                     hierarchyContentConstraintBuilder += ')'
                     entityFetchRequires.push(hierarchyContentConstraintBuilder)
-                } else if (it === StaticEntityProperties.PriceInnerRecordHandling) {
-                    entityFetchRequires.push(`priceContentRespectingFilter()`)
                 }
             })
     }
@@ -151,6 +161,14 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
 
         if (requiredAssociatedData.length > 0) {
             entityFetchRequires.push(`associatedDataContent(${requiredAssociatedData.map(it => `"${it}"`).join(',')})`)
+        }
+    }
+
+    private buildPriceFetchRequires(requiredProperties: EntityPropertyKey[], entityFetchRequires: string[]): void {
+        if (requiredProperties.find(({ type }) => type === EntityPropertyType.Prices) != undefined) {
+            entityFetchRequires.push('priceContentAll()')
+        } else if (requiredProperties.find(it => it.type === EntityPropertyType.Entity && it.name === StaticEntityProperties.PriceInnerRecordHandling) != undefined) {
+            entityFetchRequires.push('priceContentRespectingFilter()')
         }
     }
 

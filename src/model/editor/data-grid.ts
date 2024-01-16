@@ -42,6 +42,8 @@ export class DataGridParams implements TabRequestComponentParams, SerializableTa
         }
     }
 }
+import { BigDecimal, QueryPriceMode } from '@/model/evitadb'
+import { InjectionKey, Ref } from 'vue'
 
 /**
  * Serializable DTO for storing {@link DataGridParams} in a storage or link.
@@ -60,6 +62,7 @@ export class DataGridData implements TabRequestComponentData, SerializableTabReq
     readonly filterBy?: string
     readonly orderBy?: string
     readonly dataLocale?: string
+    readonly priceType?: QueryPriceMode,
     readonly displayedProperties?: EntityPropertyKey[]
     readonly pageSize?: number
     readonly pageNumber?: number
@@ -131,6 +134,31 @@ export class DataGridDataPointer extends CatalogPointer {
 }
 
 /**
+ * Dependency injection key for data grid parameters
+ */
+export const gridParamsKey = Symbol('gridParams') as InjectionKey<DataGridConsoleParams>
+/**
+ * Dependency injection key for index of available entity property descriptors
+ */
+export const entityPropertyDescriptorIndexKey = Symbol('entityPropertyDescriptorIndex') as InjectionKey<Ref<Map<string, EntityPropertyDescriptor>>>
+/**
+ * Dependency injection key for selected query language
+ */
+export const queryLanguageKey = Symbol('queryLanguage') as InjectionKey<Ref<QueryLanguage | undefined>>
+/**
+ * Dependency injection key for selected data locale
+ */
+export const dataLocaleKey = Symbol('dataLocale') as InjectionKey<Ref<string | undefined>>
+/**
+ * Dependency injection key for selected price type
+ */
+export const priceTypeKey = Symbol('priceType') as InjectionKey<Ref<QueryPriceMode | undefined>>
+/**
+ * Dependency injection key for used filter
+ */
+export const queryFilterKey = Symbol('queryFilter') as InjectionKey<Ref<string | undefined>>
+
+/**
  * Types of entity properties with their prefixes
  */
 export enum EntityPropertyType {
@@ -138,7 +166,8 @@ export enum EntityPropertyType {
     Attributes = 'attributes',
     AssociatedData = 'associatedData',
     References = 'references',
-    ReferenceAttributes = 'referenceAttributes'
+    ReferenceAttributes = 'referenceAttributes',
+    Prices = 'prices'
 }
 
 /**
@@ -166,67 +195,11 @@ export enum StaticEntityProperties {
 export const sortableStaticEntityProperties: string[] = [StaticEntityProperties.PrimaryKey]
 
 /**
- * Represents key of a single typed entity property.
+ * Extension of the core evitaDB's {@link Scalar} enum with complex entity objects that we support in grid detail view
+ * with the scalars.
  */
-export class EntityPropertyKey {
-    static readonly entityPropertyPartSeparator: string = ':'
-
-    readonly type: EntityPropertyType
-    readonly names: string[]
-    get name(): string {
-        if (this.names.length != 1) {
-            throw new UnexpectedError(undefined, `Cannot get name of a property key with multiple names: ${this.names}`)
-        }
-        return this.names[0]
-    }
-
-    constructor(type: EntityPropertyType, names: string[]) {
-        this.type = type
-        this.names = names
-    }
-
-    static entity(name: string): EntityPropertyKey {
-        return new EntityPropertyKey(EntityPropertyType.Entity, [name])
-    }
-
-    static attributes(name: string): EntityPropertyKey {
-        return new EntityPropertyKey(EntityPropertyType.Attributes, [name])
-    }
-
-    static associatedData(name: string): EntityPropertyKey {
-        return new EntityPropertyKey(EntityPropertyType.AssociatedData, [name])
-    }
-
-    static references(name: string): EntityPropertyKey {
-        return new EntityPropertyKey(EntityPropertyType.References, [name])
-    }
-
-    static referenceAttributes(referenceName: string, attributeName: string): EntityPropertyKey {
-        return new EntityPropertyKey(EntityPropertyType.ReferenceAttributes, [referenceName, attributeName])
-    }
-
-    static fromString(propertyKey: string): EntityPropertyKey {
-        const parts = propertyKey.split(EntityPropertyKey.entityPropertyPartSeparator)
-
-        if (parts[0] === EntityPropertyType.Attributes) {
-            return new EntityPropertyKey(EntityPropertyType.Attributes, parts.slice(1))
-        } else if (parts[0] === EntityPropertyType.AssociatedData) {
-            return new EntityPropertyKey(EntityPropertyType.AssociatedData, parts.slice(1))
-        } else if (parts[0] === EntityPropertyType.References) {
-            return new EntityPropertyKey(EntityPropertyType.References, parts.slice(1))
-        } else if (parts[0] === EntityPropertyType.ReferenceAttributes) {
-            return new EntityPropertyKey(EntityPropertyType.ReferenceAttributes, parts.slice(1))
-        } else {
-            return new EntityPropertyKey(EntityPropertyType.Entity, parts)
-        }
-    }
-
-    toString(): string {
-        if (this.type === EntityPropertyType.Entity) {
-            return this.names.join(EntityPropertyKey.entityPropertyPartSeparator)
-        }
-        return `${this.type}${EntityPropertyKey.entityPropertyPartSeparator}${this.names.join(EntityPropertyKey.entityPropertyPartSeparator)}`
-    }
+export enum ExtraEntityObjectType {
+    Prices = 'prices'
 }
 
 /**
@@ -275,18 +248,304 @@ export enum EntityPropertySectionSelection {
 /**
  * Represents a single entity property with its key and value.
  */
-export type EntityProperty = [EntityPropertyKey, any]
+export type EntityProperty = [EntityPropertyKey, EntityPropertyValue | EntityPropertyValue[]]
+
+/**
+ * Represents key of a single typed entity property.
+ */
+export class EntityPropertyKey {
+    static readonly entityPropertyPartSeparator: string = ':'
+
+    readonly type: EntityPropertyType
+    readonly names: string[]
+    get name(): string {
+        if (this.names.length === 0) {
+            throw new UnexpectedError(undefined, `Name of entity property for type ${this.type} is not supported`)
+        }
+        if (this.names.length != 1) {
+            throw new UnexpectedError(undefined, `Cannot get name of a property key with multiple names: ${this.names}`)
+        }
+        return this.names[0]
+    }
+
+    private constructor(type: EntityPropertyType, names: string[] = []) {
+        this.type = type
+        this.names = names
+    }
+
+    static entity(name: string): EntityPropertyKey {
+        return new EntityPropertyKey(EntityPropertyType.Entity, [name])
+    }
+
+    static attributes(name: string): EntityPropertyKey {
+        return new EntityPropertyKey(EntityPropertyType.Attributes, [name])
+    }
+
+    static associatedData(name: string): EntityPropertyKey {
+        return new EntityPropertyKey(EntityPropertyType.AssociatedData, [name])
+    }
+
+    static prices(): EntityPropertyKey {
+        return new EntityPropertyKey(EntityPropertyType.Prices)
+    }
+
+    static references(name: string): EntityPropertyKey {
+        return new EntityPropertyKey(EntityPropertyType.References, [name])
+    }
+
+    static referenceAttributes(referenceName: string, attributeName: string): EntityPropertyKey {
+        return new EntityPropertyKey(EntityPropertyType.ReferenceAttributes, [referenceName, attributeName])
+    }
+
+    static fromString(propertyKey: string): EntityPropertyKey {
+        const parts = propertyKey.split(EntityPropertyKey.entityPropertyPartSeparator)
+
+        if (parts[0] === EntityPropertyType.Attributes) {
+            return new EntityPropertyKey(EntityPropertyType.Attributes, parts.slice(1))
+        } else if (parts[0] === EntityPropertyType.AssociatedData) {
+            return new EntityPropertyKey(EntityPropertyType.AssociatedData, parts.slice(1))
+        } else if (parts[0] === EntityPropertyType.References) {
+            return new EntityPropertyKey(EntityPropertyType.References, parts.slice(1))
+        } else if (parts[0] === EntityPropertyType.ReferenceAttributes) {
+            return new EntityPropertyKey(EntityPropertyType.ReferenceAttributes, parts.slice(1))
+        } else {
+            return new EntityPropertyKey(EntityPropertyType.Entity, parts)
+        }
+    }
+
+    supportsName(): boolean {
+        return this.names.length > 0
+    }
+
+    toString(): string {
+        if (this.type === EntityPropertyType.Entity) {
+            return this.names.join(EntityPropertyKey.entityPropertyPartSeparator)
+        }
+        if (this.names.length === 0) {
+            return this.type
+        }
+        return `${this.type}${EntityPropertyKey.entityPropertyPartSeparator}${this.names.join(EntityPropertyKey.entityPropertyPartSeparator)}`
+    }
+}
+
+/**
+ * Represents a single entity property value. It can be a wrapped scalar value or a custom object that needs special handling.
+ */
+export abstract class EntityPropertyValue {
+    protected readonly emptyEntityPropertyValuePlaceholder: string = '<null>'
+
+    protected constructor() {
+    }
+
+    /**
+     * Returns the raw value of the entity property value.
+     */
+    abstract value(): any | any[] | undefined
+
+    /**
+     * Returns true if the raw entity property value is missing.
+     */
+    abstract isEmpty(): boolean
+
+    /**
+     * Returns a preview string representation of the entity property value. The method accepts context object
+     * that can be used to influence the output.
+     */
+    abstract toPreviewString(context?: EntityPropertyValuePreviewStringContext): string
+}
+
+/**
+ * Passes context arguments to {@link EntityPropertyValue.toPreviewString} method to possibly influence the output.
+ */
+export type EntityPropertyValuePreviewStringContext = {
+    priceType?: QueryPriceMode
+}
+
+/**
+ * Represents a single entity property value that is a scalar (native to JavaScript). Cannot be an array, each array item
+ * must be wrapped in a separate {@link NativeValue} instance.
+ */
+export class NativeValue extends EntityPropertyValue {
+    readonly delegate: string | number | object | boolean | undefined
+
+    constructor(delegate: string | number | object | boolean | undefined) {
+        super()
+        this.delegate = delegate
+    }
+
+    value(): string | number | object | boolean | undefined {
+        return this.delegate
+    }
+
+    isEmpty(): boolean {
+        return this.delegate == undefined
+    }
+
+    toPreviewString(): string {
+        if (this.delegate === undefined) {
+            return super.emptyEntityPropertyValuePlaceholder
+        } else if (this.delegate instanceof Object) {
+            return JSON.stringify(this.delegate)
+        } else {
+            return this.delegate.toString()
+        }
+    }
+}
 
 /**
  * Represents a pointer to a referenced entity in another grid.
  */
-export class EntityReferenceValue {
+export class EntityReferenceValue extends EntityPropertyValue {
     readonly primaryKey: number
-    readonly representativeAttributes: any[]
+    readonly representativeAttributes: EntityPropertyValue[]
 
-    constructor(primaryKey: number, representativeAttributes: any[]) {
+    constructor(primaryKey: number, representativeAttributes: EntityPropertyValue[]) {
+        super()
         this.primaryKey = primaryKey
         this.representativeAttributes = representativeAttributes
+    }
+
+    value(): any {
+        return this
+    }
+
+    isEmpty(): boolean {
+        return false
+    }
+
+    toPreviewString(): string {
+        const flattenedRepresentativeAttributes: string[] = []
+        for (const representativeAttribute of this.representativeAttributes) {
+            const representativeAttributeValue = representativeAttribute.value()
+            if (representativeAttributeValue == undefined) {
+                return super.emptyEntityPropertyValuePlaceholder
+            } else if (representativeAttributeValue instanceof Array) {
+                flattenedRepresentativeAttributes.push(...representativeAttributeValue.map(it => it.toString()))
+            } else {
+                flattenedRepresentativeAttributes.push(representativeAttributeValue.toString())
+            }
+        }
+        if (flattenedRepresentativeAttributes.length === 0) {
+            return `${this.primaryKey}`
+        } else {
+            return `${this.primaryKey}: ${flattenedRepresentativeAttributes.join(', ')}`
+        }
+    }
+}
+
+/**
+ * Holder for entity prices displayable data grid.
+ */
+export class EntityPrices extends EntityPropertyValue {
+    readonly priceForSale?: EntityPrice
+    readonly prices: EntityPrice[]
+
+    constructor(priceForSale: EntityPrice | undefined, prices: EntityPrice[]) {
+        super()
+        this.priceForSale = priceForSale
+        this.prices = prices
+    }
+
+    count(): number {
+        return this.prices.length
+    }
+
+    value(): any {
+        return this
+    }
+
+    isEmpty(): boolean {
+        return false
+    }
+
+    toPreviewString(context?: EntityPropertyValuePreviewStringContext): string {
+        let previewString: string = ''
+
+        if (this.priceForSale != undefined) {
+            const priceFormatter = new Intl.NumberFormat(
+                navigator.language,
+                { style: 'currency', currency: this.priceForSale.currency, maximumFractionDigits: 2 }
+            )
+            const actualPriceType: QueryPriceMode = context?.priceType != undefined ? context.priceType : QueryPriceMode.WithTax
+            const price: BigDecimal = actualPriceType === QueryPriceMode.WithTax ? this.priceForSale.priceWithTax : this.priceForSale.priceWithoutTax
+            const formattedPrice: string = priceFormatter.format(parseFloat(price))
+
+            previewString += `${formattedPrice} with `
+        }
+
+        const allPricesCount = this.count()
+        previewString += (allPricesCount === 1 ? `${allPricesCount} price` : `${allPricesCount} prices`)
+
+        return previewString
+    }
+}
+
+/**
+ * Represents a single entity price.
+ */
+export class EntityPrice extends EntityPropertyValue {
+    readonly priceId: number
+    readonly priceList: string
+    readonly currency: string
+    readonly innerRecordId?: number
+    readonly sellable: boolean
+    readonly validity?: [BigDecimal, BigDecimal]
+    readonly priceWithoutTax: BigDecimal
+    readonly priceWithTax: BigDecimal
+    readonly taxRate: BigDecimal
+
+    constructor(priceId: number,
+                priceList: string,
+                currency: string,
+                innerRecordId: number | undefined,
+                sellable: boolean,
+                validity: [BigDecimal, BigDecimal] | undefined,
+                priceWithoutTax: BigDecimal,
+                priceWithTax: BigDecimal,
+                taxRate: BigDecimal) {
+        super()
+        this.priceId = priceId
+        this.priceList = priceList
+        this.currency = currency
+        this.innerRecordId = innerRecordId
+        this.sellable = sellable
+        this.validity = validity
+        this.priceWithoutTax = priceWithoutTax
+        this.priceWithTax = priceWithTax
+        this.taxRate = taxRate
+    }
+
+    static fromJson(json: any): EntityPrice {
+        return new EntityPrice(json.priceId,
+            json.priceList,
+            json.currency,
+            json.innerRecordId,
+            json.sellable,
+            json.validity,
+            json.priceWithoutTax,
+            json.priceWithTax,
+            json.taxRate)
+    }
+
+    value(): any {
+        return this
+    }
+
+    isEmpty(): boolean {
+        return false
+    }
+
+    toPreviewString(context: EntityPropertyValuePreviewStringContext): string {
+        const priceFormatter = new Intl.NumberFormat(
+            navigator.language,
+            { style: 'currency', currency: this.currency, maximumFractionDigits: 2 }
+        )
+        const actualPriceType: QueryPriceMode = context?.priceType != undefined ? context.priceType : QueryPriceMode.WithTax
+        const price: BigDecimal = actualPriceType === QueryPriceMode.WithTax ? this.priceWithTax : this.priceWithoutTax
+        const formattedPrice: string = priceFormatter.format(parseFloat(price))
+
+        // return `<i class="mdi mdi-${this.sellable ? 'cash' : 'cash-off'}"></i> ${this.priceId} | ${this.priceList} | ${formattedPrice}`
+        return formattedPrice
     }
 }
 
@@ -334,8 +593,11 @@ export enum EntityPropertyValueDesiredOutputFormat {
     /**
      * Renders HTML in input value.
      */
-    Html = 'html'
-    // we could keep adding more languages here potentially
+    Html = 'html',
+    /**
+     * Special format for rendering entity price object.
+     */
+    Price = 'price'
 }
 
 /**

@@ -55,6 +55,14 @@ export default createVuetify({
             variant: 'solo-filled',
             density: 'compact'
         },
+        VCombobox: {
+            variant: 'solo-filled',
+            density: 'compact'
+        },
+        VTextField: {
+            variant: 'solo-filled',
+            density: 'compact'
+        },
         VList: {
             density: 'compact'
         }

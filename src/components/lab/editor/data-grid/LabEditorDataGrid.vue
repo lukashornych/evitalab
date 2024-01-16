@@ -5,11 +5,11 @@
 
 import 'splitpanes/dist/splitpanes.css'
 
-import { computed, onBeforeMount, ref, watch } from 'vue'
+import { computed, onBeforeMount, provide, readonly, ref, watch } from 'vue'
 import {
     DataGridData,
-    DataGridParams, EntityPropertyDescriptor,
-    EntityPropertyKey, EntityPropertyType,
+    DataGridParams, dataLocaleKey, EntityPropertyDescriptor, entityPropertyDescriptorIndexKey,
+    EntityPropertyKey, EntityPropertyType,  queryFilterKey, FlatEntity, gridParamsKey, priceTypeKey, queryLanguageKey,
     QueryResult
 } from '@/model/editor/data-grid'
 import { DataGridService, useDataGridService } from '@/services/editor/data-grid.service'
@@ -19,12 +19,14 @@ import { TabComponentEvents, TabComponentProps } from '@/model/editor/editor'
 import LabEditorDataGridQueryInput from '@/components/lab/editor/data-grid/LabEditorDataGridQueryInput.vue'
 import LabEditorDataGridToolbar from '@/components/lab/editor/data-grid/LabEditorDataGridToolbar.vue'
 import LabEditorDataGridGrid from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGrid.vue'
+import { QueryPriceMode } from '@/model/evitadb'
 
 const dataGridService: DataGridService = useDataGridService()
 const toaster: Toaster = useToaster()
 
 const props = defineProps<TabComponentProps<DataGridParams, DataGridData>>()
 const emit = defineEmits<TabComponentEvents>()
+provide(gridParamsKey, props.params)
 
 // static data
 const path = ref<string[]>([
@@ -34,13 +36,15 @@ const path = ref<string[]>([
 
 let sortedEntityPropertyKeys: string[] = []
 let entityPropertyDescriptors: EntityPropertyDescriptor[] = []
-const entityPropertyDescriptorIndex: Map<string, EntityPropertyDescriptor> = new Map<string, EntityPropertyDescriptor>()
+const entityPropertyDescriptorIndex = ref<Map<string, EntityPropertyDescriptor>>(new Map<string, EntityPropertyDescriptor>())
+provide(entityPropertyDescriptorIndexKey, entityPropertyDescriptorIndex)
 
 let gridHeaders: Map<string, any> = new Map<string, any>()
 let dataLocales: string[] = []
 
 // dynamic user data
 const selectedQueryLanguage = ref<QueryLanguage>(props.data?.queryLanguage ? props.data.queryLanguage : QueryLanguage.EvitaQL)
+provide(queryLanguageKey, readonly(selectedQueryLanguage))
 watch(selectedQueryLanguage, (newValue, oldValue) => {
     if (newValue[0] === oldValue[0]) {
         return
@@ -57,10 +61,17 @@ const pageNumber = ref<number>(props.data?.pageNumber ? props.data.pageNumber : 
 const pageSize = ref<number>(props.data?.pageSize ? props.data.pageSize : 25)
 
 const filterByCode = ref<string>(props.data?.filterBy ? props.data.filterBy : '')
+const lastAppliedFilterByCode = ref<string>('')
+provide(queryFilterKey, readonly(lastAppliedFilterByCode))
 const orderByCode = ref<string>(props.data?.orderBy ? props.data.orderBy : '')
 
 const selectedDataLocale = ref<string | undefined>(props.data?.dataLocale ? props.data.dataLocale : undefined)
+provide(dataLocaleKey, readonly(selectedDataLocale))
 watch(selectedDataLocale, () => executeQuery())
+
+const selectedPriceType = ref<QueryPriceMode | undefined>(props.data?.priceType ? props.data.priceType : undefined)
+watch(selectedPriceType, () => executeQuery())
+provide(priceTypeKey, readonly(selectedPriceType))
 
 const displayedProperties = ref<EntityPropertyKey[]>(props.data?.displayedProperties ? props.data.displayedProperties : [])
 watch(displayedProperties, (newValue, oldValue) => {
@@ -74,7 +85,7 @@ watch(displayedProperties, (newValue, oldValue) => {
 })
 
 const displayedGridHeaders = ref<any[]>([])
-const resultEntities = ref<any[]>([])
+const resultEntities = ref<FlatEntity[]>([])
 const totalResultCount = ref<number>(0)
 
 const initialized = ref<boolean>(false)
@@ -99,14 +110,18 @@ onBeforeMount(() => {
     dataGridService.getDataLocales(props.params.dataPointer)
         .then(dl => {
             dataLocales = dl
+            return dataGridService.supportsPrices(props.params.dataPointer)
+        })
+        .then(supportsPrices => {
+            preselectPriceType(supportsPrices)
             return dataGridService.getEntityPropertyDescriptors(props.params.dataPointer)
         })
         .then(ep => {
             entityPropertyDescriptors = ep
             for (const entityPropertyDescriptor of entityPropertyDescriptors) {
-                entityPropertyDescriptorIndex.set(entityPropertyDescriptor.key.toString(), entityPropertyDescriptor)
+                entityPropertyDescriptorIndex.value.set(entityPropertyDescriptor.key.toString(), entityPropertyDescriptor)
                 entityPropertyDescriptor.children.forEach(childPropertyDescriptor => {
-                    entityPropertyDescriptorIndex.set(childPropertyDescriptor.key.toString(), childPropertyDescriptor)
+                    entityPropertyDescriptorIndex.value.set(childPropertyDescriptor.key.toString(), childPropertyDescriptor)
                 })
 
                 sortedEntityPropertyKeys.push(entityPropertyDescriptor.key.toString())
@@ -130,6 +145,13 @@ onBeforeMount(() => {
             toaster.error(error)
         })
 })
+
+function preselectPriceType(supportsPrices: boolean): void {
+    // we want to preselect price type only if it's not already preselected by initial data
+    if (selectedPriceType.value == undefined) {
+        selectedPriceType.value = supportsPrices ? QueryPriceMode.WithTax : undefined
+    }
+}
 
 async function initializeGridHeaders(entityPropertyDescriptors: EntityPropertyDescriptor[]): Promise<Map<string, any>> {
     const gridHeaders: Map<string, any> = new Map<string, any>()
@@ -204,6 +226,7 @@ async function executeQuery(): Promise<void> {
             filterByCode.value,
             orderByCode.value,
             selectedDataLocale.value,
+            selectedPriceType.value,
             displayedProperties.value,
             pageNumber.value,
             pageSize.value
@@ -214,6 +237,8 @@ async function executeQuery(): Promise<void> {
             return row
         })
         totalResultCount.value = result.totalEntitiesCount
+
+        lastAppliedFilterByCode.value = filterByCode.value
     } catch (error: any) {
         toaster.error(error)
     }
@@ -232,19 +257,17 @@ async function executeQuery(): Promise<void> {
             :grid-props="props"
             :current-data="currentData"
             :path="path"
-            :locale="selectedDataLocale"
             :loading="loading"
             @execute-query="executeQuery"
         >
             <template #query>
                 <LabEditorDataGridQueryInput
-                    :grid-props="props"
                     v-model:selected-query-language="selectedQueryLanguage"
                     v-model:filter-by="filterByCode"
                     v-model:order-by="orderByCode"
                     :data-locales="dataLocales"
                     v-model:selected-data-locale="selectedDataLocale"
-                    :entity-property-descriptor-index="entityPropertyDescriptorIndex"
+                    v-model:selected-price-type="selectedPriceType"
                     v-model:selected-entity-property-keys="displayedProperties"
                     @execute-query="executeQuery"
                 />
@@ -252,13 +275,9 @@ async function executeQuery(): Promise<void> {
         </LabEditorDataGridToolbar>
 
         <LabEditorDataGridGrid
-            :grid-props="props"
-            :entity-property-descriptor-index="entityPropertyDescriptorIndex"
             :displayed-grid-headers="displayedGridHeaders"
-            :data-locale="selectedDataLocale"
-            :query-language="selectedQueryLanguage"
             :loading="loading"
-            :result-entities="resultEntities"
+            :result-entities="resultEntities as FlatEntity[]"
             :total-result-count="totalResultCount"
             :page-number="pageNumber"
             :page-size="pageSize"

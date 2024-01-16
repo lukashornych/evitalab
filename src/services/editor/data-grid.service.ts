@@ -1,8 +1,11 @@
 import { inject, InjectionKey } from 'vue'
 import {
-    DataGridDataPointer, EntityPropertyDescriptor,
+    DataGridDataPointer,
+    EntityPropertyDescriptor,
     EntityPropertyKey,
-    EntityPropertyType, EntityPropertyValueSupportedCodeLanguage,
+    EntityPropertyType,
+    EntityPropertyValue,
+    EntityPropertyValueSupportedCodeLanguage,
     QueryResult,
     StaticEntityProperties
 } from '@/model/editor/data-grid'
@@ -15,16 +18,12 @@ import { LabService } from '@/services/lab.service'
 import { GraphQLQueryBuilder } from '@/services/editor/data-grid/graphql-query-builder'
 import { GraphQLQueryExecutor } from '@/services/editor/data-grid/graphql-query-executor'
 import { EvitaDBClient } from '@/services/evitadb-client'
-import { AttributeSchemaUnion, EntitySchema } from '@/model/evitadb'
+import { AttributeSchemaUnion, EntitySchema, QueryPriceMode } from '@/model/evitadb'
 import { GraphQLClient } from '@/services/graphql-client'
 import { EntityPropertyValueFormatter } from '@/services/editor/data-grid/entity-property-value-formatter'
 import { EntityPropertyValueRawFormatter } from '@/services/editor/data-grid/entity-property-value-raw-formatter'
-import {
-    EntityPropertyValueJsonFormatter
-} from '@/services/editor/data-grid/entity-property-value-json-formatter'
-import {
-    EntityPropertyValueXmlFormatter
-} from '@/services/editor/data-grid/entity-property-value-xml-formatter'
+import { EntityPropertyValueJsonFormatter } from '@/services/editor/data-grid/entity-property-value-json-formatter'
+import { EntityPropertyValueXmlFormatter } from '@/services/editor/data-grid/entity-property-value-xml-formatter'
 
 export const key: InjectionKey<DataGridService> = Symbol()
 
@@ -61,6 +60,7 @@ export class DataGridService {
      * @param filterBy filter by part of query, depends on language
      * @param orderBy order by part of query, depends on language
      * @param dataLocale locale of data in query, if undefined, only global data are returned
+     * @param priceType price type of data in query, undefined if the target collection doesn't support prices
      * @param requiredData defines which data should be fetched from collection as entity fields
      * @param pageNumber page number of query result
      * @param pageSize page size of query result
@@ -70,6 +70,7 @@ export class DataGridService {
                        filterBy: string,
                        orderBy: string,
                        dataLocale: string | undefined,
+                       priceType: QueryPriceMode | undefined,
                        requiredData: EntityPropertyKey[],
                        pageNumber: number,
                        pageSize: number): Promise<QueryResult> {
@@ -81,6 +82,7 @@ export class DataGridService {
             filterBy,
             orderBy,
             dataLocale,
+            priceType,
             requiredData,
             pageNumber,
             pageSize
@@ -158,6 +160,11 @@ export class DataGridService {
         return entitySchema.locales
     }
 
+    async supportsPrices(dataPointer: DataGridDataPointer): Promise<boolean> {
+        const entitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, dataPointer.entityType)
+        return entitySchema.withPrice
+    }
+
     /**
      * Builds a list of all possible entity properties for entities of given schema.
      */
@@ -232,6 +239,18 @@ export class DataGridService {
                 []
             ))
         }
+
+        if (entitySchema.withPrice) {
+            descriptors.push(new EntityPropertyDescriptor(
+                EntityPropertyType.Prices,
+                EntityPropertyKey.prices(),
+                'Prices',
+                'Prices',
+                undefined,
+                []
+            ))
+        }
+
         for (const referenceSchema of Object.values(entitySchema.references)) {
             descriptors.push(new EntityPropertyDescriptor(
                 EntityPropertyType.References,
@@ -262,7 +281,7 @@ export class DataGridService {
      * @param language desired language of formatted value
      * @param prettyPrint if value should be pretty printed
      */
-    formatEntityPropertyValue(value: any, language: EntityPropertyValueSupportedCodeLanguage, prettyPrint: boolean = false): string {
+    formatEntityPropertyValue(value: EntityPropertyValue | EntityPropertyValue[], language: EntityPropertyValueSupportedCodeLanguage, prettyPrint: boolean = false): string {
         // todo lho maybe markdown pretty printing logic should be here as well
         const formatter: EntityPropertyValueFormatter | undefined = this.entityPropertyValueFormatters.get(language)
         if (formatter == undefined) {
