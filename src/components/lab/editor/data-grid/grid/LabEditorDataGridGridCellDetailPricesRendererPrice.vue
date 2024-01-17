@@ -3,7 +3,7 @@
 import { EntityPrice } from '@/model/editor/data-grid'
 import VPropertiesTable from '@/components/base/VPropertiesTable.vue'
 import { computed } from 'vue'
-import { KeywordValue, Property, PropertyValue } from '@/model/properties-table'
+import { KeywordValue, Property, PropertyValue, RangeValue } from '@/model/properties-table'
 
 const props = defineProps<{
     price: EntityPrice
@@ -25,7 +25,7 @@ const properties = computed<Property[]>(() => {
         { name: 'Currency', value: new PropertyValue(new KeywordValue(props.price.currency)) },
         { name: 'Inner record ID', value: new PropertyValue(props.price.innerRecordId) },
         { name: 'Sellable', value: new PropertyValue(props.price.sellable) },
-        { name: 'Validity', value: new PropertyValue(props.price.validity) }, // todo
+        { name: 'Validity', value: new PropertyValue(new RangeValue(props.price.validity)) },
         { name: 'Price without tax', value: new PropertyValue(priceFormatter.format(parseFloat(props.price.priceWithoutTax))) },
         { name: 'Price with tax', value: new PropertyValue(priceFormatter.format(parseFloat(props.price.priceWithTax))) },
         { name: 'Tax rate', value: new PropertyValue(new KeywordValue(taxFormatter.format(parseFloat(props.price.taxRate) / 100))) }

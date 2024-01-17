@@ -487,7 +487,7 @@ export class EntityPrice extends EntityPropertyValue {
     readonly currency: string
     readonly innerRecordId?: number
     readonly sellable: boolean
-    readonly validity?: [BigDecimal, BigDecimal]
+    readonly validity?: [BigDecimal | undefined, BigDecimal | undefined]
     readonly priceWithoutTax: BigDecimal
     readonly priceWithTax: BigDecimal
     readonly taxRate: BigDecimal
@@ -497,7 +497,7 @@ export class EntityPrice extends EntityPropertyValue {
                 currency: string,
                 innerRecordId: number | undefined,
                 sellable: boolean,
-                validity: [BigDecimal, BigDecimal] | undefined,
+                validity: [BigDecimal | undefined, BigDecimal | undefined] | undefined,
                 priceWithoutTax: BigDecimal,
                 priceWithTax: BigDecimal,
                 taxRate: BigDecimal) {
