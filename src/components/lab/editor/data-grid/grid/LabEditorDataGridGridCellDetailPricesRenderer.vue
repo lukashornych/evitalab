@@ -22,8 +22,12 @@ import VExpansionPanelLazyIterator from '@/components/base/VExpansionPanelLazyIt
 import { QueryLanguage } from '@/model/lab'
 
 const priceInPriceListsConstraintPattern = new Map<QueryLanguage, RegExp>([
-    [QueryLanguage.EvitaQL, /priceInPriceLists\(\s*['"]([A-Za-z0-9_.\-~]*)['"]/],
-    [QueryLanguage.GraphQL, /priceInPriceLists\s*:\s*\[?\s*"([A-Za-z0-9_.\-~]+)"/]
+    [QueryLanguage.EvitaQL, /priceInPriceLists\(\s*((?:['"][A-Za-z0-9_.\-~]*['"])(?:\s*,\s*(?:['"][A-Za-z0-9_.\-~]*['"]))*)/],
+    [QueryLanguage.GraphQL, /priceInPriceLists\s*:\s*("[A-Za-z0-9_.\-~]+"|(?:[\s*"[A-Za-z0-9_.\-~]+)"(?:\s*,\s*"[A-Za-z0-9_.\-~]+")*\s*\])/]
+])
+const constraintPriceListsPattern = new Map<QueryLanguage, RegExp>([
+    [QueryLanguage.EvitaQL, /['"]([A-Za-z0-9_.\-~]*)['"]/g],
+    [QueryLanguage.GraphQL, /"([A-Za-z0-9_.\-~]+)"/g]
 ])
 const priceInCurrencyConstraintPattern = new Map<QueryLanguage, RegExp>([
     [QueryLanguage.EvitaQL, /priceInCurrency\(\s*['"]([A-Za-z0-9_.\-~]*)['"]\s*\)/],
@@ -85,27 +89,44 @@ const filterData = computed<FilterData>(() => {
     }
 })
 
-const selectedPriceId = ref<number | undefined>()
-const selectedPriceList = ref<string | undefined>()
-const selectedCurrency = ref<string | undefined>()
-const selectedInnerRecordId = ref<number | undefined>()
+const selectedPriceIds = ref<number[]>([])
+const selectedPriceLists = ref<string[]>([])
+const selectedCurrencies = ref<string[]>([])
+const selectedInnerRecordIds = ref<number[]>([])
 const filteredAllPrices = computed<EntityPrice[]>(() => {
     // note: originally we wanted to do server call here for filtering, but it seems to be really fast in browser (tested on hundreds of prices)
-    return prices.value.prices.filter((price) => {
-        if (selectedPriceId.value != undefined && price.priceId !== selectedPriceId.value) {
-            return false
-        }
-        if (selectedPriceList.value != undefined && price.priceList !== selectedPriceList.value) {
-            return false
-        }
-        if (selectedCurrency.value != undefined && price.currency !== selectedCurrency.value) {
-            return false
-        }
-        if (selectedInnerRecordId.value != undefined && price.innerRecordId !== selectedInnerRecordId.value) {
-            return false
-        }
-        return true
-    })
+    let filteredPrices: EntityPrice[] = prices.value.prices
+        .filter((price) => {
+            if (selectedPriceIds.value.length > 0 && !selectedPriceIds.value?.includes(price.priceId)) {
+                return false
+            }
+            if (selectedPriceLists.value.length > 0 && !selectedPriceLists.value?.includes(price.priceList)) {
+                return false
+            }
+            if (selectedCurrencies.value.length > 0 && !selectedCurrencies.value?.includes(price.currency)) {
+                return false
+            }
+            if (selectedInnerRecordIds.value.length > 0 && (price.innerRecordId == undefined || !selectedInnerRecordIds.value?.includes(price.innerRecordId))) {
+                return false
+            }
+            return true
+        })
+
+    if (selectedPriceLists.value.length > 0) {
+        filteredPrices.sort((a, b) => {
+            const aIndex = selectedPriceLists.value.indexOf(a.priceList)
+            const bIndex = selectedPriceLists.value.indexOf(b.priceList)
+            return aIndex - bIndex
+        })
+    }
+
+    return filteredPrices
+})
+const indexOfPossiblePriceForSaleInAllPrices = computed<number>(() => {
+    if (selectedPriceLists.value.length === 0 || selectedCurrencies.value.length === 0 || filteredAllPrices.value.length === 0) {
+        return -1
+    }
+    return filteredAllPrices.value.findIndex((price) => price.sellable)
 })
 
 const allPricesPage = ref<number>(1)
@@ -116,13 +137,14 @@ watch(filteredAllPrices, () => {
 
 async function preselectFilterFromQuery(): Promise<void> {
     return new Promise(() => {
-        const priceList: string | undefined = priceInPriceListsConstraintPattern.get(queryLanguage.value!)!.exec(queryFilter?.value || '')?.[1]
+        const priceLists: string | undefined = priceInPriceListsConstraintPattern.get(queryLanguage.value!)!.exec(queryFilter?.value || '')?.[1]
         const currency: string | undefined = priceInCurrencyConstraintPattern.get(queryLanguage.value!)!.exec(queryFilter?.value || '')?.[1]
-        if (priceList != undefined) {
-            selectedPriceList.value = priceList
+        if (priceLists != undefined) {
+            const priceListsMatches: IterableIterator<RegExpMatchArray> = priceLists.matchAll(constraintPriceListsPattern.get(queryLanguage.value!)!)
+            selectedPriceLists.value = Array.from(priceListsMatches).map((match) => match[1])
         }
         if (currency != undefined) {
-            selectedCurrency.value = currency
+            selectedCurrencies.value = [currency]
         }
     })
 }
@@ -150,43 +172,47 @@ preselectFilterFromQuery()
 
                 <div class="price-renderer-all-prices__filter">
                     <VCombobox
-                        v-model="selectedPriceId"
+                        v-model="selectedPriceIds"
                         :disabled="filterData.priceIds.length === 0"
                         prepend-inner-icon="mdi-identifier"
                         label="Price ID"
                         :items="filterData.priceIds"
                         class="price-renderer-all-prices__select"
                         clearable
+                        multiple
                         hide-details
                     />
                     <VCombobox
-                        v-model="selectedPriceList"
+                        v-model="selectedPriceLists"
                         :disabled="filterData.priceLists.length === 0"
                         prepend-inner-icon="mdi-format-list-bulleted"
                         label="Price list"
                         :items="filterData.priceLists"
                         class="price-renderer-all-prices__select"
                         clearable
+                        multiple
                         hide-details
                     />
                     <VCombobox
-                        v-model="selectedCurrency"
+                        v-model="selectedCurrencies"
                         :disabled="filterData.currencies.length === 0"
                         prepend-inner-icon="mdi-currency-usd"
                         label="Currency"
                         :items="filterData.currencies"
                         class="price-renderer-all-prices__select"
                         clearable
+                        multiple
                         hide-details
                     />
                     <VCombobox
-                        v-model="selectedInnerRecordId"
+                        v-model="selectedInnerRecordIds"
                         :disabled="filterData.innerRecordIds.length === 0"
                         prepend-inner-icon="mdi-format-list-group"
                         label="Inner record IDs"
                         :items="filterData.innerRecordIds"
                         class="price-renderer-all-prices__select"
                         clearable
+                        multiple
                         hide-details
                     />
                 </div>
@@ -199,9 +225,17 @@ preselectFilterFromQuery()
                     :items="filteredAllPrices"
                 >
                     <template #item="{ item, index }: { item: EntityPrice, index: number }">
-
                         <VExpansionPanel :key="index">
                             <VExpansionPanelTitle>
+                                <VTooltip v-if="index === indexOfPossiblePriceForSaleInAllPrices">
+                                    <template #activator="{ props }">
+                                        <VIcon class="mr-3" v-bind="props">mdi-cart-outline</VIcon>
+                                    </template>
+
+                                    This price would be used as a price for sale if the current filter would be applied in
+                                    the query.
+                                </VTooltip>
+
                                 <VTooltip>
                                     <template #activator="{ props }">
                                         <VIcon class="mr-3" v-bind="props">{{ item.sellable ? 'mdi-cash' : 'mdi-cash-off' }}</VIcon>
