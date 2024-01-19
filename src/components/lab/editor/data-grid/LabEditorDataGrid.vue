@@ -8,8 +8,17 @@ import 'splitpanes/dist/splitpanes.css'
 import { computed, onBeforeMount, provide, readonly, ref, watch } from 'vue'
 import {
     DataGridData,
-    DataGridParams, dataLocaleKey, EntityPropertyDescriptor, entityPropertyDescriptorIndexKey,
-    EntityPropertyKey, EntityPropertyType,  queryFilterKey, FlatEntity, gridParamsKey, priceTypeKey, queryLanguageKey,
+    DataGridParams,
+    dataLocaleKey,
+    EntityPropertyDescriptor,
+    entityPropertyDescriptorIndexKey,
+    EntityPropertyKey,
+    EntityPropertyType,
+    FlatEntity,
+    gridParamsKey,
+    priceTypeKey,
+    queryFilterKey,
+    queryLanguageKey,
     QueryResult
 } from '@/model/editor/data-grid'
 import { DataGridService, useDataGridService } from '@/services/editor/data-grid.service'
@@ -200,7 +209,7 @@ function preselectEntityProperties(): void {
     }
 
     displayedProperties.value = entityPropertyDescriptors
-        .filter(it => it.key.type === EntityPropertyType.Entity || it.schema?.representative)
+        .filter(it => it.key.type === EntityPropertyType.Entity || it.key.type === EntityPropertyType.Prices || it.schema?.representative)
         .map(it => it.key)
 }
 
@@ -260,11 +269,7 @@ async function executeQuery(): Promise<void> {
             pageNumber.value,
             pageSize.value
         )
-        resultEntities.value = result.entities.map(entity => {
-            const row: any = {}
-            entity.forEach(([propertyKey, propertyValue]) => row[propertyKey.toString()] = propertyValue)
-            return row
-        })
+        resultEntities.value = result.entities
         totalResultCount.value = result.totalEntitiesCount
 
         lastAppliedFilterByCode.value = filterByCode.value

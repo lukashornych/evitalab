@@ -1,6 +1,6 @@
 import { inject, InjectionKey } from 'vue'
 import {
-    DataGridDataPointer,
+    DataGridDataPointer, EntityPrice, EntityPrices,
     EntityPropertyDescriptor,
     EntityPropertyKey,
     EntityPropertyType,
@@ -88,6 +88,42 @@ export class DataGridService {
             pageSize
         )
         return queryExecutor.executeQuery(dataPointer, query)
+    }
+
+    /**
+     * Builds and executes a query from arguments to compute price for sale of given entity.
+     *
+     * @param dataPointer points to collection where to fetch data from
+     * @param language language of query, defines how query will be built and executed
+     * @param entityPrimaryKey primary key of entity for which we want to compute price for sale
+     * @param priceLists price lists to use for price computation, order is important
+     * @param currency currency to use for price computation
+     */
+    async computePriceForSale(dataPointer: DataGridDataPointer,
+                              language: QueryLanguage,
+                              entityPrimaryKey: number,
+                              priceLists: string[],
+                              currency: string): Promise<EntityPrice | undefined> {
+        const queryBuilder: QueryBuilder = this.getQueryBuilder(language)
+        const queryExecutor: QueryExecutor = this.getQueryExecutor(language)
+
+        const query: string = await queryBuilder.buildQuery(
+            dataPointer,
+            queryBuilder.buildPriceForSaleFilterBy(entityPrimaryKey, priceLists, currency),
+            '',
+            undefined,
+            undefined,
+            [EntityPropertyKey.prices()],
+            1,
+            1
+        )
+        const result: QueryResult = await queryExecutor.executeQuery(dataPointer, query)
+        if (result.totalEntitiesCount === 0) {
+            return undefined
+        } else if (result.totalEntitiesCount != 1) {
+            throw new UnexpectedError(dataPointer.connection, `Expected 1 entity with price for sale, got ${result.totalEntitiesCount} entities.`)
+        }
+        return (result.entities[0][EntityPropertyKey.prices().toString()] as EntityPrices | undefined)?.priceForSale
     }
 
     /**

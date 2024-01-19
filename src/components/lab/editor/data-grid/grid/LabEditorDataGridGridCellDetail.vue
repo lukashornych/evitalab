@@ -10,6 +10,7 @@ import {
     EntityPropertyValue,
     EntityPropertyValueDesiredOutputFormat,
     ExtraEntityObjectType,
+    FlatEntity, selectedEntityKey,
     StaticEntityProperties
 } from '@/model/editor/data-grid'
 import { computed, provide, ref } from 'vue'
@@ -23,12 +24,14 @@ import LabEditorDataGridGridCellDetailOutputFormatSelector
 
 const props = defineProps<{
     modelValue: boolean,
+    entity: FlatEntity,
     propertyDescriptor: EntityPropertyDescriptor | undefined,
     propertyValue: EntityPropertyValue | EntityPropertyValue[] | undefined
 }>()
 const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void
 }>()
+provide(selectedEntityKey, props.entity)
 provide(entityPropertyDescriptorKey, props.propertyDescriptor)
 
 const headerPrependIcon = computed<string | undefined>(() => {

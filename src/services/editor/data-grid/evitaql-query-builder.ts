@@ -283,4 +283,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
         return `entityPrimaryKeyInSet(${typeof referencedPrimaryKeys === 'number' ? referencedPrimaryKeys : referencedPrimaryKeys.join(', ')})`
     }
 
+    buildPriceForSaleFilterBy(entityPrimaryKey: number, priceLists: string[], currency: string): string {
+        return `and(entityPrimaryKeyInSet(${entityPrimaryKey}),priceInPriceLists(${priceLists.map(it => `"${it}"`).join(',')}),priceInCurrency("${currency}"))`
+    }
 }
