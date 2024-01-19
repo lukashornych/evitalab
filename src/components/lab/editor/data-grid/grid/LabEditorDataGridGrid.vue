@@ -84,10 +84,7 @@ function handlePropertyClicked(propertyKey: string, value: EntityPropertyValue |
                 queryLanguage?.value,
                 dataGridService.buildParentEntityFilterBy(queryLanguage.value as QueryLanguage, (value as EntityReferenceValue).primaryKey),
                 undefined,
-                dataLocale?.value,
-                undefined,
-                props.pageSize,
-                props.pageNumber
+                dataLocale?.value
             ),
             true
         ))
@@ -103,10 +100,7 @@ function handlePropertyClicked(propertyKey: string, value: EntityPropertyValue |
                 queryLanguage.value,
                 dataGridService.buildPredecessorEntityFilterBy(queryLanguage.value as QueryLanguage, (value as NativeValue).value() as number),
                 undefined,
-                dataLocale?.value,
-                undefined,
-                props.pageSize,
-                props.pageNumber
+                dataLocale?.value
             ),
             true
         ))
@@ -125,10 +119,7 @@ function handlePropertyClicked(propertyKey: string, value: EntityPropertyValue |
                         : [(value as EntityReferenceValue).primaryKey]
                 ),
                 undefined,
-                dataLocale?.value,
-                undefined,
-                props.pageSize,
-                props.pageNumber
+                dataLocale?.value
             ),
             true
         ))

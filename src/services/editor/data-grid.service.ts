@@ -177,6 +177,7 @@ export class DataGridService {
             'Primary key',
             'Primary key',
             undefined,
+            undefined,
             []
         ))
         if (entitySchema.withHierarchy) {
@@ -185,6 +186,7 @@ export class DataGridService {
                 EntityPropertyKey.entity(StaticEntityProperties.ParentPrimaryKey),
                 'Parent',
                 'Parent',
+                undefined,
                 undefined,
                 []
             ))
@@ -196,6 +198,7 @@ export class DataGridService {
                 'Locales',
                 'Locales',
                 undefined,
+                undefined,
                 []
             ))
             descriptors.push(new EntityPropertyDescriptor(
@@ -203,6 +206,7 @@ export class DataGridService {
                 EntityPropertyKey.entity(StaticEntityProperties.AllLocales),
                 'All locales',
                 'All locales',
+                undefined,
                 undefined,
                 []
             ))
@@ -214,6 +218,7 @@ export class DataGridService {
                 'Price inner record handling',
                 'Price inner record handling',
                 undefined,
+                undefined,
                 []
             ))
         }
@@ -224,6 +229,7 @@ export class DataGridService {
                 EntityPropertyKey.attributes(attributeSchema.nameVariants.camelCase),
                 attributeSchema.name,
                 attributeSchema.name,
+                undefined,
                 attributeSchema,
                 []
             ))
@@ -235,6 +241,7 @@ export class DataGridService {
                 EntityPropertyKey.associatedData(associatedDataSchema.nameVariants.camelCase),
                 associatedDataSchema.name,
                 associatedDataSchema.name,
+                undefined,
                 associatedDataSchema,
                 []
             ))
@@ -247,6 +254,7 @@ export class DataGridService {
                 'Prices',
                 'Prices',
                 undefined,
+                undefined,
                 []
             ))
         }
@@ -257,6 +265,7 @@ export class DataGridService {
                 EntityPropertyKey.references(referenceSchema.nameVariants.camelCase),
                 referenceSchema.name,
                 referenceSchema.name,
+                undefined,
                 referenceSchema,
                 Object.values(referenceSchema.attributes).map(attributeSchema => {
                     return new EntityPropertyDescriptor(
@@ -264,6 +273,7 @@ export class DataGridService {
                         EntityPropertyKey.referenceAttributes(referenceSchema.nameVariants.camelCase, attributeSchema.nameVariants.camelCase),
                         attributeSchema.name,
                         `${referenceSchema.name}: ${attributeSchema.name}`,
+                        referenceSchema,
                         attributeSchema,
                         []
                     )

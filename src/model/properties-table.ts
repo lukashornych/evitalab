@@ -1,5 +1,5 @@
 import { UnexpectedError } from '@/model/lab'
-import { BigDecimal } from '@/model/evitadb'
+import { BigDecimal, DateTime, Long } from '@/model/evitadb'
 
 /**
  * Single property of a table (row)
@@ -98,10 +98,10 @@ export class MultiValueFlagValue {
 export class RangeValue {
     readonly offsetDateTimeFormatter = new Intl.DateTimeFormat([], { dateStyle: "medium", timeStyle: "long" })
 
-    readonly range?: (BigDecimal | number | undefined)[]
+    readonly range?: (DateTime | BigDecimal | Long | number | undefined)[]
     private serializedRange?: string[]
 
-    constructor(range: (BigDecimal | number | undefined)[] | undefined) {
+    constructor(range: (DateTime | BigDecimal | Long | number | undefined)[] | undefined) {
         if (range != undefined && range.length != 2) {
             throw new UnexpectedError(undefined, 'Range must have two items.')
         }
@@ -126,7 +126,7 @@ export class RangeValue {
         return `${this.formatPart(this.range[0])} - ${this.formatPart(this.range[1])}`
     }
 
-    private formatPart(part: BigDecimal | number | undefined): string {
+    private formatPart(part: DateTime | BigDecimal | Long | number | undefined): string {
         console.log(part)
         if (part == undefined) {
             return '∞'
@@ -134,7 +134,12 @@ export class RangeValue {
         if (typeof part == 'number') {
             return part.toString()
         }
-        return this.offsetDateTimeFormatter.format(new Date(part))
+        try {
+            return this.offsetDateTimeFormatter.format(new Date(part))
+        } catch (e) {
+            // not date time but long or BigDecimal
+            return part.toString()
+        }
     }
 }
 
