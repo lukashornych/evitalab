@@ -6,6 +6,8 @@ import {
     TabRequestComponentParams, TabRequestComponentParamsDto
 } from '@/model/editor/editor'
 import { LabService } from '@/services/lab.service'
+import { BigDecimal, DateTime, Long, QueryPriceMode, Range } from '@/model/evitadb'
+import { InjectionKey, Ref } from 'vue'
 
 /**
  * Represents props of the LabEditorDataGrid component.
@@ -42,8 +44,6 @@ export class DataGridParams implements TabRequestComponentParams, SerializableTa
         }
     }
 }
-import { BigDecimal, QueryPriceMode } from '@/model/evitadb'
-import { InjectionKey, Ref } from 'vue'
 
 /**
  * Serializable DTO for storing {@link DataGridParams} in a storage or link.
@@ -157,6 +157,14 @@ export const priceTypeKey = Symbol('priceType') as InjectionKey<Ref<QueryPriceMo
  * Dependency injection key for used filter
  */
 export const queryFilterKey = Symbol('queryFilter') as InjectionKey<Ref<string | undefined>>
+/**
+ * Dependency injection key for single entity property descriptor
+ */
+// todo we could have useEntityPropertyDescriptor() and provideEntityPropertyDescriptor() to avoid the need of this key
+//  like it is done for services
+//  also the mandatory/optional could be resolved here in single place and not in different components
+//  also each key could have single file
+export const entityPropertyDescriptorKey = Symbol('entityPropertyDescriptor') as InjectionKey<EntityPropertyDescriptor | undefined>
 
 /**
  * Types of entity properties with their prefixes
@@ -199,7 +207,8 @@ export const sortableStaticEntityProperties: string[] = [StaticEntityProperties.
  * with the scalars.
  */
 export enum ExtraEntityObjectType {
-    Prices = 'prices'
+    Prices = 'prices',
+    ReferenceAttributes = 'referenceAttributes'
 }
 
 /**
@@ -210,6 +219,7 @@ export class EntityPropertyDescriptor {
     readonly key: EntityPropertyKey
     readonly title: string
     readonly flattenedTitle: string
+    readonly parentSchema: any | undefined
     readonly schema: any | undefined
     readonly children: EntityPropertyDescriptor[]
 
@@ -217,12 +227,14 @@ export class EntityPropertyDescriptor {
                 key: EntityPropertyKey,
                 title: string,
                 flattenedTitle: string,
+                parentSchema: any | undefined,
                 schema: any | undefined,
                 children: EntityPropertyDescriptor[]) {
         this.type = type
         this.key = key
         this.title = title
         this.flattenedTitle = flattenedTitle
+        this.parentSchema = parentSchema
         this.schema = schema
         this.children = children
     }
@@ -258,18 +270,24 @@ export class EntityPropertyKey {
 
     readonly type: EntityPropertyType
     readonly names: string[]
+    get parentName(): string {
+        if (this.names.length < 2) {
+            throw new UnexpectedError(undefined, `Parent name of entity property for type ${this.type} is not supported`)
+        }
+        return this.names[0]
+    }
     get name(): string {
         if (this.names.length === 0) {
             throw new UnexpectedError(undefined, `Name of entity property for type ${this.type} is not supported`)
         }
-        if (this.names.length != 1) {
-            throw new UnexpectedError(undefined, `Cannot get name of a property key with multiple names: ${this.names}`)
-        }
-        return this.names[0]
+        return this.names.at(-1)!
     }
 
     private constructor(type: EntityPropertyType, names: string[] = []) {
         this.type = type
+        if (names.length > 2) {
+            throw new UnexpectedError(undefined, `Cannot create entity property key with more than two names: ${names}`)
+        }
         this.names = names
     }
 
@@ -366,14 +384,14 @@ export type EntityPropertyValuePreviewStringContext = {
  * must be wrapped in a separate {@link NativeValue} instance.
  */
 export class NativeValue extends EntityPropertyValue {
-    readonly delegate: string | number | object | boolean | undefined
+    readonly delegate: string | DateTime | BigDecimal | Long | number | object | boolean | undefined | Range<any>
 
-    constructor(delegate: string | number | object | boolean | undefined) {
+    constructor(delegate: string | DateTime | BigDecimal | Long | number | object | boolean | undefined | Range<any>) {
         super()
         this.delegate = delegate
     }
 
-    value(): string | number | object | boolean | undefined {
+    value(): string | DateTime | BigDecimal | Long | number | object | boolean | undefined | Range<any> {
         return this.delegate
     }
 
@@ -384,6 +402,8 @@ export class NativeValue extends EntityPropertyValue {
     toPreviewString(): string {
         if (this.delegate === undefined) {
             return super.emptyEntityPropertyValuePlaceholder
+        } else if (this.delegate instanceof Array) {
+            return JSON.stringify(this.delegate)
         } else if (this.delegate instanceof Object) {
             return JSON.stringify(this.delegate)
         } else {

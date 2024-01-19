@@ -128,6 +128,9 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
         const references = entity[EntityPropertyType.References] || {}
         for (const referenceName in references) {
             const referencesOfName = references[referenceName]
+            if (referencesOfName == undefined) {
+                continue
+            }
             if (referencesOfName instanceof Array) {
                 const representativeValues: EntityReferenceValue[] = referencesOfName
                     .map(referenceOfName => this.resolveReferenceRepresentativeValue(referenceOfName))

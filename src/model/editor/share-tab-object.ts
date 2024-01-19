@@ -1,4 +1,7 @@
-import { TabRequestComponentData, TabRequestComponentParams, TabRequestComponentParamsDto } from '@/model/editor/editor'
+import {
+    TabRequestComponentDataDto,
+    TabRequestComponentParamsDto
+} from '@/model/editor/editor'
 import LZString from 'lz-string'
 
 /**
@@ -7,9 +10,9 @@ import LZString from 'lz-string'
 export class ShareTabObject {
     readonly tabType: TabType
     readonly tabParams: TabRequestComponentParamsDto
-    readonly tabData: TabRequestComponentData
+    readonly tabData: TabRequestComponentDataDto
 
-    constructor(tabType: TabType, tabParams: TabRequestComponentParamsDto, tabData: TabRequestComponentData) {
+    constructor(tabType: TabType, tabParams: TabRequestComponentParamsDto, tabData: TabRequestComponentDataDto) {
         this.tabType = tabType
         this.tabParams = tabParams
         this.tabData = tabData

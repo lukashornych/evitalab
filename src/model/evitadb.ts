@@ -7,6 +7,14 @@
  * Represents a precise float number from evitaDB represented as string.
  */
 export type BigDecimal = string;
+/**
+ * Represents 64-bit integer from evitaDB represented as string.
+ */
+export type Long = string;
+/**
+ * Represents ISO date time as string
+ */
+export type DateTime = string;
 
 /**
  * List of support scalars supported by evitaDB.
@@ -1083,3 +1091,5 @@ export enum QueryPriceMode {
     WithTax = 'WITH_TAX',
     WithoutTax = 'WITHOUT_TAX'
 }
+
+export type Range<T extends DateTime | BigDecimal | Long | number> = [T | undefined, T | undefined]

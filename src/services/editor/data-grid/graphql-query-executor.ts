@@ -116,16 +116,36 @@ export class GraphQLQueryExecutor extends QueryExecutor {
 
         const references = Object.keys(entity).filter((it: string) => it.startsWith('reference_'))
         for (const referenceAlias of references) {
-            const referenceName = referenceAlias.split('_')[1]
             const referencesOfName = entity[referenceAlias]
-            if (!referencesOfName) {
+            if (referencesOfName == undefined) {
                 continue
             }
+            const referenceName = referenceAlias.split('_')[1]
             if (referencesOfName instanceof Array) {
                 const representativeValues: EntityReferenceValue[] = referencesOfName
                     .map(referenceOfName => this.resolveReferenceRepresentativeValue(referenceOfName))
 
                 flattenedReferences.push([EntityPropertyKey.references(referenceName), representativeValues])
+
+                const mergedReferenceAttributesByName: Map<string, EntityReferenceValue[]> = referencesOfName
+                    .map(referenceOfName => this.flattenAttributesForSingleReference(referenceOfName))
+                    .reduce(
+                        (accumulator, referenceAttributes) => {
+                            referenceAttributes.forEach(([attributeName, attributeValue]) => {
+                                let attributes = accumulator.get(attributeName)
+                                if (attributes == undefined) {
+                                    attributes = []
+                                    accumulator.set(attributeName, attributes)
+                                }
+                                attributes.push(attributeValue)
+                            })
+                            return accumulator
+                        },
+                        new Map<string, EntityReferenceValue[]>()
+                    )
+                mergedReferenceAttributesByName.forEach((attributeValues, attributeName) => {
+                    flattenedReferences.push([EntityPropertyKey.referenceAttributes(referenceName, attributeName), attributeValues])
+                })
             } else {
                 const representativeValue: EntityReferenceValue = this.resolveReferenceRepresentativeValue(referencesOfName)
                 flattenedReferences.push([EntityPropertyKey.references(referenceName), representativeValue])
@@ -145,5 +165,18 @@ export class GraphQLQueryExecutor extends QueryExecutor {
         }
 
         return new EntityReferenceValue(referencedPrimaryKey, representativeAttributes.flat())
+    }
+
+    private flattenAttributesForSingleReference(reference: any): [string, EntityReferenceValue][] {
+        const referencedPrimaryKey: number = reference['referencedPrimaryKey']
+        const flattenedAttributes: [string, EntityReferenceValue][] = []
+
+        const attributes = reference[EntityPropertyType.Attributes] || {}
+        for (const attributeName in attributes) {
+            const wrappedValue: NativeValue | NativeValue[] = this.wrapRawValueIntoNativeValue(attributes[attributeName])
+            flattenedAttributes.push([attributeName, new EntityReferenceValue(referencedPrimaryKey, wrappedValue instanceof Array ? wrappedValue : [wrappedValue])])
+        }
+
+        return flattenedAttributes
     }
 }

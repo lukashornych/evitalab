@@ -7,7 +7,8 @@ import { Scalar } from '@/model/evitadb'
 import {
     EntityPropertyValue,
     EntityPropertyValueSupportedCodeLanguage,
-    ExtraEntityObjectType, NativeValue
+    ExtraEntityObjectType,
+    NativeValue
 } from '@/model/editor/data-grid'
 import LabEditorDataGridGridCellDetailMarkdownRenderer
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailMarkdownRenderer.vue'
@@ -18,6 +19,8 @@ import LabEditorDataGridGridCellDetailHtmlRenderer
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailHtmlRenderer.vue'
 import LabEditorDataGridGridCellDetailPricesRenderer
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailPricesRenderer.vue'
+import LabEditorDataGridGridCellDetailReferenceAttributesRenderer
+    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailReferenceAttributesRenderer.vue'
 
 /**
  * Used to decide whether XML is actually HTML5.
@@ -34,7 +37,8 @@ enum RendererType {
     Markdown = 'markdown',
     Code = 'code',
     Html = 'html',
-    Price = 'price'
+    Price = 'price',
+    ReferenceAttribute = 'referenceAttribute'
 }
 type ResolvedRenderer = {
     type: RendererType,
@@ -110,6 +114,12 @@ const valueToRender = computed<ValueToRender>(() => {
                 }
                 valueToRender.value = props.value
                 break
+            case ExtraEntityObjectType.ReferenceAttributes:
+                valueToRender.renderer = {
+                    type: RendererType.ReferenceAttribute
+                }
+                valueToRender.value = props.value
+                break
             default:
                 valueToRender.renderer = {
                     type: RendererType.Markdown
@@ -149,6 +159,10 @@ function hasHtmlTag(s: string): boolean {
     />
     <LabEditorDataGridGridCellDetailPricesRenderer
         v-else-if="valueToRender.renderer.type === RendererType.Price"
+        :value="valueToRender.value"
+    />
+    <LabEditorDataGridGridCellDetailReferenceAttributesRenderer
+        v-else-if="valueToRender.renderer.type === RendererType.ReferenceAttribute"
         :value="valueToRender.value"
     />
 </template>

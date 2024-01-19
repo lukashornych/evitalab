@@ -1,5 +1,5 @@
 import { DataGridDataPointer, EntityPropertyKey } from '@/model/editor/data-grid'
-import { AttributeSchemaUnion, QueryPriceMode } from '@/model/evitadb'
+import { AttributeSchemaUnion, OrderDirection, QueryPriceMode, ReferenceSchema } from '@/model/evitadb'
 
 /**
  * Builds query from arguments based on language of implementation.
@@ -32,7 +32,7 @@ export interface QueryBuilder {
      *
      * @param orderDirection direction of order by clause
      */
-    buildPrimaryKeyOrderBy(orderDirection: string): string
+    buildPrimaryKeyOrderBy(orderDirection: OrderDirection): string
 
     /**
      * Builds single attributeNatural order constraint in language of implementation for order by clause.
@@ -40,7 +40,17 @@ export interface QueryBuilder {
      * @param attributeSchema attribute schema to build constraint for
      * @param orderDirection direction of order by clause
      */
-    buildAttributeOrderBy(attributeSchema: AttributeSchemaUnion, orderDirection: string): string
+    buildAttributeOrderBy(attributeSchema: AttributeSchemaUnion, orderDirection: OrderDirection): string
+
+    /**
+     * Builds a single attributeNatural order constraint wrapped within referenceProperty in language of implementation
+     * for order by clause.
+     *
+     * @param referenceSchema parent reference schema of the attribute
+     * @param attributeSchema attribute schema to build constraint for
+     * @param orderDirection direction of order by clause
+     */
+    buildReferenceAttributeOrderBy(referenceSchema: ReferenceSchema, attributeSchema: AttributeSchemaUnion, orderDirection: OrderDirection): string
 
     /**
      * Builds single entityPrimaryKeyInSet filter constraint in language of implementation for filter by clause of a parent entity.

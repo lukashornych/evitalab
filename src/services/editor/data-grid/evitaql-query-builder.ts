@@ -9,7 +9,7 @@ import { LabService } from '@/services/lab.service'
 import {
     AssociatedDataSchema,
     AttributeSchemaUnion,
-    EntitySchema,
+    EntitySchema, OrderDirection,
     QueryPriceMode,
     ReferenceSchema
 } from '@/model/evitadb'
@@ -37,7 +37,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                      orderBy: string,
                      dataLocale: string | undefined,
                      priceType: QueryPriceMode | undefined,
-                     requiredProperties: EntityPropertyKey[],
+                     requiredData: EntityPropertyKey[],
                      pageNumber: number,
                      pageSize: number): Promise<string> {
         const entitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, dataPointer.entityType)
@@ -65,13 +65,13 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
         requireConstraints.push(`page(${pageNumber}, ${pageSize})`)
 
         const entityFetchRequires: string[] = []
-        this.buildEntityBodyFetchRequires(requiredProperties, entitySchema, dataLocale, entityFetchRequires)
-        this.buildAttributesFetchRequires(requiredProperties, entitySchema, dataPointer, dataLocale, entityFetchRequires)
-        this.buildAssociatedDataFetchRequires(requiredProperties, entitySchema, dataPointer, dataLocale, entityFetchRequires)
-        this.buildPriceFetchRequires(requiredProperties, entityFetchRequires)
-        await this.buildReferencesFetchRequires(requiredProperties, entitySchema, dataPointer, dataLocale, entityFetchRequires)
+        this.buildEntityBodyFetchRequires(requiredData, entitySchema, dataLocale, entityFetchRequires)
+        this.buildAttributesFetchRequires(requiredData, entitySchema, dataPointer, dataLocale, entityFetchRequires)
+        this.buildAssociatedDataFetchRequires(requiredData, entitySchema, dataPointer, dataLocale, entityFetchRequires)
+        this.buildPriceFetchRequires(requiredData, entityFetchRequires)
+        await this.buildReferencesFetchRequires(requiredData, entitySchema, dataPointer, dataLocale, entityFetchRequires)
         if (entityFetchRequires.length > 0 ||
-            requiredProperties.findIndex(propertyKey => this.entityBodyProperties.has(propertyKey.toString())) > -1) {
+            requiredData.findIndex(propertyKey => this.entityBodyProperties.has(propertyKey.toString())) > -1) {
             requireConstraints.push(`entityFetch(${entityFetchRequires.join(',')})`)
         }
 
@@ -86,11 +86,11 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
         return `query(${constraints.join(',')})`
     }
 
-    private buildEntityBodyFetchRequires(requiredProperties: EntityPropertyKey[],
+    private buildEntityBodyFetchRequires(requiredData: EntityPropertyKey[],
                                          entitySchema: EntitySchema,
                                          dataLocale: string | undefined,
                                          entityFetchRequires: string[]): void {
-        requiredProperties
+        requiredData
             .filter(({ type }) => type === EntityPropertyType.Entity)
             .map(({ name }) => name)
             .forEach(it => {
@@ -108,12 +108,12 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
             })
     }
 
-    private buildAttributesFetchRequires(requiredProperties: EntityPropertyKey[],
+    private buildAttributesFetchRequires(requiredData: EntityPropertyKey[],
                                          entitySchema: EntitySchema,
                                          dataPointer: DataGridDataPointer,
                                          dataLocale: string | undefined,
                                          entityFetchRequires: string[]) {
-        const requiredAttributes: string[] = requiredProperties
+        const requiredAttributes: string[] = requiredData
             .filter(({ type }) => type === EntityPropertyType.Attributes)
             .map(({ name }) => name)
             .map(it => {
@@ -136,12 +136,12 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
         }
     }
 
-    private buildAssociatedDataFetchRequires(requiredProperties: EntityPropertyKey[],
+    private buildAssociatedDataFetchRequires(requiredData: EntityPropertyKey[],
                                              entitySchema: EntitySchema,
                                              dataPointer: DataGridDataPointer,
                                              dataLocale: string | undefined,
                                              entityFetchRequires: string[]) {
-        const requiredAssociatedData: string[] = requiredProperties
+        const requiredAssociatedData: string[] = requiredData
             .filter(({ type }) => type === EntityPropertyType.AssociatedData)
             .map(({ name }) => name)
             .map(it => {
@@ -164,28 +164,28 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
         }
     }
 
-    private buildPriceFetchRequires(requiredProperties: EntityPropertyKey[], entityFetchRequires: string[]): void {
-        if (requiredProperties.find(({ type }) => type === EntityPropertyType.Prices) != undefined) {
+    private buildPriceFetchRequires(requiredData: EntityPropertyKey[], entityFetchRequires: string[]): void {
+        if (requiredData.find(({ type }) => type === EntityPropertyType.Prices) != undefined) {
             entityFetchRequires.push('priceContentAll()')
-        } else if (requiredProperties.find(it => it.type === EntityPropertyType.Entity && it.name === StaticEntityProperties.PriceInnerRecordHandling) != undefined) {
+        } else if (requiredData.find(it => it.type === EntityPropertyType.Entity && it.name === StaticEntityProperties.PriceInnerRecordHandling) != undefined) {
             entityFetchRequires.push('priceContentRespectingFilter()')
         }
     }
 
-    private async buildReferencesFetchRequires(requiredProperties: EntityPropertyKey[],
+    private async buildReferencesFetchRequires(requiredData: EntityPropertyKey[],
                                                entitySchema: EntitySchema,
                                                dataPointer: DataGridDataPointer,
                                                dataLocale: string | undefined,
                                                entityFetchRequires: string[]) {
         const requiredReferences: string[] = []
-        for (const requiredProperty of requiredProperties) {
-            if (requiredProperty.type === EntityPropertyType.References) {
-                const referenceName = requiredProperty.name
+        for (const requiredDatum of requiredData) {
+            if (requiredDatum.type === EntityPropertyType.References) {
+                const referenceName = requiredDatum.name
                 if (!requiredReferences.includes(referenceName)) {
                     requiredReferences.push(referenceName)
                 }
-            } else if (requiredProperty.type === EntityPropertyType.ReferenceAttributes) {
-                const referenceName = requiredProperty.names[0]
+            } else if (requiredDatum.type === EntityPropertyType.ReferenceAttributes) {
+                const referenceName = requiredDatum.names[0]
                 if (!requiredReferences.includes(referenceName)) {
                     requiredReferences.push(referenceName)
                 }
@@ -202,7 +202,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                 throw new UnexpectedError(undefined, `Could not find reference '${requiredReference}' in '${dataPointer.entityType}'.`)
             }
 
-            const requiredAttributes: string[] = requiredProperties
+            const requiredAttributes: string[] = requiredData
                 .filter(({ type }) => type === EntityPropertyType.ReferenceAttributes)
                 .map(({ names }) => names)
                 .filter(names => names[0] === requiredReference)
@@ -259,12 +259,16 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
             })
     }
 
-    buildPrimaryKeyOrderBy(orderDirection: string): string {
-        return `entityPrimaryKeyNatural(${orderDirection.toUpperCase()})`
+    buildPrimaryKeyOrderBy(orderDirection: OrderDirection): string {
+        return `entityPrimaryKeyNatural(${orderDirection})`
     }
 
-    buildAttributeOrderBy(attributeSchema: AttributeSchemaUnion, orderDirection: string): string {
-        return `attributeNatural("${attributeSchema.name}", ${orderDirection.toUpperCase()})`
+    buildAttributeOrderBy(attributeSchema: AttributeSchemaUnion, orderDirection: OrderDirection): string {
+        return `attributeNatural("${attributeSchema.name}", ${orderDirection})`
+    }
+
+    buildReferenceAttributeOrderBy(referenceSchema: ReferenceSchema, attributeSchema: AttributeSchemaUnion, orderDirection: OrderDirection): string {
+        return `referenceProperty("${referenceSchema.name}", attributeNatural("${attributeSchema.name}", ${orderDirection}))`
     }
 
     buildParentEntityFilterBy(parentPrimaryKey: number): string {
