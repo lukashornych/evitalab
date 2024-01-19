@@ -158,6 +158,10 @@ export const priceTypeKey = Symbol('priceType') as InjectionKey<Ref<QueryPriceMo
  */
 export const queryFilterKey = Symbol('queryFilter') as InjectionKey<Ref<string | undefined>>
 /**
+ * Dependency injection key for selected entity from the grid
+ */
+export const selectedEntityKey = Symbol('selectedEntity') as InjectionKey<FlatEntity>
+/**
  * Dependency injection key for single entity property descriptor
  */
 // todo we could have useEntityPropertyDescriptor() and provideEntityPropertyDescriptor() to avoid the need of this key
@@ -256,11 +260,6 @@ export enum EntityPropertySectionSelection {
     Some = 'some',
     All = 'all'
 }
-
-/**
- * Represents a single entity property with its key and value.
- */
-export type EntityProperty = [EntityPropertyKey, EntityPropertyValue | EntityPropertyValue[]]
 
 /**
  * Represents key of a single typed entity property.
@@ -568,9 +567,16 @@ export class EntityPrice extends EntityPropertyValue {
 }
 
 /**
- * Represents a single flattened entity for data table rendering.
+ * Represents a single flattened entity for data table rendering. Where {key} is a serialized {@link EntityPropertyKey}.
  */
-export type FlatEntity = EntityProperty[]
+export type FlatEntity = {
+    readonly [key: string]: EntityPropertyValue | EntityPropertyValue[]
+}
+
+/**
+ * Represents a single entity property with its key and value. It should be used only for gradual initialization of a new entity.
+ */
+export type WritableEntityProperty = [EntityPropertyKey, EntityPropertyValue | EntityPropertyValue[]]
 
 /**
  * Holds query result of data grid console query.

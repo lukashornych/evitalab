@@ -330,4 +330,7 @@ export class GraphQLQueryBuilder implements QueryBuilder {
         return `entityPrimaryKeyInSet: [${typeof referencedPrimaryKeys === 'number' ? referencedPrimaryKeys : referencedPrimaryKeys.join(', ')}]`
     }
 
+    buildPriceForSaleFilterBy(entityPrimaryKey: number, priceLists: string[], currency: string): string {
+        return `entityPrimaryKeyInSet: ${entityPrimaryKey}, priceInPriceLists: [${priceLists.map(it => `"${it}"`).join(',')}], priceInCurrency: "${currency}"`
+    }
 }

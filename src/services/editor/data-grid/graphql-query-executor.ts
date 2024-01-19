@@ -1,10 +1,10 @@
 import { QueryExecutor } from '@/services/editor/data-grid/query-executor'
 import { LabService } from '@/services/lab.service'
 import {
-    DataGridDataPointer, EntityPrice, EntityPrices, EntityProperty, EntityPropertyKey,
+    DataGridDataPointer, EntityPrice, EntityPrices, EntityPropertyKey,
     EntityPropertyType, EntityReferenceValue, FlatEntity, NativeValue,
     QueryResult,
-    StaticEntityProperties
+    StaticEntityProperties, WritableEntityProperty
 } from '@/model/editor/data-grid'
 import { GraphQLClient } from '@/services/graphql-client'
 import { QueryError } from '@/services/evitadb-client'
@@ -37,23 +37,23 @@ export class GraphQLQueryExecutor extends QueryExecutor {
      * Converts original rich entity into simplified flat entity that is displayable in table
      */
     private flattenEntity(dataPointer: DataGridDataPointer, entity: any): FlatEntity {
-        const flattenedEntity: (EntityProperty | undefined)[] = []
+        const flattenedProperties: (WritableEntityProperty | undefined)[] = []
 
-        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.PrimaryKey])])
-        flattenedEntity.push(this.flattenParent(dataPointer, entity))
-        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.Locales), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.Locales])])
-        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.AllLocales), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.AllLocales])])
-        flattenedEntity.push([EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.PriceInnerRecordHandling])])
+        flattenedProperties.push([EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.PrimaryKey])])
+        flattenedProperties.push(this.flattenParent(dataPointer, entity))
+        flattenedProperties.push([EntityPropertyKey.entity(StaticEntityProperties.Locales), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.Locales])])
+        flattenedProperties.push([EntityPropertyKey.entity(StaticEntityProperties.AllLocales), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.AllLocales])])
+        flattenedProperties.push([EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.PriceInnerRecordHandling])])
 
-        flattenedEntity.push(...this.flattenAttributes(entity))
-        flattenedEntity.push(...this.flattenAssociatedData(entity))
-        flattenedEntity.push(this.flattenPrices(entity))
-        flattenedEntity.push(...this.flattenReferences(entity))
+        flattenedProperties.push(...this.flattenAttributes(entity))
+        flattenedProperties.push(...this.flattenAssociatedData(entity))
+        flattenedProperties.push(this.flattenPrices(entity))
+        flattenedProperties.push(...this.flattenReferences(entity))
 
-        return flattenedEntity.filter(it => it != undefined) as FlatEntity
+        return this.createFlatEntity(flattenedProperties)
     }
 
-    private flattenParent(dataPointer: DataGridDataPointer, entity: any): EntityProperty | undefined {
+    private flattenParent(dataPointer: DataGridDataPointer, entity: any): WritableEntityProperty | undefined {
         const parentEntities: any[] | undefined = entity['parents']
         if (!parentEntities || parentEntities.length == 0) {
             return undefined
@@ -75,8 +75,8 @@ export class GraphQLQueryExecutor extends QueryExecutor {
         return [EntityPropertyKey.entity(StaticEntityProperties.ParentPrimaryKey), parentReference]
     }
 
-    private flattenAttributes(entity: any): EntityProperty[] {
-        const flattenedAttributes: EntityProperty[] = []
+    private flattenAttributes(entity: any): WritableEntityProperty[] {
+        const flattenedAttributes: WritableEntityProperty[] = []
 
         const attributes = entity[EntityPropertyType.Attributes] || {}
         for (const attributeName in attributes) {
@@ -86,8 +86,8 @@ export class GraphQLQueryExecutor extends QueryExecutor {
         return flattenedAttributes
     }
 
-    private flattenAssociatedData(entity: any): EntityProperty[] {
-        const flattenedAssociatedData: EntityProperty[] = []
+    private flattenAssociatedData(entity: any): WritableEntityProperty[] {
+        const flattenedAssociatedData: WritableEntityProperty[] = []
 
         const associatedData = entity[EntityPropertyType.AssociatedData] || {}
         for (const associatedDataName in associatedData) {
@@ -97,7 +97,7 @@ export class GraphQLQueryExecutor extends QueryExecutor {
         return flattenedAssociatedData
     }
 
-    private flattenPrices(entity: any): EntityProperty | undefined {
+    private flattenPrices(entity: any): WritableEntityProperty | undefined {
         const priceForSale: any | undefined = entity['priceForSale']
         const prices: any[] | undefined = entity[EntityPropertyType.Prices]
         if (priceForSale == undefined && prices == undefined) {
@@ -111,8 +111,8 @@ export class GraphQLQueryExecutor extends QueryExecutor {
         return [EntityPropertyKey.prices(), entityPrices]
     }
 
-    private flattenReferences(entity: any): EntityProperty[] {
-        const flattenedReferences: EntityProperty[] = []
+    private flattenReferences(entity: any): WritableEntityProperty[] {
+        const flattenedReferences: WritableEntityProperty[] = []
 
         const references = Object.keys(entity).filter((it: string) => it.startsWith('reference_'))
         for (const referenceAlias of references) {

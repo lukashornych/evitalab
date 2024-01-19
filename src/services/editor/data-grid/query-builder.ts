@@ -73,4 +73,13 @@ export interface QueryBuilder {
      * @param referencedPrimaryKeys primary keys of referenced entities
      */
     buildReferencedEntityFilterBy(referencedPrimaryKeys: number | number[]): string
+
+    /**
+     * Builds filter by clause to compute priceForSale of an entity.
+     *
+     * @param entityPrimaryKey primary key of entity for which to compute priceForSale
+     * @param priceLists price lists to use for computation, order is important
+     * @param currency currency to use for computation
+     */
+    buildPriceForSaleFilterBy(entityPrimaryKey: number, priceLists: string[], currency: string): string
 }
