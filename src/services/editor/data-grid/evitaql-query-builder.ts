@@ -9,7 +9,7 @@ import { LabService } from '@/services/lab.service'
 import {
     AssociatedDataSchema,
     AttributeSchemaUnion,
-    EntitySchema,
+    EntitySchema, OrderDirection,
     QueryPriceMode,
     ReferenceSchema
 } from '@/model/evitadb'
@@ -259,12 +259,16 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
             })
     }
 
-    buildPrimaryKeyOrderBy(orderDirection: string): string {
-        return `entityPrimaryKeyNatural(${orderDirection.toUpperCase()})`
+    buildPrimaryKeyOrderBy(orderDirection: OrderDirection): string {
+        return `entityPrimaryKeyNatural(${orderDirection})`
     }
 
-    buildAttributeOrderBy(attributeSchema: AttributeSchemaUnion, orderDirection: string): string {
-        return `attributeNatural("${attributeSchema.name}", ${orderDirection.toUpperCase()})`
+    buildAttributeOrderBy(attributeSchema: AttributeSchemaUnion, orderDirection: OrderDirection): string {
+        return `attributeNatural("${attributeSchema.name}", ${orderDirection})`
+    }
+
+    buildReferenceAttributeOrderBy(referenceSchema: ReferenceSchema, attributeSchema: AttributeSchemaUnion, orderDirection: OrderDirection): string {
+        return `referenceProperty("${referenceSchema.name}", attributeNatural("${attributeSchema.name}", ${orderDirection}))`
     }
 
     buildParentEntityFilterBy(parentPrimaryKey: number): string {

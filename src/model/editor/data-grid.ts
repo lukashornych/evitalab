@@ -270,18 +270,24 @@ export class EntityPropertyKey {
 
     readonly type: EntityPropertyType
     readonly names: string[]
+    get parentName(): string {
+        if (this.names.length < 2) {
+            throw new UnexpectedError(undefined, `Parent name of entity property for type ${this.type} is not supported`)
+        }
+        return this.names[0]
+    }
     get name(): string {
         if (this.names.length === 0) {
             throw new UnexpectedError(undefined, `Name of entity property for type ${this.type} is not supported`)
         }
-        if (this.names.length != 1) {
-            throw new UnexpectedError(undefined, `Cannot get name of a property key with multiple names: ${this.names}`)
-        }
-        return this.names[0]
+        return this.names.at(-1)!
     }
 
     private constructor(type: EntityPropertyType, names: string[] = []) {
         this.type = type
+        if (names.length > 2) {
+            throw new UnexpectedError(undefined, `Cannot create entity property key with more than two names: ${names}`)
+        }
         this.names = names
     }
 

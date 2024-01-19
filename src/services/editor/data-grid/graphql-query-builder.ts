@@ -9,7 +9,7 @@ import { LabService } from '@/services/lab.service'
 import {
     AssociatedDataSchema,
     AttributeSchemaUnion,
-    EntitySchema,
+    EntitySchema, OrderDirection,
     QueryPriceMode,
     ReferenceSchema
 } from '@/model/evitadb'
@@ -306,12 +306,16 @@ export class GraphQLQueryBuilder implements QueryBuilder {
             })
     }
 
-    buildPrimaryKeyOrderBy(orderDirection: string): string {
-        return `entityPrimaryKeyNatural: ${orderDirection.toUpperCase()}`
+    buildPrimaryKeyOrderBy(orderDirection: OrderDirection): string {
+        return `entityPrimaryKeyNatural: ${orderDirection}`
     }
 
-    buildAttributeOrderBy(attributeSchema: AttributeSchemaUnion, orderDirection: string): string {
-        return `attribute${attributeSchema.nameVariants.pascalCase}Natural: ${orderDirection.toUpperCase()}`
+    buildAttributeOrderBy(attributeSchema: AttributeSchemaUnion, orderDirection: OrderDirection): string {
+        return `attribute${attributeSchema.nameVariants.pascalCase}Natural: ${orderDirection}`
+    }
+
+    buildReferenceAttributeOrderBy(referenceSchema: ReferenceSchema, attributeSchema: AttributeSchemaUnion, orderDirection: OrderDirection): string {
+        return `reference${referenceSchema.nameVariants.pascalCase}Property: { attribute${attributeSchema.nameVariants.pascalCase}Natural: ${orderDirection} }`
     }
 
     buildParentEntityFilterBy(parentPrimaryKey: number): string {

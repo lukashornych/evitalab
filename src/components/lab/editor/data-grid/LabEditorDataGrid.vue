@@ -103,7 +103,6 @@ const currentData = computed<DataGridData>(() => {
     )
 })
 
-emit('ready')
 onBeforeMount(() => {
     // note: we can't use async/await here, because that would make this component async which currently doesn't seem to work
     // properly in combination with dynamic <component> rendering and tabs
@@ -141,6 +140,8 @@ onBeforeMount(() => {
             if (props.params.executeOnOpen) {
                 executeQueryAutomatically()
             }
+
+            emit('ready')
         })
         .catch(error => {
             toaster.error(error)
@@ -172,7 +173,7 @@ async function initializeGridHeaders(entityPropertyDescriptors: EntityPropertyDe
                 {
                     key: childPropertyDescriptor.key.toString(),
                     title: childPropertyDescriptor.flattenedTitle,
-                    sortable: childPropertyDescriptor.schema?.sortable || false,
+                    sortable: childPropertyDescriptor.isSortable(),
                     descriptor: childPropertyDescriptor
                 }
             )
