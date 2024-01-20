@@ -10,16 +10,17 @@ import { LabService } from '@/services/lab.service'
 /**
  * Represents props of the LabEditorConsoleEvitaQL component.
  */
-export class EvitaQLConsoleParams implements TabRequestComponentParams, SerializableTabRequestComponentParams<EvitaQLConsoleParamsDto>, ExecutableTabRequest {
+export class EvitaQLConsoleParams extends SerializableTabRequestComponentParams<EvitaQLConsoleParamsDto> implements TabRequestComponentParams, ExecutableTabRequest {
     readonly dataPointer: EvitaQLDataPointer
     readonly executeOnOpen: boolean
 
     constructor(dataPointer: EvitaQLDataPointer, executeOnOpen: boolean) {
+        super()
         this.dataPointer = dataPointer
         this.executeOnOpen = executeOnOpen
     }
 
-    static restoreFromSerializable(labService: LabService, json: any): EvitaQLConsoleParams {
+    static restoreFromSerializable(labService: LabService, json: TabRequestComponentParamsDto): EvitaQLConsoleParams {
         const dto: EvitaQLConsoleParamsDto = json as EvitaQLConsoleParamsDto
         return new EvitaQLConsoleParams(
             new EvitaQLDataPointer(
@@ -52,17 +53,19 @@ interface EvitaQLConsoleParamsDto extends TabRequestComponentParamsDto {
 /**
  * Represents injectable/storable user data of the LabEditorConsoleEvitaQL component.
  */
-export class EvitaQLConsoleData implements TabRequestComponentData, SerializableTabRequestComponentData<EvitaQLConsoleDataDto> {
+export class EvitaQLConsoleData extends SerializableTabRequestComponentData<EvitaQLConsoleDataDto> implements TabRequestComponentData {
     readonly query?: string
     readonly variables?: string
 
     constructor(query?: string, variables?: string) {
+        super()
         this.query = query
         this.variables = variables
     }
 
-    static restoreFromSerializable(json: any): EvitaQLConsoleData {
-        return new EvitaQLConsoleData(json.query, json.variables)
+    static restoreFromSerializable(json: TabRequestComponentDataDto): EvitaQLConsoleData {
+        const dto: EvitaQLConsoleDataDto = json as EvitaQLConsoleDataDto
+        return new EvitaQLConsoleData(dto.query, dto.variables)
     }
 
     toSerializable(): EvitaQLConsoleDataDto {

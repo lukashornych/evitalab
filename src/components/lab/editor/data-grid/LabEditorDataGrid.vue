@@ -90,6 +90,7 @@ const totalResultCount = ref<number>(0)
 
 const initialized = ref<boolean>(false)
 const queryExecutedManually = ref<boolean>(false)
+const queryExecuted = computed<boolean>(() => queryExecutedManually.value || props.params.executeOnOpen)
 
 const currentData = computed<DataGridData>(() => {
     return new DataGridData(
@@ -101,6 +102,9 @@ const currentData = computed<DataGridData>(() => {
         pageSize.value,
         pageNumber.value
     )
+})
+watch(currentData, (data) => {
+    emit('dataUpdate', data)
 })
 
 emit('ready')
@@ -236,7 +240,7 @@ async function executeQueryAutomatically(): Promise<void> {
     // params.
     // Otherwise, we need to wait for the user because the query may contain malicious code which we don't want to execute
     // automatically before user gave consent with manual execution.
-    if (queryExecutedManually.value || props.params.executeOnOpen) {
+    if (queryExecuted.value) {
         await executeQuery()
     }
 }
@@ -302,6 +306,7 @@ async function executeQuery(): Promise<void> {
         </LabEditorDataGridToolbar>
 
         <LabEditorDataGridGrid
+            v-if="queryExecuted"
             :displayed-grid-headers="displayedGridHeaders"
             :loading="loading"
             :result-entities="resultEntities as FlatEntity[]"
@@ -310,6 +315,12 @@ async function executeQuery(): Promise<void> {
             :page-size="pageSize"
             @grid-updated="gridUpdated"
         />
+        <div v-else class="data-grid__init-screen">
+            <p>Loaded query data must be manually executed.</p>
+            <VBtn @click="executeQueryManually">
+                Execute query
+            </VBtn>
+        </div>
     </div>
 </template>
 
@@ -318,5 +329,14 @@ async function executeQuery(): Promise<void> {
     display: grid;
     grid-template-rows: 5.5rem 1fr;
     overflow-y: auto;
+
+    &__init-screen {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        gap: 1rem;
+    }
 }
 </style>

@@ -1,4 +1,4 @@
-import { TabRequest } from '@/model/editor/editor'
+import { TabRequest, TabRequestComponentDataDto, TabRequestComponentParamsDto } from '@/model/editor/editor'
 import { EvitaDBConnection } from '@/model/lab'
 import { DefineComponent, markRaw } from 'vue'
 import LabEditorDataGrid from '@/components/lab/editor/data-grid/LabEditorDataGrid.vue'
@@ -35,7 +35,7 @@ export class DataGridRequest extends TabRequest<DataGridParams, DataGridData> {
         )
     }
 
-    static restoreFromJson(labService: LabService, paramsJson: any, dataJson: any): DataGridRequest {
+    static restoreFromJson(labService: LabService, paramsJson: TabRequestComponentParamsDto, dataJson: TabRequestComponentDataDto): DataGridRequest {
         const params: DataGridParams = DataGridParams.restoreFromSerializable(labService, paramsJson)
         const data: DataGridData = DataGridData.restoreFromSerializable(dataJson)
 

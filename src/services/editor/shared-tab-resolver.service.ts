@@ -1,5 +1,4 @@
 import { TabRequest } from '@/model/editor/editor'
-import { ShareTabObject, TabType } from '@/model/editor/share-tab-object'
 import { UnexpectedError } from '@/model/lab'
 import { GraphQLConsoleRequest } from '@/model/editor/graphql-console-request'
 import { LabService } from '@/services/lab.service'
@@ -7,6 +6,8 @@ import { inject, InjectionKey } from 'vue'
 import { SchemaViewerRequest } from '@/model/editor/schema-viewer-request'
 import { EvitaQLConsoleRequest } from '@/model/editor/evitaql-console-request'
 import { DataGridRequest } from '@/model/editor/data-grid-request'
+import { ShareTabObject } from '@/model/editor/tab/share-tab-object'
+import { TabType } from '@/model/editor/tab/serializable-tab-object'
 
 export const key: InjectionKey<SharedTabResolver> = Symbol()
 

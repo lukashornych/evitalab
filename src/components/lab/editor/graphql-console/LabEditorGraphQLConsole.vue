@@ -10,7 +10,7 @@ import { Extension } from '@codemirror/state'
 import { graphql } from 'cm6-graphql'
 import { json } from '@codemirror/lang-json'
 
-import { computed, onBeforeMount, ref } from 'vue'
+import { computed, onBeforeMount, ref, watch } from 'vue'
 import { GraphQLConsoleService, useGraphQLConsoleService } from '@/services/editor/graphql-console.service'
 import { GraphQLSchema, printSchema } from 'graphql'
 import { GraphQLConsoleData, GraphQLConsoleParams, GraphQLInstanceType } from '@/model/editor/graphql-console'
@@ -27,7 +27,7 @@ import {
     useGraphQLResultVisualiserService
 } from '@/services/editor/result-visualiser/graphql-result-visualiser.service'
 import LabEditorTabShareButton from '@/components/lab/editor/tab/LabEditorTabShareButton.vue'
-import { TabType } from '@/model/editor/share-tab-object'
+import { TabType } from '@/model/editor/tab/serializable-tab-object'
 
 enum EditorTabType {
     Query = 'query',
@@ -80,6 +80,9 @@ const initialized = ref<boolean>(false)
 
 const currentData = computed<GraphQLConsoleData>(() => {
     return new GraphQLConsoleData(queryCode.value, variablesCode.value)
+})
+watch(currentData, (data) => {
+    emit('dataUpdate', data)
 })
 
 onBeforeMount(() => {

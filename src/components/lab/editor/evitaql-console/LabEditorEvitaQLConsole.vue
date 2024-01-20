@@ -9,7 +9,7 @@ import 'splitpanes/dist/splitpanes.css'
 import { Extension } from '@codemirror/state'
 import { json } from '@codemirror/lang-json'
 
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import VStandardCodeMirror from '@/components/base/VStandardCodemirror.vue'
 import { EvitaQLConsoleService, useEvitaQLConsoleService } from '@/services/editor/evitaql-console.service'
 import { EvitaQLConsoleData, EvitaQLConsoleParams } from '@/model/editor/evitaql-console'
@@ -24,8 +24,8 @@ import {
 } from '@/services/editor/result-visualiser/evitaql-result-visualiser.service'
 import LabEditorResultVisualiser from '@/components/lab/editor/result-visualiser/LabEditorResultVisualiser.vue'
 import { evitaQL } from '@lukashornych/codemirror-lang-evitaql'
-import { TabType } from '@/model/editor/share-tab-object'
 import LabEditorTabShareButton from '@/components/lab/editor/tab/LabEditorTabShareButton.vue'
+import { TabType } from '@/model/editor/tab/serializable-tab-object'
 
 enum EditorTabType {
     Query = 'query',
@@ -64,6 +64,9 @@ const loading = ref<boolean>(false)
 
 const currentData = computed<EvitaQLConsoleData>(() => {
     return new EvitaQLConsoleData(queryCode.value, variablesCode.value)
+})
+watch(currentData, (data) => {
+    emit('dataUpdate', data)
 })
 
 async function executeQuery(): Promise<void> {

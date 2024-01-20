@@ -18,6 +18,9 @@ const preconfiguredConnectionsCookieName: string = 'evitalab_pconnections'
 
 const defaultServerName: string = 'standalone'
 
+const userConnectionsStorageKey: string = 'userConnections'
+
+
 /**
  * Stores global information about configured evitaDB servers.
  */
@@ -118,7 +121,7 @@ const state = (): LabState => {
     const storage = new LabStorage(serverName)
 
     // load user-defined connections from local storage
-    const userConnections: EvitaDBConnection[] = storage.getUserConnections()
+    const userConnections: EvitaDBConnection[] = storage.get(userConnectionsStorageKey, [])
 
     // expire cookies, so when the lab is reloaded, it will load new cookie values
     Cookies.remove(serverNameCookieName)
@@ -195,12 +198,12 @@ const mutations: LabMutations = {
             throw new DuplicateEvitaDBConnectionError(connection.name)
         }
         state.userConnections.push(connection)
-        state.storage.storeUserConnections(state.userConnections)
+        state.storage.set(userConnectionsStorageKey, state.userConnections)
     },
 
     removeConnection(state, connectionName): void {
         state.userConnections.splice(state.userConnections.findIndex(connection => connection.name === connectionName), 1)
-        state.storage.storeUserConnections(state.userConnections)
+        state.storage.set(userConnectionsStorageKey, state.userConnections)
     },
 
     putCatalogs(state, payload): void {

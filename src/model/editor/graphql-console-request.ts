@@ -1,4 +1,4 @@
-import { TabRequest } from '@/model/editor/editor'
+import { TabRequest, TabRequestComponentDataDto, TabRequestComponentParamsDto } from '@/model/editor/editor'
 import { EvitaDBConnection } from '@/model/lab'
 import LabEditorGraphQLConsole from '@/components/lab/editor/graphql-console/LabEditorGraphQLConsole.vue'
 import {
@@ -40,7 +40,7 @@ export class GraphQLConsoleRequest extends TabRequest<GraphQLConsoleParams, Grap
         )
     }
 
-    static restoreFromJson(labService: LabService, paramsJson: any, dataJson: any): GraphQLConsoleRequest {
+    static restoreFromJson(labService: LabService, paramsJson: TabRequestComponentParamsDto, dataJson: TabRequestComponentDataDto): GraphQLConsoleRequest {
         const params: GraphQLConsoleParams = GraphQLConsoleParams.restoreFromSerializable(labService, paramsJson)
         const data: GraphQLConsoleData = GraphQLConsoleData.restoreFromSerializable(dataJson)
 

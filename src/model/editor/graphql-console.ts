@@ -10,16 +10,17 @@ import { LabService } from '@/services/lab.service'
 /**
  * Represents props of the LabEditorConsoleGraphQL component.
  */
-export class GraphQLConsoleParams implements TabRequestComponentParams, SerializableTabRequestComponentParams<GraphQLConsoleParamsDto>, ExecutableTabRequest {
+export class GraphQLConsoleParams extends SerializableTabRequestComponentParams<GraphQLConsoleParamsDto> implements TabRequestComponentParams, ExecutableTabRequest {
     readonly instancePointer: GraphQLInstancePointer
     readonly executeOnOpen: boolean
 
     constructor(instancePointer: GraphQLInstancePointer, executeOnOpen: boolean = false) {
+        super()
         this.instancePointer = instancePointer
         this.executeOnOpen = executeOnOpen
     }
 
-    static restoreFromSerializable(labService: LabService, json: any): GraphQLConsoleParams {
+    static restoreFromSerializable(labService: LabService, json: TabRequestComponentParamsDto): GraphQLConsoleParams {
         const dto: GraphQLConsoleParamsDto = json as GraphQLConsoleParamsDto
         return new GraphQLConsoleParams(
             new GraphQLInstancePointer(
@@ -46,7 +47,7 @@ export class GraphQLConsoleParams implements TabRequestComponentParams, Serializ
 /**
  * Serializable DTO for storing {@link GraphQLConsoleParams} in a storage or link.
  */
-interface GraphQLConsoleParamsDto extends TabRequestComponentParamsDto{
+interface GraphQLConsoleParamsDto extends TabRequestComponentParamsDto {
     readonly connectionId: EvitaDBConnectionId
     readonly catalogName: string
     readonly instanceType: GraphQLInstanceType
@@ -55,17 +56,19 @@ interface GraphQLConsoleParamsDto extends TabRequestComponentParamsDto{
 /**
  * Represents injectable/storable user data of the LabEditorConsoleGraphQL component.
  */
-export class GraphQLConsoleData implements TabRequestComponentData, SerializableTabRequestComponentData<GraphQLConsoleDataDto> {
+export class GraphQLConsoleData extends SerializableTabRequestComponentData<GraphQLConsoleDataDto> implements TabRequestComponentData {
     readonly query?: string
     readonly variables?: string
 
     constructor(query?: string, variables?: string) {
+        super()
         this.query = query
         this.variables = variables
     }
 
-    static restoreFromSerializable(json: any): GraphQLConsoleData {
-        return new GraphQLConsoleData(json.query, json.variables)
+    static restoreFromSerializable(json: TabRequestComponentDataDto): GraphQLConsoleData {
+        const dto: GraphQLConsoleDataDto = json as GraphQLConsoleDataDto
+        return new GraphQLConsoleData(dto.query, dto.variables)
     }
 
     toSerializable(): GraphQLConsoleDataDto {

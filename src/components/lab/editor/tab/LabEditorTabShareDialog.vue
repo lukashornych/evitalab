@@ -11,7 +11,8 @@ import {
     SerializableTabRequestComponentParams
 } from '@/model/editor/editor'
 import { Toaster, useToaster } from '@/services/editor/toaster'
-import { ShareTabObject, TabType } from '@/model/editor/share-tab-object'
+import { ShareTabObject } from '@/model/editor/tab/share-tab-object'
+import { TabType } from '@/model/editor/tab/serializable-tab-object'
 
 /**
  * Smallest possible number of characters in a URL valid across all browser. Usually browser support more characters.
@@ -93,7 +94,6 @@ function copyLink(): void {
                     Cancel
                 </VBtn>
                 <VBtn
-                    variant="outlined"
                     prepend-icon="mdi-content-copy"
                     @click="copyLink"
                     class="ml-4"
