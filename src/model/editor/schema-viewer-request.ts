@@ -1,4 +1,8 @@
-import { TabRequest, VoidTabRequestComponentData } from '@/model/editor/editor'
+import {
+    TabRequest,
+    TabRequestComponentParamsDto,
+    VoidTabRequestComponentData
+} from '@/model/editor/editor'
 import { SchemaPointer, SchemaViewerDataPointer, SchemaViewerParams } from '@/model/editor/schema-viewer'
 import { EvitaDBConnection } from '@/model/lab'
 import { DefineComponent, markRaw } from 'vue'
@@ -30,7 +34,7 @@ export class SchemaViewerRequest extends TabRequest<SchemaViewerParams, VoidTabR
         )
     }
 
-    static restoreFromJson(labService: LabService, paramsJson: any): SchemaViewerRequest {
+    static restoreFromJson(labService: LabService, paramsJson: TabRequestComponentParamsDto): SchemaViewerRequest {
         const params: SchemaViewerParams = SchemaViewerParams.restoreFromSerializable(labService, paramsJson)
 
         return new SchemaViewerRequest(

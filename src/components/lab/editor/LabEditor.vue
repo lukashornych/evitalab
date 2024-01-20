@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import { computed, ref, watch } from 'vue'
-import { TabRequest } from '@/model/editor/editor'
+import { TabRequest, TabRequestComponentData } from '@/model/editor/editor'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import LabEditorTabWindow from './tab/LabEditorTabWindow.vue'
 import { ellipsis } from '@/utils/text-utils'
@@ -19,6 +19,14 @@ const editorService: EditorService = useEditorService()
 const demoCodeSnippetResolver: DemoSnippetResolver = useDemoSnippetResolver()
 const sharedTabResolver: SharedTabResolver = useSharedTabResolver()
 
+/**
+ * Represents editor mode where user data aren't stored at the end of the session. Useful for demo snippets or shared tabs.
+ */
+const playgroundMode = ref<boolean>(false)
+
+const sharedTabDialogOpen = ref<boolean>(false)
+const sharedTabRequest = ref<TabRequest<any, any> | undefined>()
+
 const tabs = computed<TabRequest<any, any>[]>(() => {
     return editorService.getTabRequests()
 })
@@ -29,9 +37,13 @@ watch(tabs, () => {
         currentTabId.value = newTab.id
         editorService.markTabRequestAsVisited(newTab.id)
     }
-}, { deep: true})
-
+}, { deep: true })
 const currentTabId = ref<string | null>()
+let currentTabData: Map<string, TabRequestComponentData> = new Map<string, TabRequestComponentData>()
+
+function storeTabData(tabId: string, updatedData: TabRequestComponentData) {
+    currentTabData.set(tabId, updatedData)
+}
 
 function closeTab(tabId: string) {
     const prevTabsLength: number = tabs.value.length
@@ -48,10 +60,6 @@ function closeTab(tabId: string) {
     }
 }
 
-async function removeParamsFromUrl() {
-    await router.replace({ path: currentRoute.path })
-}
-
 /**
  * open demo code snippet if requested
  */
@@ -62,18 +70,11 @@ async function resolveDemoCodeSnippet(): Promise<TabRequest<any, any> | undefine
     }
 
     try {
-        const tabRequest = await demoCodeSnippetResolver.resolve(demoSnippetRequestSerialized)
-        await removeParamsFromUrl()
-        return tabRequest
+        return await demoCodeSnippetResolver.resolve(demoSnippetRequestSerialized)
     } catch (e: any) {
         toaster.error(e)
     }
 }
-resolveDemoCodeSnippet().then(tabRequest => {
-    if (tabRequest != undefined) {
-        editorService.createTabRequest(tabRequest)
-    }
-})
 
 /**
  * Open shared tab if requested
@@ -85,19 +86,39 @@ async function resolveSharedTab(): Promise<TabRequest<any, any> | undefined> {
     }
 
     try {
-        const tabRequest = await sharedTabResolver.resolve(sharedTabSerialized)
-        await removeParamsFromUrl()
-        return tabRequest
+        return await sharedTabResolver.resolve(sharedTabSerialized)
     } catch (e: any) {
         toaster.error(e)
     }
 }
-const sharedTabDialogOpen = ref<boolean>(false)
-const sharedTabRequest = ref<TabRequest<any, any> | undefined>()
-resolveSharedTab().then(tabRequest => {
-    if (tabRequest != undefined) {
-        sharedTabRequest.value = tabRequest
-        sharedTabDialogOpen.value = true
+
+// initialize the editor
+resolveDemoCodeSnippet()
+    .then(tabRequest => {
+        if (tabRequest != undefined) {
+            playgroundMode.value = true
+            editorService.createTabRequest(tabRequest)
+        }
+        return resolveSharedTab()
+    }).then(tabRequest => {
+        if (tabRequest != undefined) {
+            playgroundMode.value = true
+            sharedTabRequest.value = tabRequest
+            sharedTabDialogOpen.value = true
+        }
+
+        if (!playgroundMode.value) {
+            const restoredTabData: Map<string, TabRequestComponentData> | undefined = editorService.createTabRequestsForTabsFromLastSession()
+            if (restoredTabData != undefined) {
+                toaster.info('Your last session has been restored.')
+                currentTabData = restoredTabData
+            }
+        }
+    })
+
+window.addEventListener('beforeunload', () => {
+    if (!playgroundMode.value) {
+        editorService.storeOpenedTabs(currentTabData)
     }
 })
 </script>
@@ -165,6 +186,7 @@ resolveSharedTab().then(tabRequest => {
                 <LabEditorTabWindow
                     :component="tab.component"
                     :component-props="tab.componentProps()"
+                    @data-update="storeTabData(tab.id, $event)"
                 />
             </VWindowItem>
         </VWindow>

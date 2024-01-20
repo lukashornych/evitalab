@@ -12,16 +12,17 @@ import { InjectionKey, Ref } from 'vue'
 /**
  * Represents props of the LabEditorDataGrid component.
  */
-export class DataGridParams implements TabRequestComponentParams, SerializableTabRequestComponentParams<DataGridParamsDto>, ExecutableTabRequest {
+export class DataGridParams extends SerializableTabRequestComponentParams<DataGridParamsDto> implements TabRequestComponentParams, ExecutableTabRequest {
     readonly dataPointer: DataGridDataPointer
     readonly executeOnOpen: boolean
 
     constructor(dataPointer: DataGridDataPointer, executeOnOpen: boolean = false) {
+        super()
         this.dataPointer = dataPointer
         this.executeOnOpen = executeOnOpen
     }
 
-    static restoreFromSerializable(labService: LabService, json: any): DataGridParams {
+    static restoreFromSerializable(labService: LabService, json: TabRequestComponentParamsDto): DataGridParams {
         const dto: DataGridParamsDto = json as DataGridParamsDto
         return new DataGridParams(
             new DataGridDataPointer(
@@ -57,7 +58,7 @@ interface DataGridParamsDto extends TabRequestComponentParamsDto {
 /**
  * Represents injectable/storable user data of the LabEditorConsoleDataGrid component.
  */
-export class DataGridData implements TabRequestComponentData, SerializableTabRequestComponentData<DataGridDataDto> {
+export class DataGridData extends SerializableTabRequestComponentData<DataGridDataDto> implements TabRequestComponentData {
     readonly queryLanguage?: QueryLanguage
     readonly filterBy?: string
     readonly orderBy?: string
@@ -74,6 +75,7 @@ export class DataGridData implements TabRequestComponentData, SerializableTabReq
                 displayedProperties?: EntityPropertyKey[],
                 pageSize?: number,
                 pageNumber?: number) {
+        super()
         this.queryLanguage = queryLanguage
         this.filterBy = filterBy
         this.orderBy = orderBy
@@ -83,15 +85,16 @@ export class DataGridData implements TabRequestComponentData, SerializableTabReq
         this.pageNumber = pageNumber
     }
 
-    static restoreFromSerializable(json: any): DataGridData {
+    static restoreFromSerializable(json: TabRequestComponentDataDto): DataGridData {
+        const dto: DataGridDataDto = json as DataGridDataDto
         return new DataGridData(
-            json.queryLanguage,
-            json.filterBy,
-            json.orderBy,
-            json.dataLocale,
-            json.displayedProperties.map((key: string) => EntityPropertyKey.fromString(key)),
-            json.pageSize,
-            json.pageNumber
+            dto.queryLanguage,
+            dto.filterBy,
+            dto.orderBy,
+            dto.dataLocale,
+            dto.displayedProperties?.map((key: string) => EntityPropertyKey.fromString(key)),
+            dto.pageSize,
+            dto.pageNumber
         )
     }
 

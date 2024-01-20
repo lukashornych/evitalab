@@ -65,6 +65,9 @@ export default createVuetify({
         },
         VList: {
             density: 'compact'
+        },
+        VBtn: {
+            variant: 'outlined'
         }
     },
 })

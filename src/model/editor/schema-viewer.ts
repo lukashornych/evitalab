@@ -1,5 +1,9 @@
 import { EvitaDBConnection, UnexpectedError } from '@/model/lab'
-import { SerializableTabRequestComponentParams, TabRequestComponentParams } from '@/model/editor/editor'
+import {
+    SerializableTabRequestComponentParams,
+    TabRequestComponentParams,
+    TabRequestComponentParamsDto
+} from '@/model/editor/editor'
 import LabEditorSchemaViewerCatalog from '@/components/lab/editor/schema-viewer/LabEditorSchemaViewerCatalog.vue'
 import LabEditorSchemaViewerEntity from '@/components/lab/editor/schema-viewer/LabEditorSchemaViewerEntity.vue'
 import { DefineComponent, markRaw, Raw } from 'vue'
@@ -12,14 +16,15 @@ import { LabService } from '@/services/lab.service'
 /**
  * Represents props of the LabEditorSchemaViewer component.
  */
-export class SchemaViewerParams implements TabRequestComponentParams, SerializableTabRequestComponentParams<SchemaViewerParamsDto> {
+export class SchemaViewerParams extends SerializableTabRequestComponentParams<SchemaViewerParamsDto> implements TabRequestComponentParams {
     readonly dataPointer: SchemaViewerDataPointer
 
     constructor(dataPointer: SchemaViewerDataPointer) {
+        super()
         this.dataPointer = dataPointer
     }
 
-    static restoreFromSerializable(labService: LabService, json: any): SchemaViewerParams {
+    static restoreFromSerializable(labService: LabService, json: TabRequestComponentParamsDto): SchemaViewerParams {
         const dto: SchemaViewerParamsDto = json as SchemaViewerParamsDto
 
         const schemaPointerType: SchemaPointerType = dto.schemaPointer.type

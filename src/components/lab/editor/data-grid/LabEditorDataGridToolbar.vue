@@ -5,11 +5,11 @@
 import VExecuteQueryButton from '@/components/base/VExecuteQueryButton.vue'
 import VTabToolbar from '@/components/base/VTabToolbar.vue'
 import { computed, inject } from 'vue'
-import { TabType } from '@/model/editor/share-tab-object'
 import LabEditorTabShareButton from '@/components/lab/editor/tab/LabEditorTabShareButton.vue'
 import { DataGridData, gridParamsKey } from '@/model/editor/data-grid'
 import { dataLocaleKey } from '@/model/editor/data-grid'
 import { mandatoryInject } from '@/helpers/reactivity'
+import { TabType } from '@/model/editor/tab/serializable-tab-object'
 
 const props = defineProps<{
     currentData: DataGridData,

@@ -1,4 +1,4 @@
-import { TabRequest } from '@/model/editor/editor'
+import { TabRequest, TabRequestComponentDataDto, TabRequestComponentParamsDto } from '@/model/editor/editor'
 import { EvitaDBConnection } from '@/model/lab'
 import { DefineComponent, markRaw } from 'vue'
 import LabEditorEvitaQLConsole from '@/components/lab/editor/evitaql-console/LabEditorEvitaQLConsole.vue'
@@ -34,7 +34,7 @@ export class EvitaQLConsoleRequest extends TabRequest<EvitaQLConsoleParams, Evit
         )
     }
 
-    static restoreFromJson(labService: LabService, paramsJson: any, dataJson: any): EvitaQLConsoleRequest {
+    static restoreFromJson(labService: LabService, paramsJson: TabRequestComponentParamsDto, dataJson: TabRequestComponentDataDto): EvitaQLConsoleRequest {
         const params: EvitaQLConsoleParams = EvitaQLConsoleParams.restoreFromSerializable(labService, paramsJson)
         const data: EvitaQLConsoleData = EvitaQLConsoleData.restoreFromSerializable(dataJson)
 

@@ -79,12 +79,12 @@ export interface ExecutableTabRequest extends TabRequestComponentParams {
 /**
  * Serializable DTO for storing {@link TabRequestComponentParams} in a storage or link.
  */
-export interface SerializableTabRequestComponentParams<DTO extends TabRequestComponentParamsDto> {
+export abstract class SerializableTabRequestComponentParams<DTO extends TabRequestComponentParamsDto> {
 
     /**
      * Converts the params to a DTO that can be safely serialized.
      */
-    toSerializable(): DTO
+    abstract toSerializable(): DTO
 }
 
 /**
@@ -96,12 +96,12 @@ export interface TabRequestComponentParamsDto {
 /**
  * Serializable DTO for storing {@link TabRequestComponentData} in a storage or link.
  */
-export interface SerializableTabRequestComponentData<DTO extends TabRequestComponentDataDto> {
+export abstract class SerializableTabRequestComponentData<DTO extends TabRequestComponentDataDto> {
 
     /**
      * Converts the params to a DTO that can be safely serialized.
      */
-    toSerializable(): DTO
+    abstract toSerializable(): DTO
 }
 
 /**
@@ -123,6 +123,10 @@ export interface TabComponentEvents {
      * Emitted when the tab component is ready to be used.
      */
     (e: 'ready'): void
+    /**
+     * Emitted when the tab component's data has been updated.
+     */
+    (e: 'dataUpdate', value: TabRequestComponentData): void
 }
 
 /**

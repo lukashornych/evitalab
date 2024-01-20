@@ -5,8 +5,8 @@ import { SchemaViewerService, useSchemaViewerService } from '@/services/editor/s
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import { TabComponentEvents, TabComponentProps, VoidTabRequestComponentData } from '@/model/editor/editor'
 import VTabToolbar from '@/components/base/VTabToolbar.vue'
-import { TabType } from '@/model/editor/share-tab-object'
 import LabEditorTabShareButton from '@/components/lab/editor/tab/LabEditorTabShareButton.vue'
+import { TabType } from '@/model/editor/tab/serializable-tab-object'
 
 const schemaViewerService: SchemaViewerService = useSchemaViewerService()
 const toaster: Toaster = useToaster()
