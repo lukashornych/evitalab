@@ -75,11 +75,11 @@ export class EditorService {
             .map(storedTabObject => {
                 switch (storedTabObject.tabType) {
                     case TabType.DataGrid:
-                        return DataGridRequest.restoreFromJson(this.labService, storedTabObject.tabParams, storedTabObject.tabData)
+                        return DataGridRequest.restoreFromJson(this.labService, storedTabObject.tabParams, storedTabObject.tabData || {})
                     case TabType.EvitaQLConsole:
-                        return EvitaQLConsoleRequest.restoreFromJson(this.labService, storedTabObject.tabParams, storedTabObject.tabData)
+                        return EvitaQLConsoleRequest.restoreFromJson(this.labService, storedTabObject.tabParams, storedTabObject.tabData || {})
                     case TabType.GraphQLConsole:
-                        return GraphQLConsoleRequest.restoreFromJson(this.labService, storedTabObject.tabParams, storedTabObject.tabData)
+                        return GraphQLConsoleRequest.restoreFromJson(this.labService, storedTabObject.tabParams, storedTabObject.tabData || {})
                     case TabType.SchemaViewer:
                         return SchemaViewerRequest.restoreFromJson(this.labService, storedTabObject.tabParams)
                     default:

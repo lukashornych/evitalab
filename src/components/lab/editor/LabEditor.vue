@@ -108,10 +108,15 @@ resolveDemoCodeSnippet()
         }
 
         if (!playgroundMode.value) {
-            const restoredTabData: Map<string, TabRequestComponentData> | undefined = editorService.createTabRequestsForTabsFromLastSession()
-            if (restoredTabData != undefined) {
-                toaster.info('Your last session has been restored.')
-                currentTabData = restoredTabData
+            try {
+                const restoredTabData: Map<string, TabRequestComponentData> | undefined = editorService.createTabRequestsForTabsFromLastSession()
+                if (restoredTabData != undefined) {
+                    toaster.info('Your last session has been restored.')
+                    currentTabData = restoredTabData
+                }
+            } catch (e) {
+                console.error(e)
+                toaster.warning('Failed to restore your last session.')
             }
         }
     })
