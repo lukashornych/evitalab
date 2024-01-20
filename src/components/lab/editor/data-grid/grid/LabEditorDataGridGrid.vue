@@ -53,6 +53,7 @@ const queryLanguage = inject(queryLanguageKey, ref<QueryLanguage | undefined>(Qu
 const dataLocale = inject(dataLocaleKey)
 
 const showPropertyDetail = ref<boolean>(false)
+const propertyDetailEntity = ref<FlatEntity | undefined>()
 const propertyDetailDescriptor = ref<EntityPropertyDescriptor | undefined>()
 const propertyDetailValue = ref<EntityPropertyValue | EntityPropertyValue[] | undefined>()
 
@@ -64,7 +65,7 @@ function getPropertyDescriptor(key: string): EntityPropertyDescriptor | undefine
     return descriptor
 }
 
-function handlePropertyClicked(propertyKey: string, value: EntityPropertyValue | EntityPropertyValue[]): void {
+function handlePropertyClicked(relativeEntityIndex: number, propertyKey: string, value: EntityPropertyValue | EntityPropertyValue[]): void {
     if (value.valueOf() == undefined) {
         return
     }
@@ -84,10 +85,7 @@ function handlePropertyClicked(propertyKey: string, value: EntityPropertyValue |
                 queryLanguage?.value,
                 dataGridService.buildParentEntityFilterBy(queryLanguage.value as QueryLanguage, (value as EntityReferenceValue).primaryKey),
                 undefined,
-                dataLocale?.value,
-                undefined,
-                props.pageSize,
-                props.pageNumber
+                dataLocale?.value
             ),
             true
         ))
@@ -103,10 +101,7 @@ function handlePropertyClicked(propertyKey: string, value: EntityPropertyValue |
                 queryLanguage.value,
                 dataGridService.buildPredecessorEntityFilterBy(queryLanguage.value as QueryLanguage, (value as NativeValue).value() as number),
                 undefined,
-                dataLocale?.value,
-                undefined,
-                props.pageSize,
-                props.pageNumber
+                dataLocale?.value
             ),
             true
         ))
@@ -125,15 +120,13 @@ function handlePropertyClicked(propertyKey: string, value: EntityPropertyValue |
                         : [(value as EntityReferenceValue).primaryKey]
                 ),
                 undefined,
-                dataLocale?.value,
-                undefined,
-                props.pageSize,
-                props.pageNumber
+                dataLocale?.value
             ),
             true
         ))
     } else {
         // for other values, show detail of the value
+        propertyDetailEntity.value = props.resultEntities[relativeEntityIndex]
         propertyDetailDescriptor.value = propertyDescriptor
         propertyDetailValue.value = value
         showPropertyDetail.value = true
@@ -142,6 +135,7 @@ function handlePropertyClicked(propertyKey: string, value: EntityPropertyValue |
 
 function closePropertyDetail(): void {
     showPropertyDetail.value = false
+    propertyDetailEntity.value = undefined
     propertyDetailDescriptor.value = undefined
     propertyDetailValue.value = undefined
 }
@@ -182,14 +176,14 @@ function closePropertyDetail(): void {
                         />
                     </tr>
                 </template>
-                <template #item="{ item }">
+                <template #item="{ item, index }">
                     <tr>
                         <LabEditorDataGridGridCell
                             v-for="(propertyValue, propertyKey) in item.columns"
                             :key="propertyKey"
                             :property-descriptor="entityPropertyDescriptorIndex.get(propertyKey as string)"
                             :property-value="propertyValue"
-                            @click="handlePropertyClicked(propertyKey as string, propertyValue)"
+                            @click="handlePropertyClicked(index, propertyKey as string, propertyValue)"
                         />
                     </tr>
                 </template>
@@ -202,6 +196,7 @@ function closePropertyDetail(): void {
         >
             <LabEditorDataGridGridCellDetail
                 :model-value="showPropertyDetail"
+                :entity="propertyDetailEntity!"
                 :property-descriptor="propertyDetailDescriptor"
                 :property-value="propertyDetailValue"
                 @update:model-value="closePropertyDetail"

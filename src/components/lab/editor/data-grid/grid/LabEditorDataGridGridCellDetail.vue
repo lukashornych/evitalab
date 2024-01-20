@@ -5,12 +5,15 @@
 
 import VCardTitleWithActions from '@/components/base/VCardTitleWithActions.vue'
 import {
-    EntityPropertyDescriptor,
-    EntityPropertyType, EntityPropertyValue,
-    EntityPropertyValueDesiredOutputFormat, ExtraEntityObjectType,
+    EntityPropertyDescriptor, entityPropertyDescriptorKey,
+    EntityPropertyType,
+    EntityPropertyValue,
+    EntityPropertyValueDesiredOutputFormat,
+    ExtraEntityObjectType,
+    FlatEntity, selectedEntityKey,
     StaticEntityProperties
 } from '@/model/editor/data-grid'
-import { computed, ref } from 'vue'
+import { computed, provide, ref } from 'vue'
 import LabEditorDataGridGridCellDetailDelegateRenderer
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailDelegateRenderer.vue'
 import { Scalar } from '@/model/evitadb'
@@ -21,12 +24,15 @@ import LabEditorDataGridGridCellDetailOutputFormatSelector
 
 const props = defineProps<{
     modelValue: boolean,
+    entity: FlatEntity,
     propertyDescriptor: EntityPropertyDescriptor | undefined,
     propertyValue: EntityPropertyValue | EntityPropertyValue[] | undefined
 }>()
 const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void
 }>()
+provide(selectedEntityKey, props.entity)
+provide(entityPropertyDescriptorKey, props.propertyDescriptor)
 
 const headerPrependIcon = computed<string | undefined>(() => {
     const propertyType: EntityPropertyType | undefined = props.propertyDescriptor?.type
@@ -53,6 +59,8 @@ const rawDataType = computed<Scalar | ExtraEntityObjectType | undefined>(() => {
         }
     } else if (props.propertyDescriptor?.type === EntityPropertyType.Prices) {
         return ExtraEntityObjectType.Prices
+    } else if (props.propertyDescriptor?.type === EntityPropertyType.ReferenceAttributes) {
+        return ExtraEntityObjectType.ReferenceAttributes
     }
     return props.propertyDescriptor?.schema?.type
 })
@@ -80,7 +88,7 @@ const componentDataType = computed<Scalar | ExtraEntityObjectType | undefined>((
                 >
                     {{ headerPrependIcon }}
                 </VIcon>
-                <span>{{ propertyDescriptor?.title || 'Unknown property' }}</span>
+                <span>{{ propertyDescriptor?.flattenedTitle || 'Unknown property' }}</span>
             </template>
             <template #actions>
                 <LabEditorDataGridGridCellDetailOutputFormatSelector

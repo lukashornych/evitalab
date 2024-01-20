@@ -7,19 +7,30 @@ import { computed, ref, watch } from 'vue'
 import {
     EntityPrice,
     EntityPrices,
+    EntityPropertyKey,
     EntityPropertyValue,
-    priceTypeKey,
+    gridParamsKey,
+    NativeValue,
     queryFilterKey,
-    queryLanguageKey
+    queryLanguageKey,
+    selectedEntityKey,
+    StaticEntityProperties
 } from '@/model/editor/data-grid'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import VMarkdown from '@/components/base/VMarkdown.vue'
 import LabEditorDataGridGridCellDetailPricesRendererPrice
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailPricesRendererPrice.vue'
 import { mandatoryInject } from '@/helpers/reactivity'
-import { QueryPriceMode } from '@/model/evitadb'
+import { PriceInnerRecordHandling } from '@/model/evitadb'
 import VExpansionPanelLazyIterator from '@/components/base/VExpansionPanelLazyIterator.vue'
 import { QueryLanguage } from '@/model/lab'
+import { DataGridService, useDataGridService } from '@/services/editor/data-grid.service'
+import LabEditorDataGridGridCellDetailPricesRendererPriceItem
+    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailPricesRendererPriceItem.vue'
+import LabEditorDataGridGridCellDetailPricesRendererFilter
+    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailPricesRendererFilter.vue'
+import VPropertiesTable from '@/components/base/VPropertiesTable.vue'
+import { KeywordValue, Property, PropertyValue } from '@/model/properties-table'
 
 const priceInPriceListsConstraintPattern = new Map<QueryLanguage, RegExp>([
     [QueryLanguage.EvitaQL, /priceInPriceLists\(\s*((?:['"][A-Za-z0-9_.\-~]*['"])(?:\s*,\s*(?:['"][A-Za-z0-9_.\-~]*['"]))*)/],
@@ -40,6 +51,7 @@ type FilterData = {
     innerRecordIds: number[]
 }
 
+const dataGridService: DataGridService = useDataGridService()
 const toaster: Toaster = useToaster()
 
 const props = withDefaults(defineProps<{
@@ -48,10 +60,17 @@ const props = withDefaults(defineProps<{
 }>(), {
     fillSpace: true
 })
+const gridParams = mandatoryInject(gridParamsKey)
 const queryLanguage = mandatoryInject(queryLanguageKey)
-const priceType = mandatoryInject(priceTypeKey)
 const queryFilter = mandatoryInject(queryFilterKey)
+const selectedEntity = mandatoryInject(selectedEntityKey)
 
+const priceInnerRecordHandling = computed<PriceInnerRecordHandling>(() => {
+    return (selectedEntity[EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling).toString()] as EntityPropertyValue)?.value() ?? PriceInnerRecordHandling.Unknown
+})
+const entityPricingProperties = computed<Property[]>(() => [
+    { name: 'Price inner record handling', value: new PropertyValue(new KeywordValue(priceInnerRecordHandling.value)) }
+])
 const prices = computed<EntityPrices>(() => {
     if (!(props.value instanceof EntityPrices)) {
         toaster.error('Invalid prices object!')
@@ -59,7 +78,6 @@ const prices = computed<EntityPrices>(() => {
     }
     return props.value as EntityPrices
 })
-
 const filterData = computed<FilterData>(() => {
     const priceIds: number[] = []
     const priceLists: string[] = []
@@ -93,6 +111,21 @@ const selectedPriceIds = ref<number[]>([])
 const selectedPriceLists = ref<string[]>([])
 const selectedCurrencies = ref<string[]>([])
 const selectedInnerRecordIds = ref<number[]>([])
+
+const computedPriceForSale = ref<EntityPrice | undefined>()
+watch([selectedPriceLists, selectedCurrencies], async () => {
+    computedPriceForSale.value = undefined
+    if (selectedPriceLists.value.length > 0 && selectedCurrencies.value.length === 1) {
+        computedPriceForSale.value = await dataGridService.computePriceForSale(
+            gridParams.dataPointer,
+            queryLanguage.value!,
+            (selectedEntity[EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey).toString()] as NativeValue).value() as number,
+            selectedPriceLists.value,
+            selectedCurrencies.value[0]
+        )
+    }
+})
+
 const filteredAllPrices = computed<EntityPrice[]>(() => {
     // note: originally we wanted to do server call here for filtering, but it seems to be really fast in browser (tested on hundreds of prices)
     let filteredPrices: EntityPrice[] = prices.value.prices
@@ -114,6 +147,17 @@ const filteredAllPrices = computed<EntityPrice[]>(() => {
 
     if (selectedPriceLists.value.length > 0) {
         filteredPrices.sort((a, b) => {
+            if (computedPriceForSale.value != undefined) {
+                const aForSale: boolean = a.priceId === computedPriceForSale.value!.priceId
+                const bForSale: boolean = b.priceId === computedPriceForSale.value!.priceId
+                if (aForSale && !bForSale) {
+                    return -1
+                }
+                if (!aForSale && bForSale) {
+                    return 1
+                }
+            }
+
             const aIndex = selectedPriceLists.value.indexOf(a.priceList)
             const bIndex = selectedPriceLists.value.indexOf(b.priceList)
             return aIndex - bIndex
@@ -121,12 +165,6 @@ const filteredAllPrices = computed<EntityPrice[]>(() => {
     }
 
     return filteredPrices
-})
-const indexOfPossiblePriceForSaleInAllPrices = computed<number>(() => {
-    if (selectedPriceLists.value.length === 0 || selectedCurrencies.value.length === 0 || filteredAllPrices.value.length === 0) {
-        return -1
-    }
-    return filteredAllPrices.value.findIndex((price) => price.sellable)
 })
 
 const allPricesPage = ref<number>(1)
@@ -152,12 +190,13 @@ watch(queryFilter, () => {
     preselectFilterFromQuery()
 })
 preselectFilterFromQuery()
-
 </script>
 
 <template>
     <div class="price-renderer">
-        <div  class="price-renderer-price-for-sale">
+        <VPropertiesTable :properties="entityPricingProperties" />
+
+        <div>
             <header>
                 <h3>Price for sale</h3>
             </header>
@@ -170,128 +209,36 @@ preselectFilterFromQuery()
             <header>
                 <h3>All prices</h3>
 
-                <div class="price-renderer-all-prices__filter">
-                    <VCombobox
-                        v-model="selectedPriceIds"
-                        :disabled="filterData.priceIds.length === 0"
-                        prepend-inner-icon="mdi-identifier"
-                        label="Price ID"
-                        :items="filterData.priceIds"
-                        class="price-renderer-all-prices__select"
-                        clearable
-                        multiple
-                        hide-details
-                    />
-                    <VCombobox
-                        v-model="selectedPriceLists"
-                        :disabled="filterData.priceLists.length === 0"
-                        prepend-inner-icon="mdi-format-list-bulleted"
-                        label="Price list"
-                        :items="filterData.priceLists"
-                        class="price-renderer-all-prices__select"
-                        clearable
-                        multiple
-                        hide-details
-                    />
-                    <VCombobox
-                        v-model="selectedCurrencies"
-                        :disabled="filterData.currencies.length === 0"
-                        prepend-inner-icon="mdi-currency-usd"
-                        label="Currency"
-                        :items="filterData.currencies"
-                        class="price-renderer-all-prices__select"
-                        clearable
-                        multiple
-                        hide-details
-                    />
-                    <VCombobox
-                        v-model="selectedInnerRecordIds"
-                        :disabled="filterData.innerRecordIds.length === 0"
-                        prepend-inner-icon="mdi-format-list-group"
-                        label="Inner record IDs"
-                        :items="filterData.innerRecordIds"
-                        class="price-renderer-all-prices__select"
-                        clearable
-                        multiple
-                        hide-details
-                    />
-                </div>
+                <LabEditorDataGridGridCellDetailPricesRendererFilter
+                    :filter-data="filterData"
+                    :filtered-all-prices="filteredAllPrices"
+                    v-model:selected-price-ids="selectedPriceIds"
+                    v-model:selected-price-lists="selectedPriceLists"
+                    v-model:selected-currencies="selectedCurrencies"
+                    v-model:selected-inner-record-ids="selectedInnerRecordIds"
+                />
             </header>
 
             <VExpansionPanels variant="accordion" multiple>
+                <!-- virtual price for sale -->
+                <LabEditorDataGridGridCellDetailPricesRendererPriceItem
+                    v-if="computedPriceForSale != undefined && priceInnerRecordHandling === PriceInnerRecordHandling.Sum"
+                    :price="computedPriceForSale"
+                    price-for-sale
+                    virtual-price-for-sale
+                />
+
+                <!-- all prices -->
                 <VExpansionPanelLazyIterator
                     v-model:page="allPricesPage"
                     :page-size="10"
                     :items="filteredAllPrices"
                 >
-                    <template #item="{ item, index }: { item: EntityPrice, index: number }">
-                        <VExpansionPanel :key="index">
-                            <VExpansionPanelTitle>
-                                <VTooltip v-if="index === indexOfPossiblePriceForSaleInAllPrices">
-                                    <template #activator="{ props }">
-                                        <VIcon class="mr-3" v-bind="props">mdi-cart-outline</VIcon>
-                                    </template>
-
-                                    This price would be used as a price for sale if the current filter would be applied in
-                                    the query.
-                                </VTooltip>
-
-                                <VTooltip>
-                                    <template #activator="{ props }">
-                                        <VIcon class="mr-3" v-bind="props">{{ item.sellable ? 'mdi-cash' : 'mdi-cash-off' }}</VIcon>
-                                    </template>
-
-                                    <template v-if="item.sellable">
-                                        This price is sellable.
-                                    </template>
-                                    <template v-else>
-                                        This price is not sellable.
-                                    </template>
-                                </VTooltip>
-
-                                <VChipGroup>
-                                    <VChip prepend-icon="mdi-identifier">
-                                        <span>
-                                            {{ item.priceId }}
-
-                                            <VTooltip activator="parent">
-                                                Price ID
-                                            </VTooltip>
-                                        </span>
-                                        <span v-if="item.innerRecordId != undefined">
-                                            &nbsp;/&nbsp;{{ item.innerRecordId }}
-
-                                            <VTooltip activator="parent">
-                                                Inner record ID
-                                            </VTooltip>
-                                        </span>
-                                    </VChip>
-                                    <VChip prepend-icon="mdi-format-list-bulleted">
-                                        {{ item.priceList }}
-
-                                        <VTooltip activator="parent">
-                                            Price list
-                                        </VTooltip>
-                                    </VChip>
-                                    <VChip>
-                                        {{ item.toPreviewString({ priceType }) }}
-
-                                        <VTooltip activator="parent">
-                                            <template v-if="priceType == QueryPriceMode.WithTax">
-                                                Price with tax
-                                            </template>
-                                            <template v-else>
-                                                Price without tax
-                                            </template>
-                                        </VTooltip>
-                                    </VChip>
-                                </VChipGroup>
-                            </VExpansionPanelTitle>
-
-                            <VExpansionPanelText>
-                                <LabEditorDataGridGridCellDetailPricesRendererPrice :price="item" />
-                            </VExpansionPanelText>
-                        </VExpansionPanel>
+                    <template #item="{ item }: { item: EntityPrice }">
+                        <LabEditorDataGridGridCellDetailPricesRendererPriceItem
+                            :price="item"
+                            :price-for-sale="computedPriceForSale != undefined && item.priceId === computedPriceForSale.priceId"
+                        />
                     </template>
                 </VExpansionPanelLazyIterator>
 
@@ -310,23 +257,12 @@ preselectFilterFromQuery()
     h3 {
         margin-bottom: 1rem;
     }
+}
 
-    &-all-prices {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-
-        &__filter {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        &__select {
-            flex: 1;
-            min-width: 10rem;
-        }
-    }
+.price-renderer-all-prices {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .array-item__title {

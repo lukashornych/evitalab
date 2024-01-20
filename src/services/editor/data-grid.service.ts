@@ -1,6 +1,6 @@
 import { inject, InjectionKey } from 'vue'
 import {
-    DataGridDataPointer,
+    DataGridDataPointer, EntityPrice, EntityPrices,
     EntityPropertyDescriptor,
     EntityPropertyKey,
     EntityPropertyType,
@@ -18,7 +18,7 @@ import { LabService } from '@/services/lab.service'
 import { GraphQLQueryBuilder } from '@/services/editor/data-grid/graphql-query-builder'
 import { GraphQLQueryExecutor } from '@/services/editor/data-grid/graphql-query-executor'
 import { EvitaDBClient } from '@/services/evitadb-client'
-import { AttributeSchemaUnion, EntitySchema, QueryPriceMode } from '@/model/evitadb'
+import { AttributeSchemaUnion, EntitySchema, QueryPriceMode, ReferenceSchema } from '@/model/evitadb'
 import { GraphQLClient } from '@/services/graphql-client'
 import { EntityPropertyValueFormatter } from '@/services/editor/data-grid/entity-property-value-formatter'
 import { EntityPropertyValueRawFormatter } from '@/services/editor/data-grid/entity-property-value-raw-formatter'
@@ -91,6 +91,42 @@ export class DataGridService {
     }
 
     /**
+     * Builds and executes a query from arguments to compute price for sale of given entity.
+     *
+     * @param dataPointer points to collection where to fetch data from
+     * @param language language of query, defines how query will be built and executed
+     * @param entityPrimaryKey primary key of entity for which we want to compute price for sale
+     * @param priceLists price lists to use for price computation, order is important
+     * @param currency currency to use for price computation
+     */
+    async computePriceForSale(dataPointer: DataGridDataPointer,
+                              language: QueryLanguage,
+                              entityPrimaryKey: number,
+                              priceLists: string[],
+                              currency: string): Promise<EntityPrice | undefined> {
+        const queryBuilder: QueryBuilder = this.getQueryBuilder(language)
+        const queryExecutor: QueryExecutor = this.getQueryExecutor(language)
+
+        const query: string = await queryBuilder.buildQuery(
+            dataPointer,
+            queryBuilder.buildPriceForSaleFilterBy(entityPrimaryKey, priceLists, currency),
+            '',
+            undefined,
+            undefined,
+            [EntityPropertyKey.prices()],
+            1,
+            1
+        )
+        const result: QueryResult = await queryExecutor.executeQuery(dataPointer, query)
+        if (result.totalEntitiesCount === 0) {
+            return undefined
+        } else if (result.totalEntitiesCount != 1) {
+            throw new UnexpectedError(dataPointer.connection, `Expected 1 entity with price for sale, got ${result.totalEntitiesCount} entities.`)
+        }
+        return (result.entities[0][EntityPropertyKey.prices().toString()] as EntityPrices | undefined)?.priceForSale
+    }
+
+    /**
      * Builds order by clause from selected grid columns.
      *
      * @param dataPointer points to collection where to fetch data from
@@ -105,7 +141,7 @@ export class DataGridService {
         for (const column of columns) {
             const propertyKey: EntityPropertyKey = EntityPropertyKey.fromString(column.key)
             if (propertyKey.type === EntityPropertyType.Entity && propertyKey.name === StaticEntityProperties.PrimaryKey) {
-                orderBy.push(queryBuilder.buildPrimaryKeyOrderBy(column.order))
+                orderBy.push(queryBuilder.buildPrimaryKeyOrderBy(column.order.toUpperCase()))
             } else if (propertyKey.type === EntityPropertyType.Attributes) {
                 const attributeSchema: AttributeSchemaUnion | undefined = Object.values(entitySchema.attributes)
                     .find(attributeSchema => attributeSchema.nameVariants.camelCase === propertyKey.name)
@@ -113,7 +149,20 @@ export class DataGridService {
                     throw new UnexpectedError(undefined, `Entity ${entitySchema.name} does not have attribute ${propertyKey.name}.`)
                 }
 
-                orderBy.push(queryBuilder.buildAttributeOrderBy(attributeSchema, column.order))
+                orderBy.push(queryBuilder.buildAttributeOrderBy(attributeSchema, column.order.toUpperCase()))
+            } else if (propertyKey.type === EntityPropertyType.ReferenceAttributes) {
+                const referenceSchema: ReferenceSchema | undefined = Object.values(entitySchema.references)
+                    .find(referenceSchema => referenceSchema.nameVariants.camelCase === propertyKey.parentName)
+                if (referenceSchema == undefined) {
+                    throw new UnexpectedError(undefined, `Entity ${entitySchema.name} does not have reference ${propertyKey.parentName}.`)
+                }
+                const attributeSchema: AttributeSchemaUnion | undefined = Object.values(referenceSchema.attributes)
+                    .find(attributeSchema => attributeSchema.nameVariants.camelCase === propertyKey.name)
+                if (attributeSchema == undefined) {
+                    throw new UnexpectedError(undefined, `Reference ${referenceSchema.name} does not have attribute ${propertyKey.name}.`)
+                }
+
+                orderBy.push(queryBuilder.buildReferenceAttributeOrderBy(referenceSchema, attributeSchema, column.order.toUpperCase()))
             } else {
                 throw new UnexpectedError(undefined, `Entity property ${column.key} is not supported to be sortable.`)
             }
@@ -177,6 +226,7 @@ export class DataGridService {
             'Primary key',
             'Primary key',
             undefined,
+            undefined,
             []
         ))
         if (entitySchema.withHierarchy) {
@@ -185,6 +235,7 @@ export class DataGridService {
                 EntityPropertyKey.entity(StaticEntityProperties.ParentPrimaryKey),
                 'Parent',
                 'Parent',
+                undefined,
                 undefined,
                 []
             ))
@@ -196,6 +247,7 @@ export class DataGridService {
                 'Locales',
                 'Locales',
                 undefined,
+                undefined,
                 []
             ))
             descriptors.push(new EntityPropertyDescriptor(
@@ -203,6 +255,7 @@ export class DataGridService {
                 EntityPropertyKey.entity(StaticEntityProperties.AllLocales),
                 'All locales',
                 'All locales',
+                undefined,
                 undefined,
                 []
             ))
@@ -214,6 +267,7 @@ export class DataGridService {
                 'Price inner record handling',
                 'Price inner record handling',
                 undefined,
+                undefined,
                 []
             ))
         }
@@ -224,6 +278,7 @@ export class DataGridService {
                 EntityPropertyKey.attributes(attributeSchema.nameVariants.camelCase),
                 attributeSchema.name,
                 attributeSchema.name,
+                undefined,
                 attributeSchema,
                 []
             ))
@@ -235,6 +290,7 @@ export class DataGridService {
                 EntityPropertyKey.associatedData(associatedDataSchema.nameVariants.camelCase),
                 associatedDataSchema.name,
                 associatedDataSchema.name,
+                undefined,
                 associatedDataSchema,
                 []
             ))
@@ -247,6 +303,7 @@ export class DataGridService {
                 'Prices',
                 'Prices',
                 undefined,
+                undefined,
                 []
             ))
         }
@@ -257,6 +314,7 @@ export class DataGridService {
                 EntityPropertyKey.references(referenceSchema.nameVariants.camelCase),
                 referenceSchema.name,
                 referenceSchema.name,
+                undefined,
                 referenceSchema,
                 Object.values(referenceSchema.attributes).map(attributeSchema => {
                     return new EntityPropertyDescriptor(
@@ -264,6 +322,7 @@ export class DataGridService {
                         EntityPropertyKey.referenceAttributes(referenceSchema.nameVariants.camelCase, attributeSchema.nameVariants.camelCase),
                         attributeSchema.name,
                         `${referenceSchema.name}: ${attributeSchema.name}`,
+                        referenceSchema,
                         attributeSchema,
                         []
                     )
