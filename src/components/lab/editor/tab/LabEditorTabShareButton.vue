@@ -8,7 +8,8 @@ import {
 } from '@/model/editor/editor'
 import { ref } from 'vue'
 import LabEditorTabShareDialog from '@/components/lab/editor/tab/LabEditorTabShareDialog.vue'
-import { TabType } from '@/model/editor/tab/serializable-tab-object'
+
+import { TabType } from '@/model/editor/tab/tab-type'
 
 const props = withDefaults(defineProps<{
     tabType: TabType,

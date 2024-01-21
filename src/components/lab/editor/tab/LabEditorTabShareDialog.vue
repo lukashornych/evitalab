@@ -12,7 +12,8 @@ import {
 } from '@/model/editor/editor'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import { ShareTabObject } from '@/model/editor/tab/share-tab-object'
-import { TabType } from '@/model/editor/tab/serializable-tab-object'
+
+import { TabType } from '@/model/editor/tab/tab-type'
 
 /**
  * Smallest possible number of characters in a URL valid across all browser. Usually browser support more characters.

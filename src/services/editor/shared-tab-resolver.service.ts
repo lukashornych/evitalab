@@ -7,7 +7,8 @@ import { SchemaViewerRequest } from '@/model/editor/schema-viewer-request'
 import { EvitaQLConsoleRequest } from '@/model/editor/evitaql-console-request'
 import { DataGridRequest } from '@/model/editor/data-grid-request'
 import { ShareTabObject } from '@/model/editor/tab/share-tab-object'
-import { TabType } from '@/model/editor/tab/serializable-tab-object'
+
+import { TabType } from '@/model/editor/tab/tab-type'
 
 export const key: InjectionKey<SharedTabResolver> = Symbol()
 
