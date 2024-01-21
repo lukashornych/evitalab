@@ -27,12 +27,22 @@ import {
     useGraphQLResultVisualiserService
 } from '@/services/editor/result-visualiser/graphql-result-visualiser.service'
 import LabEditorTabShareButton from '@/components/lab/editor/tab/LabEditorTabShareButton.vue'
-import { TabType } from '@/model/editor/tab/serializable-tab-object'
+
+import { TabType } from '@/model/editor/tab/tab-type'
+import {
+    createGraphQLConsoleHistoryKey, createGraphQLConsoleHistoryRecord,
+    GraphQLConsoleHistoryKey,
+    GraphQLConsoleHistoryRecord
+} from '@/model/editor/tab/graphql-console/history'
+import { EditorService, useEditorService } from '@/services/editor/editor.service'
+import LabEditorGraphQLConsoleHistory from '@/components/lab/editor/graphql-console/LabEditorGraphQLConsoleHistory.vue'
+import { UnexpectedError } from '@/model/lab'
 
 enum EditorTabType {
     Query = 'query',
     Variables = 'variables',
-    Schema = 'schema'
+    Schema = 'schema',
+    History = 'history'
 }
 
 enum ResultTabType {
@@ -41,8 +51,9 @@ enum ResultTabType {
 }
 
 const graphQLConsoleService: GraphQLConsoleService = useGraphQLConsoleService()
-const toaster: Toaster = useToaster()
+const editorService: EditorService = useEditorService()
 const visualiserService: ResultVisualiserService = useGraphQLResultVisualiserService()
+const toaster: Toaster = useToaster()
 
 const props = defineProps<TabComponentProps<GraphQLConsoleParams, GraphQLConsoleData>>()
 const emit = defineEmits<TabComponentEvents>()
@@ -66,6 +77,19 @@ const variablesExtensions: Extension[] = [json()]
 const schemaEditorInitialized = ref<boolean>(false)
 const schemaCode = ref<string>('')
 const schemaExtensions: Extension[] = [graphql()]
+
+const historyKey = computed<GraphQLConsoleHistoryKey>(() => createGraphQLConsoleHistoryKey(props.params.instancePointer))
+const historyRecords = computed<GraphQLConsoleHistoryRecord[]>(() => {
+    return [...editorService.getTabHistoryRecords(historyKey.value)].reverse()
+})
+function pickHistoryRecord(record: GraphQLConsoleHistoryRecord): void {
+    queryCode.value = record[1] || ''
+    variablesCode.value = record[2] || ''
+    editorTab.value = EditorTabType.Query
+}
+function clearHistory(): void {
+    editorService.clearTabHistory(historyKey.value)
+}
 
 const lastAppliedQueryCode = ref<string>('')
 const resultCode = ref<string>('')
@@ -103,6 +127,13 @@ onBeforeMount(() => {
 })
 
 async function executeQuery(): Promise<void> {
+    try {
+        editorService.addTabHistoryRecord(historyKey.value, createGraphQLConsoleHistoryRecord(queryCode.value, variablesCode.value))
+    } catch (e) {
+        console.error(e)
+        toaster.error(new UnexpectedError(props.params.instancePointer.connection, 'Failed to save query to history.'))
+    }
+
     loading.value = true
     try {
         resultCode.value = await graphQLConsoleService.executeGraphQLQuery(props.params.instancePointer, queryCode.value, JSON.parse(variablesCode.value))
@@ -182,6 +213,12 @@ function initializeSchemaEditor(): void {
                             Schema
                         </VTooltip>
                     </VTab>
+                    <VTab :value="EditorTabType.History">
+                        <VIcon>mdi-history</VIcon>
+                        <VTooltip activator="parent">
+                            History
+                        </VTooltip>
+                    </VTab>
                 </VSideTabs>
             </VSheet>
 
@@ -207,15 +244,20 @@ function initializeSchemaEditor(): void {
                             />
                         </VWindowItem>
 
-                        <VWindowItem
-                            :value="EditorTabType.Schema"
-                            @group:selected="initializeSchemaEditor"
-                        >
+                        <VWindowItem :value="EditorTabType.Schema" @group:selected="initializeSchemaEditor">
                             <VStandardCodeMirror
                                 v-model="schemaCode"
                                 read-only
                                 :additional-extensions="schemaExtensions"
                                 style="height: 100%"
+                            />
+                        </VWindowItem>
+
+                        <VWindowItem :value="EditorTabType.History">
+                            <LabEditorGraphQLConsoleHistory
+                                :items="historyRecords"
+                                @select-history-record="pickHistoryRecord"
+                                @update:clear-history="clearHistory"
                             />
                         </VWindowItem>
                     </VWindow>

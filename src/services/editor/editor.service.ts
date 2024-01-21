@@ -7,7 +7,6 @@ import {
     TabRequestComponentData,
 } from '@/model/editor/editor'
 import { inject, InjectionKey } from 'vue'
-import { TabType } from '@/model/editor/tab/serializable-tab-object'
 import { DataGridRequest } from '@/model/editor/data-grid-request'
 import { EvitaQLConsoleRequest } from '@/model/editor/evitaql-console-request'
 import { GraphQLConsoleRequest } from '@/model/editor/graphql-console-request'
@@ -16,10 +15,14 @@ import { UnexpectedError } from '@/model/lab'
 import { LabService } from '@/services/lab.service'
 import { StoredTabObject } from '@/model/editor/tab/stored-tab-object'
 import { LabStorage } from '@/services/lab-storage'
+import { TabType } from '@/model/editor/tab/tab-type'
+import LZString from 'lz-string'
+import { TabHistoryKey } from '@/model/editor/tab/tab-history-key'
 
 export const key: InjectionKey<EditorService> = Symbol()
 
 const openedTabsStorageKey: string = 'openedTabs'
+const tabHistoryStorageKey: string = 'tabHistory'
 
 /**
  * Handles lifecycle of editor. Mainly, it handles creation and destruction of tabs.
@@ -34,7 +37,7 @@ export class EditorService {
     }
 
     getTabRequests(): TabRequest<any, any>[] {
-        return this.store.state.editor.tabsRequests
+        return this.store.state.editor.tabRequests
     }
 
     getTabRequest(id: string): TabRequest<any, any> | undefined {
@@ -126,6 +129,42 @@ export class EditorService {
 
         const storage = this.store.state.lab.storage
         storage.set(openedTabsStorageKey, tabsToStore)
+    }
+
+    getTabHistoryRecords<R>(historyKey: TabHistoryKey<R>): R[] {
+        return this.store.getters['editor/getTabHistoryRecords'](historyKey)
+    }
+
+    addTabHistoryRecord<R>(historyKey: TabHistoryKey<R>, record: R): void {
+        this.store.commit('editor/addTabHistoryRecord', { historyKey, record })
+    }
+
+    clearTabHistory(historyKey: TabHistoryKey<any>): void {
+        this.store.commit('editor/clearTabHistory', historyKey)
+    }
+
+    restoreTabHistory(): boolean {
+        // todo we should somehow validate each restored key to ensure it's still valid (connections may have been removed, static key may have been renamed, ...)
+
+        const storage = this.store.state.lab.storage
+        const serializedTabHistory: string | undefined = storage.get(tabHistoryStorageKey)
+        if (serializedTabHistory == undefined) {
+            return false
+        }
+        const tabHistory: Map<string, any[]> = new Map(JSON.parse(LZString.decompressFromEncodedURIComponent(serializedTabHistory)))
+        if (tabHistory.size === 0) {
+            return false
+        }
+        this.store.commit('editor/prefillTabHistory', tabHistory)
+        return true
+    }
+
+    storeTabHistory(): void {
+        const tabHistory: Map<string, any[]> = this.store.state.editor.tabHistory
+        const serializedTabHistory: string = JSON.stringify(Array.from(tabHistory.entries()))
+
+        const storage = this.store.state.lab.storage
+        storage.set(tabHistoryStorageKey, LZString.compressToEncodedURIComponent(serializedTabHistory))
     }
 }
 

@@ -1,18 +1,17 @@
 <script setup lang="ts">
 
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { TabRequest, TabRequestComponentData } from '@/model/editor/editor'
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import LabEditorTabWindow from './tab/LabEditorTabWindow.vue'
 import { ellipsis } from '@/utils/text-utils'
 import LabEditorWelcomeScreen from './LabEditorWelcomeScreen.vue'
-import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-router'
+import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router'
 import { useToaster } from '@/services/editor/toaster'
 import { DemoSnippetResolver, useDemoSnippetResolver } from '@/services/editor/demo-snippet-resolver.service'
 import { SharedTabResolver, useSharedTabResolver } from '@/services/editor/shared-tab-resolver.service'
 import LabEditorTabSharedDialog from '@/components/lab/editor/tab/LabEditorTabSharedDialog.vue'
 
-const router: Router = useRouter()
 const currentRoute: RouteLocationNormalizedLoaded = useRoute()
 const toaster = useToaster()
 const editorService: EditorService = useEditorService()
@@ -27,9 +26,7 @@ const playgroundMode = ref<boolean>(false)
 const sharedTabDialogOpen = ref<boolean>(false)
 const sharedTabRequest = ref<TabRequest<any, any> | undefined>()
 
-const tabs = computed<TabRequest<any, any>[]>(() => {
-    return editorService.getTabRequests()
-})
+const tabs = ref<TabRequest<any, any>[]>(editorService.getTabRequests())
 watch(tabs, () => {
     // switch to newly opened tab
     const newTab: TabRequest<any, any> | undefined = editorService.getNewTabRequest()
@@ -92,6 +89,35 @@ async function resolveSharedTab(): Promise<TabRequest<any, any> | undefined> {
     }
 }
 
+function restorePreviousSession(): void {
+    try {
+        let sessionRestored: boolean = false
+
+        const restoredTabData: Map<string, TabRequestComponentData> | undefined = editorService.createTabRequestsForTabsFromLastSession()
+        if (restoredTabData != undefined) {
+            currentTabData = restoredTabData
+            sessionRestored = true
+        }
+
+        const tabHistoryRestored: boolean = editorService.restoreTabHistory()
+        if (tabHistoryRestored) {
+            sessionRestored = true
+        }
+
+        if (sessionRestored) {
+            toaster.info('Your last session has been restored.')
+        }
+    } catch (e) {
+        console.error(e)
+        toaster.warning('Failed to fully restore your last session.')
+    }
+}
+
+function storeCurrentSession() {
+    editorService.storeOpenedTabs(currentTabData)
+    editorService.storeTabHistory()
+}
+
 // initialize the editor
 resolveDemoCodeSnippet()
     .then(tabRequest => {
@@ -108,22 +134,13 @@ resolveDemoCodeSnippet()
         }
 
         if (!playgroundMode.value) {
-            try {
-                const restoredTabData: Map<string, TabRequestComponentData> | undefined = editorService.createTabRequestsForTabsFromLastSession()
-                if (restoredTabData != undefined) {
-                    toaster.info('Your last session has been restored.')
-                    currentTabData = restoredTabData
-                }
-            } catch (e) {
-                console.error(e)
-                toaster.warning('Failed to restore your last session.')
-            }
+            restorePreviousSession()
         }
     })
 
 window.addEventListener('beforeunload', () => {
     if (!playgroundMode.value) {
-        editorService.storeOpenedTabs(currentTabData)
+        storeCurrentSession()
     }
 })
 </script>

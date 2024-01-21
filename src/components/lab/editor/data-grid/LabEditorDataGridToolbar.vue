@@ -9,7 +9,8 @@ import LabEditorTabShareButton from '@/components/lab/editor/tab/LabEditorTabSha
 import { DataGridData, gridParamsKey } from '@/model/editor/data-grid'
 import { dataLocaleKey } from '@/model/editor/data-grid'
 import { mandatoryInject } from '@/helpers/reactivity'
-import { TabType } from '@/model/editor/tab/serializable-tab-object'
+
+import { TabType } from '@/model/editor/tab/tab-type'
 
 const props = defineProps<{
     currentData: DataGridData,

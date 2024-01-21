@@ -3,7 +3,8 @@ import {
     TabRequestComponentParamsDto
 } from '@/model/editor/editor'
 import LZString from 'lz-string'
-import { SerializableTabObject, TabType } from '@/model/editor/tab/serializable-tab-object'
+import { SerializableTabObject } from '@/model/editor/tab/serializable-tab-object'
+import { TabType } from '@/model/editor/tab/tab-type'
 
 /**
  * Used to share a tab and its data between browsers (users).

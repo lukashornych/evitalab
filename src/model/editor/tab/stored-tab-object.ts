@@ -2,8 +2,9 @@ import {
     TabRequestComponentDataDto,
     TabRequestComponentParamsDto
 } from '@/model/editor/editor'
-import { SerializableTabObject, TabType } from '@/model/editor/tab/serializable-tab-object'
+import { SerializableTabObject } from '@/model/editor/tab/serializable-tab-object'
 import LZString from 'lz-string'
+import { TabType } from '@/model/editor/tab/tab-type'
 
 /**
  * Used to store an opened tab between browser sessions.

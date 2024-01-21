@@ -25,11 +25,21 @@ import {
 import LabEditorResultVisualiser from '@/components/lab/editor/result-visualiser/LabEditorResultVisualiser.vue'
 import { evitaQL } from '@lukashornych/codemirror-lang-evitaql'
 import LabEditorTabShareButton from '@/components/lab/editor/tab/LabEditorTabShareButton.vue'
-import { TabType } from '@/model/editor/tab/serializable-tab-object'
+
+import { TabType } from '@/model/editor/tab/tab-type'
+import {
+    createEvitaQLConsoleHistoryKey, createEvitaQLConsoleHistoryRecord,
+    EvitaQLConsoleHistoryKey,
+    EvitaQLConsoleHistoryRecord
+} from '@/model/editor/tab/evitaql-console/history'
+import { EditorService, useEditorService } from '@/services/editor/editor.service'
+import LabEditorEvitaQLConsoleHistory from '@/components/lab/editor/evitaql-console/LabEditorEvitaQLConsoleHistory.vue'
+import { UnexpectedError } from '@/model/lab'
 
 enum EditorTabType {
     Query = 'query',
-    Variables = 'variables'
+    Variables = 'variables',
+    History = 'history'
 }
 
 enum ResultTabType {
@@ -38,8 +48,9 @@ enum ResultTabType {
 }
 
 const evitaQLConsoleService: EvitaQLConsoleService = useEvitaQLConsoleService()
-const toaster: Toaster = useToaster()
+const editorService: EditorService = useEditorService()
 const visualiserService: ResultVisualiserService = useEvitaQLResultVisualiserService()
+const toaster: Toaster = useToaster()
 
 const props = defineProps<TabComponentProps<EvitaQLConsoleParams, EvitaQLConsoleData>>()
 const emit = defineEmits<TabComponentEvents>()
@@ -56,6 +67,19 @@ const queryExtensions: Extension[] = [evitaQL()]
 const variablesCode = ref<string>(props.data?.variables ? props.data.variables : '{\n  \n}')
 const variablesExtensions: Extension[] = [json()]
 
+const historyKey = computed<EvitaQLConsoleHistoryKey>(() => createEvitaQLConsoleHistoryKey(props.params.dataPointer))
+const historyRecords = computed<EvitaQLConsoleHistoryRecord[]>(() => {
+    return [...editorService.getTabHistoryRecords(historyKey.value)].reverse()
+})
+function pickHistoryRecord(record: EvitaQLConsoleHistoryRecord): void {
+    queryCode.value = record[1] || ''
+    variablesCode.value = record[2] || ''
+    editorTab.value = EditorTabType.Query
+}
+function clearHistory(): void {
+    editorService.clearTabHistory(historyKey.value)
+}
+
 const enteredQueryCode = ref<string>('')
 const resultCode = ref<string>('')
 const resultExtensions: Extension[] = [json()]
@@ -70,6 +94,13 @@ watch(currentData, (data) => {
 })
 
 async function executeQuery(): Promise<void> {
+    try {
+        editorService.addTabHistoryRecord(historyKey.value, createEvitaQLConsoleHistoryRecord(queryCode.value, variablesCode.value))
+    } catch (e) {
+        console.error(e)
+        toaster.error(new UnexpectedError(props.params.dataPointer.connection, 'Failed to save query to history.'))
+    }
+
     loading.value = true
     try {
         resultCode.value = await evitaQLConsoleService.executeEvitaQLQuery(props.params.dataPointer, queryCode.value, JSON.parse(variablesCode.value))
@@ -124,6 +155,12 @@ if (props.params.executeOnOpen) {
                             Variables
                         </VTooltip>
                     </VTab>
+                    <VTab :value="EditorTabType.History">
+                        <VIcon>mdi-history</VIcon>
+                        <VTooltip activator="parent">
+                            History
+                        </VTooltip>
+                    </VTab>
                 </VSideTabs>
             </VSheet>
 
@@ -146,6 +183,14 @@ if (props.params.executeOnOpen) {
                                 v-model="variablesCode"
                                 :additional-extensions="variablesExtensions"
                                 @execute="executeQuery"
+                            />
+                        </VWindowItem>
+
+                        <VWindowItem :value="EditorTabType.History">
+                            <LabEditorEvitaQLConsoleHistory
+                                :items="historyRecords"
+                                @select-history-record="pickHistoryRecord"
+                                @update:clear-history="clearHistory"
                             />
                         </VWindowItem>
                     </VWindow>
