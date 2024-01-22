@@ -95,6 +95,7 @@ function copyLink(): void {
                     Cancel
                 </VBtn>
                 <VBtn
+                    variant="outlined"
                     prepend-icon="mdi-content-copy"
                     @click="copyLink"
                     class="ml-4"
