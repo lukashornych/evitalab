@@ -122,7 +122,7 @@ if (props.params.executeOnOpen) {
 <template>
     <div class="evitaql-editor">
         <VTabToolbar
-            prepend-icon="mdi-application-braces-outline"
+            prepend-icon="mdi-variable"
             :path="path"
         >
             <template #append>
