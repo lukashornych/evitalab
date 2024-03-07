@@ -10,7 +10,7 @@ function createKeyboardShortcutMapping(command: Command, baseShortcut: string, m
 
 createKeyboardShortcutMapping(Command.System_Keymap, 'Ctrl+Alt+K', 'Cmd+Option+K')
 
-createKeyboardShortcutMapping(Command.System_Panels_ConnectionsExplorer, 'Alt+1', 'Cmd+Option+1')
+createKeyboardShortcutMapping(Command.System_Panels_ConnectionsExplorer, 'Alt+1', 'Ctrl+Shift+1')
 
 // todo mac doesn't have pageup and pagedown
 createKeyboardShortcutMapping(Command.System_Editor_PreviousTab, 'Ctrl+Alt+PageDown', 'Cmd+Option+PageDown')
@@ -50,8 +50,8 @@ createKeyboardShortcutMapping(Command.EntityGrid_ShareTab, 'Ctrl+L', 'Cmd+L')
 createKeyboardShortcutMapping(Command.EntityGrid_ChangeQueryLanguage, 'Ctrl+D', 'Cmd+D')
 createKeyboardShortcutMapping(Command.EntityGrid_FocusFilterInput, 'Ctrl+F', 'Cmd+F')
 createKeyboardShortcutMapping(Command.EntityGrid_FocusOrderInput, 'Ctrl+G', 'Cmd+G')
-createKeyboardShortcutMapping(Command.EntityGrid_ChangeDataLocale, 'Ctrl+H', 'Cmd+I')
-createKeyboardShortcutMapping(Command.EntityGrid_ChangePriceType, 'Ctrl+J', 'Cmd+O')
+createKeyboardShortcutMapping(Command.EntityGrid_ChangeDataLocale, 'Ctrl+H', 'Cmd+U')
+createKeyboardShortcutMapping(Command.EntityGrid_ChangePriceType, 'Ctrl+J', 'Cmd+I')
 createKeyboardShortcutMapping(Command.EntityGrid_OpenPropertySelector, 'Ctrl+P', 'Cmd+P')
 
 createKeyboardShortcutMapping(Command.EntityGrid_PropertySelector_FindProperty, 'Ctrl+F', 'Cmd+F')
@@ -61,25 +61,25 @@ createKeyboardShortcutMapping(Command.EntityGrid_PropertySelector_FindProperty, 
 createKeyboardShortcutMapping(Command.EvitaQLConsole_ExecuteQuery, 'Ctrl+Enter', 'Cmd+Enter')
 createKeyboardShortcutMapping(Command.EvitaQLConsole_ShareTab, 'Ctrl+L', 'Cmd+L')
 
-createKeyboardShortcutMapping(Command.EvitaQLConsole_Query_SwitchToQueryEditor, 'Ctrl+1', 'Cmd+Shift+1')
-createKeyboardShortcutMapping(Command.EvitaQLConsole_Query_SwitchToVariablesEditor, 'Ctrl+2', 'Cmd+Shift+2')
-createKeyboardShortcutMapping(Command.EvitaQLConsole_Query_SwitchToHistory, 'Ctrl+3', 'Cmd+Shift+3')
+createKeyboardShortcutMapping(Command.EvitaQLConsole_Query_SwitchToQueryEditor, 'Ctrl+1', 'Ctrl+1')
+createKeyboardShortcutMapping(Command.EvitaQLConsole_Query_SwitchToVariablesEditor, 'Ctrl+2', 'Ctrl+2')
+createKeyboardShortcutMapping(Command.EvitaQLConsole_Query_SwitchToHistory, 'Ctrl+3', 'Ctrl+3')
 
-createKeyboardShortcutMapping(Command.EvitaQLConsole_Result_SwitchToRawResultViewer, 'Ctrl+0', 'Cmd+Shift+0')
-createKeyboardShortcutMapping(Command.EvitaQLConsole_Result_SwitchToResultVisualizer, 'Ctrl+9', 'Cmd+Shift+9')
+createKeyboardShortcutMapping(Command.EvitaQLConsole_Result_SwitchToRawResultViewer, 'Ctrl+0', 'Ctrl+0')
+createKeyboardShortcutMapping(Command.EvitaQLConsole_Result_SwitchToResultVisualizer, 'Ctrl+9', 'Ctrl+9')
 
 // GraphQL console
 
 createKeyboardShortcutMapping(Command.GraphQLConsole_ExecuteQuery, 'Ctrl+Enter', 'Cmd+Enter')
 createKeyboardShortcutMapping(Command.GraphQLConsole_ShareTab, 'Ctrl+L', 'Cmd+L')
 
-createKeyboardShortcutMapping(Command.GraphQLConsole_Query_SwitchToQueryEditor, 'Ctrl+1', 'Cmd+Shift+1')
-createKeyboardShortcutMapping(Command.GraphQLConsole_Query_SwitchToVariablesEditor, 'Ctrl+2', 'Cmd+Shift+2')
-createKeyboardShortcutMapping(Command.GraphQLConsole_Query_SwitchToHistory, 'Ctrl+3', 'Cmd+Shift+3')
-createKeyboardShortcutMapping(Command.GraphQLConsole_Query_SwitchToSchemaViewer, 'Ctrl+4', 'Cmd+Shift+4')
+createKeyboardShortcutMapping(Command.GraphQLConsole_Query_SwitchToQueryEditor, 'Ctrl+1', 'Ctrl+1')
+createKeyboardShortcutMapping(Command.GraphQLConsole_Query_SwitchToVariablesEditor, 'Ctrl+2', 'Ctrl+2')
+createKeyboardShortcutMapping(Command.GraphQLConsole_Query_SwitchToHistory, 'Ctrl+3', 'Ctrl+3')
+createKeyboardShortcutMapping(Command.GraphQLConsole_Query_SwitchToSchemaViewer, 'Ctrl+4', 'Ctrl+4')
 
-createKeyboardShortcutMapping(Command.GraphQLConsole_Result_SwitchToRawResultViewer, 'Ctrl+0', 'Cmd+Shift+0')
-createKeyboardShortcutMapping(Command.GraphQLConsole_Result_SwitchToResultVisualizer, 'Ctrl+9', 'Cmd+Shift+9')
+createKeyboardShortcutMapping(Command.GraphQLConsole_Result_SwitchToRawResultViewer, 'Ctrl+0', 'Ctrl+0')
+createKeyboardShortcutMapping(Command.GraphQLConsole_Result_SwitchToResultVisualizer, 'Ctrl+9', 'Ctrl+9')
 
 // Schema viewer
 
