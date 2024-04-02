@@ -4,6 +4,9 @@
  */
 
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     items: any[],
@@ -32,7 +35,7 @@ const pageOfItems = computed<any[]>(() => {
             variant="outlined"
             @click="emit('update:page', page + 1)"
         >
-            Show more
+            {{ t('common.button.showMore') }}
         </VBtn>
     </div>
 </template>

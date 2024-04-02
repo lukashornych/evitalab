@@ -4,6 +4,9 @@
  */
 
 import { EntityPrice } from '@/model/editor/tab/dataGrid/data-grid'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     filterData: {
@@ -33,7 +36,7 @@ const emit = defineEmits<{
                 :model-value="selectedPriceIds"
                 :disabled="filterData.priceIds.length === 0"
                 prepend-inner-icon="mdi-identifier"
-                label="Price ID"
+                :label="t('entityGrid.grid.priceRenderer.filter.label.priceId')"
                 :items="filterData.priceIds"
                 class="price-renderer-all-prices-filter__select"
                 clearable
@@ -45,7 +48,7 @@ const emit = defineEmits<{
                 :model-value="selectedPriceLists"
                 :disabled="filterData.priceLists.length === 0"
                 prepend-inner-icon="mdi-format-list-bulleted"
-                label="Price list"
+                :label="t('entityGrid.grid.priceRenderer.filter.label.priceList')"
                 :items="filterData.priceLists"
                 class="price-renderer-all-prices-filter__select"
                 clearable
@@ -59,8 +62,7 @@ const emit = defineEmits<{
                             <VIcon v-bind="props">mdi-help-circle-outline</VIcon>
                         </template>
 
-                        The order of selected price lists <em>defines the price listing ordering</em>.<br/>
-                        It also <em>defines priority</em> of price lists for price for sale computation.
+                        <span v-html="t('entityGrid.grid.priceRenderer.filter.help.priceListOrder')" />
                     </VTooltip>
                 </template>
             </VCombobox>
@@ -68,7 +70,7 @@ const emit = defineEmits<{
                 :model-value="selectedCurrencies"
                 :disabled="filterData.currencies.length === 0"
                 prepend-inner-icon="mdi-currency-usd"
-                label="Currency"
+                :label="t('entityGrid.grid.priceRenderer.filter.label.currency')"
                 :items="filterData.currencies"
                 class="price-renderer-all-prices-filter__select"
                 clearable
@@ -80,7 +82,7 @@ const emit = defineEmits<{
                 :model-value="selectedInnerRecordIds"
                 :disabled="filterData.innerRecordIds.length === 0"
                 prepend-inner-icon="mdi-format-list-group"
-                label="Inner record IDs"
+                :label="t('entityGrid.grid.priceRenderer.filter.label.priceList')"
                 :items="filterData.innerRecordIds"
                 class="price-renderer-all-prices-filter__select"
                 clearable
@@ -92,22 +94,25 @@ const emit = defineEmits<{
 
         <div v-if="filteredAllPrices.length === 0 || selectedPriceLists.length === 0 || selectedCurrencies.length != 1">
             <VAlert v-if="selectedPriceLists.length === 0 && selectedCurrencies.length === 0" type="info">
-                To compute a price for sale for the filtered prices, select at least one price list and one currency.
+                {{ t('entityGrid.grid.priceRenderer.filter.help.missingPriceListsAndCurrencyForPriceForSale') }}
             </VAlert>
             <VAlert v-else type="warning">
-                No price for sale was computed for the filtered prices because
-                <template v-if="filteredAllPrices.length === 0">
-                    there are no prices left for this filter.
-                </template>
-                <template v-else-if="selectedPriceLists.length === 0">
-                    no price lists are selected.
-                </template>
-                <template v-else-if="selectedCurrencies.length === 0">
-                    no currency is selected.
-                </template>
-                <template v-else-if="selectedCurrencies.length > 1">
-                    more than one currency is selected.
-                </template>
+                <I18nT keypath="entityGrid.grid.cell.detail.renderer.price.help.noPriceForSale.text">
+                    <template #reason>
+                        <template v-if="filteredAllPrices.length === 0">
+                            {{ t('entityGrid.grid.priceRenderer.filter.help.noPriceForSale.reason.noPrices') }}
+                        </template>
+                        <template v-else-if="selectedPriceLists.length === 0">
+                            {{ t('entityGrid.grid.priceRenderer.filter.help.noPriceForSale.reason.noPriceLists') }}
+                        </template>
+                        <template v-else-if="selectedCurrencies.length === 0">
+                            {{ t('entityGrid.grid.priceRenderer.filter.help.noPriceForSale.reason.noCurrency') }}
+                        </template>
+                        <template v-else-if="selectedCurrencies.length > 1">
+                            {{ t('entityGrid.grid.priceRenderer.filter.help.noPriceForSale.reason.tooManyCurrencies') }}
+                        </template>
+                    </template>
+                </I18nT>
             </VAlert>
         </div>
     </div>

@@ -4,6 +4,9 @@ import { EntityPrice } from '@/model/editor/tab/dataGrid/data-grid'
 import VPropertiesTable from '@/components/base/VPropertiesTable.vue'
 import { computed } from 'vue'
 import { KeywordValue, Property, PropertyValue, RangeValue } from '@/model/properties-table'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     price: EntityPrice
@@ -20,15 +23,15 @@ const properties = computed<Property[]>(() => {
     )
 
     return [
-        { name: 'Price ID', value: new PropertyValue(props.price.priceId) },
-        { name: 'Price list', value: new PropertyValue(new KeywordValue(props.price.priceList)) },
-        { name: 'Currency', value: new PropertyValue(new KeywordValue(props.price.currency)) },
-        { name: 'Inner record ID', value: new PropertyValue(props.price.innerRecordId) },
-        { name: 'Sellable', value: new PropertyValue(props.price.sellable) },
-        { name: 'Validity', value: new PropertyValue(new RangeValue(props.price.validity)) },
-        { name: 'Price without tax', value: new PropertyValue(priceFormatter.format(parseFloat(props.price.priceWithoutTax))) },
-        { name: 'Price with tax', value: new PropertyValue(priceFormatter.format(parseFloat(props.price.priceWithTax))) },
-        { name: 'Tax rate', value: new PropertyValue(new KeywordValue(taxFormatter.format(parseFloat(props.price.taxRate) / 100))) }
+        { name: t('entityGrid.grid.priceRenderer.price.label.priceId'), value: new PropertyValue(props.price.priceId) },
+        { name: t('entityGrid.grid.priceRenderer.price.label.priceList'), value: new PropertyValue(new KeywordValue(props.price.priceList)) },
+        { name: t('entityGrid.grid.priceRenderer.price.label.currency'), value: new PropertyValue(new KeywordValue(props.price.currency)) },
+        { name: t('entityGrid.grid.priceRenderer.price.label.innerRecordId'), value: new PropertyValue(props.price.innerRecordId) },
+        { name: t('entityGrid.grid.priceRenderer.price.label.sellable'), value: new PropertyValue(props.price.sellable) },
+        { name: t('entityGrid.grid.priceRenderer.price.label.validity'), value: new PropertyValue(new RangeValue(props.price.validity)) },
+        { name: t('entityGrid.grid.priceRenderer.price.label.priceWithoutTax'), value: new PropertyValue(priceFormatter.format(parseFloat(props.price.priceWithoutTax))) },
+        { name: t('entityGrid.grid.priceRenderer.price.label.priceWithTax'), value: new PropertyValue(priceFormatter.format(parseFloat(props.price.priceWithTax))) },
+        { name: t('entityGrid.grid.priceRenderer.price.label.taxRate'), value: new PropertyValue(new KeywordValue(taxFormatter.format(parseFloat(props.price.taxRate) / 100))) }
     ]
 })
 </script>

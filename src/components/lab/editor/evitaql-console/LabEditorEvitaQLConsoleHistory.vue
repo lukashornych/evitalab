@@ -5,6 +5,9 @@
 
 import { computed, ref } from 'vue'
 import { EvitaQLConsoleHistoryRecord } from '@/model/editor/tab/evitaQLConsole/history/EvitaQLConsoleHistoryRecord'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     items: EvitaQLConsoleHistoryRecord[]
@@ -46,7 +49,7 @@ defineExpose<{
 <template>
     <div class="evitaql-editor-history">
         <p v-if="historyListItems.length === 0" class="text-disabled evitaql-editor-history__empty-item">
-            Empty history
+            {{ t('evitaQLConsole.placeholder.emptyHistory') }}
         </p>
         <template v-else>
             <VBtn
@@ -56,7 +59,7 @@ defineExpose<{
                 class="evitaql-editor-history__clear-button"
                 @click="emit('update:clearHistory')"
             >
-                Clear history
+                {{ t('evitaQLConsole.button.clearHistory') }}
             </VBtn>
 
             <VList ref="historyListRef" class="evitaql-editor-history__list">

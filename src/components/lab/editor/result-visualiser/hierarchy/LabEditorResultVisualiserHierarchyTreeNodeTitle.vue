@@ -7,8 +7,10 @@ import VMarkdown from '@/components/base/VMarkdown.vue'
 import { UnexpectedError } from '@/model/lab'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import { VisualisedHierarchyTreeNode } from '@/model/editor/result-visualiser'
+import { useI18n } from 'vue-i18n'
 
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = defineProps<{
     node: VisualisedHierarchyTreeNode
@@ -17,23 +19,23 @@ const props = defineProps<{
 function copyPrimaryKey(): void {
     if (props.node.primaryKey != undefined) {
         navigator.clipboard.writeText(`${props.node.primaryKey}`).then(() => {
-            toaster.info('Primary key copied to clipboard.')
+            toaster.info(t('resultVisualizer.hierarchyVisualiser.notification.primaryKeyCopiedToClipboard'))
         }).catch(() => {
-            toaster.error(new UnexpectedError(undefined, 'Failed to copy to clipboard.'))
+            toaster.error(new UnexpectedError(undefined, t('common.notification.failedToCopyToClipboard')))
         })
     } else {
-        toaster.error('No primary key property was fetched.')
+        toaster.error(t('resultVisualizer.hierarchyVisualiser.notification.noPrimaryKeyProperty'))
     }
 }
 function copyParentPrimaryKey(): void {
     if (props.node.parentPrimaryKey != undefined) {
         navigator.clipboard.writeText(`${props.node.parentPrimaryKey}`).then(() => {
-            toaster.info('Parent primary key copied to clipboard.')
+            toaster.info(t('resultVisualizer.hierarchyVisualiser.notification.parentPrimaryKeyCopiedToClipboard'))
         }).catch(() => {
-            toaster.error(new UnexpectedError(undefined, 'Failed to copy to clipboard.'))
+            toaster.error(new UnexpectedError(undefined, t('common.notification.failedToCopyToClipboard')))
         })
     } else {
-        toaster.error('No parent primary key property was fetched.')
+        toaster.error(t('resultVisualizer.hierarchyVisualiser.notification.noParentPrimaryKeyProperty'))
     }
 }
 </script>
@@ -59,31 +61,27 @@ function copyParentPrimaryKey(): void {
             {{ node.parentPrimaryKey }}{{ node.title ? ':' : '' }}
         </span>
         <span :class="{ 'node-title--requested': node.requested }">
-            {{ node.title || 'Unknown' }}
+            {{ node.title || t('resultVisualizer.hierarchyVisualiser.label.unknown') }}
             <VTooltip v-if="!node.title" activator="parent">
-                <VMarkdown source="No `primaryKey` property or representative attributes were fetched." />
+                <VMarkdown :source="t('resultVisualizer.hierarchyVisualiser.help.noRepresentativeProperty')" />
             </VTooltip>
         </span>
 
         <VLazy>
             <VChipGroup>
                 <VChip v-if="node.requested" prepend-icon="mdi-target">
-                    Requested
+                    {{ t('resultVisualizer.hierarchyVisualiser.label.requested') }}
                     <VTooltip activator="parent">
-                        <VMarkdown source="The entity representing this hierarchy node was filtered by `hierarchyWithin`." />
+                        <VMarkdown :source="t('resultVisualizer.hierarchyVisualiser.help.requestedEntity')" />
                     </VTooltip>
                 </VChip>
 
                 <VChip prepend-icon="mdi-file-tree">
                     {{ node.childrenCount ?? '-' }}
                     <VTooltip activator="parent">
-                        <VMarkdown v-if="node.childrenCount == undefined" source="The `childrenCount` property was not found." />
+                        <VMarkdown v-if="node.childrenCount == undefined" :source="t('resultVisualizer.hierarchyVisualiser.help.noChildrenCountProperty')" />
                         <span v-else>
-                            The count of child hierarchy nodes that exist in the hierarchy tree below the given node;
-                            the count is correct regardless of whether the children themselves are requested/traversed
-                            by the constraint definition, and respects hierarchyOfReference settings for automatic
-                            removal of hierarchy nodes that would contain empty result set of queried entities
-                            (REMOVE_EMPTY).
+                            {{ t('resultVisualizer.hierarchyVisualiser.help.childrenCountProperty') }}
                         </span>
                     </VTooltip>
                 </VChip>
@@ -91,13 +89,8 @@ function copyParentPrimaryKey(): void {
                 <VChip prepend-icon="mdi-format-list-bulleted">
                     {{ node.queriedEntityCount ?? '-' }}
                     <VTooltip activator="parent">
-                        <VMarkdown v-if="node.queriedEntityCount == undefined" source="The `queriedEntityCount` property was not found." />
-                        <span v-else>
-                            The total number of queried entities that will be returned if the current query is focused
-                            on this particular hierarchy node using the hierarchyWithin filter constraint
-                            (the possible refining constraint in the form of directRelation and excludingRoot is not
-                            taken into account).
-                        </span>
+                        <VMarkdown v-if="node.queriedEntityCount == undefined" :source="t('resultVisualizer.hierarchyVisualiser.help.noQueriedEntityCountProperty')" />
+                        <span v-else>{{ t('resultVisualizer.hierarchyVisualiser.help.queriedEntityCountProperty') }}</span>
                     </VTooltip>
                 </VChip>
             </VChipGroup>

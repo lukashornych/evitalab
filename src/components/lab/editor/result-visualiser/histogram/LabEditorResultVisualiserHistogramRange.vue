@@ -8,6 +8,9 @@ import { computed } from 'vue'
 import LabEditorResultVisualiserHistogramNote
     from '@/components/lab/editor/result-visualiser/histogram/LabEditorResultVisualiserHistogramNote.vue'
 import { BigDecimal } from '@/model/evitadb'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     histogram: VisualisedHistogram
@@ -37,7 +40,7 @@ const rangeInfo = computed<RangeInfo>(() => {
             min: 0,
             max: 10,
             requestedRange: [5, 5],
-            simulatedReason: `Missing properties: ${missingRequiredProperties.map(it => '`' + it + '`').join(", ")}. Cannot simulate the range.`
+            simulatedReason: t('resultVisualizer.histogram.placeholder.missingPropertiesForSimulatedRange', { properties: missingRequiredProperties.map(it => '`' + it + '`').join(", ") })
         }
     } else {
         if (props.histogram.min != undefined &&
@@ -103,7 +106,7 @@ const rangeInfo = computed<RangeInfo>(() => {
                     leftRequestedIndex != undefined ? leftRequestedIndex : middle,
                     rightRequestedIndex != undefined ? rightRequestedIndex : middle
                 ],
-                simulatedReason: `Missing properties ${missingPropertiesForActualValues.map(it => '`' + it + '`').join(', ')} for actual values. The range is only simulated from indexes.`
+                simulatedReason: t('resultVisualizer.histogram.placeholder.missingPropertiesForActualRange', { properties: missingPropertiesForActualValues.map(it => '`' + it + '`').join(', ') })
             }
         }
     }

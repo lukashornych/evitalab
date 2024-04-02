@@ -5,6 +5,9 @@
 
 import { Text, SelectionRange, Line } from '@codemirror/state'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     doc: Text,
@@ -37,9 +40,9 @@ const selectedLinesCount = computed<number>(() => {
 
 <template>
     <span class="text-no-wrap">
-        Ln {{ headLine.number }}, Col {{ headPositionInLine }}
+        {{ t('common.codeEditor.status.cursorPosition', { line: headLine.number, column: headPositionInLine }) }}
         <template v-if="!selectionRange.empty">
-            ({{ selectedCharsCount }} chars<template v-if="selectedLinesCount">, {{ selectedLinesCount }} line breaks</template>)
+            ({{ t('common.codeEditor.status.selectionRange', { charsCount: selectedCharsCount }) }}<template v-if="selectedLinesCount">, {{ t('common.codeEditor.status.selectionRanges', { linesCount: selectedLinesCount }) }}</template>)
         </template>
     </span>
 </template>

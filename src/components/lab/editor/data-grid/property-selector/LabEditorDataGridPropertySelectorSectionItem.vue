@@ -5,6 +5,9 @@
 
 import VMarkdown from '@/components/base/VMarkdown.vue'
 import { EntityPropertyKey } from '@/model/editor/tab/dataGrid/data-grid'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
     value: EntityPropertyKey,
@@ -53,7 +56,7 @@ const emit = defineEmits<{
                         :key="flag"
                         class="text-sm-body-2"
                     >
-                        {{ flag }}
+                        {{ flag.startsWith('_') ? t(`schemaViewer.section.flag.${flag.substring(1)}`) : flag }}
                     </VChip>
                 </VChipGroup>
             </div>
@@ -85,7 +88,7 @@ const emit = defineEmits<{
             >
                 <VIcon>mdi-open-in-new</VIcon>
                 <VTooltip activator="parent">
-                    Open schema
+                    {{ t('entityGrid.propertySelector.section.button.openSchema') }}
                 </VTooltip>
             </VBtn>
             <VIcon

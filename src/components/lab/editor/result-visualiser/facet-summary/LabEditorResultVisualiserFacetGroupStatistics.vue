@@ -13,10 +13,12 @@ import { ResultVisualiserService } from '@/services/editor/result-visualiser/res
 import { Result, VisualisedFacetGroupStatistics } from '@/model/editor/result-visualiser'
 import VListItemLazyIterator from '@/components/base/VListItemLazyIterator.vue'
 import { ReferenceSchema } from '@/model/evitadb'
+import { useI18n } from 'vue-i18n'
 
 const facetStatisticsPageSize: number = 10
 
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = defineProps<{
     visualiserService: ResultVisualiserService,
@@ -65,9 +67,9 @@ function initializeFacets(): void {
 function copyPrimaryKey(): void {
     if (groupStatistics.value?.primaryKey != undefined) {
         navigator.clipboard.writeText(`${groupStatistics.value?.primaryKey}`).then(() => {
-            toaster.info('Primary key copied to clipboard.')
+            toaster.info(t('resultVisualizer.facetStatisticsVisualiser.notification.primaryKeyCopiedToClipboard'))
         }).catch(() => {
-            toaster.error(new UnexpectedError(undefined, 'Failed to copy to clipboard.'))
+            toaster.error(new UnexpectedError(undefined, t('common.notification.failedToCopyToClipboard')))
         })
     }
 }
@@ -94,7 +96,7 @@ function copyPrimaryKey(): void {
                         <span>
                             {{ groupStatistics?.title ?? 'Unknown' }}
                             <VTooltip v-if="!groupStatistics?.title" activator="parent">
-                                <VMarkdown source="No `primaryKey` property or representative attributes were fetched." />
+                                <VMarkdown :source="t('resultVisualizer.facetStatisticsVisualiser.help.noPrimaryKeyProperty')" />
                             </VTooltip>
                         </span>
 
@@ -104,15 +106,15 @@ function copyPrimaryKey(): void {
                                     <span>
                                         {{ groupStatistics?.count ?? '-' }}
                                         <VTooltip activator="parent">
-                                            <VMarkdown v-if="groupStatistics?.count == undefined" source="No `count` property was fetched." />
-                                            <span v-else>The total number of entities matching any facet from this group without user filter.</span>
+                                            <VMarkdown v-if="groupStatistics?.count == undefined" :source="t('resultVisualizer.facetStatisticsVisualiser.help.noGroupCountProperty')" />
+                                            <span v-else>{{ t('resultVisualizer.facetStatisticsVisualiser.help.groupCountProperty') }}</span>
                                         </VTooltip>
                                     </span>
                                 </VChip>
                                 <VChip v-if="!referenceSchema.referencedGroupTypeManaged" prepend-icon="mdi-open-in-new">
-                                    External
+                                    {{ t('resultVisualizer.facetStatisticsVisualiser.label.externalGroup') }}
                                     <VTooltip activator="parent">
-                                        This is only a reference to an external entity that is managed by external system.
+                                        {{ t('resultVisualizer.facetStatisticsVisualiser.help.externalGroup') }}
                                     </VTooltip>
                                 </VChip>
                             </VChipGroup>

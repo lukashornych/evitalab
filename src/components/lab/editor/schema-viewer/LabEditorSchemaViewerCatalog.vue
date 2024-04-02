@@ -7,6 +7,9 @@ import { CatalogSchema } from '@/model/evitadb'
 import { Property, PropertyValue } from '@/model/properties-table'
 import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaViewerDataPointer'
 import LabEditorSchemaViewerEntities from '@/components/lab/editor/schema-viewer/LabEditorSchemaViewerEntities.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
@@ -14,9 +17,8 @@ const props = defineProps<{
 }>()
 
 const baseProperties = ref<Property[]>([
-    // todo lho i18n
-    { name: 'Version', value: new PropertyValue(props.schema.version) },
-    { name: 'Description', value: new PropertyValue(props.schema.description) }
+    { name: t('schemaViewer.catalog.label.version'), value: new PropertyValue(props.schema.version) },
+    { name: t('schemaViewer.catalog.label.description'), value: new PropertyValue(props.schema.description) }
 ])
 </script>
 

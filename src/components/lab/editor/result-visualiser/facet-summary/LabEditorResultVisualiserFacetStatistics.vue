@@ -10,8 +10,10 @@ import { Toaster, useToaster } from '@/services/editor/toaster'
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 import { Result, VisualisedFacetStatistics } from '@/model/editor/result-visualiser'
 import { ReferenceSchema } from '@/model/evitadb'
+import { useI18n } from 'vue-i18n'
 
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = defineProps<{
     visualiserService: ResultVisualiserService,
@@ -35,12 +37,12 @@ const facetStatistics = computed<VisualisedFacetStatistics | undefined>(() => {
 function copyPrimaryKey(): void {
     if (facetStatistics.value?.primaryKey != undefined) {
         navigator.clipboard.writeText(`${facetStatistics.value?.primaryKey}`).then(() => {
-            toaster.info('Primary key copied to clipboard.')
+            toaster.info(t('resultVisualizer.facetStatisticsVisualiser.notification.primaryKeyCopiedToClipboard'))
         }).catch(() => {
-            toaster.error(new UnexpectedError(undefined, 'Failed to copy to clipboard.'))
+            toaster.error(new UnexpectedError(undefined, t('common.notification.failedToCopyToClipboard')))
         })
     } else {
-        toaster.error('No primary key property was fetched.')
+        toaster.error(t('resultVisualizer.facetStatisticsVisualiser.notification.noPrimaryKeyProperty'))
     }
 }
 </script>
@@ -55,7 +57,7 @@ function copyPrimaryKey(): void {
                 :class="{ 'text-red': facetStatistics?.requested == undefined, 'facet-checkbox--disabled': facetStatistics?.impactMatchCount === 0 }"
             >
                 <VTooltip v-if="facetStatistics?.requested == undefined" activator="parent">
-                    <VMarkdown source="The `requested` property was not fetched." />
+                    <VMarkdown :source="t('resultVisualizer.facetStatisticsVisualiser.help.noRequestedProperty')" />
                 </VTooltip>
             </VCheckboxBtn>
         </template>
@@ -74,11 +76,10 @@ function copyPrimaryKey(): void {
                 <span :class="{ 'text-disabled': facetStatistics?.impactMatchCount === 0 }">
                     {{ facetStatistics?.title || 'Unknown' }}
                     <VTooltip v-if="!facetStatistics?.title" activator="parent">
-                        <VMarkdown source="No `primaryKey` property or representative attributes were fetched." />
+                        <VMarkdown :source="t('resultVisualizer.facetStatisticsVisualiser.help.noRepresentativeProperty')" />
                     </VTooltip>
                     <VTooltip v-if="facetStatistics?.impactMatchCount === 0" activator="parent">
-                        No entities would be returned if this facet was requested because no entity has combination of
-                        already requested facets plus this one.
+                        {{ t('resultVisualizer.facetStatisticsVisualiser.help.zeroImpactMatchCount') }}
                     </VTooltip>
                 </span>
 
@@ -104,13 +105,13 @@ function copyPrimaryKey(): void {
                                 <VIcon>mdi-set-right</VIcon>
                                 <br/>
 
-                                <VMarkdown v-if="facetStatistics?.numberOfEntities == undefined" source="The `totalRecordCount` property was not found in neither `recordPage` nor `recordStrip`." />
-                                <span v-else>The total number of entities matching the user filter.</span>
+                                <VMarkdown v-if="facetStatistics?.numberOfEntities == undefined" :source="t('resultVisualizer.facetStatisticsVisualiser.help.noTotalRecordCountProperty')" />
+                                <span v-else>{{ t('resultVisualizer.facetStatisticsVisualiser.help.totalRecordCountProperty') }}</span>
 
                                 <br/>
 
-                                <VMarkdown v-if="facetStatistics?.impactDifference == undefined" source="The `impact.difference` property was not found." />
-                                <span v-else>The difference from the current number of entities matching the user filter if this facet was requested.</span>
+                                <VMarkdown v-if="facetStatistics?.impactDifference == undefined" :source="t('resultVisualizer.facetStatisticsVisualiser.help.noImpactDifferenceProperty')" />
+                                <span v-else>{{ t('resultVisualizer.facetStatisticsVisualiser.help.impactDifferenceProperty') }}</span>
 
                                 <br/>
                                 <br/>
@@ -118,8 +119,8 @@ function copyPrimaryKey(): void {
                                 <VIcon>mdi-set-all</VIcon>
                                 <br/>
 
-                                <VMarkdown v-if="facetStatistics?.impactMatchCount == undefined" source="The `impact.matchCount` property was not found." />
-                                <span v-else>The total number of entities matching the user filter if this facet was requested.</span>
+                                <VMarkdown v-if="facetStatistics?.impactMatchCount == undefined" :source="t('resultVisualizer.facetStatisticsVisualiser.help.noImpactMatchProperty')" />
+                                <span v-else>{{ t('resultVisualizer.facetStatisticsVisualiser.help.impactMatchProperty') }}</span>
 
                                 <br/>
                                 <br/>
@@ -127,15 +128,15 @@ function copyPrimaryKey(): void {
                                 <VIcon>mdi-counter</VIcon>
                                 <br/>
 
-                                <VMarkdown v-if="facetStatistics?.count == undefined" source="The `count` property was not found." />
-                                <span v-else>The total number of entities matching this facet without the user filter.</span>
+                                <VMarkdown v-if="facetStatistics?.count == undefined" :source="t('resultVisualizer.facetStatisticsVisualiser.help.noCountProperty')" />
+                                <span v-else>{{ t('resultVisualizer.facetStatisticsVisualiser.help.countProperty') }}</span>
                             </VTooltip>
                         </VChip>
 
                         <VChip v-if="!referenceSchema.referencedEntityTypeManaged" prepend-icon="mdi-open-in-new">
-                            External
+                            {{ t('resultVisualizer.facetStatisticsVisualiser.label.externalReference') }}
                             <VTooltip activator="parent">
-                                This is only a reference to an external entity that is managed by external system.
+                                {{ t('resultVisualizer.facetStatisticsVisualiser.help.externalReference') }}
                             </VTooltip>
                         </VChip>
                     </VChipGroup>

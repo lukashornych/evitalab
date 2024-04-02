@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * Custom data grid column header component for entity properties.
+ */
+
 import { computed } from 'vue'
 import { EntityPropertyType } from '@/model/editor/tab/dataGrid/data-grid'
 

@@ -599,7 +599,7 @@ export enum EntityPropertyValueDesiredOutputFormat {
     /**
      * Renders pretty printed raw input value based on its schema data type.
      */
-    AutoPrettyPrint = 'auto-pretty-print',
+    AutoPrettyPrint = 'autoPrettyPrint',
     /**
      * Renders any rwa input value as a Markdown source.
      */

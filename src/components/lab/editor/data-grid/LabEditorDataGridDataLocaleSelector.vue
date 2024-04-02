@@ -8,6 +8,9 @@ import { ref } from 'vue'
 import { VBtn } from 'vuetify/components'
 import VActionTooltip from '@/components/base/VActionTooltip.vue'
 import { Command } from '@/model/editor/keymap/Command'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     selected: string | undefined,
@@ -53,9 +56,7 @@ defineExpose<{
         <VIcon v-if="!selected">mdi-translate-off</VIcon>
         <VIcon v-else>mdi-translate</VIcon>
 
-        <VActionTooltip :command="Command.EntityGrid_ChangeDataLocale">
-            Select data locale
-        </VActionTooltip>
+        <VActionTooltip :command="Command.EntityGrid_ChangeDataLocale" />
 
         <VMenu activator="parent">
             <VList
@@ -67,7 +68,7 @@ defineExpose<{
                 <VListItem
                     value="none"
                 >
-                    <VListItemTitle>None</VListItemTitle>
+                    <VListItemTitle>{{ t('entityGrid.dataLocaleSelector.item.none') }}</VListItemTitle>
                 </VListItem>
 
                 <VListItemDivider />

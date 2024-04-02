@@ -29,10 +29,12 @@ import LabEditorDataGridGridColumnHeader
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridColumnHeader.vue'
 import { Scalar } from '@/model/evitadb'
 import { mandatoryInject } from '@/helpers/reactivity'
+import { useI18n } from 'vue-i18n'
 
 const editorService: EditorService = useEditorService()
 const dataGridService: DataGridService = useDataGridService()
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const pageSizeOptions: any[] = [10, 25, 50, 100, 250, 500, 1000].map(it => ({ title: it.toString(10), value: it }))
 
@@ -60,7 +62,7 @@ const propertyDetailValue = ref<EntityPropertyValue | EntityPropertyValue[] | un
 function getPropertyDescriptor(key: string): EntityPropertyDescriptor | undefined {
     const descriptor = entityPropertyDescriptorIndex.value.get(key)
     if (descriptor == undefined) {
-        toaster.error(new UnexpectedError(gridProps.params.dataPointer.connection, 'Failed to find property descriptor for key: ' + key))
+        toaster.error(new UnexpectedError(gridProps.params.dataPointer.connection, t('entityGrid.grid.notification.failedToFindProperty', { key })))
     }
     return descriptor
 }

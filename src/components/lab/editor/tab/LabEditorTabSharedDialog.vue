@@ -5,8 +5,10 @@
 
 import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import { TabRequest } from '@/model/editor/tab/TabRequest'
+import { useI18n } from 'vue-i18n'
 
 const editorService: EditorService = useEditorService()
+const { t } = useI18n()
 
 const props = defineProps<{
     tabRequest: TabRequest<any, any>
@@ -32,17 +34,14 @@ function rejectSharedTab(): void {
         @update:model-value="rejectSharedTab"
     >
         <VCard class="py-8 px-4">
-            <VCardTitle>Shared tab found</VCardTitle>
+            <VCardTitle>{{ t('tabShare.sharedDialog.title') }}</VCardTitle>
 
             <VCardText>
                 <template v-if="tabRequest.initialData != undefined">
-                    The URL contains an embedded query from an unknown source. Do you want to open it? If you accept,
-                    evitaLab will <em>open a new tab</em> with the query, but will <em>not</em> execute it automatically.
-                    You can still decide if you want to execute it. If you reject, the query in the URL will be <em>discarded</em>.
+                    <span v-html="t('tabShare.sharedDialog.text.withoutInitialData')" />
                 </template>
                 <template v-else>
-                    The URL contains an embedded shared tab from an unknown source. Do you want to open it? If you accept
-                    it, evitaLab will <em>open a new tab</em> with the query. If you reject it, it will be <em>discarded</em>.
+                    <span v-html="t('tabShare.sharedDialog.text.withInitialData')" />
                 </template>
             </VCardText>
             <VCardText v-if="tabRequest.initialData != undefined">
@@ -50,7 +49,7 @@ function rejectSharedTab(): void {
                     icon="mdi-alert-outline"
                     type="warning"
                 >
-                    <em>Be careful!</em> The query in the URL may contain potentially malicious code.
+                    <span v-html="t('tabShare.sharedDialog.warning.potentiallyUnsafe')" />
                 </VAlert>
             </VCardText>
 
@@ -59,7 +58,7 @@ function rejectSharedTab(): void {
                 <VBtn
                     variant="tonal"
                     @click="rejectSharedTab">
-                    Reject
+                    {{ t('tabShare.sharedDialog.button.reject') }}
                 </VBtn>
                 <VBtn
                     variant="outlined"
@@ -67,7 +66,7 @@ function rejectSharedTab(): void {
                     @click="acceptSharedTab"
                     class="ml-4"
                 >
-                    Accept
+                    {{ t('tabShare.sharedDialog.button.accept') }}
                 </VBtn>
             </VCardActions>
         </VCard>

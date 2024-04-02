@@ -1,10 +1,16 @@
 <script setup lang="ts">
+/**
+ * Dialog window to remove user-created connection.
+ */
+
 import { EvitaDBConnection } from '@/model/lab'
 import { LabService, useLabService } from '@/services/lab.service'
 import { Toaster, useToaster } from '@/services/editor/toaster'
+import { useI18n } from 'vue-i18n'
 
 const labService: LabService = useLabService()
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = defineProps<{
     modelValue: boolean
@@ -42,22 +48,25 @@ function removeConnection(): void {
         </template>
 
         <VCard class="py-8 px-4">
-            <VCardTitle>Remove connection</VCardTitle>
+            <VCardTitle>{{ t('explorer.connection.remove.title') }}</VCardTitle>
             <VCardText class="mb-4">
-                Are you sure you want to remove the connection <strong>{{ connection.name }}</strong>?
+                <I18nT keypath="explorer.connection.remove.question">
+                    <template #connectionName>
+                        <strong>{{ connection.name }}</strong>
+                    </template>
+                </I18nT>
             </VCardText>
             <VCardActions>
                 <VSpacer/>
-                <VBtn @click="cancel"
-                variant="tonal">
-                    Cancel
+                <VBtn @click="cancel" variant="tonal">
+                    {{ t('common.button.cancel') }}
                 </VBtn>
                 <VBtn
                     variant="outlined"
                     prepend-icon="mdi-delete"
                     @click="removeConnection"
                 >
-                    Remove
+                    {{ t('common.button.remove') }}
                 </VBtn>
             </VCardActions>
         </VCard>

@@ -12,9 +12,11 @@ import {
 } from '@/model/editor/tab/dataGrid/data-grid'
 import LabEditorDataGridPropertySelectorSectionEmptyItem from './LabEditorDataGridPropertySelectorSectionEmptyItem.vue'
 import VListItemDivider from '@/components/base/VListItemDivider.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
-    title: string, // todo lho this could be deleted when i18n is implemented, we could use the property type to resolve title
     propertyType: EntityPropertyType,
     selected: EntityPropertyKey[],
     filteredPropertyDescriptors: EntityPropertyDescriptor[],
@@ -67,7 +69,7 @@ function resolveNewSelection() {
                 </template>
 
                 <template #title>
-                    {{ title }} ({{ selected.length || 0 }}/{{ propertyDescriptors.length }})
+                    {{ t(`entityGrid.propertySelector.section.type.${propertyType || 'entity'}`) }} ({{ selected.length || 0 }}/{{ propertyDescriptors.length }})
                 </template>
             </VListItem>
         </template>

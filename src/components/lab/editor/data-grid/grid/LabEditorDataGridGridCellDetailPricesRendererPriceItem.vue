@@ -9,6 +9,9 @@ import { mandatoryInject } from '@/helpers/reactivity'
 import LabEditorDataGridGridCellDetailPricesRendererPrice
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailPricesRendererPrice.vue'
 import VMarkdown from '@/components/base/VMarkdown.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
     price: EntityPrice
@@ -30,8 +33,7 @@ const priceType = mandatoryInject(priceTypeKey)
                     <VIcon class="mr-3" v-bind="props">mdi-cart-outline</VIcon>
                 </template>
 
-                This price would be used as a price for sale if this filter were used in
-                the main query.
+                {{ t('entityGrid.grid.priceRenderer.price.help.priceForSale') }}
             </VTooltip>
 
             <VTooltip>
@@ -40,10 +42,10 @@ const priceType = mandatoryInject(priceTypeKey)
                 </template>
 
                 <template v-if="price.sellable">
-                    This price is sellable.
+                    {{ t('entityGrid.grid.priceRenderer.price.tooltip.sellablePrice') }}
                 </template>
                 <template v-else>
-                    This price is not sellable.
+                    {{ t('entityGrid.grid.priceRenderer.price.tooltip.notSellablePrice') }}
                 </template>
             </VTooltip>
 
@@ -53,23 +55,23 @@ const priceType = mandatoryInject(priceTypeKey)
                         {{ price.priceId }}
 
                         <VTooltip activator="parent">
-                            Price ID
+                            {{ t('entityGrid.grid.priceRenderer.price.label.priceId') }}
                         </VTooltip>
                     </span>
                         <span v-if="price.innerRecordId != undefined">
                         &nbsp;/&nbsp;{{ price.innerRecordId }}
 
                         <VTooltip activator="parent">
-                            Inner record ID
+                            {{ t('entityGrid.grid.priceRenderer.price.label.innerRecordId') }}
                         </VTooltip>
                     </span>
                 </VChip>
                 <VChip v-else prepend-icon="mdi-identifier" variant="flat">
                     <span>
-                        Virtual
+                        {{ t('entityGrid.grid.priceRenderer.price.label.virtual' )}}
 
                         <VTooltip activator="parent">
-                            <VMarkdown source="This is a virtual price for sale computed based on this filter. The price is virtual because the entity has price inner record handling set to `SUM`, therefore, the price for sale is a sum of internally selected prices."/>
+                            <VMarkdown :source="t('entityGrid.grid.priceRenderer.price.help.virtualPriceForSale')"/>
                         </VTooltip>
                     </span>
                 </VChip>
@@ -78,7 +80,7 @@ const priceType = mandatoryInject(priceTypeKey)
                     {{ price.priceList }}
 
                     <VTooltip activator="parent">
-                        Price list
+                        {{ t('entityGrid.grid.priceRenderer.price.label.priceList') }}
                     </VTooltip>
                 </VChip>
 
@@ -87,10 +89,10 @@ const priceType = mandatoryInject(priceTypeKey)
 
                     <VTooltip activator="parent">
                         <template v-if="priceType == QueryPriceMode.WithTax">
-                            Price with tax
+                            {{ t('entityGrid.grid.priceRenderer.price.label.priceWithTax') }}
                         </template>
                         <template v-else>
-                            Price without tax
+                            {{ t('entityGrid.grid.priceRenderer.price.label.priceWithoutTax') }}
                         </template>
                     </VTooltip>
                 </VChip>

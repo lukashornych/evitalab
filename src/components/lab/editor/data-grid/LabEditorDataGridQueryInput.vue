@@ -28,12 +28,13 @@ import { createFilterByHistoryKey, FilterByHistoryKey } from '@/model/editor/tab
 import { OrderByHistoryRecord } from '@/model/editor/tab/dataGrid/history/OrderByHistoryRecord'
 import { createOrderByByHistoryKey, OrderByHistoryKey } from '@/model/editor/tab/dataGrid/history/OrderByHistoryKey'
 import { EntityPropertyKey, gridPropsKey } from '@/model/editor/tab/dataGrid/data-grid'
-import keymaster from 'keymaster'
 import { propertySelectorScope } from '@/model/editor/tab/dataGrid/keymap/scopes'
+import { useI18n } from 'vue-i18n'
 
 const keymap: Keymap = useKeymap()
 const editorService: EditorService = useEditorService()
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = defineProps<{
     selectedQueryLanguage: QueryLanguage,
@@ -117,7 +118,7 @@ function executeQuery(): void {
         editorService.addTabHistoryRecord(orderByHistoryKey.value, props.orderBy)
     } catch (e) {
         console.error(e)
-        toaster.error(new UnexpectedError(gridProps.params.dataPointer.connection, 'Failed to save query to history.'))
+        toaster.error(new UnexpectedError(gridProps.params.dataPointer.connection, t('entityGrid.queryInput.notification.failedToSaveQueryToHistory')))
     }
     emit('executeQuery')
 }
@@ -126,8 +127,8 @@ onMounted(() => {
     // register grid specific keyboard shortcuts
     keymap.bind(Command.EntityGrid_ExecuteQuery, gridProps.id, () => executeQuery())
     keymap.bind(Command.EntityGrid_ChangeQueryLanguage, gridProps.id, () => queryLanguageSelectorRef.value?.focus())
-    keymap.bind(Command.EntityGrid_FocusFilterInput, gridProps.id, () => filterByInputView.value?.focus())
-    keymap.bind(Command.EntityGrid_FocusOrderInput, gridProps.id, () => orderByInputView.value?.focus())
+    keymap.bind(Command.EntityGrid_FilterBy, gridProps.id, () => filterByInputView.value?.focus())
+    keymap.bind(Command.EntityGrid_OrderBy, gridProps.id, () => orderByInputView.value?.focus())
     keymap.bind(Command.EntityGrid_ChangeDataLocale, gridProps.id, () => dataLocaleSelectorRef.value?.focus())
     keymap.bind(Command.EntityGrid_ChangePriceType, gridProps.id, () => priceTypeSelectorRef.value?.focus())
     keymap.bind(Command.EntityGrid_OpenPropertySelector, gridProps.id, () => showPropertiesSelect.value = true)
@@ -136,8 +137,8 @@ onUnmounted(() => {
     // unregister grid specific keyboard shortcuts
     keymap.unbind(Command.EntityGrid_ExecuteQuery, gridProps.id)
     keymap.unbind(Command.EntityGrid_ChangeQueryLanguage, gridProps.id)
-    keymap.unbind(Command.EntityGrid_FocusFilterInput, gridProps.id)
-    keymap.unbind(Command.EntityGrid_FocusOrderInput, gridProps.id)
+    keymap.unbind(Command.EntityGrid_FilterBy, gridProps.id)
+    keymap.unbind(Command.EntityGrid_OrderBy, gridProps.id)
     keymap.unbind(Command.EntityGrid_ChangeDataLocale, gridProps.id)
     keymap.unbind(Command.EntityGrid_ChangePriceType, gridProps.id)
     keymap.unbind(Command.EntityGrid_OpenPropertySelector, gridProps.id)
@@ -156,7 +157,7 @@ onUnmounted(() => {
             <VInlineQueryEditor
                 :model-value="filterBy"
                 prepend-inner-icon="mdi-filter-menu-outline"
-                :placeholder="`Filter by (${keymap.prettyPrint(Command.EntityGrid_FocusFilterInput)})`"
+                :placeholder="`Filter by (${keymap.prettyPrint(Command.EntityGrid_FilterBy)})`"
                 @update:model-value="emit('update:filterBy', $event)"
                 @update:history-clear="editorService.clearTabHistory(filterByHistoryKey)"
                 @update:editor="filterByInputView = $event.view"
@@ -170,7 +171,7 @@ onUnmounted(() => {
             <VInlineQueryEditor
                 :model-value="orderBy"
                 prepend-inner-icon="mdi-sort"
-                :placeholder="`Order by (${keymap.prettyPrint(Command.EntityGrid_FocusOrderInput)})`"
+                :placeholder="`Order by (${keymap.prettyPrint(Command.EntityGrid_OrderBy)})`"
                 @update:model-value="emit('update:orderBy', $event)"
                 @update:history-clear="editorService.clearTabHistory(orderByHistoryKey)"
                 @update:editor="orderByInputView = $event.view"

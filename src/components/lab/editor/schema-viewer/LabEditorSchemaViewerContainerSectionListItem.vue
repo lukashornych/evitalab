@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 const props = withDefaults(defineProps<{
     name: string,
     deprecated?: boolean,
@@ -36,7 +40,7 @@ function open() {
             </VListItemTitle>
             <VChipGroup>
                 <VChip v-for="flag in flags" :key="flag">
-                    {{ flag }}
+                    {{ flag.startsWith('_') ? t(`schemaViewer.section.flag.${flag.substring(1)}`) : flag }}
                 </VChip>
             </VChipGroup>
         </div>

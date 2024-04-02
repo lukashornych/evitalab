@@ -8,6 +8,8 @@ import LabEditorTabShareDialog from '@/components/lab/editor/tab/LabEditorTabSha
 import { TabType } from '@/model/editor/tab/TabType'
 import { TabRequestComponentData } from '@/model/editor/tab/TabRequestComponentData'
 import { TabRequestComponentParams } from '@/model/editor/tab/TabRequestComponentParams'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
     tabType: TabType,
@@ -24,7 +26,6 @@ function share() {
     shareDialogOpen.value = true
 }
 
-// todo tooltip
 defineExpose<{
     share: () => void
 }>({
@@ -50,11 +51,10 @@ defineExpose<{
                 <VIcon>mdi-share-variant</VIcon>
                 <VTooltip activator="parent">
                     <template v-if="disabled">
-                        Cannot share this tab because it is using a user-defined evitaDB connection. Only pre-configured
-                        connections can be shared.
+                        {{ t('tabShare.tooltip.nonSharableTab') }}
                     </template>
                     <template v-else>
-                        Share this tab
+                        {{ t('tabShare.button.shareTab') }}
                     </template>
                 </VTooltip>
             </VBtn>

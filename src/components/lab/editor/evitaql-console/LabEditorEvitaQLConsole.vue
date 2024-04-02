@@ -45,6 +45,7 @@ import {
     EvitaQLConsoleHistoryRecord
 } from '@/model/editor/tab/evitaQLConsole/history/EvitaQLConsoleHistoryRecord'
 import { TabType } from '@/model/editor/tab/TabType'
+import { useI18n } from 'vue-i18n'
 
 enum EditorTabType {
     Query = 'query',
@@ -62,6 +63,7 @@ const evitaQLConsoleService: EvitaQLConsoleService = useEvitaQLConsoleService()
 const editorService: EditorService = useEditorService()
 const visualiserService: ResultVisualiserService = useEvitaQLResultVisualiserService()
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = defineProps<TabComponentProps<EvitaQLConsoleParams, EvitaQLConsoleData>>()
 const emit = defineEmits<TabComponentEvents>()
@@ -75,7 +77,7 @@ const resultTab = ref<ResultTabType>(ResultTabType.Raw)
 const shareTabButtonRef = ref<InstanceType<typeof LabEditorTabShareButton> | undefined>()
 
 const queryEditorRef = ref<InstanceType<typeof VQueryEditor> | undefined>()
-const queryCode = ref<string>(props.data.query ? props.data.query : `// Write your EvitaQL query for catalog ${props.params.dataPointer.catalogName} here.\n`)
+const queryCode = ref<string>(props.data.query ? props.data.query : t('evitaQLConsole.placeholder.writeQuery', { catalogName: props.params.dataPointer.catalogName }))
 const queryExtensions: Extension[] = [evitaQL()]
 
 const variablesEditorRef = ref<InstanceType<typeof VQueryEditor> | undefined>()
@@ -116,23 +118,23 @@ onMounted(() => {
     // register console specific keyboard shortcuts
     keymap.bind(Command.EvitaQLConsole_ExecuteQuery, props.id, executeQuery)
     keymap.bind(Command.EvitaQLConsole_ShareTab, props.id, () => shareTabButtonRef.value?.share())
-    keymap.bind(Command.EvitaQLConsole_Query_SwitchToQueryEditor, props.id, () => {
+    keymap.bind(Command.EvitaQLConsole_Query_QueryEditor, props.id, () => {
         editorTab.value = EditorTabType.Query
         focusQueryEditor()
     })
-    keymap.bind(Command.EvitaQLConsole_Query_SwitchToVariablesEditor, props.id, () => {
+    keymap.bind(Command.EvitaQLConsole_Query_VariablesEditor, props.id, () => {
         editorTab.value = EditorTabType.Variables
         focusVariablesEditor()
     })
-    keymap.bind(Command.EvitaQLConsole_Query_SwitchToHistory, props.id, () => {
+    keymap.bind(Command.EvitaQLConsole_Query_History, props.id, () => {
         editorTab.value = EditorTabType.History
         focusHistory()
     })
-    keymap.bind(Command.EvitaQLConsole_Result_SwitchToRawResultViewer, props.id, () => {
+    keymap.bind(Command.EvitaQLConsole_Result_RawResultViewer, props.id, () => {
         resultTab.value = ResultTabType.Raw
         focusRawResultEditor()
     })
-    keymap.bind(Command.EvitaQLConsole_Result_SwitchToResultVisualizer, props.id, () => {
+    keymap.bind(Command.EvitaQLConsole_Result_ResultVisualizer, props.id, () => {
         resultTab.value = ResultTabType.Visualiser
         focusResultVisualiser()
     })
@@ -143,11 +145,11 @@ onUnmounted(() => {
     // unregister console specific keyboard shortcuts
     keymap.unbind(Command.EvitaQLConsole_ExecuteQuery, props.id)
     keymap.unbind(Command.EvitaQLConsole_ShareTab, props.id)
-    keymap.unbind(Command.EvitaQLConsole_Query_SwitchToQueryEditor, props.id)
-    keymap.unbind(Command.EvitaQLConsole_Query_SwitchToVariablesEditor, props.id)
-    keymap.unbind(Command.EvitaQLConsole_Query_SwitchToHistory, props.id)
-    keymap.unbind(Command.EvitaQLConsole_Result_SwitchToRawResultViewer, props.id)
-    keymap.unbind(Command.EvitaQLConsole_Result_SwitchToResultVisualizer, props.id)
+    keymap.unbind(Command.EvitaQLConsole_Query_QueryEditor, props.id)
+    keymap.unbind(Command.EvitaQLConsole_Query_VariablesEditor, props.id)
+    keymap.unbind(Command.EvitaQLConsole_Query_History, props.id)
+    keymap.unbind(Command.EvitaQLConsole_Result_RawResultViewer, props.id)
+    keymap.unbind(Command.EvitaQLConsole_Result_ResultVisualizer, props.id)
 })
 
 
@@ -156,7 +158,7 @@ async function executeQuery(): Promise<void> {
         editorService.addTabHistoryRecord(historyKey.value, createEvitaQLConsoleHistoryRecord(queryCode.value, variablesCode.value))
     } catch (e) {
         console.error(e)
-        toaster.error(new UnexpectedError(props.params.dataPointer.connection, 'Failed to save query to history.'))
+        toaster.error(new UnexpectedError(props.params.dataPointer.connection, t('evitaQLConsole.notification.failedToSaveQueryToHistory')))
     }
 
     loading.value = true
@@ -213,10 +215,8 @@ if (props.params.executeOnOpen) {
                 />
 
                 <VExecuteQueryButton :loading="loading" @click="executeQuery">
-                    <VActionTooltip :command="Command.EvitaQLConsole_ExecuteQuery">
-                        Execute query
-                    </VActionTooltip>
-                    Run
+                    <VActionTooltip :command="Command.EvitaQLConsole_ExecuteQuery" />
+                    {{ t('common.button.run') }}
                 </VExecuteQueryButton>
             </template>
         </VTabToolbar>
@@ -229,21 +229,15 @@ if (props.params.executeOnOpen) {
                 >
                     <VTab :value="EditorTabType.Query">
                         <VIcon>mdi-database-search</VIcon>
-                        <VActionTooltip :command="Command.EvitaQLConsole_Query_SwitchToQueryEditor">
-                            Query
-                        </VActionTooltip>
+                        <VActionTooltip :command="Command.EvitaQLConsole_Query_QueryEditor" />
                     </VTab>
                     <VTab :value="EditorTabType.Variables">
                         <VIcon>mdi-variable</VIcon>
-                        <VActionTooltip :command="Command.EvitaQLConsole_Query_SwitchToVariablesEditor">
-                            Variables
-                        </VActionTooltip>
+                        <VActionTooltip :command="Command.EvitaQLConsole_Query_VariablesEditor" />
                     </VTab>
                     <VTab :value="EditorTabType.History">
                         <VIcon>mdi-history</VIcon>
-                        <VActionTooltip :command="Command.EvitaQLConsole_Query_SwitchToHistory">
-                            History
-                        </VActionTooltip>
+                        <VActionTooltip :command="Command.EvitaQLConsole_Query_History" />
                     </VTab>
                 </VSideTabs>
             </VSheet>
@@ -291,7 +285,7 @@ if (props.params.executeOnOpen) {
                                 v-if="resultTab === ResultTabType.Raw"
                                 ref="rawResultEditorRef"
                                 v-model="resultCode"
-                                placeholder="Results will be displayed here..."
+                                :placeholder="t('evitaQLConsole.placeholder.results')"
                                 read-only
                                 :additional-extensions="resultExtensions"
                             />
@@ -318,15 +312,11 @@ if (props.params.executeOnOpen) {
                 >
                     <VTab :value="ResultTabType.Raw">
                         <VIcon>mdi-code-braces</VIcon>
-                        <VActionTooltip :command="Command.EvitaQLConsole_Result_SwitchToRawResultViewer">
-                            Raw JSON result
-                        </VActionTooltip>
+                        <VActionTooltip :command="Command.EvitaQLConsole_Result_RawResultViewer" />
                     </VTab>
                     <VTab :value="ResultTabType.Visualiser">
                         <VIcon>mdi-file-tree-outline</VIcon>
-                        <VActionTooltip :command="Command.EvitaQLConsole_Result_SwitchToResultVisualizer">
-                            Result visualiser
-                        </VActionTooltip>
+                        <VActionTooltip :command="Command.EvitaQLConsole_Result_ResultVisualizer" />
                     </VTab>
                 </VSideTabs>
             </VSheet>

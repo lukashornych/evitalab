@@ -9,6 +9,9 @@ import {
 } from '@/model/properties-table'
 import VMarkdown from '@/components/base/VMarkdown.vue'
 import VPropertyTableValue from './VPropertiesTableValue.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     property: Property,
@@ -28,7 +31,7 @@ const props = defineProps<{
         </template>
         <template v-else>
             <span class="text-disabled font-weight-light font-italic">
-            &lt;empty&gt;
+            {{ t('common.placeholder.empty') }}
         </span>
         </template>
     </VChipGroup>
@@ -39,7 +42,7 @@ const props = defineProps<{
             v-if="propertyValue.value == undefined"
             class="text-disabled font-weight-light font-italic"
         >
-            &lt;empty&gt;
+            {{ t('common.placeholder.empty') }}
         </span>
 
         <!-- actual value is string -->

@@ -7,6 +7,9 @@ import { computed } from 'vue'
 import { VisualisedHistogram, VisualisedHistogramBucket } from '@/model/editor/result-visualiser'
 import LabEditorResultVisualiserHistogramNote
     from '@/components/lab/editor/result-visualiser/histogram/LabEditorResultVisualiserHistogramNote.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     histogram: VisualisedHistogram
@@ -66,12 +69,12 @@ const chartSeries = computed(() => {
 
     return [
         {
-            name: 'All buckets',
+            name: t('resultVisualizer.histogram.label.allBuckets'),
             color: '#23355C',
             data: nonRequestedBuckets
         },
         {
-            name: 'Requested buckets',
+            name: t('resultVisualizer.histogram.label.requestedBuckets'),
             color: '#21BFE3',
             data: requestedBuckets
         },
@@ -115,22 +118,22 @@ const chartOptions = {
             return `
                 <div class="histogram-tooltip">
                     <header>
-                        <h4>Bucket index: ${dataPointIndex}</h4>
+                        <h4>${t('resultVisualizer.histogram.label.bucketIndex')}: ${dataPointIndex}</h4>
                     </header>
                     <article>
                         <table>
                             <tbody>
                                 <tr>
-                                    <td class="histogram-tooltip__property-name">Occurrences:</td>
+                                    <td class="histogram-tooltip__property-name">${t('resultVisualizer.histogram.label.occurrences')}:</td>
                                     <td>${bucket.occurrences}</td>
                                 </tr>
                                 <tr>
-                                    <td class="histogram-tooltip__property-name">Threshold:</td>
+                                    <td class="histogram-tooltip__property-name">${t('resultVisualizer.histogram.label.threshold')}:</td>
                                     <td>${bucket.threshold}</td>
                                 </tr>
                                 <tr>
-                                    <td class="histogram-tooltip__property-name">Was requested:</td>
-                                    <td>${bucket.requested ? 'Yes' : 'No'}</td>
+                                    <td class="histogram-tooltip__property-name">${t('resultVisualizer.histogram.label.wasRequested')}:</td>
+                                    <td>${bucket.requested ? t('common.placeholder.yes') : t('common.placeholder.no')}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -146,11 +149,11 @@ const chartOptions = {
     <apexchart v-if="canChartBeRendered" type="bar" height="350" :options="chartOptions" :series="chartSeries" class="histogram-chart" />
     <LabEditorResultVisualiserHistogramNote
         v-if="missingRequiredProperties.length > 0"
-        :note="`Missing properties: ${missingRequiredProperties.map(it => '`' + it + '`').join(', ')}. Cannot render the chart.`"
+        :note="t('resultVisualizer.histogram.placeholder.missingPropertiesForChart', { properties: missingRequiredProperties.map(it => '`' + it + '`').join(', ') })"
     />
     <LabEditorResultVisualiserHistogramNote
         v-if="missingRequiredProperties.length === 0 && missingOptionalProperties.length > 0"
-        :note="`Missing properties: ${missingOptionalProperties.map(it => '`' + it + '`').join(', ')}.`"
+        :note="t('resultVisualizer.histogram.placeholder.missingProperties', { properties: missingOptionalProperties.map(it => '`' + it + '`').join(', ') })"
     />
 </template>
 
