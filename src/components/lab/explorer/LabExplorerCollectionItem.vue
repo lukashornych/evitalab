@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * Explorer tree item representing a single collection in evitaDB within a catalog.
+ */
 
 import VTreeViewItem from '@/components/base/VTreeViewItem.vue'
 import { EvitaDBConnection } from '@/model/lab'
@@ -8,30 +11,32 @@ import { CatalogSchema, EntitySchema } from '@/model/evitadb'
 import { DataGridRequest } from '@/model/editor/tab/dataGrid/data-grid-request'
 import { SchemaViewerRequest } from '@/model/editor/tab/schemaViewer/SchemaViewerRequest'
 import { EntitySchemaPointer } from '@/model/editor/tab/schemaViewer/EntitySchemaPointer'
+import { useI18n } from 'vue-i18n'
+
+const editorService: EditorService = useEditorService()
+const { t } = useI18n()
 
 enum ActionType {
-    ViewEntities = 'view-entities',
-    ViewSchema = 'view-schema'
+    ViewEntities = 'viewEntities',
+    ViewSchema = 'viewSchema'
 }
 
 const actions = ref<object[]>([
     {
         value: ActionType.ViewEntities,
-        title: 'View entities',
+        title: t(`explorer.collection.actions.${ActionType.ViewEntities}`),
         props: {
             prependIcon: 'mdi-table'
         }
     },
     {
         value: ActionType.ViewSchema,
-        title: 'View schema',
+        title: t(`explorer.collection.actions.${ActionType.ViewSchema}`),
         props: {
             prependIcon: 'mdi-file-code'
         }
     }
 ])
-
-const editorService: EditorService = useEditorService()
 
 const props = defineProps<{
     entitySchema: EntitySchema

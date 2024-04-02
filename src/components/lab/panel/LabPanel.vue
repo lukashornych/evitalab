@@ -8,9 +8,11 @@ import LabPanelManageMenu from '@/components/lab/panel/LabPanelManageMenu.vue'
 import { Keymap, useKeymap } from '@/model/editor/keymap/Keymap'
 import { onMounted, onUnmounted } from 'vue'
 import { Command } from '@/model/editor/keymap/Command'
+import { useI18n } from 'vue-i18n'
 import VActionTooltip from '@/components/base/VActionTooltip.vue'
 
 const keymap: Keymap = useKeymap()
+const { t } = useI18n()
 
 const props = defineProps<{
     panel?: string
@@ -22,7 +24,7 @@ const emit = defineEmits<{
 
 const mainItems = [
     {
-        title: 'Explorer',
+        title: t(`panel.item.${PanelType.Explorer}`),
         value: PanelType.Explorer,
         prependIcon: 'mdi-connection',
         command: Command.System_Panels_ConnectionsExplorer
@@ -94,17 +96,17 @@ onUnmounted(() => {
             <ul class="lab-nav-links">
                 <li>
                     <a href="https://evitadb.io/documentation" target="_blank">
-                        <img src="/documentation.svg" alt="evitaDB Documentation">
+                        <img src="/documentation.svg" :alt="t('panel.link.evitaDBDocumentation.icon.alt')">
                         <VTooltip activator="parent">
-                            Open evitaDB documentation
+                            {{ t('panel.link.evitaDBDocumentation.tooltip') }}
                         </VTooltip>
                     </a>
                 </li>
                 <li>
                     <a href="https://discord.gg/VsNBWxgmSw" target="_blank">
-                        <img src="/discord.svg" alt="Discord icon">
+                        <img src="/discord.svg" :alt="t('panel.link.discord.icon.alt')">
                         <VTooltip activator="parent">
-                            Discuss on Discord
+                            {{ t('panel.link.discord.tooltip') }}
                         </VTooltip>
                     </a>
                 </li>

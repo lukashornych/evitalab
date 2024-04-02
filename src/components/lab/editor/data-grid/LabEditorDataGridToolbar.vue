@@ -13,8 +13,10 @@ import { Command } from '@/model/editor/keymap/Command'
 import VActionTooltip from '@/components/base/VActionTooltip.vue'
 import { DataGridData, dataLocaleKey, gridPropsKey } from '@/model/editor/tab/dataGrid/data-grid'
 import { TabType } from '@/model/editor/tab/TabType'
+import { useI18n } from 'vue-i18n'
 
 const keymap: Keymap = useKeymap()
+const { t } = useI18n()
 
 const props = defineProps<{
     currentData: DataGridData,
@@ -66,11 +68,8 @@ onUnmounted(() => {
             />
 
             <VExecuteQueryButton :loading="loading" @click="emit('executeQuery')">
-                <!-- todo this should reference grid specific command-->
-                <VActionTooltip :command="Command.EntityGrid_ExecuteQuery">
-                    Execute query
-                </VActionTooltip>
-                Run
+                <VActionTooltip :command="Command.EntityGrid_ExecuteQuery" />
+                {{ t('common.button.run') }}
             </VExecuteQueryButton>
         </template>
 

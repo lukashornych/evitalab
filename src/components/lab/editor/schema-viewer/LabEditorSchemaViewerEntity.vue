@@ -8,6 +8,9 @@ import LabEditorSchemaViewerReferences from './LabEditorSchemaViewerReferences.v
 import { EntitySchema } from '@/model/evitadb'
 import { KeywordValue, Property, PropertyValue } from '@/model/properties-table'
 import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaViewerDataPointer'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
@@ -15,17 +18,16 @@ const props = defineProps<{
 }>()
 
 const baseProperties = ref<Property[]>([
-    // todo lho i18n
-    { name: 'Version', value: new PropertyValue(props.schema.version) },
-    { name: 'Description', value: new PropertyValue(props.schema.description) },
-    { name: 'Deprecation notice', value: new PropertyValue(props.schema.deprecationNotice) },
-    { name: 'Locales', value: props.schema.locales.map(locale => new PropertyValue(new KeywordValue(locale))) },
-    { name: 'Currencies', value: props.schema.currencies.map(currency => new PropertyValue(new KeywordValue(currency))) },
-    { name: 'Generated primary key', value: new PropertyValue(props.schema.withGeneratedPrimaryKey) },
-    { name: 'Hierarchical', value: new PropertyValue(props.schema.withHierarchy) },
-    { name: 'Prices', value: new PropertyValue(props.schema.withPrice) },
-    { name: 'Indexed decimal places', value: new PropertyValue(props.schema.indexedPricePlaces) },
-    { name: 'Evolution modes', value: props.schema.evolutionMode.map(mode => new PropertyValue(new KeywordValue(mode))) }
+    { name: t('schemaViewer.entity.label.version'), value: new PropertyValue(props.schema.version) },
+    { name: t('schemaViewer.entity.label.description'), value: new PropertyValue(props.schema.description) },
+    { name: t('schemaViewer.entity.label.deprecationNotice'), value: new PropertyValue(props.schema.deprecationNotice) },
+    { name: t('schemaViewer.entity.label.locales'), value: props.schema.locales.map(locale => new PropertyValue(new KeywordValue(locale))) },
+    { name: t('schemaViewer.entity.label.currencies'), value: props.schema.currencies.map(currency => new PropertyValue(new KeywordValue(currency))) },
+    { name: t('schemaViewer.entity.label.generatedPrimaryKey'), value: new PropertyValue(props.schema.withGeneratedPrimaryKey) },
+    { name: t('schemaViewer.entity.label.hierarchical'), value: new PropertyValue(props.schema.withHierarchy) },
+    { name: t('schemaViewer.entity.label.prices'), value: new PropertyValue(props.schema.withPrice) },
+    { name: t('schemaViewer.entity.label.indexedDecimalPlaces'), value: new PropertyValue(props.schema.indexedPricePlaces) },
+    { name: t('schemaViewer.entity.label.evolutionModes'), value: props.schema.evolutionMode.map(mode => new PropertyValue(new KeywordValue(mode))) }
 ])
 </script>
 

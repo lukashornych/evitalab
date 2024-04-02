@@ -8,8 +8,10 @@ import { KeywordValue, Property, PropertyValue } from '@/model/properties-table'
 import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaViewerDataPointer'
 import { SchemaViewerRequest } from '@/model/editor/tab/schemaViewer/SchemaViewerRequest'
 import { EntitySchemaPointer } from '@/model/editor/tab/schemaViewer/EntitySchemaPointer'
+import { useI18n } from 'vue-i18n'
 
 const editorService: EditorService = useEditorService()
+const { t } = useI18n()
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
@@ -17,12 +19,12 @@ const props = defineProps<{
 }>()
 
 const properties: Property[] = []
-properties.push({ name: 'Description', value: new PropertyValue(props.schema.description) })
-properties.push({ name: 'Deprecation notice', value: new PropertyValue(props.schema.deprecationNotice) })
-properties.push({ name: 'Cardinality', value: new PropertyValue(new KeywordValue(props.schema.cardinality)) })
+properties.push({ name: t('schemaViewer.reference.label.description'), value: new PropertyValue(props.schema.description) })
+properties.push({ name: t('schemaViewer.reference.label.deprecationNotice'), value: new PropertyValue(props.schema.deprecationNotice) })
+properties.push({ name: t('schemaViewer.reference.label.cardinality'), value: new PropertyValue(new KeywordValue(props.schema.cardinality)) })
 if (props.schema.referencedEntityTypeManaged) {
     properties.push({
-        name: 'Referenced entity',
+        name: t('schemaViewer.reference.label.referencedEntity'),
         value: new PropertyValue(
             new KeywordValue(props.schema.referencedEntityType),
             undefined,
@@ -39,16 +41,16 @@ if (props.schema.referencedEntityTypeManaged) {
     })
 } else {
     properties.push({
-        name: 'Referenced entity',
+        name: t('schemaViewer.reference.label.referencedEntity'),
         value: new PropertyValue(new KeywordValue(props.schema.referencedEntityType))
     })
 }
-properties.push({ name: 'Referenced entity managed', value: new PropertyValue(props.schema.referencedEntityTypeManaged) })
+properties.push({ name: t('schemaViewer.reference.label.referencedEntityManaged'), value: new PropertyValue(props.schema.referencedEntityTypeManaged) })
 if (props.schema.referencedGroupType == undefined) {
-    properties.push({ name: 'Referenced group', value: new PropertyValue(undefined) })
+    properties.push({ name: t('schemaViewer.reference.label.referencedGroup'), value: new PropertyValue(undefined) })
 } else if (props.schema.referencedGroupTypeManaged) {
     properties.push({
-        name: 'Referenced group',
+        name: t('schemaViewer.reference.label.referencedGroup'),
         value: new PropertyValue(
             props.schema.referencedGroupType ? new KeywordValue(props.schema.referencedGroupType) : undefined,
             undefined,
@@ -65,13 +67,13 @@ if (props.schema.referencedGroupType == undefined) {
     })
 } else {
     properties.push({
-        name: 'Referenced group',
+        name: t('schemaViewer.reference.label.referencedGroup'),
         value: new PropertyValue(props.schema.referencedGroupType ? new KeywordValue(props.schema.referencedGroupType) : undefined)
     })
 }
-properties.push({ name: 'Referenced group managed', value: new PropertyValue(props.schema.referencedGroupTypeManaged) })
-properties.push({ name: 'Indexed', value: new PropertyValue(props.schema.indexed) })
-properties.push({ name: 'Faceted', value: new PropertyValue(props.schema.faceted) })
+properties.push({ name: t('schemaViewer.reference.label.referencedGroupManaged'), value: new PropertyValue(props.schema.referencedGroupTypeManaged) })
+properties.push({ name: t('schemaViewer.reference.label.indexed'), value: new PropertyValue(props.schema.indexed) })
+properties.push({ name: t('schemaViewer.reference.label.faceted'), value: new PropertyValue(props.schema.faceted) })
 
 </script>
 
@@ -81,13 +83,13 @@ properties.push({ name: 'Faceted', value: new PropertyValue(props.schema.faceted
             <LabEditorViewerNameVariants :name-variants="schema.nameVariants" />
 
             <LabEditorViewerNameVariants
-                prefix="Referenced entity"
+                :prefix="t('schemaViewer.reference.label.referencedEntityNameVariants')"
                 :name-variants="schema.entityTypeNameVariants"
             />
 
             <LabEditorViewerNameVariants
                 v-if="schema.referencedGroupType && schema.groupTypeNameVariants"
-                prefix="Referenced group"
+                :prefix="t('schemaViewer.reference.label.referencedGroupNameVariants')"
                 :name-variants="schema.groupTypeNameVariants"
             />
 

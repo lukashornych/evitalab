@@ -7,6 +7,9 @@ import LabEditorDataGridGridCellDetailOutputFormatSelector
 import { EntityPropertyValue, EntityPropertyValueDesiredOutputFormat } from '@/model/editor/tab/dataGrid/data-grid'
 import { computed, ref } from 'vue'
 import { Scalar } from '@/model/evitadb'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     value: EntityPropertyValue,
@@ -21,7 +24,7 @@ const previewString = computed(() => props.value.toPreviewString())
     <VExpansionPanel>
         <VExpansionPanelTitle>
             <template v-if="previewString == undefined">
-                <span class="text-disabled">&lt;null&gt;</span>
+                <span class="text-disabled">{{ t('common.placeholder.null') }}</span>
             </template>
             <template v-else>
                 <div class="array-item__title">

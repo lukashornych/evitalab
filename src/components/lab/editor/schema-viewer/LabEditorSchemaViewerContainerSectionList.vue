@@ -3,6 +3,9 @@ import { computed, ref } from 'vue'
 import LabEditorSchemaViewerContainerSectionListItem
     from '@/components/lab/editor/schema-viewer/LabEditorSchemaViewerContainerSectionListItem.vue'
 import VListItemDivider from '@/components/base/VListItemDivider.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     items: any[],
@@ -26,7 +29,7 @@ const filteredItems = computed(() => {
     >
         <VTextField
             :model-value="filter"
-            label="Filter"
+            :label="t('schemaViewer.section.label.filter')"
             variant="solo-filled"
             density="compact"
             :append-inner-icon="filter ? 'mdi-close-circle-outline' : null as any"
@@ -44,7 +47,7 @@ const filteredItems = computed(() => {
 
         <LabEditorSchemaViewerContainerSectionListItem
             v-if="filteredItems.length === 0"
-            name="No items found for searched term."
+            :name="t('schemaViewer.section.placeholder.noItemsForSearchedTerm')"
             :openable="false"
         />
     </VList>

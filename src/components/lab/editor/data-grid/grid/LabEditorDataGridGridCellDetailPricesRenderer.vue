@@ -31,6 +31,7 @@ import LabEditorDataGridGridCellDetailPricesRendererFilter
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailPricesRendererFilter.vue'
 import VPropertiesTable from '@/components/base/VPropertiesTable.vue'
 import { KeywordValue, Property, PropertyValue } from '@/model/properties-table'
+import { useI18n } from 'vue-i18n'
 
 const priceInPriceListsConstraintPattern = new Map<QueryLanguage, RegExp>([
     [QueryLanguage.EvitaQL, /priceInPriceLists\(\s*((?:['"][A-Za-z0-9_.\-~]*['"])(?:\s*,\s*(?:['"][A-Za-z0-9_.\-~]*['"]))*)/],
@@ -53,6 +54,7 @@ type FilterData = {
 
 const dataGridService: DataGridService = useDataGridService()
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
     value: EntityPropertyValue | EntityPropertyValue[],
@@ -69,11 +71,14 @@ const priceInnerRecordHandling = computed<PriceInnerRecordHandling>(() => {
     return (selectedEntity[EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling).toString()] as EntityPropertyValue)?.value() ?? PriceInnerRecordHandling.Unknown
 })
 const entityPricingProperties = computed<Property[]>(() => [
-    { name: 'Price inner record handling', value: new PropertyValue(new KeywordValue(priceInnerRecordHandling.value)) }
+    {
+        name: t('entityGrid.grid.priceRenderer.label.priceInnerRecordHandling'),
+        value: new PropertyValue(new KeywordValue(priceInnerRecordHandling.value))
+    }
 ])
 const prices = computed<EntityPrices>(() => {
     if (!(props.value instanceof EntityPrices)) {
-        toaster.error('Invalid prices object!')
+        toaster.error(t('entityGrid.grid.priceRenderer.notification.invalidPricesObject'))
         return new EntityPrices(undefined, [])
     }
     return props.value as EntityPrices
@@ -198,10 +203,10 @@ preselectFilterFromQuery()
 
         <div>
             <header>
-                <h3>Price for sale</h3>
+                <h3>{{ t('entityGrid.grid.priceRenderer.title') }}</h3>
             </header>
 
-            <VMarkdown v-if="prices.priceForSale == undefined" :source="'No price for sale found. To compute price for sale, following constraints need to be present in the filter: `priceInPriceLists`, `priceInCurrency`.'" />
+            <VMarkdown v-if="prices.priceForSale == undefined" :source="t('entityGrid.grid.priceRenderer.filter.help.computePriceForSale')" />
             <LabEditorDataGridGridCellDetailPricesRendererPrice v-else :price="prices.priceForSale"/>
         </div>
 

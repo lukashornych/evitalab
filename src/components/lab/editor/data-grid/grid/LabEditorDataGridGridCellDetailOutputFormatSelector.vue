@@ -4,45 +4,48 @@
  */
 
 import { EntityPropertyValueDesiredOutputFormat } from '@/model/editor/tab/dataGrid/data-grid'
+import { useI18n} from 'vue-i18n'
+
+const { t } = useI18n()
 
 const formats: any[] = [
     {
-        title: 'Auto pretty print',
+        title: t(`entityGrid.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.AutoPrettyPrint}`),
         value: EntityPropertyValueDesiredOutputFormat.AutoPrettyPrint,
         props: {
             prependIcon: 'mdi-auto-fix'
         }
     },
     {
-        title: 'Raw value',
+        title: t(`entityGrid.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.Raw}`),
         value: EntityPropertyValueDesiredOutputFormat.Raw,
         props: {
             prependIcon: 'mdi-text'
         }
     },
     {
-        title: 'Markdown',
+        title: t(`entityGrid.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.Markdown}`),
         value: EntityPropertyValueDesiredOutputFormat.Markdown,
         props: {
             prependIcon: 'mdi-language-markdown-outline'
         }
     },
     {
-        title: 'JSON',
+        title: t(`entityGrid.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.Json}`),
         value: EntityPropertyValueDesiredOutputFormat.Json,
         props: {
             prependIcon: 'mdi-code-json'
         }
     },
     {
-        title: 'XML',
+        title: t(`entityGrid.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.Xml}`),
         value: EntityPropertyValueDesiredOutputFormat.Xml,
         props: {
             prependIcon: 'mdi-xml'
         }
     },
     {
-        title: 'HTML',
+        title: t(`entityGrid.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.Html}`),
         value: EntityPropertyValueDesiredOutputFormat.Html,
         props: {
             prependIcon: 'mdi-language-html5'
@@ -69,7 +72,7 @@ const emit = defineEmits<{
             >
                 <VIcon>mdi-code-braces</VIcon>
                 <VTooltip activator="parent">
-                    Select output format
+                    {{ t('entityGrid.grid.renderer.button.selectOutputFormat') }}
                 </VTooltip>
             </VBtn>
         </template>

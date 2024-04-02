@@ -12,6 +12,7 @@ import { toast, defaultToastOptions } from './toastification'
 import { store, key as storeKey } from '@/store'
 import VueApexCharts from 'vue3-apexcharts'
 import router from '@/router'
+import { i18n } from './i18n'
 import { registerServices } from '@/plugins/services'
 
 // Types
@@ -27,6 +28,7 @@ export function registerPlugins(app: App) {
         .use(store, storeKey)
         .use(VueApexCharts)
         .use(router)
+        .use(i18n)
 
     registerServices(app, store)
 }

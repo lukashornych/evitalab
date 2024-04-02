@@ -20,8 +20,10 @@ import LabEditorResultVisualiserPriceHistogram
     from '@/components/lab/editor/result-visualiser/histogram/LabEditorResultVisualiserPriceHistogram.vue'
 import { VCombobox } from 'vuetify/components'
 import { CatalogPointer } from '@/model/editor/tab/CatalogPointer'
+import { useI18n } from 'vue-i18n'
 
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = defineProps<{
     catalogPointer: CatalogPointer,
@@ -179,7 +181,7 @@ defineExpose<{
                 v-model="selectedQuery"
                 :disabled="queries.length == 0"
                 prepend-inner-icon="mdi-database-search"
-                label="From"
+                :label="t('resultVisualizer.selector.label.query')"
                 :items="queries"
                 class="visualiser__select"
                 hide-details
@@ -189,7 +191,7 @@ defineExpose<{
                 v-model="selectedVisualiserType"
                 :disabled="selectedQuery == undefined"
                 prepend-inner-icon="mdi-format-list-bulleted-type"
-                label="Visualise"
+                :label="t('resultVisualizer.selector.label.data')"
                 :items="visualiserTypes"
                 class="visualiser__select"
                 hide-details
@@ -226,17 +228,17 @@ defineExpose<{
         <LabEditorResultVisualiserMissingDataIndicator
             v-else-if="queries.length == 0"
             icon="mdi-text-search"
-            title="No queries to visualise"
+            :title="t('resultVisualizer.visualiser.placeholder.noQueries')"
         />
         <LabEditorResultVisualiserMissingDataIndicator
             v-else-if="selectedQuery == undefined"
             icon="mdi-database-search"
-            title="Select query to visualise"
+            :title="t('resultVisualizer.visualiser.placeholder.noSelectedQuery')"
         />
         <LabEditorResultVisualiserMissingDataIndicator
             v-else-if="selectedVisualiserType == undefined"
             icon="mdi-format-list-bulleted-type"
-            title="Select what to visualise"
+            :title="t('resultVisualizer.visualiser.placeholder.noSelectedData')"
         />
         <LabEditorResultVisualiserMissingDataIndicator v-else-if="selectedQueryResult == undefined || selectedQueryEntitySchema == undefined || resultForVisualiser == undefined">
             <VLoadingCircular :size="64" />

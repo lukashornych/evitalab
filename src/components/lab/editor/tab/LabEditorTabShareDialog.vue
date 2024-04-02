@@ -11,6 +11,7 @@ import { TabType } from '@/model/editor/tab/TabType'
 import { TabRequestComponentData } from '@/model/editor/tab/TabRequestComponentData'
 import { TabRequestComponentParams } from '@/model/editor/tab/TabRequestComponentParams'
 import { ShareTabObject } from '@/model/editor/tab/ShareTabObject'
+import { useI18n } from 'vue-i18n'
 
 /**
  * Smallest possible number of characters in a URL valid across all browser. Usually browser support more characters.
@@ -18,6 +19,7 @@ import { ShareTabObject } from '@/model/editor/tab/ShareTabObject'
 const urlCharacterLimit: number = 2083
 
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = defineProps<{
     modelValue: boolean,
@@ -45,9 +47,9 @@ function cancel(): void {
 
 function copyLink(): void {
     navigator.clipboard.writeText(link.value).then(() => {
-        toaster.info('Link copied to clipboard.')
+        toaster.info(t('tabShare.shareDialog.notification.linkCopied'))
     }).catch(() => {
-        toaster.error(new UnexpectedError(undefined, 'Failed to copy to clipboard.'))
+        toaster.error(new UnexpectedError(undefined, t('common.notification.failedToCopyToClipboard')))
     })
 
     emit('update:modelValue', false)
@@ -65,22 +67,19 @@ function copyLink(): void {
         </template>
 
         <VCard class="py-8 px-4">
-            <VCardTitle>Share this tab</VCardTitle>
+            <VCardTitle>{{ t('tabShare.shareDialog.title') }}</VCardTitle>
 
             <VCardText>
-                You can share this tab and its data with other users via a link. This link will open a new instance of
-                evitaLab on their device and load this tab with the same query, which should give the same output as you see now.
+                {{ t('tabShare.shareDialog.text') }}
             </VCardText>
             <VCardText v-if="tabData != undefined">
                 <VAlert icon="mdi-alert-outline" type="warning">
-                    Be <em>careful</em> if you have sensitive data in the query, you are giving them away embedded in the
-                    link. Once you send the link, you lose control over it and it can be opened by <em>anyone</em> who has
-                    access to this evitaLab instance.
+                    <span v-html="t('tabShare.shareDialog.warning.sensitiveData')" />
                 </VAlert>
             </VCardText>
             <VCardText v-if="link.length > urlCharacterLimit">
                 <VAlert type="warning" icon="mdi-alert-outline">
-                    The link may <em>not</em> work in certain browsers due to its length exceeding {{ urlCharacterLimit }} characters.
+                    <span v-html="t('tabShare.shareDialog.warning.linkMayNotWork', { urlCharacterLimit })" />
                 </VAlert>
             </VCardText>
 
@@ -89,7 +88,7 @@ function copyLink(): void {
                 <VBtn
                     variant="tonal"
                     @click="cancel">
-                    Cancel
+                    {{ t('common.button.cancel') }}
                 </VBtn>
                 <VBtn
                     variant="outlined"
@@ -97,7 +96,7 @@ function copyLink(): void {
                     @click="copyLink"
                     class="ml-4"
                 >
-                    Copy link
+                    {{ t('tabShare.shareDialog.button.copyLink') }}
                 </VBtn>
             </VCardActions>
         </VCard>

@@ -11,8 +11,10 @@ import VMarkdown from '@/components/base/VMarkdown.vue'
 import { computed, ref } from 'vue'
 import { BigDecimal, DateTime, Long, Range, Scalar } from '@/model/evitadb'
 import { EntityPropertyValue, ExtraEntityObjectType, NativeValue } from '@/model/editor/tab/dataGrid/data-grid'
+import { useI18n } from 'vue-i18n'
 
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const whiteSpacePattern = /\s+/
 
@@ -38,14 +40,14 @@ const prettyPrint = ref<boolean>(true)
 const actions = computed(() => {
     return [
         {
-            title: 'Copy',
+            title: t('common.button.copy'),
             value: ActionType.Copy,
             props: {
                 prependIcon: 'mdi-content-copy'
             }
         },
         {
-            title: prettyPrint.value ? 'Display raw value' : 'Pretty print value',
+            title: prettyPrint.value ? t('entityGrid.grid.renderer.button.displayRawValue') : t('entityGrid.grid.renderer.button.prettyPrintValue'),
             value: ActionType.PrettyPrint,
             props: {
                 prependIcon: prettyPrint.value ? 'mdi-raw' : 'mdi-auto-fix'
@@ -136,7 +138,7 @@ const formattedValue = computed<string>(() => {
         }
     } catch (e) {
         console.error(e)
-        return 'Invalid value.'
+        return t('entityGrid.grid.cell.detail.placeholder.invalidValue')
     }
 })
 
@@ -187,9 +189,9 @@ function handleActionClick(action: any) {
 
 function copyRenderedValue() {
     navigator.clipboard.writeText(formattedValue.value).then(() => {
-        toaster.info('Copied to clipboard.')
+        toaster.info(t('common.notification.copiedToClipboard'))
     }).catch(() => {
-        toaster.error(new UnexpectedError(undefined, 'Failed to copy to clipboard.'))
+        toaster.error(new UnexpectedError(undefined, t('common.notification.failedToCopyToClipboard')))
     })
 }
 </script>

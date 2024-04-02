@@ -1,4 +1,11 @@
-import { EvitaDBBlogPost, EvitaDBConnection, EvitaDBConnectionId, UnexpectedError } from '@/model/lab'
+import {
+    AssociatedDataSchemaFlag, AttributeSchemaFlag, EntitySchemaFlag,
+    EvitaDBBlogPost,
+    EvitaDBConnection,
+    EvitaDBConnectionId,
+    ReferenceSchemaFlag,
+    UnexpectedError
+} from '@/model/lab'
 import { inject, InjectionKey } from 'vue'
 import { Store } from 'vuex'
 import { State } from '@/store'
@@ -106,7 +113,7 @@ export class LabService {
 
     getEntitySchemaFlags = (schema: EntitySchema): string[] => {
         const flags: string[] = []
-        if (schema.withHierarchy) flags.push('hierarchical')
+        if (schema.withHierarchy) flags.push(EntitySchemaFlag.Hierarchical)
         return flags
     }
 
@@ -150,24 +157,24 @@ export class LabService {
         const globalAttribute = 'globalUniquenessType' in schema
         const entityAttribute = 'representative' in schema
         if (entityAttribute && (schema as EntityAttributeSchema).representative) {
-            flags.push('representative')
+            flags.push(AttributeSchemaFlag.Representative)
         }
         if (globalAttribute && (schema as GlobalAttributeSchema).globalUniquenessType === GlobalAttributeUniquenessType.UniqueWithinCatalog) {
-            flags.push('globally unique')
+            flags.push(AttributeSchemaFlag.GloballyUnique)
         } else if (globalAttribute && (schema as GlobalAttributeSchema).globalUniquenessType === GlobalAttributeUniquenessType.UniqueWithinCatalogLocale) {
-            flags.push('globally unique per locale')
+            flags.push(AttributeSchemaFlag.GloballyUniquePerLocale)
         } else if (schema.uniquenessType === AttributeUniquenessType.UniqueWithinCollection) {
-            flags.push('unique')
+            flags.push(AttributeSchemaFlag.Unique)
         } else if (schema.uniquenessType === AttributeUniquenessType.UniqueWithinCollectionLocale) {
-            flags.push('unique per locale')
+            flags.push(AttributeSchemaFlag.UniquePerLocale)
         }
         if ((globalAttribute && (schema as GlobalAttributeSchema).globalUniquenessType != GlobalAttributeUniquenessType.NotUnique) ||
             schema.uniquenessType != AttributeUniquenessType.NotUnique ||
             schema.filterable)
-            flags.push('filterable')
-        if (schema.sortable) flags.push('sortable')
-        if (schema.localized) flags.push('localized')
-        if (schema.nullable) flags.push('nullable')
+            flags.push(AttributeSchemaFlag.Filterable)
+        if (schema.sortable) flags.push(AttributeSchemaFlag.Sortable)
+        if (schema.localized) flags.push(AttributeSchemaFlag.Localized)
+        if (schema.nullable) flags.push(AttributeSchemaFlag.Nullable)
         return flags
     }
 
@@ -184,8 +191,8 @@ export class LabService {
     getAssociatedDataSchemaFlags = (schema: AssociatedDataSchema): string[] => {
         const flags: string[] = []
         flags.push(this.formatDataTypeForFlag(schema.type))
-        if (schema.localized) flags.push('localized')
-        if (schema.nullable) flags.push('nullable')
+        if (schema.localized) flags.push(AssociatedDataSchemaFlag.Localized)
+        if (schema.nullable) flags.push(AssociatedDataSchemaFlag.Nullable)
         return flags
     }
 
@@ -201,9 +208,9 @@ export class LabService {
 
     getReferenceSchemaFlags = (schema: ReferenceSchema): string[] => {
         const flags: string[] = []
-        if (!schema.referencedEntityTypeManaged) flags.push('external')
-        if (schema.indexed) flags.push('indexed')
-        if (schema.faceted) flags.push('faceted')
+        if (!schema.referencedEntityTypeManaged) flags.push(ReferenceSchemaFlag.External)
+        if (schema.indexed) flags.push(ReferenceSchemaFlag.Indexed)
+        if (schema.faceted) flags.push(ReferenceSchemaFlag.Faceted)
         return flags
     }
 

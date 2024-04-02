@@ -4,13 +4,16 @@
  */
 
 import VLoadingCircular from '@/components/base/VLoadingCircular.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 </script>
 
 <template>
     <div class="loading-screen">
         <div class="loading-screen-info">
             <VLoadingCircular :size="48" />
-            <span>Loading, please wait ...</span>
+            <span>{{ t('tab.placeholder.loading') }}</span>
         </div>
     </div>
 </template>

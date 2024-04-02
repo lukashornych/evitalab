@@ -13,8 +13,10 @@ import LabEditorResultVisualiserReferenceFacetGroupStatistics
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 import { Result } from '@/model/editor/result-visualiser'
 import { CatalogPointer } from '@/model/editor/tab/CatalogPointer'
+import { useI18n } from 'vue-i18n'
 
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = defineProps<{
     catalogPointer: CatalogPointer,
@@ -69,7 +71,7 @@ function getCountForReference(referenceSchema: ReferenceSchema, groupStatisticsR
     <LabEditorResultVisualiserMissingDataIndicator
         v-else
         icon="mdi-text-search"
-        title="No facet summary groups found."
+        :title="t('resultVisualizer.visualiser.facetStatistics.placeholder.noGroups')"
     />
 </template>
 

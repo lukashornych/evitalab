@@ -8,6 +8,9 @@ import LabEditorDataGridGridCellDetailValueRenderer
 import { computed } from 'vue'
 import DOMPurify from 'dompurify'
 import { EntityPropertyValue } from '@/model/editor/tab/dataGrid/data-grid'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
     value: EntityPropertyValue | EntityPropertyValue[],
@@ -18,7 +21,7 @@ const props = withDefaults(defineProps<{
 
 const formattedValue = computed<string>(() => {
     if (props.value instanceof Array || typeof (props.value as EntityPropertyValue).value() !== 'string') {
-        return 'Error: Failed to render HTML. Value is not a string.'
+        return t('entityGrid.grid.htmlRenderer.placeholder.failedToRenderHtml')
     }
     return DOMPurify.sanitize((props.value as EntityPropertyValue).toPreviewString())
 })

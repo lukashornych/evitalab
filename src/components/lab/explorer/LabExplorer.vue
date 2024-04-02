@@ -4,8 +4,10 @@ import { LabService, useLabService } from '@/services/lab.service'
 import { computed, ref } from 'vue'
 import { EvitaDBConnection } from '@/model/lab'
 import LabExplorerConnectionEditor from './LabExplorerConnectionEditor.vue'
+import { useI18n } from 'vue-i18n'
 
 const labService: LabService = useLabService()
+const { t } = useI18n()
 
 const props = defineProps<{
     modelValue: boolean
@@ -30,7 +32,7 @@ const connections = computed<EvitaDBConnection[]>(() => labService.getConnection
             density="compact"
             nav
         >
-            <VListSubheader class="text-gray-light text-sm-body-2 font-weight-medium">Connections Explorer</VListSubheader>
+            <VListSubheader class="text-gray-light text-sm-body-2 font-weight-medium">{{ t('explorer.title') }}</VListSubheader>
 
             <LabExplorerConnectionItem
                 v-for="connection in connections"

@@ -1,4 +1,9 @@
 <script setup lang="ts">
+
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 /**
  * Pre-defined button to execute queries.
  */
@@ -23,9 +28,9 @@ const emit = defineEmits<{
 
         <slot>
             <VTooltip activator="parent">
-                Execute query
+                {{ t('common.button.executeQuery') }}
             </VTooltip>
-            Run
+            {{ t('common.button.run') }}
         </slot>
     </VBtn>
 </template>

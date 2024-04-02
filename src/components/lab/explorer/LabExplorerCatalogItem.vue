@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * Explorer tree item representing a single catalog in evitaDB.
+ */
+
 import { inject, provide, Ref, ref } from 'vue'
 import { LabService, useLabService } from '@/services/lab.service'
 import { EvitaDBConnection } from '@/model/lab'
@@ -13,48 +17,50 @@ import { GraphQLConsoleRequest } from '@/model/editor/tab/graphQLConsole/GraphQL
 import { GraphQLInstanceType } from '@/model/editor/tab/graphQLConsole/GraphQLInstanceType'
 import { SchemaViewerRequest } from '@/model/editor/tab/schemaViewer/SchemaViewerRequest'
 import { CatalogSchemaPointer } from '@/model/editor/tab/schemaViewer/CatalogSchemaPointer'
+import { useI18n } from 'vue-i18n'
+
+const labService: LabService = useLabService()
+const editorService: EditorService = useEditorService()
+const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 enum ActionType {
-    OpenEvitaQLConsole = 'open-evitaql-console',
-    OpenGraphQLDataAPIConsole = 'open-graphql-data-api-console',
-    OpenGraphQLSchemaAPIConsole = 'open-graphql-schema-api-console',
-    ViewSchema = 'view-schema'
+    OpenEvitaQLConsole = 'openEvitaQLConsole',
+    OpenGraphQLDataAPIConsole = 'openGraphQLDataApiConsole',
+    OpenGraphQLSchemaAPIConsole = 'openGraphQLSchemaApiConsole',
+    ViewSchema = 'viewSchema'
 }
 
 const actions = ref<object[]>([
     {
         value: ActionType.OpenEvitaQLConsole,
-        title: 'Open evitaQL console',
+        title: t(`explorer.catalog.actions.${ActionType.OpenEvitaQLConsole}`),
         props: {
             prependIcon: 'mdi-variable'
         }
     },
     {
         value: ActionType.OpenGraphQLDataAPIConsole,
-        title: 'Open GraphQL Data API console',
+        title: t(`explorer.catalog.actions.${ActionType.OpenGraphQLDataAPIConsole}`),
         props: {
             prependIcon: 'mdi-graphql'
         }
     },
     {
         value: ActionType.OpenGraphQLSchemaAPIConsole,
-        title: 'Open GraphQL Schema API console',
+        title: t(`explorer.catalog.actions.${ActionType.OpenGraphQLSchemaAPIConsole}`),
         props: {
             prependIcon: 'mdi-graphql'
         }
     },
     {
         value: ActionType.ViewSchema,
-        title: 'View schema',
+        title: t(`explorer.catalog.actions.${ActionType.ViewSchema}`),
         props: {
             prependIcon: 'mdi-file-code'
         }
     }
 ])
-
-const labService: LabService = useLabService()
-const editorService: EditorService = useEditorService()
-const toaster: Toaster = useToaster()
 
 const props = defineProps<{
     catalog: Catalog
@@ -151,7 +157,7 @@ function handleAction(action: string) {
             >
                 {{ catalog.name }}
                 <VTooltip activator="parent">
-                    This catalog couldn't be loaded because it's corrupted.
+                    {{ t('explorer.catalog.errors.couldNotLoad') }}
                 </VTooltip>
             </VTreeViewItem>
         </template>

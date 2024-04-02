@@ -54,6 +54,33 @@ export enum QueryLanguage {
     GraphQL = 'graphql'
 }
 
+export enum EntitySchemaFlag {
+    Hierarchical = '_entitySchema.hierarchical'
+}
+
+export enum AttributeSchemaFlag {
+    Representative = '_attributeSchema.representative',
+    GloballyUnique = '_attributeSchema.globallyUnique',
+    GloballyUniquePerLocale = '_attributeSchema.globallyUniquePerLocale',
+    Unique = '_attributeSchema.unique',
+    UniquePerLocale = '_attributeSchema.uniquePerLocale',
+    Filterable = '_attributeSchema.filterable',
+    Sortable = '_attributeSchema.sortable',
+    Localized = '_attributeSchema.localized',
+    Nullable = '_attributeSchema.nullable'
+}
+
+export enum AssociatedDataSchemaFlag {
+    Localized = '_associatedDataSchema.localized',
+    Nullable = '_associatedDataSchema.nullable'
+}
+
+export enum ReferenceSchemaFlag {
+    External = '_referenceSchema.external',
+    Indexed = '_referenceSchema.indexed',
+    Faceted = '_referenceSchema.faceted'
+}
+
 /**
  * Represents a single evitaDB blog post.
  */

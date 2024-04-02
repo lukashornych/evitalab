@@ -10,8 +10,10 @@ import VPropertiesTable from '@/components/base/VPropertiesTable.vue'
 import { Command } from '@/model/editor/keymap/Command'
 import { UnexpectedError } from '@/model/lab'
 import { TabComponentEvents } from '@/model/editor/tab/TabComponentEvents'
+import { useI18n } from 'vue-i18n'
 
 const keymap: Keymap = useKeymap()
+const { t } = useI18n()
 
 const emit = defineEmits<TabComponentEvents>()
 
@@ -36,9 +38,8 @@ keymap.prettyPrintAll().forEach((shortcut: string, command: Command) => {
             sectionMap.set(defaultSubsection, subsectionList)
         }
 
-        const action: string = parts[1]
         subsectionList.push({
-            name: action, // todo this action will be replaced by full key when we implement the i18n
+            name: t(`command.${command}`),
             value: new PropertyValue(new KeywordValue(shortcut))
         })
     } else if (parts.length === 3) {
@@ -49,9 +50,8 @@ keymap.prettyPrintAll().forEach((shortcut: string, command: Command) => {
             sectionMap.set(subsection, subsectionList)
         }
 
-        const action: string = parts[2]
         subsectionList.push({
-            name: action, // todo this action will be replaced by full key when we implement the i18n
+            name: t(`command.${command}`),
             value: new PropertyValue(new KeywordValue(shortcut))
         })
     } else {
@@ -77,13 +77,13 @@ emit('ready')
                         :key="section"
                     >
                         <VExpansionPanelTitle>
-                            {{ section }}
+                            {{ t(`command.${section}._title`) }}
                         </VExpansionPanelTitle>
                         <VExpansionPanelText>
                             <VPropertiesTable
                                 v-for="[subsection, actions] in subsections"
                                 :key="subsection"
-                                :title="subsection != defaultSubsection ? subsection : undefined"
+                                :title="subsection != defaultSubsection ? t(`command.${section}.${subsection}._title`) : undefined"
                                 :properties="actions"
                             />
                         </VExpansionPanelText>

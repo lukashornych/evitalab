@@ -14,9 +14,11 @@ import LabEditorDataGridGridCellDetailValueRenderer
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailValueRenderer.vue'
 import { DataGridService, useDataGridService } from '@/services/editor/data-grid.service'
 import VPreviewEditor from '@/components/base/VPreviewEditor.vue'
+import { useI18n } from 'vue-i18n'
 
 const toaster: Toaster = useToaster()
 const dataGridService: DataGridService = useDataGridService()
+const { t } = useI18n()
 
 enum ActionType {
     Copy = 'copy',
@@ -36,7 +38,7 @@ const prettyPrint = ref<boolean>(true)
 const actions = computed(() => {
     const actions = [
         {
-            title: 'Copy',
+            title: t('common.button.copy'),
             value: ActionType.Copy,
             props: {
                 prependIcon: 'mdi-content-copy'
@@ -45,7 +47,7 @@ const actions = computed(() => {
     ]
     if (props.codeLanguage !== EntityPropertyValueSupportedCodeLanguage.Raw) {
         actions.push({
-            title: prettyPrint.value ? 'Display raw value' : 'Pretty print value',
+            title: prettyPrint.value ? t('entityGrid.grid.renderer.button.displayRawValue') : t('entityGrid.grid.renderer.button.prettyPrintValue'),
             value: ActionType.PrettyPrint,
             props: {
                 prependIcon: prettyPrint.value ? 'mdi-raw' : 'mdi-auto-fix'
@@ -59,7 +61,13 @@ const formattedValue = computed<string>(() => {
         return dataGridService.formatEntityPropertyValue(props.value, props.codeLanguage, prettyPrint.value)
     } catch (e: any) {
         console.error(e)
-        return `Error: Failed to format value as ${props.codeLanguage}. \r\n\r\n` + (e?.message ? `${e.message}.` : '')
+        return t(
+            'entityGrid.grid.codeRenderer.placeholder.failedToFormatValue',
+            {
+                codeLanguage: props.codeLanguage,
+                message: e?.message ? `${e.message}.` : ''
+            }
+        )
     }
 })
 const codeBlockExtensions = computed<Extension[]>(() => {
@@ -74,7 +82,7 @@ const codeBlockExtensions = computed<Extension[]>(() => {
         case EntityPropertyValueSupportedCodeLanguage.Xml:
             return [xml()]
         default:
-            toaster.error(new UnexpectedError(undefined, 'Unsupported code language.'))
+            toaster.error(new UnexpectedError(undefined, t('entityGrid.grid.codeRenderer.notification.unsupportedCodeLanguage')))
             return []
     }
 })
@@ -92,9 +100,9 @@ function handleActionClick(action: any) {
 
 function copyRenderedValue() {
     navigator.clipboard.writeText(formattedValue.value).then(() => {
-        toaster.info('Copied to clipboard.')
+        toaster.info(t('common.notification.copiedToClipboard'))
     }).catch(() => {
-        toaster.error(new UnexpectedError(undefined, 'Failed to copy to clipboard.'))
+        toaster.error(new UnexpectedError(undefined, t('common.notification.failedToCopyToClipboard')))
     })
 }
 </script>

@@ -39,8 +39,8 @@ export enum Command {
     EntityGrid_ExecuteQuery = 'entityGrid.executeQuery',
 
     EntityGrid_ChangeQueryLanguage = 'entityGrid.changeQueryLanguage',
-    EntityGrid_FocusFilterInput = 'entityGrid.focusFilterInput',
-    EntityGrid_FocusOrderInput = 'entityGrid.focusOrderInput',
+    EntityGrid_FilterBy = 'entityGrid.filterBy',
+    EntityGrid_OrderBy = 'entityGrid.orderBy',
     EntityGrid_ChangeDataLocale = 'entityGrid.changeDataLocale',
     EntityGrid_ChangePriceType = 'entityGrid.changePriceType',
     EntityGrid_ShareTab = 'entityGrid.shareTab',
@@ -53,25 +53,25 @@ export enum Command {
     EvitaQLConsole_ExecuteQuery = 'evitaQLConsole.executeQuery',
     EvitaQLConsole_ShareTab = 'evitaQLConsole.shareTab',
 
-    EvitaQLConsole_Query_SwitchToQueryEditor = 'evitaQLConsole.query.switchToQueryEditor',
-    EvitaQLConsole_Query_SwitchToVariablesEditor = 'evitaQLConsole.query.switchToVariablesEditor',
-    EvitaQLConsole_Query_SwitchToHistory = 'evitaQLConsole.query.switchToHistory',
+    EvitaQLConsole_Query_QueryEditor = 'evitaQLConsole.query.queryEditor',
+    EvitaQLConsole_Query_VariablesEditor = 'evitaQLConsole.query.variablesEditor',
+    EvitaQLConsole_Query_History = 'evitaQLConsole.query.history',
 
-    EvitaQLConsole_Result_SwitchToRawResultViewer = 'evitaQLConsole.result.switchToRawResultViewer',
-    EvitaQLConsole_Result_SwitchToResultVisualizer = 'evitaQLConsole.result.switchToResultVisualizer',
+    EvitaQLConsole_Result_RawResultViewer = 'evitaQLConsole.result.rawResultViewer',
+    EvitaQLConsole_Result_ResultVisualizer = 'evitaQLConsole.result.resultVisualizer',
 
     // GraphQL console
 
     GraphQLConsole_ExecuteQuery = 'graphQLConsole.executeQuery',
     GraphQLConsole_ShareTab = 'graphQLConsole.shareTab',
 
-    GraphQLConsole_Query_SwitchToQueryEditor = 'graphQLConsole.query.switchToQueryEditor',
-    GraphQLConsole_Query_SwitchToVariablesEditor = 'graphQLConsole.query.switchToVariablesEditor',
-    GraphQLConsole_Query_SwitchToHistory = 'graphQLConsole.query.switchToHistory',
-    GraphQLConsole_Query_SwitchToSchemaViewer = 'graphQLConsole.query.switchToSchemaViewer',
+    GraphQLConsole_Query_QueryEditor = 'graphQLConsole.query.queryEditor',
+    GraphQLConsole_Query_VariablesEditor = 'graphQLConsole.query.variablesEditor',
+    GraphQLConsole_Query_History = 'graphQLConsole.query.history',
+    GraphQLConsole_Query_SchemaViewer = 'graphQLConsole.query.schemaViewer',
 
-    GraphQLConsole_Result_SwitchToRawResultViewer = 'graphQLConsole.result.switchToRawResultViewer',
-    GraphQLConsole_Result_SwitchToResultVisualizer = 'graphQLConsole.result.switchToResultVisualizer',
+    GraphQLConsole_Result_RawResultViewer = 'graphQLConsole.result.rawResultViewer',
+    GraphQLConsole_Result_ResultVisualizer = 'graphQLConsole.result.resultVisualizer',
 
     // Schema viewer
 

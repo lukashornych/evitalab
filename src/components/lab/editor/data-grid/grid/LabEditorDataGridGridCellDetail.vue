@@ -21,6 +21,9 @@ import LabEditorDataGridGridDetailValueListItem
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridDetailValueListItem.vue'
 import LabEditorDataGridGridCellDetailOutputFormatSelector
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailOutputFormatSelector.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     modelValue: boolean,
@@ -88,7 +91,7 @@ const componentDataType = computed<Scalar | ExtraEntityObjectType | undefined>((
                 >
                     {{ headerPrependIcon }}
                 </VIcon>
-                <span>{{ propertyDescriptor?.flattenedTitle || 'Unknown property' }}</span>
+                <span>{{ propertyDescriptor?.flattenedTitle || t('entityGrid.grid.cell.detail.placeholder.unknownProperty') }}</span>
             </template>
             <template #actions>
                 <LabEditorDataGridGridCellDetailOutputFormatSelector
@@ -103,7 +106,7 @@ const componentDataType = computed<Scalar | ExtraEntityObjectType | undefined>((
                 >
                     <VIcon>mdi-close</VIcon>
                     <VTooltip activator="parent">
-                        Close detail
+                        {{ t('common.button.close') }}
                     </VTooltip>
                 </VBtn>
             </template>

@@ -9,9 +9,11 @@ import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaV
 import { CatalogSchemaPointer } from '@/model/editor/tab/schemaViewer/CatalogSchemaPointer'
 import { SchemaViewerRequest } from '@/model/editor/tab/schemaViewer/SchemaViewerRequest'
 import { EntitySchemaPointer } from '@/model/editor/tab/schemaViewer/EntitySchemaPointer'
+import { useI18n } from 'vue-i18n'
 
 const labService: LabService = useLabService()
 const editorService: EditorService = useEditorService()
+const { t } = useI18n()
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,

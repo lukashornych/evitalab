@@ -5,6 +5,9 @@
 
 import { computed, ref } from 'vue'
 import { GraphQLConsoleHistoryRecord } from '@/model/editor/tab/graphQLConsole/history/GraphQLConsoleHistoryRecord'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     items: GraphQLConsoleHistoryRecord[]
@@ -46,7 +49,7 @@ defineExpose<{
 <template>
     <div class="graphql-editor-history">
         <p v-if="historyListItems.length === 0" class="text-disabled graphql-editor-history__empty-item">
-            Empty history
+            {{ t('graphQLConsole.placeholder.emptyHistory') }}
         </p>
         <template v-else>
             <VBtn
@@ -56,7 +59,7 @@ defineExpose<{
                 class="graphql-editor-history__clear-button"
                 @click="emit('update:clearHistory')"
             >
-                Clear history
+                {{ t('graphQLConsole.button.clearHistory') }}
             </VBtn>
 
             <VList ref="historyListRef" class="graphql-editor-history__list">

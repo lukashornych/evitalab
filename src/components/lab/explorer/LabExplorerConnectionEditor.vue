@@ -4,9 +4,10 @@ import { computed, ref } from 'vue'
 import { LabService, useLabService } from '@/services/lab.service'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import ky from 'ky'
+import { useI18n } from 'vue-i18n'
 
 enum Mode {
-    Create,
+    Add,
     Modify
 }
 
@@ -18,6 +19,7 @@ enum ApiTestResult {
 
 const labService: LabService = useLabService()
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
     modelValue: boolean,
@@ -34,25 +36,25 @@ const emit = defineEmits<{
 const nameRules = [
     (value: any) => {
         if (value) return true
-        return 'Name of connection is required.'
+        return t('explorer.connection.editor.form.connectionName.validations.required')
     },
     (value: any) => {
         const exists = labService.isConnectionExists(value)
         if (!exists) return true
-        return 'Connection with this name already exists.'
+        return t('explorer.connection.editor.form.connectionName.validations.duplicate')
     }
 ]
 const labApiUrlRules = [
     (value: any) => {
         if (value) return true
-        return 'evitaLab API URL is required.'
+        return t('explorer.connection.editor.form.labApiUrl.validations.required')
     },
     (value: any) => {
         try {
             new URL(value)
             return true
         } catch (e) {
-            return 'evitaLab API URL is not a valid URL.'
+            return t('explorer.connection.editor.form.labApiUrl.validations.invalidUrl')
         }
     },
     async (value: any) => {
@@ -62,20 +64,20 @@ const labApiUrlRules = [
             return true
         }
         modifiedConnection.value.labApiUrlTested = ApiTestResult.Failure
-        return 'evitaLab API URL is not reachable.'
+        return t('explorer.connection.editor.form.labApiUrl.validations.unreachable')
     }
 ]
 const gqlUrlRules = [
     (value: any) => {
         if (value) return true
-        return 'GraphQL API URL is required.'
+        return t('explorer.connection.editor.form.graphQLApiUrl.validations.required')
     },
     (value: any) => {
         try {
             new URL(value)
             return true
         } catch (e) {
-            return 'GraphQL API URL is not a valid URL.'
+            return t('explorer.connection.editor.form.graphQLApiUrl.validations.invalidUrl')
         }
     },
     async (value: any) => {
@@ -85,12 +87,12 @@ const gqlUrlRules = [
             return true
         }
         modifiedConnection.value.gqlUrlTested = ApiTestResult.Failure
-        return 'GraphQL API URL is not reachable.'
+        return t('explorer.connection.editor.form.graphQLApiUrl.validations.unreachable')
     }
 ]
 
 const form = ref<HTMLFormElement | null>(null)
-const mode = computed<Mode>(() => props.connection ? Mode.Modify : Mode.Create)
+const mode = computed<Mode>(() => props.connection ? Mode.Modify : Mode.Add)
 const modifiedConnection = ref<{
     name: string,
     labApiUrl: string
@@ -170,9 +172,9 @@ async function testConnection(): Promise<boolean> {
     }
 
     if (success) {
-        toaster.success('Successfully connected.')
+        toaster.success(t('explorer.connection.editor.notification.connectionSuccess'))
     } else {
-        toaster.error('Connection test failed.')
+        toaster.error(t('explorer.connection.editor.notification.connectionError'))
     }
     return success
 }
@@ -229,8 +231,8 @@ async function storeConnection(): Promise<void> {
         </template>
 
         <VCard class="py-8 px-4">
-            <VCardTitle v-if="mode === Mode.Create">Add connection</VCardTitle>
-            <VCardTitle v-if="mode === Mode.Modify">Edit connection</VCardTitle>
+            <VCardTitle v-if="mode === Mode.Add">{{ t('explorer.connection.editor.addTitle') }}</VCardTitle>
+            <VCardTitle v-if="mode === Mode.Modify">{{ t('explorer.connection.editor.editTitle') }}</VCardTitle>
 
             <VCardText>
                 <VForm
@@ -239,7 +241,7 @@ async function storeConnection(): Promise<void> {
                 >
                     <VTextField
                         v-model="modifiedConnection.name"
-                        label="Connection name"
+                        :label="t('explorer.connection.editor.form.connectionName.label')"
                         placeholder="evitaDB"
                         variant="solo-filled"
                         :rules="nameRules"
@@ -247,7 +249,7 @@ async function storeConnection(): Promise<void> {
                     />
                     <VTextField
                         v-model="modifiedConnection.labApiUrl"
-                        label="evitaLab API URL"
+                        :label="t('explorer.connection.editor.form.labApiUrl.label')"
                         placeholder="https://{evitadb-server}:5555/lab/api"
                         variant="solo-filled"
                         required
@@ -256,7 +258,7 @@ async function storeConnection(): Promise<void> {
                     />
                     <VTextField
                         v-model="modifiedConnection.gqlUrl"
-                        label="GraphQL API URL"
+                        :label="t('explorer.connection.editor.form.graphQLApiUrl.label')"
                         placeholder="https://{evitadb-server}:5555/gql"
                         variant="solo-filled"
                         required
@@ -272,13 +274,13 @@ async function storeConnection(): Promise<void> {
                     prepend-icon="mdi-connection"
                     @click="testConnection"
                 >
-                    Test connection
+                    {{ t('explorer.connection.editor.button.testConnection') }}
                 </VBtn>
                 <VSpacer/>
                 <VBtn
                     variant="tonal"
                     @click="cancel">
-                    Cancel
+                    {{ t('common.button.cancel') }}
                 </VBtn>
                 <VBtn
                     variant="outlined"
@@ -286,7 +288,7 @@ async function storeConnection(): Promise<void> {
                     @click="storeConnection"
                     class="ml-4"
                 >
-                    Save
+                    {{ t('common.button.save') }}
                 </VBtn>
             </VCardActions>
         </VCard>

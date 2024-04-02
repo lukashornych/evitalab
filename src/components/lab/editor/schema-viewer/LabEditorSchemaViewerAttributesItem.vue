@@ -13,9 +13,11 @@ import { EntitySchemaPointer } from '@/model/editor/tab/schemaViewer/EntitySchem
 import { EntityAttributeSchemaPointer } from '@/model/editor/tab/schemaViewer/EntityAttributeSchemaPointer'
 import { ReferenceSchemaPointer } from '@/model/editor/tab/schemaViewer/ReferenceSchemaPointer'
 import { ReferenceAttributeSchemaPointer } from '@/model/editor/tab/schemaViewer/ReferenceAttributeSchemaPointer'
+import { useI18n } from 'vue-i18n'
 
 const labService: LabService = useLabService()
 const editorService: EditorService = useEditorService()
+const { t } = useI18n()
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,

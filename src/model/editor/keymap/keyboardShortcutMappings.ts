@@ -48,8 +48,8 @@ createKeyboardShortcutMapping(Command.EntityGrid_ExecuteQuery, 'Ctrl+Enter', 'Cm
 createKeyboardShortcutMapping(Command.EntityGrid_ShareTab, 'Ctrl+L', 'Cmd+L')
 
 createKeyboardShortcutMapping(Command.EntityGrid_ChangeQueryLanguage, 'Ctrl+D', 'Cmd+D')
-createKeyboardShortcutMapping(Command.EntityGrid_FocusFilterInput, 'Ctrl+F', 'Cmd+F')
-createKeyboardShortcutMapping(Command.EntityGrid_FocusOrderInput, 'Ctrl+G', 'Cmd+G')
+createKeyboardShortcutMapping(Command.EntityGrid_FilterBy, 'Ctrl+F', 'Cmd+F')
+createKeyboardShortcutMapping(Command.EntityGrid_OrderBy, 'Ctrl+G', 'Cmd+G')
 createKeyboardShortcutMapping(Command.EntityGrid_ChangeDataLocale, 'Ctrl+H', 'Cmd+U')
 createKeyboardShortcutMapping(Command.EntityGrid_ChangePriceType, 'Ctrl+J', 'Cmd+I')
 createKeyboardShortcutMapping(Command.EntityGrid_OpenPropertySelector, 'Ctrl+P', 'Cmd+P')
@@ -61,25 +61,25 @@ createKeyboardShortcutMapping(Command.EntityGrid_PropertySelector_FindProperty, 
 createKeyboardShortcutMapping(Command.EvitaQLConsole_ExecuteQuery, 'Ctrl+Enter', 'Cmd+Enter')
 createKeyboardShortcutMapping(Command.EvitaQLConsole_ShareTab, 'Ctrl+L', 'Cmd+L')
 
-createKeyboardShortcutMapping(Command.EvitaQLConsole_Query_SwitchToQueryEditor, 'Ctrl+1', 'Ctrl+1')
-createKeyboardShortcutMapping(Command.EvitaQLConsole_Query_SwitchToVariablesEditor, 'Ctrl+2', 'Ctrl+2')
-createKeyboardShortcutMapping(Command.EvitaQLConsole_Query_SwitchToHistory, 'Ctrl+3', 'Ctrl+3')
+createKeyboardShortcutMapping(Command.EvitaQLConsole_Query_QueryEditor, 'Ctrl+1', 'Ctrl+1')
+createKeyboardShortcutMapping(Command.EvitaQLConsole_Query_VariablesEditor, 'Ctrl+2', 'Ctrl+2')
+createKeyboardShortcutMapping(Command.EvitaQLConsole_Query_History, 'Ctrl+3', 'Ctrl+3')
 
-createKeyboardShortcutMapping(Command.EvitaQLConsole_Result_SwitchToRawResultViewer, 'Ctrl+0', 'Ctrl+0')
-createKeyboardShortcutMapping(Command.EvitaQLConsole_Result_SwitchToResultVisualizer, 'Ctrl+9', 'Ctrl+9')
+createKeyboardShortcutMapping(Command.EvitaQLConsole_Result_RawResultViewer, 'Ctrl+0', 'Ctrl+0')
+createKeyboardShortcutMapping(Command.EvitaQLConsole_Result_ResultVisualizer, 'Ctrl+9', 'Ctrl+9')
 
 // GraphQL console
 
 createKeyboardShortcutMapping(Command.GraphQLConsole_ExecuteQuery, 'Ctrl+Enter', 'Cmd+Enter')
 createKeyboardShortcutMapping(Command.GraphQLConsole_ShareTab, 'Ctrl+L', 'Cmd+L')
 
-createKeyboardShortcutMapping(Command.GraphQLConsole_Query_SwitchToQueryEditor, 'Ctrl+1', 'Ctrl+1')
-createKeyboardShortcutMapping(Command.GraphQLConsole_Query_SwitchToVariablesEditor, 'Ctrl+2', 'Ctrl+2')
-createKeyboardShortcutMapping(Command.GraphQLConsole_Query_SwitchToHistory, 'Ctrl+3', 'Ctrl+3')
-createKeyboardShortcutMapping(Command.GraphQLConsole_Query_SwitchToSchemaViewer, 'Ctrl+4', 'Ctrl+4')
+createKeyboardShortcutMapping(Command.GraphQLConsole_Query_QueryEditor, 'Ctrl+1', 'Ctrl+1')
+createKeyboardShortcutMapping(Command.GraphQLConsole_Query_VariablesEditor, 'Ctrl+2', 'Ctrl+2')
+createKeyboardShortcutMapping(Command.GraphQLConsole_Query_History, 'Ctrl+3', 'Ctrl+3')
+createKeyboardShortcutMapping(Command.GraphQLConsole_Query_SchemaViewer, 'Ctrl+4', 'Ctrl+4')
 
-createKeyboardShortcutMapping(Command.GraphQLConsole_Result_SwitchToRawResultViewer, 'Ctrl+0', 'Ctrl+0')
-createKeyboardShortcutMapping(Command.GraphQLConsole_Result_SwitchToResultVisualizer, 'Ctrl+9', 'Ctrl+9')
+createKeyboardShortcutMapping(Command.GraphQLConsole_Result_RawResultViewer, 'Ctrl+0', 'Ctrl+0')
+createKeyboardShortcutMapping(Command.GraphQLConsole_Result_ResultVisualizer, 'Ctrl+9', 'Ctrl+9')
 
 // Schema viewer
 

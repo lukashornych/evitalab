@@ -4,8 +4,10 @@ import {LabService, useLabService} from '@/services/lab.service'
 import {EvitaDBBlogPost} from '@/model/lab'
 import { computed, ref } from 'vue'
 import VMarkdown from '@/components/base/VMarkdown.vue'
+import { useI18n } from 'vue-i18n'
 
 const labService: LabService = useLabService()
+const { t } = useI18n()
 
 const version = computed(() => {
     const actualVersion: string = import.meta.env.VITE_BUILD_VERSION
@@ -35,11 +37,11 @@ labService.getBlogPosts().then((posts) => {
                     class="evitalab-logo"
                 />
                 <div class="editor-welcome-screen-hero__title">
-                    <h1 class="font-weight-bold mb-2" style="font-size: 4.375rem;">evitaLab</h1>
+                    <h1 class="font-weight-bold mb-2" style="font-size: 4.375rem;">{{ t('app.name') }}</h1>
                     <p class="text-white" style="font-size: 1rem;">{{ version }} <a
                         class="text-primary-lightest text-body-2" href="https://github.com/lukashornych/evitalab/releases"
-                        target="_blank">(changelog)</a></p>
-                    <p class="text-gray-light" style="font-size: 1rem;">evitaDB web client</p>
+                        target="_blank">({{ t('welcomeScreen.changelog') }})</a></p>
+                    <p class="text-gray-light" style="font-size: 1rem;">{{ t('welcomeScreen.description') }}</p>
                 </div>
             </header>
 
@@ -56,7 +58,7 @@ labService.getBlogPosts().then((posts) => {
                             height="160"
                             width="480"
                             :src="blogPost.thumbnailUrl"
-                            :alt="`Image - ${blogPost.title}`"
+                            :alt="t('welcomeScreen.blog.thumbnail.alt', { title: blogPost.title })"
                         />
                     </span>
                     <span class="editor-welcome-screen-blog-item__title">
@@ -65,18 +67,33 @@ labService.getBlogPosts().then((posts) => {
                     <span class="editor-welcome-screen-blog-item__perex">
                         <VMarkdown :source="blogPost.perex" />
                     </span>
-                    <span class="editor-welcome-screen-blog-item__btn">Read</span>
+                    <span class="editor-welcome-screen-blog-item__btn">{{ t('welcomeScreen.blog.button.read') }}</span>
                 </a>
             </div>
 
             <span class="editor-welcome-screen-hr">&nbsp;</span>
 
             <ul class="editor-welcome-screen-hero__links">
-                <li>Check out the <a href="https://evitadb.io/documentation" target="_blank"> evitaDB documentation</a>
+                <I18nT keypath="welcomeScreen.link.evitaDBDocumentation.text" tag="li">
+                    <template #link>
+                        <a href="https://evitadb.io/documentation" target="_blank">{{ t('welcomeScreen.link.evitaDBDocumentation.link') }}</a>
+                    </template>
+                </I18nT>
+                <I18nT keypath="welcomeScreen.link.evitaLabGitHub.text" tag="li">
+                    <template #link>
+                        <a href="https://github.com/lukashornych/evitalab/" target="_blank">{{ t('welcomeScreen.link.evitaLabGitHub.link') }}</a>
+                    </template>
+                </I18nT>
+                <I18nT keypath="welcomeScreen.link.discord.text" tag="li">
+                    <template #link>
+                        <a href="https://discord.gg/VsNBWxgmSw" target="_blank">{{ t('welcomeScreen.link.discord.link') }}</a>
+                    </template>
+                </I18nT>
+                <li>
+                    <a href="https://github.com/lukashornych/evitalab/issues" target="_blank">
+                        {{ t('welcomeScreen.link.submitIssue') }}
+                    </a>
                 </li>
-                <li>Give us a ⭐ on <a href="https://github.com/lukashornych/evitalab/" target="_blank"> GitHub</a></li>
-                <li>Reach out to us on <a href="https://discord.gg/VsNBWxgmSw" target="_blank"> Discord</a></li>
-                <li><a href="https://github.com/lukashornych/evitalab/issues" target="_blank"> Submit an issue</a></li>
             </ul>
         </div>
     </div>

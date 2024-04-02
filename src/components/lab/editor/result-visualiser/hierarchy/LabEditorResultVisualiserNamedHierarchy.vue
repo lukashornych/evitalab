@@ -11,10 +11,12 @@ import { Result, VisualisedNamedHierarchy } from '@/model/editor/result-visualis
 import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
 import VMarkdown from '@/components/base/VMarkdown.vue'
 import VListItemLazyIterator from '@/components/base/VListItemLazyIterator.vue'
+import { useI18n } from 'vue-i18n'
 
 const namedHierarchyTreesPageSize: number = 10
 
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = defineProps<{
     visualiserService: ResultVisualiserService,
@@ -60,7 +62,7 @@ function initialize(): void {
                                     <span>
                                         {{ namedHierarchy?.count }}
                                         <VTooltip activator="parent">
-                                            <span>The number of actually fetched nodes.</span>
+                                            <span>{{ t('resultVisualizer.hierarchyVisualiser.help.nodeCountProperty') }}</span>
                                         </VTooltip>
                                     </span>
                                 </VChip>
@@ -69,7 +71,7 @@ function initialize(): void {
                                     {{ namedHierarchy?.requestedNode?.primaryKey != undefined ? `${namedHierarchy?.requestedNode?.primaryKey}: ` : '' }}
                                     {{ namedHierarchy?.requestedNode?.title }}
                                     <VTooltip activator="parent">
-                                        <VMarkdown source="An entity representing a hierarchy node in this tree that was filtered by `hierarchyWithin`." />
+                                        <VMarkdown :source="t('resultVisualizer.hierarchyVisualiser.help.requestedNode')" />
                                     </VTooltip>
                                 </VChip>
                             </VChipGroup>

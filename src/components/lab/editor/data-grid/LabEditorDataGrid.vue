@@ -32,9 +32,11 @@ import { TabComponentProps } from '@/model/editor/tab/TabComponentProps'
 import { TabComponentEvents } from '@/model/editor/tab/TabComponentEvents'
 import VActionTooltip from '@/components/base/VActionTooltip.vue'
 import { Command } from '@/model/editor/keymap/Command'
+import { useI18n } from 'vue-i18n'
 
 const dataGridService: DataGridService = useDataGridService()
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = defineProps<TabComponentProps<DataGridParams, DataGridData>>()
 const emit = defineEmits<TabComponentEvents>()
@@ -325,12 +327,10 @@ async function executeQuery(): Promise<void> {
             @grid-updated="gridUpdated"
         />
         <div v-else class="data-grid__init-screen">
-            <p>Loaded query data must be manually executed.</p>
+            <p>{{ t('entityGrid.loadedDataWarning') }}</p>
             <VBtn @click="executeQueryManually">
-                Execute query
-                <VActionTooltip :command="Command.EntityGrid_ExecuteQuery">
-                    Execute query
-                </VActionTooltip>
+                {{ t('common.button.executeQuery') }}
+                <VActionTooltip :command="Command.EntityGrid_ExecuteQuery"/>
             </VBtn>
         </div>
     </div>

@@ -5,6 +5,9 @@ import { ReferenceSchema } from '@/model/evitadb'
 import LabEditorSchemaViewerContainerSectionList
     from '@/components/lab/editor/schema-viewer/LabEditorSchemaViewerContainerSectionList.vue'
 import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaViewerDataPointer'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
@@ -13,7 +16,7 @@ const props = defineProps<{
 </script>
 
 <template>
-    <LabEditorSchemaViewerContainerSection name="References">
+    <LabEditorSchemaViewerContainerSection :name="t('schemaViewer.references.title')">
         <LabEditorSchemaViewerContainerSectionList
             :items="references"
             :nameSupplier="item => item.name"

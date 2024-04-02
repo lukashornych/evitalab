@@ -5,6 +5,9 @@
 
 import { VisualisedHistogram } from '@/model/editor/result-visualiser'
 import VMarkdown from '@/components/base/VMarkdown.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
     histogram: VisualisedHistogram
@@ -18,22 +21,22 @@ const props = defineProps<{
                 {{ histogram.min }}
             </template>
             <span v-else>
-                unknown
+                {{ t('resultVisualizer.histogram.placeholder.unknown') }}
                 <VTooltip activator="parent">
-                    <VMarkdown source="No `min` property of the histogram was fetched." />
+                    <VMarkdown :source="t('resultVisualizer.histogram.help.noMinProperty')" />
                 </VTooltip>
             </span>
             &nbsp;<span class="text-disabled">&lt;</span>
         </span>
         <span>
-            <span class="text-disabled">Overall count:</span>&nbsp;
+            <span class="text-disabled">{{ t('resultVisualizer.histogram.label.overallCount') }}:</span>&nbsp;
             <template v-if="histogram.overallCount != undefined">
                 {{ histogram.overallCount }}
             </template>
             <span v-else>
-                unknown
+                {{ t('resultVisualizer.histogram.placeholder.unknown') }}
                 <VTooltip activator="parent">
-                    <VMarkdown source="No `overallCount` property of the histogram was fetched." />
+                    <VMarkdown :source="t('resultVisualizer.histogram.help.noOverallCountProperty')" />
                 </VTooltip>
             </span>
         </span>
@@ -43,9 +46,9 @@ const props = defineProps<{
                 {{ histogram.max }}
             </template>
             <span v-else>
-                unknown
+                {{ t('resultVisualizer.histogram.placeholder.unknown') }}
                 <VTooltip activator="parent">
-                    <VMarkdown source="No `max` property of the histogram was fetched." />
+                    <VMarkdown :source="t('resultVisualizer.histogram.help.noMaxProperty')" />
                 </VTooltip>
             </span>
         </span>

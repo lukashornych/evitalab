@@ -6,6 +6,9 @@ import { TabComponentProps } from '@/model/editor/tab/TabComponentProps'
 import { ErrorViewerParams } from '@/model/editor/tab/errorViewer/ErrorViewerParams'
 import { VoidTabRequestComponentData } from '@/model/editor/tab/void/VoidTabRequestComponentData'
 import { TabComponentEvents } from '@/model/editor/tab/TabComponentEvents'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<TabComponentProps<ErrorViewerParams, VoidTabRequestComponentData>>()
 const emit = defineEmits<TabComponentEvents>()
@@ -16,7 +19,7 @@ const title = computed(() => {
 
 const detail = computed(() => {
     if (props.params.error.detail == undefined) {
-        return 'No details available.'
+        return t('errorViewer.placeholder.noDetailsAvailable')
     }
     return props.params.error.detail
 })
@@ -38,7 +41,7 @@ emit('ready')
                 >
                     <VIcon>mdi-bug</VIcon>
                     <VTooltip activator="parent">
-                        Submit an issue
+                        {{ t('errorViewer.button.submitIssue') }}
                     </VTooltip>
                 </VBtn>
             </template>

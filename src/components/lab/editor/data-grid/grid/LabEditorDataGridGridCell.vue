@@ -9,8 +9,10 @@ import { computed, inject } from 'vue'
 import { Scalar } from '@/model/evitadb'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import { UnexpectedError } from '@/model/lab'
+import { useI18n } from 'vue-i18n'
 
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = defineProps<{
     propertyDescriptor: EntityPropertyDescriptor | undefined,
@@ -62,9 +64,9 @@ function toPrintablePropertyValue(value: EntityPropertyValue | EntityPropertyVal
 function copyValue(): void {
     if (printablePropertyValue.value) {
         navigator.clipboard.writeText(printablePropertyValue.value).then(() => {
-            toaster.info('Copied to clipboard.')
+            toaster.info(t('common.notification.copiedToClipboard'))
         }).catch(() => {
-            toaster.error(new UnexpectedError(undefined, 'Failed to copy to clipboard.'))
+            toaster.error(new UnexpectedError(undefined, t('common.notification.failedToCopyToClipboard')))
         })
     }
 }
@@ -78,13 +80,13 @@ function copyValue(): void {
     >
         <span class="data-grid-cell__body">
             <template v-if="propertyDescriptor?.schema?.localized && !dataLocale">
-                <span class="text-disabled">&lt;no locale selected&gt;</span>
+                <span class="text-disabled">{{ t('entityGrid.grid.cell.placeholder.noLocaleSelected') }}</span>
             </template>
             <template v-else-if="propertyValue instanceof Array && propertyValue.length === 0">
-                <span class="text-disabled">&lt;empty array&gt;</span>
+                <span class="text-disabled">{{ t('common.placeholder.emptyArray') }}</span>
             </template>
             <template v-else-if="!propertyValue">
-                <span class="text-disabled">&lt;null&gt;</span>
+                <span class="text-disabled">{{ t('common.placeholder.null') }}</span>
             </template>
             <template v-else>
                 <VIcon v-if="openableInNewTab" class="mr-1">mdi-open-in-new</VIcon>

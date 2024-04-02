@@ -11,6 +11,7 @@ import { Keymap, useKeymap } from '@/model/editor/keymap/Keymap'
 import { Command } from '@/model/editor/keymap/Command'
 import VActionTooltip from '@/components/base/VActionTooltip.vue'
 import { KeymapViewerRequest } from '@/model/editor/tab/keymapViewer/KeymapViewerRequest'
+import { useI18n } from 'vue-i18n'
 
 enum ManageOptionType {
     Keymap = 'keymap',
@@ -26,64 +27,65 @@ enum ManageOptionType {
 const keymap: Keymap = useKeymap()
 const editorService: EditorService = useEditorService()
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 // todo convert to VList component and add key board shortcut to keymap
 const options = [
-    { type: 'subheader', title: 'Manage' },
+    { type: 'subheader', title: t(`panel.manage.manage.title`) },
     {
-        title: 'Keymap',
+        title: t(`panel.manage.manage.item.${ManageOptionType.Keymap}`),
         value: ManageOptionType.Keymap,
         command: Command.System_Keymap,
         props: {
             prependIcon: 'mdi-keyboard-outline'
         }
     },
-    { type: 'subheader', title: 'evitaLab Help'},
+    { type: 'subheader', title: t(`panel.manage.evitaLabHelp.title`) },
     {
-        title: 'evitaLab GitHub',
+        title: t(`panel.manage.evitaLabHelp.item.${ManageOptionType.EvitaLabGithub}`),
         value: ManageOptionType.EvitaLabGithub,
         props: {
             prependIcon: 'mdi-github'
         }
     },
     {
-        title: 'Discuss evitaLab',
+        title: t(`panel.manage.evitaLabHelp.item.${ManageOptionType.DiscussEvitaLab}`),
         value: ManageOptionType.DiscussEvitaLab,
         props: {
             prependIcon: 'mdi-forum-outline'
         }
     },
     {
-        title: 'Report evitaLab issue',
+        title: t(`panel.manage.evitaLabHelp.item.${ManageOptionType.ReportEvitaLabIssue}`),
         value: ManageOptionType.ReportEvitaLabIssue,
         props: {
             prependIcon: 'mdi-bug'
         }
     },
-    { type: 'subheader', title: 'evitaDB Help'},
+    { type: 'subheader', title: t(`panel.manage.evitaDBHelp.title`)},
     {
-        title: 'evitaDB Documentation',
+        title: t(`panel.manage.evitaDBHelp.item.${ManageOptionType.EvitaDBDocumentation}`),
         value: ManageOptionType.EvitaDBDocumentation,
         props: {
             prependIcon: 'mdi-book-open-variant'
         }
     },
     {
-        title: 'evitaDB GitHub',
+        title: t(`panel.manage.evitaDBHelp.item.${ManageOptionType.EvitaDBGithub}`),
         value: ManageOptionType.EvitaDBGithub,
         props: {
             prependIcon: 'mdi-github'
         }
     },
     {
-        title: 'Discuss evitaDB',
+        title: t(`panel.manage.evitaDBHelp.item.${ManageOptionType.DiscussEvitaDB}`),
         value: ManageOptionType.DiscussEvitaDB,
         props: {
             prependIcon: 'mdi-forum-outline'
         }
     },
     {
-        title: 'Report evitaDB issue',
+        title: t(`panel.manage.evitaDBHelp.item.${ManageOptionType.ReportEvitaDBIssue}`),
         value: ManageOptionType.ReportEvitaDBIssue,
         props: {
             prependIcon: 'mdi-bug'

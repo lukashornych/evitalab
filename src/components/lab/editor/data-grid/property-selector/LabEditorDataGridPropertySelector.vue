@@ -35,6 +35,7 @@ import { Keymap, useKeymap } from '@/model/editor/keymap/Keymap'
 import { Command } from '@/model/editor/keymap/Command'
 import VActionTooltip from '@/components/base/VActionTooltip.vue'
 import { propertySelectorScope } from '@/model/editor/tab/dataGrid/keymap/scopes'
+import { useI18n } from 'vue-i18n'
 
 const topLevelSections: EntityPropertyType[] = [
     EntityPropertyType.Entity,
@@ -46,6 +47,7 @@ const topLevelSections: EntityPropertyType[] = [
 
 const keymap: Keymap = useKeymap()
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = defineProps<{
     modelValue: boolean,
@@ -187,7 +189,7 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
 
         emit('update:selected', newSelected)
     } else {
-        toaster.error(new UnexpectedError(gridProps.params.dataPointer.connection, 'Cannot select `Some` properties in a section.'))
+        toaster.error(new UnexpectedError(gridProps.params.dataPointer.connection, t('entityGrid.propertySelector.notification.invalidPropertySectionSelection')))
     }
 }
 
@@ -253,7 +255,7 @@ onUnmounted(() => {
             >
                 <VIcon>mdi-view-column-outline</VIcon>
                 <VActionTooltip :command="Command.EntityGrid_OpenPropertySelector">
-                    Select displayed properties
+                    {{ t('entityGrid.propertySelector.button.selectDisplayedProperties') }}
                 </VActionTooltip>
             </VBtn>
         </template>
@@ -261,7 +263,7 @@ onUnmounted(() => {
         <VCard class="py-8 px-4">
             <VCardTitleWithActions>
                 <template #default>
-                    Displayed properties
+                    {{ t('entityGrid.propertySelector.title') }}
                 </template>
                 <template #actions>
                     <VBtn
@@ -272,7 +274,7 @@ onUnmounted(() => {
                     >
                         <VIcon>mdi-close</VIcon>
                         <VTooltip activator="parent">
-                            Close selector
+                            {{ t('common.button.close') }}
                         </VTooltip>
                     </VBtn>
                 </template>
@@ -281,7 +283,7 @@ onUnmounted(() => {
                 <VTextField
                     ref="filterInput"
                     :model-value="filter"
-                    label="Filter properties"
+                    :label="t('entityGrid.propertySelector.label.filterProperties')"
                     variant="solo-filled"
                     density="compact"
                     autofocus
@@ -301,7 +303,6 @@ onUnmounted(() => {
                     class="property-list"
                 >
                     <LabEditorDataGridPropertySelectorSection
-                        title="Entity"
                         :property-type="EntityPropertyType.Entity"
                         :selected="sectionedSelected.get(EntityPropertyType.Entity) || []"
                         :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.Entity) || []"
@@ -318,7 +319,6 @@ onUnmounted(() => {
                     </LabEditorDataGridPropertySelectorSection>
                     <VListItemDivider />
                     <LabEditorDataGridPropertySelectorSection
-                        title="Attributes"
                         :property-type="EntityPropertyType.Attributes"
                         :selected="sectionedSelected.get(EntityPropertyType.Attributes) || []"
                         :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.Attributes) || []"
@@ -335,7 +335,6 @@ onUnmounted(() => {
                     </LabEditorDataGridPropertySelectorSection>
                     <VListItemDivider />
                     <LabEditorDataGridPropertySelectorSection
-                        title="Associated data"
                         :property-type="EntityPropertyType.AssociatedData"
                         :selected="sectionedSelected.get(EntityPropertyType.AssociatedData) || []"
                         :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.AssociatedData) || []"
@@ -358,7 +357,6 @@ onUnmounted(() => {
                     </template>
                     <VListItemDivider />
                     <LabEditorDataGridPropertySelectorSection
-                        title="References"
                         :property-type="EntityPropertyType.References"
                         :selected="sectionedSelected.get(EntityPropertyType.References) || []"
                         :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.References) || []"

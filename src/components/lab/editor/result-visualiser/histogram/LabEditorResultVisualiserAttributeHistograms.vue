@@ -12,8 +12,10 @@ import { computed } from 'vue'
 import { Toaster, useToaster } from '@/services/editor/toaster'
 import LabEditorResultVisualiserHistogram
     from '@/components/lab/editor/result-visualiser/histogram/LabEditorResultVisualiserHistogram.vue'
+import { useI18n } from 'vue-i18n'
 
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = defineProps<{
     visualiserService: ResultVisualiserService,
@@ -49,7 +51,7 @@ const histogramsByAttributes = computed<[AttributeSchemaUnion, VisualisedHistogr
     <LabEditorResultVisualiserMissingDataIndicator
         v-else
         icon="mdi-text-search"
-        title="No attribute histograms found."
+        :title="t('resultVisualizer.attributeHistogram.placeholder.noAttributeHistograms')"
     />
 </template>
 

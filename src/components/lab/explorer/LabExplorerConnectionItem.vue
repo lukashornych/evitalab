@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * Explorer tree item representing a single connection to evitaDB.
+ */
+
 import LabExplorerCatalogItem from './LabExplorerCatalogItem.vue'
 
 import { EvitaDBConnection, UnexpectedError } from '@/model/lab'
@@ -12,16 +16,18 @@ import { EditorService, useEditorService } from '@/services/editor/editor.servic
 import VTreeViewItemEmpty from '@/components/base/VTreeViewItemEmpty.vue'
 import { GraphQLConsoleRequest } from '@/model/editor/tab/graphQLConsole/GraphQLConsoleRequest'
 import { GraphQLInstanceType } from '@/model/editor/tab/graphQLConsole/GraphQLInstanceType'
-
-enum ActionType {
-    OpenGraphQLSystemAPIConsole = 'open-graphql-system-api-console',
-    Edit = 'edit',
-    Remove = 'remove'
-}
+import { useI18n } from 'vue-i18n'
 
 const editorService: EditorService = useEditorService()
 const labService: LabService = useLabService()
 const toaster: Toaster = useToaster()
+const { t } = useI18n()
+
+enum ActionType {
+    OpenGraphQLSystemAPIConsole = 'openGraphQLSystemApiConsole',
+    Edit = 'edit',
+    Remove = 'remove'
+}
 
 const props = defineProps<{
     connection: EvitaDBConnection
@@ -32,7 +38,7 @@ provide('connection', readonly(props.connection))
 const actions = ref<object[]>([
     {
         value: ActionType.OpenGraphQLSystemAPIConsole,
-        title: 'Open GraphQL System API console',
+        title: t(`explorer.connection.actions.${ActionType.OpenGraphQLSystemAPIConsole}`),
         props: {
             prependIcon: 'mdi-graphql'
         }
@@ -41,14 +47,14 @@ const actions = ref<object[]>([
 if (!labService.isReadOnly() && !props.connection.preconfigured) {
     // actions.value.push({
     //     value: ActionType.Edit,
-    //     title: 'Edit connection',
+    //     title: t(`explorer.connection.actions.${ActionType.Edit}`),
     //     props: {
     //         prependIcon: 'mdi-pencil'
     //     }
     // })
     actions.value.push({
         value: ActionType.Remove,
-        title: 'Remove connection',
+        title: t(`explorer.connection.actions.${ActionType.Remove}`),
         props: {
             prependIcon: 'mdi-delete'
         }
