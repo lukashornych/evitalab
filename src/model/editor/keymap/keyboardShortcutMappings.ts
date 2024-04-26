@@ -12,9 +12,8 @@ createKeyboardShortcutMapping(Command.System_Keymap, 'Ctrl+Alt+K', 'Cmd+Option+K
 
 createKeyboardShortcutMapping(Command.System_Panels_ConnectionsExplorer, 'Alt+1', 'Ctrl+Shift+1')
 
-// todo mac doesn't have pageup and pagedown
-createKeyboardShortcutMapping(Command.System_Editor_PreviousTab, 'Ctrl+Alt+PageDown', 'Cmd+Option+PageDown')
-createKeyboardShortcutMapping(Command.System_Editor_NextTab, 'Ctrl+Alt+PageUp', 'Cmd+Option+PageUp')
+createKeyboardShortcutMapping(Command.System_Editor_PreviousTab, 'Ctrl+Alt+PageUp', 'Cmd+Option+PageUp')
+createKeyboardShortcutMapping(Command.System_Editor_NextTab, 'Ctrl+Alt+PageDown', 'Cmd+Option+PageDown')
 createKeyboardShortcutMapping(Command.System_Editor_CloseTab, 'Ctrl+Q', 'Cmd+E')
 createKeyboardShortcutMapping(Command.System_Editor_CloseAllTabs, 'Ctrl+Shift+Q', 'Cmd+Shift+E')
 
@@ -30,15 +29,12 @@ createKeyboardShortcutMapping(Command.QueryEditor_SelectParentSyntax, 'Ctrl+i', 
 createKeyboardShortcutMapping(Command.QueryEditor_IndentLess, 'Ctrl+[', 'Cmd+[')
 createKeyboardShortcutMapping(Command.QueryEditor_IndentMore, 'Ctrl+]', 'Cmd+]')
 createKeyboardShortcutMapping(Command.QueryEditor_IndentSelection, 'Ctrl+Alt+\\', 'Cmd+Alt+\\')
-// todo shift+delete
-createKeyboardShortcutMapping(Command.QueryEditor_DeleteLine, 'Shift+Ctrl+k', 'Shift+Cmd+k')
+createKeyboardShortcutMapping(Command.QueryEditor_DeleteLine, 'Shift+Del', 'Shift+Del')
 createKeyboardShortcutMapping(Command.QueryEditor_CursorMatchingBracket, 'Shift+Ctrl+\\', 'Shift+Cmd+\\')
 createKeyboardShortcutMapping(Command.QueryEditor_ToggleComment, 'Ctrl+/', 'Cmd+/')
 createKeyboardShortcutMapping(Command.QueryEditor_ToggleBlockComment, 'Shift+Alt+a')
 
 // inline query editor
-
-// todo autocomplete shortcuts don't work in safari
 
 createKeyboardShortcutMapping(Command.InlineQueryEditor_OpenHistory, 'Alt+ArrowDown', 'Cmd+ArrowDown')
 
