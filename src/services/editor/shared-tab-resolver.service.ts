@@ -27,13 +27,17 @@ export class SharedTabResolver {
         }
         const shareTabObject: ShareTabObject = ShareTabObject.fromLinkParam(shareTabObjectSerialized)
 
-        switch (shareTabObject.tabType) {
+        switch (shareTabObject.tabType as string) {
+            case 'data-grid':
             case TabType.DataGrid:
                 return DataGridRequest.restoreFromJson(this.labService, shareTabObject.tabParams, shareTabObject.tabData)
+            case 'evitaql-console':
             case TabType.EvitaQLConsole:
                 return EvitaQLConsoleRequest.restoreFromJson(this.labService, shareTabObject.tabParams, shareTabObject.tabData)
+            case 'graphql-console':
             case TabType.GraphQLConsole:
                 return GraphQLConsoleRequest.restoreFromJson(this.labService, shareTabObject.tabParams, shareTabObject.tabData)
+            case 'schema-viewer':
             case TabType.SchemaViewer:
                 return SchemaViewerRequest.restoreFromJson(this.labService, shareTabObject.tabParams)
             default:
