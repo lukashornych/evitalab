@@ -193,6 +193,7 @@ defineExpose<{
                 prepend-inner-icon="mdi-format-list-bulleted-type"
                 :label="t('resultVisualizer.selector.label.data')"
                 :items="visualiserTypes"
+                :return-object="false"
                 class="visualiser__select"
                 hide-details
             />
