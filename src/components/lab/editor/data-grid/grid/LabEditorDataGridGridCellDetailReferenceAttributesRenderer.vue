@@ -8,7 +8,6 @@ import {
     DataGridData, dataLocaleKey,
     entityPropertyDescriptorKey, EntityPropertyValue, EntityReferenceValue, gridPropsKey, queryLanguageKey
 } from '@/model/editor/tab/dataGrid/data-grid'
-import { Toaster, useToaster } from '@/services/editor/toaster'
 import { Scalar } from '@/model/evitadb'
 import LabEditorDataGridGridDetailValueListItem
     from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridDetailValueListItem.vue'
@@ -17,10 +16,11 @@ import { EditorService, useEditorService } from '@/services/editor/editor.servic
 import { DataGridRequest } from '@/model/editor/tab/dataGrid/data-grid-request'
 import { DataGridService, useDataGridService } from '@/services/editor/data-grid.service'
 import { QueryLanguage } from '@/model/lab'
+import { useI18n } from 'vue-i18n'
 
 const editorService: EditorService = useEditorService()
 const dataGridService: DataGridService = useDataGridService()
-const toaster: Toaster = useToaster()
+const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
     value: EntityPropertyValue | EntityPropertyValue[],
