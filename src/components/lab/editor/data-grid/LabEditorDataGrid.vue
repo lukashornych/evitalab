@@ -87,8 +87,8 @@ const selectedPriceType = ref<QueryPriceMode | undefined>(props.data.priceType ?
 watch(selectedPriceType, () => executeQueryAutomatically())
 provide(priceTypeKey, readonly(selectedPriceType))
 
-const displayedProperties = ref<EntityPropertyKey[]>(props.data.displayedProperties ? props.data.displayedProperties : [])
-watch(displayedProperties, (newValue, oldValue) => {
+const displayedEntityProperties = ref<EntityPropertyKey[]>([])
+watch(displayedEntityProperties, (newValue, oldValue) => {
     updateDisplayedGridHeaders()
 
     // re-fetch entities only if new properties were added, only in such case there could be missing data when displaying
@@ -112,7 +112,7 @@ const currentData = computed<DataGridData>(() => {
         filterByCode.value,
         orderByCode.value,
         selectedDataLocale.value,
-        displayedProperties.value,
+        displayedEntityProperties.value,
         pageSize.value,
         pageNumber.value
     )
@@ -158,8 +158,6 @@ onBeforeMount(() => {
             if (props.params.executeOnOpen) {
                 executeQueryAutomatically()
             }
-
-            emit('ready')
         })
         .catch(error => {
             toaster.error(error)
@@ -201,7 +199,7 @@ async function initializeGridHeaders(entityPropertyDescriptors: EntityPropertyDe
 }
 
 async function updateDisplayedGridHeaders(): Promise<void> {
-    displayedGridHeaders.value = displayedProperties.value.map(propertyKey => gridHeaders.get(propertyKey.toString()))
+    displayedGridHeaders.value = displayedEntityProperties.value.map(propertyKey => gridHeaders.get(propertyKey.toString()))
 
     // sort grid headers by entity properties order
     displayedGridHeaders.value.sort((a, b) => {
@@ -210,16 +208,37 @@ async function updateDisplayedGridHeaders(): Promise<void> {
 }
 
 function preselectEntityProperties(): void {
-    if (displayedProperties.value.length > 0) {
-        // already preselected by initiator
-        // but because we don't trigger the watch to update the headers, we need to do it manually
-        updateDisplayedGridHeaders()
-        return
+    if (props.data.displayedProperties != undefined) {
+        // preselect properties from initiator
+
+        const notFoundProperties: string[] = []
+        displayedEntityProperties.value = props.data.displayedProperties
+                ?.filter(propertyKey => {
+                    const propertyFound: boolean = entityPropertyDescriptorIndex.value.get(propertyKey.toString()) != undefined
+                    if (!propertyFound) {
+                        notFoundProperties.push(propertyKey.toString())
+                    }
+                    return propertyFound
+                })
+                ?.map(it => {
+                    // we need instances created by the grid because javascript cannot do proper equals so the properties
+                    // coming from outside doesn't match these and we need to work with object not just string representation
+                    return entityPropertyDescriptorIndex.value.get(it.toString())!.key
+                })
+            || []
+
+        if (notFoundProperties.length > 0) {
+            // todo i18n
+            toaster.info('These properties were not found: ' + notFoundProperties.map(it => `'${it}'`).join(', '))
+        }
+    } else {
+        // preselect default properties
+
+        displayedEntityProperties.value = entityPropertyDescriptors
+            .filter(it => it.key.type === EntityPropertyType.Entity || it.key.type === EntityPropertyType.Prices || it.schema?.representative)
+            .map(it => it.key)
     }
 
-    displayedProperties.value = entityPropertyDescriptors
-        .filter(it => it.key.type === EntityPropertyType.Entity || it.key.type === EntityPropertyType.Prices || it.schema?.representative)
-        .map(it => it.key)
 }
 
 async function gridUpdated({ page, itemsPerPage, sortBy }: { page: number, itemsPerPage: number, sortBy: any[] }): Promise<void> {
@@ -274,7 +293,7 @@ async function executeQuery(): Promise<void> {
             orderByCode.value,
             selectedDataLocale.value,
             selectedPriceType.value,
-            displayedProperties.value,
+            displayedEntityProperties.value,
             pageNumber.value,
             pageSize.value
         )
@@ -310,7 +329,7 @@ async function executeQuery(): Promise<void> {
                     :data-locales="dataLocales"
                     v-model:selected-data-locale="selectedDataLocale"
                     v-model:selected-price-type="selectedPriceType"
-                    v-model:selected-entity-property-keys="displayedProperties"
+                    v-model:displayed-entity-properties="displayedEntityProperties"
                     @execute-query="executeQueryManually"
                 />
             </template>

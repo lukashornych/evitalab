@@ -5,7 +5,7 @@
 
 import { QueryLanguage, UnexpectedError } from '@/model/lab'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import LabEditorDataGridEntityPropertySelector
+import LabEditorDataGridPropertySelector
     from '@/components/lab/editor/data-grid/property-selector/LabEditorDataGridPropertySelector.vue'
 import LabEditorDataGridDataLocaleSelector
     from '@/components/lab/editor/data-grid/LabEditorDataGridDataLocaleSelector.vue'
@@ -43,7 +43,7 @@ const props = defineProps<{
     dataLocales: string[],
     selectedDataLocale: string | undefined,
     selectedPriceType: QueryPriceMode | undefined,
-    selectedEntityPropertyKeys: EntityPropertyKey[]
+    displayedEntityProperties: EntityPropertyKey[]
 }>()
 const emit = defineEmits<{
     (e: 'executeQuery'): void
@@ -52,7 +52,7 @@ const emit = defineEmits<{
     (e: 'update:orderBy', value: string): void
     (e: 'update:selectedDataLocale', value: string | undefined): void
     (e: 'update:selectedPriceType', value: QueryPriceMode): void
-    (e: 'update:selectedEntityPropertyKeys', value: EntityPropertyKey[]): void
+    (e: 'update:displayedEntityProperties', value: EntityPropertyKey[]): void
 }>()
 const gridProps = mandatoryInject(gridPropsKey)
 
@@ -195,10 +195,10 @@ onUnmounted(() => {
                 @update:selected="emit('update:selectedPriceType', $event)"
             />
 
-            <LabEditorDataGridEntityPropertySelector
+            <LabEditorDataGridPropertySelector
                 v-model="showPropertiesSelect"
-                :selected="selectedEntityPropertyKeys"
-                @update:selected="emit('update:selectedEntityPropertyKeys', $event)"
+                :selected="displayedEntityProperties"
+                @update:selected="emit('update:displayedEntityProperties', $event)"
                 @schema-open="showPropertiesSelect = false"
             />
         </div>
