@@ -228,8 +228,10 @@ function preselectEntityProperties(): void {
             || []
 
         if (notFoundProperties.length > 0) {
-            // todo i18n
-            toaster.info('These properties were not found: ' + notFoundProperties.map(it => `'${it}'`).join(', '))
+            toaster.info(t(
+                'entityGrid.grid.notification.failedToFindRequestedProperties',
+                { keys: notFoundProperties.map(it => `'${it}'`).join(', ') }
+            ))
         }
     } else {
         // preselect default properties

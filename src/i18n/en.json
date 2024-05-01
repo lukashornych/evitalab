@@ -351,7 +351,8 @@
     },
     "grid": {
       "notification": {
-        "failedToFindProperty": "Failed to find property descriptor for key: '{key}'"
+        "failedToFindProperty": "Failed to find property descriptor for key: '{key}'",
+        "failedToFindRequestedProperties": "These properties were requested but not found in current data: {keys}"
       },
       "cell": {
         "placeholder": {
