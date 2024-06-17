@@ -1,0 +1,150 @@
+{
+  "app": {
+    "name": "evitaLab"
+  },
+  "common": {
+    "placeholder": {
+      "empty": "<empty>",
+      "emptyArray": "<empty array>",
+      "null": "<null>",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "button": {
+      "close": "Close",
+      "cancel": "Cancel",
+      "remove": "Remove",
+      "save": "Save",
+      "run": "Run",
+      "executeQuery": "Execute query",
+      "showMore": "Show more",
+      "copy": "Copy"
+    },
+    "notification": {
+      "copiedToClipboard": "Copied to clipboard",
+      "failedToCopyToClipboard": "Failed to copy to clipboard"
+    },
+    "list": {
+      "empty": "No items found."
+    },
+    "codeEditor": {
+      "status": {
+        "cursorPosition": "Ln {line}, Col {column}",
+        "selectionRange": "{charsCount} chars",
+        "selectionRanges": "{linesCount} line breaks"
+      }
+    }
+  },
+  "toolbar": {
+    "manage": {
+      "manage": {
+        "title": "Manage",
+        "item": {
+          "keymap": "Keymap"
+        }
+      },
+      "evitaLabHelp": {
+        "title": "evitaLab Help",
+        "item": {
+          "evitaLabGithub": "evitaLab GitHub",
+          "discussEvitaLab": "Discuss evitaLab",
+          "reportEvitaLabIssue":  "Report evitaLab issue"
+        }
+      },
+      "evitaDBHelp": {
+        "title": "evitaDB Help",
+        "item": {
+          "evitaDBDocumentation": "evitaDB Documentation",
+          "evitaDBGithub":  "evitaDB GitHub",
+          "discussEvitaDB": "Discuss evitaDB",
+          "reportEvitaDBIssue":  "Report evitaDB issue"
+        }
+      }
+    },
+    "item": {
+      "explorer": "Explorer"
+    },
+    "link": {
+      "evitaDBDocumentation": {
+        "icon": {
+          "alt": "evitaDB Documentation"
+        },
+        "tooltip": "Open evitaDB documentation"
+      },
+      "discord": {
+        "icon": {
+          "alt": "Discord"
+        },
+        "tooltip": "Discuss on Discord"
+      }
+    }
+  },
+  "welcomeScreen": {
+    "changelog": "changelog",
+    "description": "evitaDB web client",
+    "blog": {
+      "thumbnail": {
+        "alt": "Image - {title}"
+      },
+      "button": {
+        "read": "Read"
+      }
+    },
+    "link": {
+      "evitaDBDocumentation": {
+        "text": "Check out the {link}",
+        "link": "evitaDB documentation"
+      },
+      "evitaLabGitHub": {
+        "text": "Give us a ⭐ on {link}",
+        "link": "GitHub"
+      },
+      "discord": {
+        "text": "Reach out to us on {link}",
+        "link": "Discord"
+      },
+      "submitIssue": "Submit an issue"
+    }
+  },
+  "tab": {
+    "placeholder": {
+      "loading": "Loading, please wait ..."
+    }
+  },
+  "tabShare": {
+    "button": {
+      "shareTab": "Share this tab"
+    },
+    "tooltip": {
+      "nonSharableTab": "Cannot share this tab because it is using a user-defined evitaDB connection. Only pre-configured connections can be shared."
+    },
+    "sharedDialog": {
+      "title": "Shared tab found",
+      "text": {
+        "withoutInitialData": "The URL contains an embedded query from an unknown source. Do you want to open it? If you accept, evitaLab will <em>open a new tab</em> with the query, but will <em>not</em> execute it automatically. You can still decide if you want to execute it. If you reject, the query in the URL will be <em>discarded</em>.",
+        "withInitialData": "The URL contains an embedded shared tab from an unknown source. Do you want to open it? If you accept it, evitaLab will <em>open a new tab</em> with the query. If you reject it, it will be <em>discarded</em>."
+      },
+      "warning": {
+        "potentiallyUnsafe": "<em>Be careful!</em> The query in the URL may contain potentially malicious code."
+      },
+      "button": {
+        "reject": "Reject",
+        "accept": "Accept"
+      }
+    },
+    "shareDialog": {
+      "title": "Share this tab",
+      "text": "You can share this tab and its data with other users via a link. This link will open a new instance of evitaLab on their device and load this tab with the same query, which should give the same output as you see now.",
+      "notification": {
+        "linkCopied": "Link copied to clipboard."
+      },
+      "warning": {
+        "sensitiveData": "Be <em>careful</em> if you have sensitive data in the query, you are giving them away embedded in the link. Once you send the link, you lose control over it and it can be opened by <em>anyone</em> who has access to this evitaLab instance.",
+        "linkMayNotWork": "The link may <em>not</em> work in certain browsers due to its length exceeding {{ urlCharacterLimit }} characters."
+      },
+      "button": {
+        "copyLink": "Copy link"
+      }
+    }
+  }
+}
