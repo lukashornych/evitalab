@@ -4,7 +4,8 @@ import LabExplorer from '@/components/lab/explorer/LabExplorer.vue'
 import LabEditor from '@/components/lab/editor/LabEditor.vue'
 
 import { ref } from 'vue'
-import { PanelType } from '@/model/lab'
+
+import { PanelType } from '@/model/PanelType'
 
 const panel = ref<string>(PanelType.Explorer)
 

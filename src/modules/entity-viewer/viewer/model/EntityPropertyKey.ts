@@ -1,4 +1,4 @@
-import { UnexpectedError } from '@/model/lab'
+import { UnexpectedError } from '@/model/UnexpectedError'
 
 /**
  * Represents key of a single typed entity property.

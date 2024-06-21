@@ -1,4 +1,3 @@
-import { EvitaDBConnection } from '@/model/lab'
 import { EntitySchema } from '@/model/evitadb'
 import {
     FacetSummaryVisualiserService
@@ -10,6 +9,7 @@ import {
 import {
     PriceHistogramVisualiserService
 } from '@/modules/console/result-visualiser/service/PriceHistogramVisualiserService'
+import { EvitaDBConnection } from '@/model/EvitaDBConnection'
 
 /**
  * Service for visualising raw JSON results from query executions of specific query language into interactive GUI.

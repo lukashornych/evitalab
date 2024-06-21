@@ -7,13 +7,13 @@ import {
     QueryPriceMode,
     ReferenceSchema
 } from '@/model/evitadb'
-import { UnexpectedError } from '@/model/lab'
 import {
     DataGridDataPointer,
     EntityPropertyKey,
     EntityPropertyType,
     StaticEntityProperties
 } from '@/model/editor/tab/dataGrid/data-grid'
+import { UnexpectedError } from '@/model/UnexpectedError'
 
 const priceInPriceListsConstraintPattern = /priceInPriceLists\s*:\s*\[?\s*"[A-Za-z0-9_.\-~]+"/
 const priceInCurrencyConstraintPattern = /priceInCurrency\s*:\s*[A-Z_]+/

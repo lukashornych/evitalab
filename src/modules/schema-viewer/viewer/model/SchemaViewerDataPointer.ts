@@ -1,6 +1,5 @@
-import { EvitaDBConnection } from '@/model/lab'
-
 import { SchemaPointer } from '@/model/editor/tab/schemaViewer/SchemaPointer'
+import { EvitaDBConnection } from '@/model/EvitaDBConnection'
 
 /**
  * Points to concrete evitaDB schema (catalog, entity, attributes, ...)

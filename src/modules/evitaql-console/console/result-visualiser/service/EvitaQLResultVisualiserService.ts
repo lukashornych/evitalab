@@ -1,5 +1,4 @@
 import { LabService } from '@/services/lab.service'
-import { EvitaDBConnection, UnexpectedError } from '@/model/lab'
 import { CatalogSchema, EntitySchema } from '@/model/evitadb'
 import {
     EvitaQLFacetSummaryVisualiserService
@@ -15,6 +14,8 @@ import {
 } from '@/modules/console/result-visualiser/service/EvitaQLPriceHistogramVisualiserService'
 import { inject, InjectionKey } from 'vue'
 import { key } from '@/modules/console/result-visualiser/service/evitaql-result-visualiser.service'
+import { EvitaDBConnection } from '@/model/EvitaDBConnection'
+import { UnexpectedError } from '@/model/UnexpectedError'
 
 export const key: InjectionKey<EvitaQLResultVisualiserService> = Symbol()
 

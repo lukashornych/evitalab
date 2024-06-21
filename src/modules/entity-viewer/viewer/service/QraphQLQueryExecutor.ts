@@ -2,13 +2,13 @@ import { QueryExecutor } from '@/services/editor/data-grid/query-executor'
 import { LabService } from '@/services/lab.service'
 import { GraphQLClient } from '@/services/graphql-client'
 import { QueryError } from '@/services/evitadb-client'
-import { UnexpectedError } from '@/model/lab'
 import {
     DataGridDataPointer, EntityPrice, EntityPrices,
     EntityPropertyKey, EntityPropertyType, EntityReferenceValue, FlatEntity, NativeValue,
     QueryResult,
     StaticEntityProperties, WritableEntityProperty
 } from '@/model/editor/tab/dataGrid/data-grid'
+import { UnexpectedError } from '@/model/UnexpectedError'
 
 /**
  * Query executor for GraphQL language.

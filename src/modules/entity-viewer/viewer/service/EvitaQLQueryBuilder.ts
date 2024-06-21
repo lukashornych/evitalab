@@ -7,13 +7,13 @@ import {
     QueryPriceMode,
     ReferenceSchema
 } from '@/model/evitadb'
-import { UnexpectedError } from '@/model/lab'
 import {
     DataGridDataPointer,
     EntityPropertyKey,
     EntityPropertyType,
     StaticEntityProperties
 } from '@/model/editor/tab/dataGrid/data-grid'
+import { UnexpectedError } from '@/model/UnexpectedError'
 
 /**
  * Query builder for EvitaQL language.

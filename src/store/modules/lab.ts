@@ -1,7 +1,10 @@
-import { DuplicateEvitaDBConnectionError, EvitaDBBlogPost, EvitaDBConnection, EvitaDBConnectionId } from '@/model/lab'
 import { Catalog, CatalogSchema, EntitySchema, EntitySchemas } from '@/model/evitadb'
 import Cookies from 'js-cookie'
 import { LabStorage } from '@/services/lab-storage'
+import { EvitaDBConnectionId } from '@/model/EvitaDBConnectionId'
+import { EvitaDBConnection } from '@/model/EvitaDBConnection'
+import { EvitaDBBlogPost } from '@/model/EvitaDBBlogPost'
+import { DuplicateEvitaDBConnectionError } from '@/model/DuplicateEvitaDBConnectionError'
 
 /**
  * Cookie containing the name of a hosting server. This is mainly for namespacing storages.
@@ -129,7 +132,7 @@ const state = (): LabState => {
     Cookies.remove(preconfiguredConnectionsCookieName)
 
     return {
-        serverName,
+        serverName: name,
         storage,
         readOnly,
         preconfiguredConnections,
@@ -147,7 +150,7 @@ const getters: LabGetters = {
             return [...state.preconfiguredConnections, ...state.userConnections].find((c: any) => c.name === connectionName) !== undefined
         }
     },
-    getConnection(state: LabState): (id: EvitaDBConnectionId) => EvitaDBConnection | undefined {
+    světgetConnection(state: LabState): (id: EvitaDBConnectionId) => EvitaDBConnection | undefined {
         return (id: EvitaDBConnectionId) => {
             // todo index by id
             return [...state.preconfiguredConnections, ...state.userConnections].find((c: any) => c.id === id)

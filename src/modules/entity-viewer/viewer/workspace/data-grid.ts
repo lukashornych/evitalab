@@ -1,18 +1,18 @@
-import { QueryLanguage } from '@/model/lab'
 import { QueryPriceMode } from '@/model/evitadb'
 import { InjectionKey, Ref } from 'vue'
 import { TabComponentProps } from '@/model/editor/tab/TabComponentProps'
-import { EntityViewerParams } from '@/modules/entity-viewer/viewer/workspace/EntityViewerParams'
-import { EntityViewerData } from '@/modules/entity-viewer/viewer/workspace/EntityViewerData'
+import { EntityViewerTabParams } from '@/modules/entity-viewer/viewer/workspace/EntityViewerTabParams'
+import { EntityViewerTabData } from '@/modules/entity-viewer/viewer/workspace/EntityViewerTabData'
 import { EntityPropertyType } from '@/modules/entity-viewer/viewer/workspace/entity-property-type'
 import { StaticEntityProperties } from '@/modules/entity-viewer/viewer/workspace/static-entity-properties'
 import { EntityPropertyDescriptor } from '@/modules/entity-viewer/viewer/workspace/EntityPropertyDescriptor'
 import { FlatEntity } from '@/modules/entity-viewer/viewer/workspace/FlatEntity'
+import { QueryLanguage } from '@/model/QueryLanguage'
 
 /**
  * Dependency injection key for data grid props
  */
-export const gridPropsKey = Symbol('gridProps') as InjectionKey<TabComponentProps<EntityViewerParams, EntityViewerData>>
+export const gridPropsKey = Symbol('gridProps') as InjectionKey<TabComponentProps<EntityViewerTabParams, EntityViewerTabData>>
 /**
  * Dependency injection key for index of available entity property descriptors
  */

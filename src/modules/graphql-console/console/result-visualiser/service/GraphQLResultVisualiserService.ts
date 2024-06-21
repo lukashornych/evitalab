@@ -1,5 +1,4 @@
 import { LabService } from '@/services/lab.service'
-import { EvitaDBConnection, UnexpectedError } from '@/model/lab'
 import { CatalogSchema, EntitySchema } from '@/model/evitadb'
 import {
     GraphQLFacetSummaryVisualiserService
@@ -14,6 +13,8 @@ import {
     GraphQLPriceHistogramVisualiserService
 } from '@/modules/graphql-console/console/result-visualiser/service/GraphQLPriceHistogramVisualiserService'
 import { inject, InjectionKey } from 'vue'
+import { EvitaDBConnection } from '@/model/EvitaDBConnection'
+import { UnexpectedError } from '@/model/UnexpectedError'
 
 export const key: InjectionKey<GraphQLResultVisualiserService> = Symbol()
 

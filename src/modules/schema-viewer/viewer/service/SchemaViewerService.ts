@@ -9,7 +9,6 @@ import {
     GlobalAttributeSchema,
     ReferenceSchema
 } from '@/model/evitadb'
-import { UnexpectedError } from '@/model/lab'
 import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaViewerDataPointer'
 import { SchemaPointer } from '@/model/editor/tab/schemaViewer/SchemaPointer'
 import { CatalogSchemaPointer } from '@/model/editor/tab/schemaViewer/CatalogSchemaPointer'
@@ -19,6 +18,7 @@ import { EntityAttributeSchemaPointer } from '@/model/editor/tab/schemaViewer/En
 import { ReferenceAttributeSchemaPointer } from '@/model/editor/tab/schemaViewer/ReferenceAttributeSchemaPointer'
 import { AssociatedDataSchemaPointer } from '@/model/editor/tab/schemaViewer/AssociatedDataSchemaPointer'
 import { ReferenceSchemaPointer } from '@/model/editor/tab/schemaViewer/ReferenceSchemaPointer'
+import { UnexpectedError } from '@/model/UnexpectedError'
 
 export const key: InjectionKey<SchemaViewerService> = Symbol()
 

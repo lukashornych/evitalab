@@ -9,7 +9,6 @@ import {
     QueryResult,
     StaticEntityProperties
 } from '@/model/editor/tab/dataGrid/data-grid'
-import { QueryLanguage, UnexpectedError } from '@/model/lab'
 import { QueryExecutor } from '@/services/editor/data-grid/query-executor'
 import { QueryBuilder } from '@/services/editor/data-grid/query-builder'
 import { EvitaQLQueryBuilder } from '@/services/editor/data-grid/evitaql-query-builder'
@@ -24,6 +23,8 @@ import { EntityPropertyValueFormatter } from '@/services/editor/data-grid/entity
 import { EntityPropertyValueRawFormatter } from '@/services/editor/data-grid/entity-property-value-raw-formatter'
 import { EntityPropertyValueJsonFormatter } from '@/services/editor/data-grid/entity-property-value-json-formatter'
 import { EntityPropertyValueXmlFormatter } from '@/services/editor/data-grid/entity-property-value-xml-formatter'
+import { QueryLanguage } from '@/model/QueryLanguage'
+import { UnexpectedError } from '@/model/UnexpectedError'
 
 export const key: InjectionKey<EntityViewerService> = Symbol()
 

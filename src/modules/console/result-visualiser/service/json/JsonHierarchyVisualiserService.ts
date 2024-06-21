@@ -1,6 +1,7 @@
 import { JsonResultVisualiserService } from '@/modules/console/result-visualiser/service/JsonResultVisualiserService'
 import { EntitySchema, ReferenceSchema } from '@/model/evitadb'
-import { UnexpectedError } from '@/model/lab'
+
+import { UnexpectedError } from '@/model/UnexpectedError'
 
 /**
  * Common abstract for all JSON-based hierarchy visualiser services.
