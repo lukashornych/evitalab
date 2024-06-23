@@ -9,9 +9,9 @@ import { EvitaDBInstanceServerError } from '@/model/EvitaDBInstanceServerError'
 import { EvitaDBInstanceNetworkError } from '@/model/EvitaDBInstanceNetworkError'
 
 /**
- * Common base for all API clients.
+ * Common base for all HTTP API clients.
  */
-export abstract class ApiClient {
+export abstract class HttpApiClient {
     protected readonly httpClient: KyInstance
     protected readonly myStore = store
 

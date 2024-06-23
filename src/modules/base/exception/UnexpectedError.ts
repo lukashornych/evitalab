@@ -1,5 +1,5 @@
-import { LabInternalError } from '@/model/LabInternalError'
-import { EvitaDBConnection } from '@/model/EvitaDBConnection'
+import { EvitaDBConnectionId } from '@/modules/connection/model/EvitaDBConnectionId'
+import { EvitaDBConnection } from '@/modules/connection/model/EvitaDBConnection'
 
 /**
  * Unexpected error that should never happen. We don't know what happened.

@@ -1,16 +1,14 @@
-import { GraphQLResponse } from '@/model/graphql'
-import { ApiClient } from '@/services/api-client'
-import { EvitaDBConnection } from '@/model/EvitaDBConnection'
+import { HttpApiClient } from '@/modules/driver-support/service/HttpApiClient'
 
 /**
  * Simplified GraphQL API client that doesn't need to know about specific GraphQL schemas.
  */
-export class GraphQLClient extends ApiClient {
+export class GraphQLClient extends HttpApiClient {
 
     /**
      * Fetches data from evitaDB GraphQL API.
      */
-    async fetch(connection: EvitaDBConnection, path: string, query: string, variables: any = {}): Promise<GraphQLResponse> {
+    async fetch(connection: Connection, path: string, query: string, variables: any = {}): Promise<GraphQLResponse> {
         try {
             return (
                 await this.httpClient.post(

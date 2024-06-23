@@ -1,12 +1,13 @@
 import { inject, InjectionKey } from 'vue'
 import { ConnectionStore, useConnectionStore } from '@/modules/connection/store/connectionStore'
-import { EvitaDBClient } from '@/modules/connection/driver/service/EvitaDBClient'
 import Cookies from 'js-cookie'
 import { EvitaDBConnection } from '@/modules/connection/model/EvitaDBConnection'
 import { LabStorage } from '@/modules/storage/LabStorage'
 import { EvitaDBConnectionId } from '@/modules/connection/model/EvitaDBConnectionId'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { DuplicateEvitaDBConnectionError } from '@/modules/connection/exception/DuplicateEvitaDBConnectionError'
+import { Catalog } from '@/modules/connection/model/Catalog'
+import { CatalogSchema } from '@/modules/connection/model/CatalogSchema'
 
 /**
  * Cookie containing preconfigured connections. These will be displayed next to the user-defined connections.
@@ -24,21 +25,18 @@ export const key: InjectionKey<ConnectionManager> = Symbol()
 export class ConnectionManager {
     private readonly store: ConnectionStore
     private readonly labStorage: LabStorage
-    private readonly evitaDBClient: EvitaDBClient
 
-    private constructor(store: ConnectionStore, labStorage: LabStorage, evitaDBClient: EvitaDBClient) {
+    private constructor(store: ConnectionStore, labStorage: LabStorage) {
         this.store = store
         this.labStorage = labStorage
-        this.evitaDBClient = evitaDBClient
     }
 
     /**
      * Loads data and initializes connection manager
      *
      * @param labStorage
-     * @param evitaDBClient
      */
-    static load(labStorage: LabStorage, evitaDBClient: EvitaDBClient): ConnectionManager {
+    static load(labStorage: LabStorage): ConnectionManager {
         const store: ConnectionStore = useConnectionStore()
 
         let preconfiguredConnections: EvitaDBConnection[] = []
@@ -75,6 +73,7 @@ export class ConnectionManager {
 
         // load user-defined connections from local storage
         const userConnections: EvitaDBConnection[] = labStorage.get(userConnectionsStorageKey, [])
+            .map((it: any) => EvitaDBConnection.fromJson(it, false))
 
         // inject connections into the lab
         store.replacePreconfiguredConnections(preconfiguredConnections)
@@ -83,7 +82,7 @@ export class ConnectionManager {
         // expire cookies, so when the lab is reloaded, it will load new cookie values
         Cookies.remove(preconfiguredConnectionsCookieName)
 
-        return new ConnectionManager(store, labStorage, evitaDBClient)
+        return new ConnectionManager(store, labStorage)
     }
 
     /**
@@ -132,185 +131,57 @@ export class ConnectionManager {
         this.labStorage.set(userConnectionsStorageKey, this.store.userConnections)
     }
 
-    getCatalog = async (connection: EvitaDBConnection, catalogName: string): Promise<Catalog> => {
-        let catalog: Catalog | undefined = this.store.getters['lab/getCatalog'](connection.id, catalogName)
+    /**
+     * Returns cached catalog. If not present, it tries to fetch current catalog.
+     */
+    async getCatalog(connection: EvitaDBConnection, catalogName: string): Promise<Catalog> {
+        let catalog: Catalog | undefined = this.store.cachedCatalogs.get(connection.id)?.get(catalogName)
         if (catalog == undefined) {
             await this.fetchCatalogs(connection)
 
-            catalog = this.store.getters['lab/getCatalog'](connection.id, catalogName)
+            catalog = this.store.cachedCatalogs.get(connection.id)?.get(catalogName)
             if (catalog == undefined) {
-                throw new UnexpectedError(undefined, `Catalog ${catalogName} not found.`)
+                throw new UnexpectedError(connection, `Catalog ${catalogName} not found.`)
             }
         }
         return catalog
     }
 
-    getCatalogs = async (connection: EvitaDBConnection): Promise<Catalog[]> => {
-        let catalogs: Catalog[] | undefined = this.store.getters['lab/getCatalogs'](connection.id)
-        if (catalogs == undefined) {
-            catalogs = await this.fetchCatalogs(connection)
+    async getCatalogs(connection: EvitaDBConnection): Promise<Catalog[]> {
+        const cachedCatalogs: IterableIterator<Catalog> | undefined = this.store.cachedCatalogs.get(connection.id)?.values()
+        if (cachedCatalogs == undefined) {
+            return await this.fetchCatalogs(connection)
+        } else {
+            return Array.from(cachedCatalogs)
         }
-        return catalogs
     }
 
-    getCatalogSchema = async (connection: EvitaDBConnection, catalogName: string): Promise<CatalogSchema> => {
-        let catalogSchema: CatalogSchema | undefined = this.store.getters['lab/getCatalogSchema'](connection.id, catalogName)
+    async getCatalogSchema(connection: EvitaDBConnection, catalogName: string): Promise<CatalogSchema> {
+        let catalogSchema: CatalogSchema | undefined = this.store.cachedCatalogSchemas.get(connection.id)?.get(catalogName)
         if (catalogSchema == undefined) {
             catalogSchema = await this.fetchCatalogSchema(connection, catalogName)
         }
         return catalogSchema
     }
 
-    getEntitySchema = async (connection: EvitaDBConnection, catalogName: string, entityType: string): Promise<EntitySchema> => {
-        // todo lho why this logic is in the store if other getters are here?
-        let entitySchema: EntitySchema | undefined = this.store.getters['lab/getEntitySchema'](connection.id, catalogName, entityType)
-        if (entitySchema == undefined) {
-            await this.getCatalogSchema(connection, catalogName)
-            entitySchema = this.store.getters['lab/getEntitySchema'](connection.id, catalogName, entityType)
-            if (entitySchema == undefined) {
-                throw new UnexpectedError(connection, `Entity ${entityType} not found.`)
-            }
-        }
-        return entitySchema
-    }
-
-    getEntitySchemaFlags = (schema: EntitySchema): string[] => {
-        const flags: string[] = []
-        if (schema.withHierarchy) flags.push(EntitySchemaFlag.Hierarchical)
-        return flags
-    }
-
-    getCatalogAttributeSchema = async (connection: EvitaDBConnection, catalogName: string, attributeName: string): Promise<GlobalAttributeSchema> => {
-        const catalogSchema: CatalogSchema = await this.getCatalogSchema(connection, catalogName)
-        const attributeSchema: GlobalAttributeSchema | undefined = Object.values(catalogSchema.attributes)
-            .find(attribute => attribute.name === attributeName)
-        if (attributeSchema == undefined) {
-            throw new UnexpectedError(connection, `Attribute '${attributeName}' not found in catalog '${catalogName}'.`)
-        }
-        return attributeSchema
-    }
-
-    getEntityAttributeSchema = async (connection: EvitaDBConnection, catalogName: string, entityType: string, attributeName: string): Promise<AttributeSchemaUnion> => {
-        const entitySchema: EntitySchema = await this.getEntitySchema(connection, catalogName, entityType)
-        const attributeSchema: AttributeSchemaUnion | undefined = Object.values(entitySchema.attributes)
-            .find(attribute => attribute.name === attributeName)
-        if (attributeSchema == undefined) {
-            throw new UnexpectedError(connection, `Attribute '${attributeName}' not found in entity '${entityType}' in catalog '${catalogName}'.`)
-        }
-        return attributeSchema
-    }
-
-    getReferenceAttributeSchema = async (connection: EvitaDBConnection,
-                                         catalogName: string,
-                                         entityType: string,
-                                         referenceName: string,
-                                         attributeName: string): Promise<AttributeSchemaUnion> => {
-        const referenceSchema: ReferenceSchema = await this.getReferenceSchema(connection, catalogName, entityType, referenceName)
-        const attributeSchema: AttributeSchemaUnion | undefined = Object.values(referenceSchema.attributes)
-            .find(attribute => attribute.name === attributeName)
-        if (attributeSchema == undefined) {
-            throw new UnexpectedError(connection, `Attribute '${attributeName}' not found in reference '${referenceName}' in entity '${entityType}' in catalog '${catalogName}'.`)
-        }
-        return attributeSchema
-    }
-
-    getAttributeSchemaFlags = (schema: AttributeSchemaUnion): string[] => {
-        const flags: string[] = []
-        flags.push(this.formatDataTypeForFlag(schema.type))
-        const globalAttribute = 'globalUniquenessType' in schema
-        const entityAttribute = 'representative' in schema
-        if (entityAttribute && (schema as EntityAttributeSchema).representative) {
-            flags.push(AttributeSchemaFlag.Representative)
-        }
-        if (globalAttribute && (schema as GlobalAttributeSchema).globalUniquenessType === GlobalAttributeUniquenessType.UniqueWithinCatalog) {
-            flags.push(AttributeSchemaFlag.GloballyUnique)
-        } else if (globalAttribute && (schema as GlobalAttributeSchema).globalUniquenessType === GlobalAttributeUniquenessType.UniqueWithinCatalogLocale) {
-            flags.push(AttributeSchemaFlag.GloballyUniquePerLocale)
-        } else if (schema.uniquenessType === AttributeUniquenessType.UniqueWithinCollection) {
-            flags.push(AttributeSchemaFlag.Unique)
-        } else if (schema.uniquenessType === AttributeUniquenessType.UniqueWithinCollectionLocale) {
-            flags.push(AttributeSchemaFlag.UniquePerLocale)
-        }
-        if ((globalAttribute && (schema as GlobalAttributeSchema).globalUniquenessType != GlobalAttributeUniquenessType.NotUnique) ||
-            schema.uniquenessType != AttributeUniquenessType.NotUnique ||
-            schema.filterable)
-            flags.push(AttributeSchemaFlag.Filterable)
-        if (schema.sortable) flags.push(AttributeSchemaFlag.Sortable)
-        if (schema.localized) flags.push(AttributeSchemaFlag.Localized)
-        if (schema.nullable) flags.push(AttributeSchemaFlag.Nullable)
-        return flags
-    }
-
-    getAssociatedDataSchema = async (connection: EvitaDBConnection, catalogName: string, entityType: string, associatedDataName: string): Promise<AssociatedDataSchema> => {
-        const entitySchema: EntitySchema = await this.getEntitySchema(connection, catalogName, entityType)
-        const associatedData: AssociatedDataSchema | undefined = Object.values(entitySchema.associatedData)
-            .find(associatedData => associatedData.name === associatedDataName)
-        if (associatedData == undefined) {
-            throw new UnexpectedError(connection, `Associated data '${associatedDataName}' not found in entity '${entityType}' in catalog '${catalogName}'.`)
-        }
-        return associatedData
-    }
-
-    getAssociatedDataSchemaFlags = (schema: AssociatedDataSchema): string[] => {
-        const flags: string[] = []
-        flags.push(this.formatDataTypeForFlag(schema.type))
-        if (schema.localized) flags.push(AssociatedDataSchemaFlag.Localized)
-        if (schema.nullable) flags.push(AssociatedDataSchemaFlag.Nullable)
-        return flags
-    }
-
-    getReferenceSchema = async (connection: EvitaDBConnection, catalogName: string, entityType: string, referenceName: string): Promise<ReferenceSchema> => {
-        const entitySchema: EntitySchema = await this.getEntitySchema(connection, catalogName, entityType)
-        const referenceSchema: ReferenceSchema | undefined = Object.values(entitySchema.references)
-            .find(reference => reference.name === referenceName)
-        if (referenceSchema == undefined) {
-            throw new UnexpectedError(connection, `Reference '${referenceName}' not found in entity '${entityType}' in catalog '${catalogName}'.`)
-        }
-        return referenceSchema
-    }
-
-    getReferenceSchemaFlags = (schema: ReferenceSchema): string[] => {
-        const flags: string[] = []
-        if (!schema.referencedEntityTypeManaged) flags.push(ReferenceSchemaFlag.External)
-        if (schema.indexed) flags.push(ReferenceSchemaFlag.Indexed)
-        if (schema.faceted) flags.push(ReferenceSchemaFlag.Faceted)
-        return flags
-    }
-
     private async fetchCatalogs(connection: EvitaDBConnection): Promise<Catalog[]> {
-        const fetchedCatalogs: Catalog[] = await this.evitaDBClient.getCatalogs(connection)
-
-        this.store.commit(
-            'lab/putCatalogs',
-            {
-                connectionId: connection.id,
-                catalogs: fetchedCatalogs
-            }
+        const fetchedCatalogs: Catalog[] = await (await connection.getResolvedDriver()).getCatalogs(connection)
+        this.store.cachedCatalogs.set(
+            connection.id,
+            new Map<string, Catalog>(fetchedCatalogs.map(catalog => [catalog.name, catalog]))
         )
-
         return fetchedCatalogs
     }
 
     private async fetchCatalogSchema(connection: EvitaDBConnection, catalogName: string): Promise<CatalogSchema> {
         const catalog: Catalog = await this.getCatalog(connection, catalogName)
 
-        const fetchedCatalogSchema: CatalogSchema = await this.evitaDBClient.getCatalogSchema(connection, catalog.name)
-
-        this.store.commit(
-            'lab/putCatalogSchema',
-            {
-                connectionId: connection.id,
-                catalogSchema: fetchedCatalogSchema
-            }
+        const fetchedCatalogSchema: CatalogSchema = await (await connection.getResolvedDriver()).getCatalogSchema(connection, catalog.name)
+        this.store.cachedCatalogSchemas.set(
+            connection.id,
+            new Map<string, CatalogSchema>([[fetchedCatalogSchema.name, fetchedCatalogSchema]])
         )
-
         return fetchedCatalogSchema
-    }
-
-    private formatDataTypeForFlag(dataType: string): string {
-        return dataType
-            .replace('ComplexDataObject', 'Object')
-            .replace('Array', '[]')
     }
 }
 

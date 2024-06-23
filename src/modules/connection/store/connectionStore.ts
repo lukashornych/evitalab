@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { computed, ComputedRef, readonly, Ref, ref, UnwrapRef } from 'vue'
 import { EvitaDBConnection } from '@/modules/connection/model/EvitaDBConnection'
+import { EvitaDBConnectionId } from '@/modules/connection/model/EvitaDBConnectionId'
+import { Catalog, CatalogSchema } from '@/modules/connection/driver/model/evitadb'
 
 /**
  * Defines Pinia store for evitaDB connections
@@ -14,7 +16,6 @@ export const useConnectionStore = defineStore('connections', () => {
      * List of configured evitaDB servers by user.
      */
     const userConnections: Ref<UnwrapRef<EvitaDBConnection[]>> = ref<EvitaDBConnection[]>([])
-
     /**
      * All connections
      */
@@ -33,12 +34,18 @@ export const useConnectionStore = defineStore('connections', () => {
         userConnections.value.push(...newConnections)
     }
 
+
+    const cachedCatalogs: Ref<Map<EvitaDBConnectionId, Map<string, Catalog>>> = ref(new Map())
+    const cachedCatalogSchemas: Ref<Map<EvitaDBConnectionId, Map<string, CatalogSchema>>> = ref(new Map())
+
     return {
         preconfiguredConnections: readonly(preconfiguredConnections),
         userConnections,
         connections,
         replacePreconfiguredConnections,
-        replaceUserConnections
+        replaceUserConnections,
+        cachedCatalogs,
+        cachedCatalogSchemas
     }
 })
 

@@ -13,7 +13,7 @@ import { UnexpectedError } from '@/model/UnexpectedError'
 /**
  * Query executor for GraphQL language.
  */
-export class QraphQLQueryExecutor extends QueryExecutor {
+export class GraphQLQueryExecutor extends QueryExecutor {
     private readonly graphQLClient: GraphQLClient
 
     constructor(labService: LabService, graphQLClient: GraphQLClient) {

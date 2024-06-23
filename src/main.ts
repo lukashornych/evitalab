@@ -10,6 +10,8 @@ import router from '@/vue-plugins/router'
 import pinia from '@/vue-plugins/pinia'
 import { EvitaLabConfig } from '@/modules/config/EvitaLabConfig'
 import { ConnectionManager } from '@/modules/connection/service/ConnectionManager'
+import { EvitaDBServerProbe } from '@/modules/connection/service/EvitaDBServerProbe'
+import { EvitaDBDriverResolver } from '@/modules/connection/driver/EvitaDBDriverResolver'
 
 /**
  * Bootstraps the entire evitaLab.
@@ -59,5 +61,7 @@ app
     .provide(graphqlResultVisualiserServiceKey, graphQLResultVisualizerService)
     .provide(evitaQLResultVisualiserServiceKey, evitaQLResultVisualizerService)
     .provide(ConnectionManager.load(labStorage, evitaDBClient))
+    .provide(new EvitaDBServerProbe())
+    .provide(new EvitaDBDriverResolver())
 
 app.mount('#app')

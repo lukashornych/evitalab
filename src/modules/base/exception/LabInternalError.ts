@@ -1,5 +1,5 @@
-import { LabError } from '@/model/LabError'
-import { EvitaDBConnection } from '@/model/EvitaDBConnection'
+import { LabError } from '@/modules/base/exception/LabError'
+import { EvitaDBConnection } from '@/modules/connection/model/EvitaDBConnection'
 
 /**
  * Base lab-specific error indicated that something unexpected happened and user cannot do anything about it.
