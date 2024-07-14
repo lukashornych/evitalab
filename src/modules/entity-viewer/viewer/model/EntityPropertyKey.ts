@@ -1,4 +1,5 @@
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { EntityPropertyType } from '@/modules/entity-viewer/viewer/model/EntityPropertyType'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 
 /**
  * Represents key of a single typed entity property.
@@ -11,14 +12,14 @@ export class EntityPropertyKey {
 
     get parentName(): string {
         if (this.names.length < 2) {
-            throw new UnexpectedError(undefined, `Parent name of entity property for type ${this.type} is not supported`)
+            throw new UnexpectedError(`Parent name of entity property for type ${this.type} is not supported`)
         }
         return this.names[0]
     }
 
     get name(): string {
         if (this.names.length === 0) {
-            throw new UnexpectedError(undefined, `Name of entity property for type ${this.type} is not supported`)
+            throw new UnexpectedError(`Name of entity property for type ${this.type} is not supported`)
         }
         return this.names.at(-1)!
     }
@@ -26,7 +27,7 @@ export class EntityPropertyKey {
     private constructor(type: EntityPropertyType, names: string[] = []) {
         this.type = type
         if (names.length > 2) {
-            throw new UnexpectedError(undefined, `Cannot create entity property key with more than two names: ${names}`)
+            throw new UnexpectedError(`Cannot create entity property key with more than two names: ${names}`)
         }
         this.names = names
     }

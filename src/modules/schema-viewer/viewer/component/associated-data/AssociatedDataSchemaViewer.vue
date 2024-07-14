@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import LabEditorViewerNameVariants from './LabEditorSchemaViewerNameVariants.vue'
-import LabEditorViewerContainer from './LabEditorSchemaViewerContainer.vue'
-import { AssociatedDataSchema, Scalar } from '@/model/evitadb'
-import { KeywordValue, Property, PropertyValue } from '@/model/properties-table'
-import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaViewerDataPointer'
 import { useI18n } from 'vue-i18n'
+import { SchemaViewerDataPointer } from '@/modules/schema-viewer/viewer/model/SchemaViewerDataPointer'
+import { AssociatedDataSchema } from '@/modules/connection/model/schema/AssociatedDataSchema'
+import { Property } from '@/modules/base/model/properties-table/Property'
+import { PropertyValue } from '@/modules/base/model/properties-table/PropertyValue'
+import { KeywordValue } from '@/modules/base/model/properties-table/KeywordValue'
+import { Scalar } from '@/modules/connection/driver/2024_8/model/model'
+import SchemaContainer from '@/modules/schema-viewer/viewer/component/SchemaContainer.vue'
+import NameVariants from '@/modules/schema-viewer/viewer/component/NameVariants.vue'
 
 const { t } = useI18n()
 
@@ -14,21 +17,21 @@ const props = defineProps<{
 }>()
 
 const properties: Property[] = [
-    { name: t('schemaViewer.associatedDatum.label.type'), value: new PropertyValue(new KeywordValue(props.schema.type.replace(Scalar.ComplexDataObject, 'Object'))) },
-    { name: t('schemaViewer.associatedDatum.label.description'), value: new PropertyValue(props.schema.description) },
-    { name: t('schemaViewer.associatedDatum.label.deprecationNotice'), value: new PropertyValue(props.schema.deprecationNotice) },
-    { name: t('schemaViewer.associatedDatum.label.localized'), value: new PropertyValue(props.schema.localized as boolean) },
-    { name: t('schemaViewer.associatedDatum.label.nullable'), value: new PropertyValue(props.schema.nullable as boolean) }
+    { name: t('schemaViewer.associatedDatum.label.type'), value: new PropertyValue(new KeywordValue(props.schema.type.getIfSupported()!.replace(Scalar.ComplexDataObject, 'Object'))) },
+    { name: t('schemaViewer.associatedDatum.label.description'), value: new PropertyValue(props.schema.description.getIfSupported()!) },
+    { name: t('schemaViewer.associatedDatum.label.deprecationNotice'), value: new PropertyValue(props.schema.deprecationNotice.getIfSupported()!) },
+    { name: t('schemaViewer.associatedDatum.label.localized'), value: new PropertyValue(props.schema.localized.getOrElse(false)) },
+    { name: t('schemaViewer.associatedDatum.label.nullable'), value: new PropertyValue(props.schema.nullable.getOrElse(false)) }
 ]
 
 </script>
 
 <template>
-    <LabEditorViewerContainer :properties="properties">
+    <SchemaContainer :properties="properties">
         <template #nested-details>
-            <LabEditorViewerNameVariants :name-variants="schema.nameVariants" />
+            <NameVariants :name-variants="schema.nameVariants.getIfSupported()!" />
         </template>
-    </LabEditorViewerContainer>
+    </SchemaContainer>
 </template>
 
 <style lang="scss" scoped>

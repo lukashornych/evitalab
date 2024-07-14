@@ -1,23 +1,24 @@
 <script setup lang="ts">
 
 import { onMounted, onUnmounted, ref, watch } from 'vue'
-import LabEditorTabWindow from './tab/LabEditorTabWindow.vue'
-import LabEditorWelcomeScreen from './LabEditorWelcomeScreen.vue'
 import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router'
-import LabEditorTabSharedDialog from '@/components/lab/editor/tab/LabEditorTabSharedDialog.vue'
-import VActionTooltip from '@/components/base/VActionTooltip.vue'
-import { useWorkspaceManager, WorkspaceManager } from '@/modules/workspace/service/WorkspaceManager'
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
 import { TabDefinition } from '@/modules/workspace/tab/model/TabDefinition'
 import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
 import { useToaster } from '@/modules/notification/service/Toaster'
 import { DemoSnippetResolver, useDemoSnippetResolver } from '@/modules/workspace/service/DemoSnippetResolver'
 import { SharedTabResolver, useSharedTabResolver } from '@/modules/workspace/tab/service/SharedTabResolver'
-import { TabData } from '@/modules/workspace/tab/model/TabData'
+import { Command } from '@/modules/keymap/model/Command'
+import { ellipsis } from '../../../../utils/text'
+import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
+import TabWindow from '@/modules/workspace/tab/component/TabWindow.vue'
+import WelcomeScreen from '@/modules/welcome-screen/component/WelcomeScreen.vue'
+import TabSharedDialog from '@/modules/workspace/tab/component/TabSharedDialog.vue'
 
 const currentRoute: RouteLocationNormalizedLoaded = useRoute()
 const toaster = useToaster()
 const keymap: Keymap = useKeymap()
-const workspaceManager: WorkspaceManager = useWorkspaceManager()
+const workspaceService: WorkspaceService = useWorkspaceService()
 const demoCodeSnippetResolver: DemoSnippetResolver = useDemoSnippetResolver()
 const sharedTabResolver: SharedTabResolver = useSharedTabResolver()
 
@@ -29,13 +30,13 @@ const playgroundMode = ref<boolean>(false)
 const sharedTabDialogOpen = ref<boolean>(false)
 const sharedTabRequest = ref<TabDefinition<any, any> | undefined>()
 
-const tabDefinitions = ref<TabDefinition<any, any>[]>(workspaceManager.getTabDefinitions())
+const tabDefinitions = ref<TabDefinition<any, any>[]>(workspaceService.getTabDefinitions())
 watch(tabDefinitions, () => {
     // switch to newly opened tab
-    const newTab: TabDefinition<any, any> | undefined = workspaceManager.getTheNewTab()
+    const newTab: TabDefinition<any, any> | undefined = workspaceService.getTheNewTab()
     if (newTab) {
         currentTabId.value = newTab.id
-        workspaceManager.markTabAsVisited(newTab.id)
+        workspaceService.markTabAsVisited(newTab.id)
     }
 }, { deep: true })
 const currentTabId = ref<string | null>()
@@ -53,7 +54,7 @@ function moveTabCursor(diff: number) {
         return
     }
 
-    const currentTabIndex: number = workspaceManager.getTabIndex(currentTabId.value as string)
+    const currentTabIndex: number = workspaceService.getTabIndex(currentTabId.value as string)
     let newTabIndex: number = currentTabIndex + diff
     if (newTabIndex < 0) {
         newTabIndex = tabDefinitions.value.length - 1
@@ -68,7 +69,7 @@ function closeTab(tabId: string) {
     const prevTabIndex: number = tabDefinitions.value.findIndex(tab => tab.id === currentTabId.value)
     const closedTabIndex: number = tabDefinitions.value.findIndex(tab => tab.id === tabId)
 
-    workspaceManager.destroyTab(tabId)
+    workspaceService.destroyTab(tabId)
     keymap.deleteContext(tabId)
 
     if (tabDefinitions.value.length === 0) {
@@ -116,12 +117,12 @@ function restorePreviousSession(): void {
     try {
         let sessionRestored: boolean = false
 
-        const tabDataRestored: boolean = workspaceManager.restoreTabsFromLastSession()
+        const tabDataRestored: boolean = workspaceService.restoreTabsFromLastSession()
         if (tabDataRestored) {
             sessionRestored = true
         }
 
-        const tabHistoryRestored: boolean = workspaceManager.restoreTabHistory()
+        const tabHistoryRestored: boolean = workspaceService.restoreTabHistory()
         if (tabHistoryRestored) {
             sessionRestored = true
         }
@@ -136,8 +137,8 @@ function restorePreviousSession(): void {
 }
 
 function storeCurrentSession() {
-    workspaceManager.storeOpenedTabs()
-    workspaceManager.storeTabHistory()
+    workspaceService.storeOpenedTabs()
+    workspaceService.storeTabHistory()
 }
 
 // initialize the editor
@@ -145,7 +146,7 @@ resolveDemoCodeSnippet()
     .then(tabDefinition => {
         if (tabDefinition != undefined) {
             playgroundMode.value = true
-            workspaceManager.createTab(tabDefinition)
+            workspaceService.createTab(tabDefinition)
         }
         return resolveSharedTab()
     }).then(tabDefinition => {
@@ -168,7 +169,7 @@ onMounted(() => {
             closeTab(currentTabId.value as string)
         }
     })
-    keymap.bindGlobal(Command.System_Editor_CloseAllTabs, () => workspaceManager.destroyAllTabs())
+    keymap.bindGlobal(Command.System_Editor_CloseAllTabs, () => workspaceService.destroyAllTabs())
 })
 onUnmounted(() => {
     keymap.unbindGlobal(Command.System_Editor_PreviousTab)
@@ -242,19 +243,19 @@ window.addEventListener('beforeunload', () => {
                 :reverse-transition="false"
                 class="window-item"
             >
-                <LabEditorTabWindow
+                <TabWindow
                     :component="tab.component"
                     :component-props="tab.componentProps()"
-                    @data-update="workspaceManager.replaceTabData(tab.id, $event)"
+                    @data-update="workspaceService.replaceTabData(tab.id, $event)"
                 />
             </VWindowItem>
         </VWindow>
         <div v-else style="position: relative">
-            <LabEditorWelcomeScreen/>
+            <WelcomeScreen/>
         </div>
     </VMain>
 
-    <LabEditorTabSharedDialog
+    <TabSharedDialog
         v-if="sharedTabRequest"
         :tab-request="sharedTabRequest"
         @resolve="sharedTabRequest = undefined"

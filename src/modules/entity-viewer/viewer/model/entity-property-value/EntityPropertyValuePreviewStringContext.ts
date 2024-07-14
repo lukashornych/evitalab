@@ -1,4 +1,4 @@
-import { QueryPriceMode } from '@/model/evitadb'
+import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
 
 /**
  * Passes context arguments to {@link EntityPropertyValue.toPreviewString} method to possibly influence the output.

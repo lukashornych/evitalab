@@ -1,4 +1,7 @@
-import { EntitySchema, ReferenceSchema } from '@/model/evitadb'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { VisualisedNamedHierarchy } from '@/modules/console/result-visualiser/model/hierarchy/VisualisedNamedHierarchy'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
 
 /**
  * Service for visualising raw JSON hierarchies.

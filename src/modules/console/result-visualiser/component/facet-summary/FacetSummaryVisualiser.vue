@@ -3,17 +3,17 @@
  * Visualises raw JSON facet summary.
  */
 
-import { EntitySchema, ReferenceSchema } from '@/model/evitadb'
 import { computed } from 'vue'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import LabEditorResultVisualiserMissingDataIndicator
-    from '@/components/lab/editor/result-visualiser/LabEditorResultVisualiserMissingDataIndicator.vue'
-import LabEditorResultVisualiserReferenceFacetGroupStatistics
-    from '@/components/lab/editor/result-visualiser/facet-summary/LabEditorResultVisualiserReferenceFacetGroupStatistics.vue'
-import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
-import { Result } from '@/model/editor/result-visualiser'
-import { CatalogPointer } from '@/model/editor/tab/CatalogPointer'
 import { useI18n } from 'vue-i18n'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { CatalogPointer } from '@/modules/connection/model/CatalogPointer'
+import { ResultVisualiserService } from '@/modules/console/result-visualiser/service/ResultVisualiserService'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
+import ReferenceFacetGroupStatisticsVisualiser
+    from '@/modules/console/result-visualiser/component/facet-summary/ReferenceFacetGroupStatisticsVisualiser.vue'
+import MissingDataIndicator from '@/modules/console/result-visualiser/component/MissingDataIndicator.vue'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -38,7 +38,7 @@ const referencesWithGroupStatisticsResults = computed<[ReferenceSchema, Result[]
 })
 
 function getCountForReference(referenceSchema: ReferenceSchema, groupStatisticsResults: Result[]): number {
-    if (referenceSchema.referencedGroupType != undefined) {
+    if (referenceSchema.referencedGroupType.getIfSupported()! != undefined) {
         return groupStatisticsResults.length
     } else {
         return props.visualiserService
@@ -57,7 +57,7 @@ function getCountForReference(referenceSchema: ReferenceSchema, groupStatisticsR
                 {{ referenceWithGroup[0].name }} ({{ getCountForReference(referenceWithGroup[0], referenceWithGroup[1]) }})
             </VExpansionPanelTitle>
             <VExpansionPanelText>
-                <LabEditorResultVisualiserReferenceFacetGroupStatistics
+                <ReferenceFacetGroupStatisticsVisualiser
                     :catalog-pointer="catalogPointer"
                     :visualiser-service="visualiserService"
                     :query-result="queryResult"
@@ -68,7 +68,7 @@ function getCountForReference(referenceSchema: ReferenceSchema, groupStatisticsR
         </VExpansionPanel>
     </VExpansionPanels>
 
-    <LabEditorResultVisualiserMissingDataIndicator
+    <MissingDataIndicator
         v-else
         icon="mdi-text-search"
         :title="t('resultVisualizer.visualiser.facetStatistics.placeholder.noGroups')"

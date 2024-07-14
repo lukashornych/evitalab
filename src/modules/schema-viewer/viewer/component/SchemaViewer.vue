@@ -1,26 +1,25 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
-import { SchemaViewerService, useSchemaViewerService } from '@/services/editor/schema-viewer.service'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import VTabToolbar from '@/components/base/VTabToolbar.vue'
-import LabEditorTabShareButton from '@/components/lab/editor/tab/LabEditorTabShareButton.vue'
-
-import { Keymap, useKeymap } from '@/model/editor/keymap/Keymap'
-import { Command } from '@/model/editor/keymap/Command'
-import { TabComponentProps } from '@/model/editor/tab/TabComponentProps'
-import { SchemaViewerParams } from '@/model/editor/tab/schemaViewer/SchemaViewerParams'
-import { VoidTabRequestComponentData } from '@/model/editor/tab/void/VoidTabRequestComponentData'
-import { TabComponentEvents } from '@/model/editor/tab/TabComponentEvents'
-import { TabType } from '@/model/editor/tab/TabType'
+import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
+import { SchemaViewerService, useSchemaViewerService } from '@/modules/schema-viewer/viewer/service/SchemaViewerService'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { TabComponentProps } from '@/modules/workspace/tab/model/TabComponentProps'
+import { TabComponentEvents } from '@/modules/workspace/tab/model/TabComponentEvents'
+import { SchemaViewerTabParams } from '@/modules/schema-viewer/viewer/workspace/model/SchemaViewerTabParams'
+import { VoidTabData } from '@/modules/workspace/tab/model/void/VoidTabData'
+import ShareTabButton from '@/modules/workspace/tab/component/ShareTabButton.vue'
+import { Command } from '@/modules/keymap/model/Command'
+import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
+import { TabType } from '@/modules/workspace/tab/model/TabType'
 
 const keymap: Keymap = useKeymap()
 const schemaViewerService: SchemaViewerService = useSchemaViewerService()
 const toaster: Toaster = useToaster()
 
-const props = defineProps<TabComponentProps<SchemaViewerParams, VoidTabRequestComponentData>>()
+const props = defineProps<TabComponentProps<SchemaViewerTabParams, VoidTabData>>()
 const emit = defineEmits<TabComponentEvents>()
 
-const shareTabButtonRef = ref<InstanceType<typeof LabEditorTabShareButton> | null>(null)
+const shareTabButtonRef = ref<InstanceType<typeof ShareTabButton> | null>(null)
 
 const schemaLoaded = ref<boolean>(false)
 const schema = ref<any>()
@@ -54,7 +53,7 @@ onUnmounted(() => {
             :path="params.dataPointer.schemaPointer.path()"
         >
             <template #append>
-                <LabEditorTabShareButton
+                <ShareTabButton
                     ref="shareTabButtonRef"
                     :tab-type="TabType.SchemaViewer"
                     :tab-params="params!"

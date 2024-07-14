@@ -1,5 +1,5 @@
-import { Command } from '@/model/editor/keymap/Command'
-import { KeyboardShortcut } from '@/model/editor/keymap/KeyboardShortcut'
+import { Command } from '@/modules/keymap/model/Command'
+import { KeyboardShortcut } from '@/modules/keymap/model/KeyboardShortcut'
 
 const keyboardShortcutMappingIndex: Map<Command, KeyboardShortcut> = new Map()
 function createKeyboardShortcutMapping(command: Command, baseShortcut: string, macShortcut?: string): void {

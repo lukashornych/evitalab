@@ -1,35 +1,36 @@
 <script setup lang="ts">
-import { AttributeSchemaUnion } from '@/model/evitadb'
-import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import LabEditorSchemaViewerContainerSectionListItem
-    from '@/components/lab/editor/schema-viewer/LabEditorSchemaViewerContainerSectionListItem.vue'
-import { LabService, useLabService } from '@/services/lab.service'
-import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaViewerDataPointer'
-import { CatalogSchemaPointer } from '@/model/editor/tab/schemaViewer/CatalogSchemaPointer'
-import { SchemaViewerRequest } from '@/model/editor/tab/schemaViewer/SchemaViewerRequest'
-import { CatalogAttributeSchemaPointer } from '@/model/editor/tab/schemaViewer/CatalogAttributeSchemaPointer'
-import { EntitySchemaPointer } from '@/model/editor/tab/schemaViewer/EntitySchemaPointer'
-import { EntityAttributeSchemaPointer } from '@/model/editor/tab/schemaViewer/EntityAttributeSchemaPointer'
-import { ReferenceSchemaPointer } from '@/model/editor/tab/schemaViewer/ReferenceSchemaPointer'
-import { ReferenceAttributeSchemaPointer } from '@/model/editor/tab/schemaViewer/ReferenceAttributeSchemaPointer'
-import { useI18n } from 'vue-i18n'
-import { UnexpectedError } from '@/model/UnexpectedError'
 
-const labService: LabService = useLabService()
-const editorService: EditorService = useEditorService()
-const { t } = useI18n()
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import { SchemaViewerDataPointer } from '@/modules/schema-viewer/viewer/model/SchemaViewerDataPointer'
+import { AttributeSchema } from '@/modules/connection/model/schema/AttributeSchema'
+import { List } from 'immutable'
+import { CatalogSchemaPointer } from '@/modules/schema-viewer/viewer/model/CatalogSchemaPointer'
+import {
+    SchemaViewerTabFactory,
+    useSchemaViewerTabFactory
+} from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
+import { CatalogAttributeSchemaPointer } from '@/modules/schema-viewer/viewer/model/CatalogAttributeSchemaPointer'
+import { EntitySchemaPointer } from '@/modules/schema-viewer/viewer/model/EntitySchemaPointer'
+import { EntityAttributeSchemaPointer } from '@/modules/schema-viewer/viewer/model/EntityAttributeSchemaPointer'
+import { ReferenceSchemaPointer } from '@/modules/schema-viewer/viewer/model/ReferenceSchemaPointer'
+import { ReferenceAttributeSchemaPointer } from '@/modules/schema-viewer/viewer/model/ReferenceAttributeSchemaPointer'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import SchemaContainerSectionListItem from '@/modules/schema-viewer/viewer/component/SchemaContainerSectionListItem.vue'
+
+const workspaceService: WorkspaceService = useWorkspaceService()
+const schemaViewerTabFactory: SchemaViewerTabFactory = useSchemaViewerTabFactory()
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
-    schema: AttributeSchemaUnion
+    schema: AttributeSchema
 }>()
 
-const flags: string[] = labService.getAttributeSchemaFlags(props.schema)
+const flags: List<string> = props.schema.getRepresentativeFlags()
 
 function openAttributeSchema(): void {
     const parentSchemaPointer = props.dataPointer.schemaPointer
     if (parentSchemaPointer instanceof CatalogSchemaPointer) {
-        editorService.createTab(SchemaViewerRequest.createNew(
+        workspaceService.createTab(schemaViewerTabFactory.createNew(
             props.dataPointer.connection,
             new CatalogAttributeSchemaPointer(
                 parentSchemaPointer.catalogName,
@@ -37,7 +38,7 @@ function openAttributeSchema(): void {
             )
         ))
     } else if (parentSchemaPointer instanceof EntitySchemaPointer) {
-        editorService.createTab(SchemaViewerRequest.createNew(
+        workspaceService.createTab(schemaViewerTabFactory.createNew(
             props.dataPointer.connection,
             new EntityAttributeSchemaPointer(
                 parentSchemaPointer.catalogName,
@@ -46,7 +47,7 @@ function openAttributeSchema(): void {
             )
         ))
     } else if (parentSchemaPointer instanceof ReferenceSchemaPointer) {
-        editorService.createTab(SchemaViewerRequest.createNew(
+        workspaceService.createTab(schemaViewerTabFactory.createNew(
             props.dataPointer.connection,
             new ReferenceAttributeSchemaPointer(
                 parentSchemaPointer.catalogName,
@@ -56,15 +57,15 @@ function openAttributeSchema(): void {
             )
         ))
     } else {
-        throw new UnexpectedError(props.dataPointer.connection, 'Unsupported parent schema for attributes.')
+        throw new UnexpectedError('Unsupported parent schema for attributes.')
     }
 }
 </script>
 
 <template>
-    <LabEditorSchemaViewerContainerSectionListItem
+    <SchemaContainerSectionListItem
         :name="schema.name"
-        :deprecated="!!schema.deprecationNotice"
+        :deprecated="!!schema.deprecationNotice.getIfSupported()"
         :flags="flags"
         @open="openAttributeSchema"
     />

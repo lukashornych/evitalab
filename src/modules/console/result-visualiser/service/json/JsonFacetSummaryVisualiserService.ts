@@ -1,7 +1,20 @@
-import { JsonResultVisualiserService } from '@/modules/console/result-visualiser/service/JsonResultVisualiserService'
-import { EntitySchema, ReferenceSchema } from '@/model/evitadb'
-
-import { UnexpectedError } from '@/model/UnexpectedError'
+import {
+    JsonResultVisualiserService
+} from '@/modules/console/result-visualiser/service/json/JsonResultVisualiserService'
+import {
+    FacetSummaryVisualiserService
+} from '@/modules/console/result-visualiser/service/FacetSummaryVisualiserService'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import {
+    VisualisedFacetGroupStatistics
+} from '@/modules/console/result-visualiser/model/facet-summary/VisualisedFacetGroupStatistics'
+import {
+    VisualisedFacetStatistics
+} from '@/modules/console/result-visualiser/model/facet-summary/VisualisedFacetStatistics'
+import { NamingConvention } from '@/modules/connection/model/NamingConvetion'
 
 /**
  * Common abstract for all JSON-based facet summary visualiser services.
@@ -16,10 +29,13 @@ export abstract class JsonFacetSummaryVisualiserService<VS extends JsonResultVis
     findFacetGroupStatisticsByReferencesResults(facetSummaryResult: Result, entitySchema: EntitySchema): [ReferenceSchema, Result[]][] {
         const referencesWithGroups: [ReferenceSchema, Result[]][] = []
         for (const referenceName of Object.keys(facetSummaryResult)) {
-            const referenceSchema: ReferenceSchema | undefined = Object.values(entitySchema.references)
-                .find(reference => reference.nameVariants.camelCase === referenceName)
+            const referenceSchema: ReferenceSchema | undefined = entitySchema.references
+                .getIfSupported()
+                ?.find(reference => reference.nameVariants
+                    .getIfSupported()
+                    ?.get(NamingConvention.CamelCase) === referenceName)
             if (referenceSchema == undefined) {
-                throw new UnexpectedError(undefined, `Reference '${referenceName}' not found in entity '${entitySchema.name}'.`)
+                throw new UnexpectedError(`Reference '${referenceName}' not found in entity '${entitySchema.name}'.`)
             }
             const groups = facetSummaryResult[referenceName]
             if (groups instanceof Array) {

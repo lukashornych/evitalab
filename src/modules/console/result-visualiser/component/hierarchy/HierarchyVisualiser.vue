@@ -3,17 +3,17 @@
  * Visualises raw JSON hierarchies.
  */
 
-import { EntitySchema, ReferenceSchema } from '@/model/evitadb'
 import { computed } from 'vue'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import LabEditorResultVisualiserMissingDataIndicator
-    from '@/components/lab/editor/result-visualiser/LabEditorResultVisualiserMissingDataIndicator.vue'
-import LabEditorResultVisualiserReferenceNamedHierarchies
-    from '@/components/lab/editor/result-visualiser/hierarchy/LabEditorResultVisualiserReferenceNamedHierarchies.vue'
-import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
-import { Result } from '@/model/editor/result-visualiser'
-import { CatalogPointer } from '@/model/editor/tab/CatalogPointer'
 import { useI18n } from 'vue-i18n'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { CatalogPointer } from '@/modules/connection/model/CatalogPointer'
+import { ResultVisualiserService } from '@/modules/console/result-visualiser/service/ResultVisualiserService'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
+import NamedHierarchiesVisualiser
+    from '@/modules/console/result-visualiser/component/hierarchy/NamedHierarchiesVisualiser.vue'
+import MissingDataIndicator from '@/modules/console/result-visualiser/component/MissingDataIndicator.vue'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -52,7 +52,7 @@ function getPanelKey(referenceSchema: ReferenceSchema | undefined): string {
                 {{ referenceWithNamedHierarchResult[0]?.name ?? `${entitySchema.name} (self)` }} ({{ Object.values(referenceWithNamedHierarchResult[1]).length }})
             </VExpansionPanelTitle>
             <VExpansionPanelText>
-                <LabEditorResultVisualiserReferenceNamedHierarchies
+                <NamedHierarchiesVisualiser
                     :catalog-pointer="catalogPointer"
                     :visualiser-service="visualiserService"
                     :parent-entity-schema="entitySchema"
@@ -63,7 +63,7 @@ function getPanelKey(referenceSchema: ReferenceSchema | undefined): string {
         </VExpansionPanel>
     </VExpansionPanels>
 
-    <LabEditorResultVisualiserMissingDataIndicator
+    <MissingDataIndicator
         v-else
         icon="mdi-text-search"
         :title="t('resultVisualizer.hierarchyVisualiser.placeholder.noHierarchies')"

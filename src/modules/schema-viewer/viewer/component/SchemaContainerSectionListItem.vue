@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { List } from 'immutable'
 
 const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
     name: string,
     deprecated?: boolean,
-    flags?: string[],
+    flags?: List<string>,
     openable?: boolean
 }>(), {
     deprecated: false,
-    flags: () => [],
+    flags: () => List(),
     openable: true
 })
 

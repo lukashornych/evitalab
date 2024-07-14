@@ -5,35 +5,41 @@
 
 import { Pane, Splitpanes } from 'splitpanes'
 import { VDataTableServer } from 'vuetify/labs/VDataTable'
-import LabEditorDataGridGridCellDetail from './LabEditorDataGridGridCellDetail.vue'
-import { inject, ref } from 'vue'
-import LabEditorDataGridGridCell from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCell.vue'
-import {
-    DataGridData,
-    dataLocaleKey,
-    EntityPropertyDescriptor, entityPropertyDescriptorIndexKey,
-    EntityPropertyType,
-    EntityPropertyValue,
-    EntityReferenceValue,
-    FlatEntity, gridPropsKey,
-    NativeValue,
-    queryLanguageKey,
-    StaticEntityProperties
-} from '@/model/editor/tab/dataGrid/data-grid'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import { DataGridRequest } from '@/model/editor/tab/dataGrid/data-grid-request'
-import { DataGridService, useDataGridService } from '@/services/editor/data-grid.service'
-import LabEditorDataGridGridColumnHeader
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridColumnHeader.vue'
-import { Scalar } from '@/model/evitadb'
-import { mandatoryInject } from '@/helpers/reactivity'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { QueryLanguage } from '@/model/QueryLanguage'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import { EntityViewerService, useEntityViewerService } from '@/modules/entity-viewer/viewer/service/EntityViewerService'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { FlatEntity } from '@/modules/entity-viewer/viewer/model/FlatEntity'
+import { QueryLanguage } from '@/modules/entity-viewer/viewer/model/QueryLanguage'
+import { EntityPropertyDescriptor } from '@/modules/entity-viewer/viewer/model/EntityPropertyDescriptor'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { EntityPropertyType } from '@/modules/entity-viewer/viewer/model/EntityPropertyType'
+import { StaticEntityProperties } from '@/modules/entity-viewer/viewer/model/StaticEntityProperties'
+import {
+    EntityViewerTabFactory,
+    useEntityViewerTabFactory
+} from '@/modules/entity-viewer/viewer/workspace/service/EntityViewerTabFactory'
+import { EntityViewerTabData } from '@/modules/entity-viewer/viewer/workspace/model/EntityViewerTabData'
+import { EntityReferenceValue } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityReferenceValue'
+import { Scalar } from '@/modules/connection/model/data-type/Scalar'
+import { NativeValue } from '@/modules/entity-viewer/viewer/model/entity-property-value/NativeValue'
+import EntityGridColumnHeader from '@/modules/entity-viewer/viewer/component/entity-grid/EntityGridColumnHeader.vue'
+import EntityGridCell from '@/modules/entity-viewer/viewer/component/entity-grid/EntityGridCell.vue'
+import EntityGridCellDetail from '@/modules/entity-viewer/viewer/component/entity-grid/EntityGridCellDetail.vue'
+import {
+    useDataLocale,
+    useEntityPropertyDescriptorIndex,
+    useQueryLanguage,
+    useTabProps
+} from '@/modules/entity-viewer/viewer/component/dependencies'
+import { AttributeSchema } from '@/modules/connection/model/schema/AttributeSchema'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
 
-const editorService: EditorService = useEditorService()
-const dataGridService: DataGridService = useDataGridService()
+const workspaceService: WorkspaceService = useWorkspaceService()
+const entityViewerService: EntityViewerService = useEntityViewerService()
+const entityViewerTabFactory: EntityViewerTabFactory = useEntityViewerTabFactory()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
@@ -50,10 +56,10 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'gridUpdated', value: { page: number, itemsPerPage: number, sortBy: any[] }): void
 }>()
-const gridProps = mandatoryInject(gridPropsKey)
-const entityPropertyDescriptorIndex = mandatoryInject(entityPropertyDescriptorIndexKey)
-const queryLanguage = inject(queryLanguageKey, ref<QueryLanguage | undefined>(QueryLanguage.EvitaQL))
-const dataLocale = inject(dataLocaleKey)
+const tabProps = useTabProps()
+const entityPropertyDescriptorIndex = useEntityPropertyDescriptorIndex()
+const queryLanguage = useQueryLanguage()
+const dataLocale = useDataLocale()
 
 const showPropertyDetail = ref<boolean>(false)
 const propertyDetailEntity = ref<FlatEntity | undefined>()
@@ -63,7 +69,7 @@ const propertyDetailValue = ref<EntityPropertyValue | EntityPropertyValue[] | un
 function getPropertyDescriptor(key: string): EntityPropertyDescriptor | undefined {
     const descriptor = entityPropertyDescriptorIndex.value.get(key)
     if (descriptor == undefined) {
-        toaster.error(new UnexpectedError(gridProps.params.dataPointer.connection, t('entityGrid.grid.notification.failedToFindProperty', { key })))
+        toaster.error(new UnexpectedError(t('entityGrid.grid.notification.failedToFindProperty', { key })))
     }
     return descriptor
 }
@@ -80,29 +86,29 @@ function handlePropertyClicked(relativeEntityIndex: number, propertyKey: string,
         propertyDescriptor.type === EntityPropertyType.Entity &&
         propertyDescriptor.key.name === StaticEntityProperties.ParentPrimaryKey) {
         // we want to open parent entity in appropriate new grid
-        editorService.createTab(DataGridRequest.createNew(
-            gridProps.params.dataPointer.connection,
-            gridProps.params.dataPointer.catalogName,
-            gridProps.params.dataPointer.entityType,
-            new DataGridData(
+        workspaceService.createTab(entityViewerTabFactory.createNew(
+            tabProps.params.dataPointer.connection,
+            tabProps.params.dataPointer.catalogName,
+            tabProps.params.dataPointer.entityType,
+            new EntityViewerTabData(
                 queryLanguage?.value,
-                dataGridService.buildParentEntityFilterBy(queryLanguage.value as QueryLanguage, (value as EntityReferenceValue).primaryKey),
+                entityViewerService.buildParentEntityFilterBy(queryLanguage.value as QueryLanguage, (value as EntityReferenceValue).primaryKey),
                 undefined,
                 dataLocale?.value
             ),
             true
         ))
     } else if (propertyDescriptor &&
-        ((propertyDescriptor.type === EntityPropertyType.Attributes && propertyDescriptor.schema.type === Scalar.Predecessor) ||
-        (propertyDescriptor.type === EntityPropertyType.AssociatedData && propertyDescriptor.schema.type === Scalar.Predecessor))) {
+        ((propertyDescriptor.type === EntityPropertyType.Attributes && (propertyDescriptor.schema as AttributeSchema).type.getIfSupported()! === Scalar.Predecessor) ||
+        (propertyDescriptor.type === EntityPropertyType.AssociatedData && (propertyDescriptor.schema as AttributeSchema).type.getIfSupported()! === Scalar.Predecessor))) {
         // we want references to open referenced entities in appropriate new grid for referenced collection
-        editorService.createTab(DataGridRequest.createNew(
-            gridProps.params.dataPointer.connection,
-            gridProps.params.dataPointer.catalogName,
-            gridProps.params.dataPointer.entityType,
-            new DataGridData(
+        workspaceService.createTab(entityViewerTabFactory.createNew(
+            tabProps.params.dataPointer.connection,
+            tabProps.params.dataPointer.catalogName,
+            tabProps.params.dataPointer.entityType,
+            new EntityViewerTabData(
                 queryLanguage.value,
-                dataGridService.buildPredecessorEntityFilterBy(queryLanguage.value as QueryLanguage, (value as NativeValue).value() as number),
+                entityViewerService.buildPredecessorEntityFilterBy(queryLanguage.value as QueryLanguage, (value as NativeValue).value() as number),
                 undefined,
                 dataLocale?.value
             ),
@@ -110,13 +116,13 @@ function handlePropertyClicked(relativeEntityIndex: number, propertyKey: string,
         ))
     } else if (propertyDescriptor && propertyDescriptor.type === EntityPropertyType.References) {
         // we want references to open referenced entities in appropriate new grid for referenced collection
-        editorService.createTab(DataGridRequest.createNew(
-            gridProps.params.dataPointer.connection,
-            gridProps.params.dataPointer.catalogName,
-            propertyDescriptor.schema.referencedEntityType,
-            new DataGridData(
+        workspaceService.createTab(entityViewerTabFactory.createNew(
+            tabProps.params.dataPointer.connection,
+            tabProps.params.dataPointer.catalogName,
+            (propertyDescriptor.schema as ReferenceSchema).referencedEntityType.getIfSupported()!,
+            new EntityViewerTabData(
                 queryLanguage.value,
-                dataGridService.buildReferencedEntityFilterBy(
+                entityViewerService.buildReferencedEntityFilterBy(
                     queryLanguage.value as QueryLanguage,
                     value instanceof Array
                         ? (value as EntityReferenceValue[]).map(it => it.primaryKey)
@@ -169,7 +175,7 @@ function closePropertyDetail(): void {
             >
                 <template #headers="{ columns, isSorted, getSortIcon, toggleSort }">
                     <tr>
-                        <LabEditorDataGridGridColumnHeader
+                        <EntityGridColumnHeader
                             v-for="column in columns"
                             :key="column.key"
                             :column="column"
@@ -181,7 +187,7 @@ function closePropertyDetail(): void {
                 </template>
                 <template #item="{ item, index }">
                     <tr>
-                        <LabEditorDataGridGridCell
+                        <EntityGridCell
                             v-for="(propertyValue, propertyKey) in item.columns"
                             :key="propertyKey"
                             :property-descriptor="entityPropertyDescriptorIndex.get(propertyKey as string)"
@@ -197,7 +203,7 @@ function closePropertyDetail(): void {
             size="30"
             min-size="30"
         >
-            <LabEditorDataGridGridCellDetail
+            <EntityGridCellDetail
                 :model-value="showPropertyDetail"
                 :entity="propertyDetailEntity!"
                 :property-descriptor="propertyDetailDescriptor"

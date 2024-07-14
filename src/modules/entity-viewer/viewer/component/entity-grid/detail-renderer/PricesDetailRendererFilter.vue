@@ -3,8 +3,8 @@
  * Filter component for prices renderer. Used to filter all available entity prices-
  */
 
-import { EntityPrice } from '@/model/editor/tab/dataGrid/data-grid'
 import { useI18n } from 'vue-i18n'
+import { EntityPrice } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPrice'
 
 const { t } = useI18n()
 

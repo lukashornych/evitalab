@@ -3,15 +3,14 @@
  * Visualises the raw JSON price histogram.
  */
 
-import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
-import { Result, VisualisedHistogram } from '@/model/editor/result-visualiser'
-import LabEditorResultVisualiserMissingDataIndicator
-    from '@/components/lab/editor/result-visualiser/LabEditorResultVisualiserMissingDataIndicator.vue'
 import { computed } from 'vue'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import LabEditorResultVisualiserHistogram
-    from '@/components/lab/editor/result-visualiser/histogram/LabEditorResultVisualiserHistogram.vue'
 import { useI18n } from 'vue-i18n'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { ResultVisualiserService } from '@/modules/console/result-visualiser/service/ResultVisualiserService'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { VisualisedHistogram } from '@/modules/console/result-visualiser/model/histogram/VisualisedHistogram'
+import HistogramVisualiser from '@/modules/console/result-visualiser/component/histogram/HistogramVisualiser.vue'
+import MissingDataIndicator from '@/modules/console/result-visualiser/component/MissingDataIndicator.vue'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -34,9 +33,9 @@ const histogram = computed<VisualisedHistogram | undefined>(() => {
 </script>
 
 <template>
-    <LabEditorResultVisualiserHistogram v-if="histogram" :histogram="histogram" />
+    <HistogramVisualiser v-if="histogram" :histogram="histogram" />
 
-    <LabEditorResultVisualiserMissingDataIndicator
+    <MissingDataIndicator
         v-else
         icon="mdi-text-search"
         :title="t('resultVisualizer.priceHistogram.placeholder.noPriceHistograms')"

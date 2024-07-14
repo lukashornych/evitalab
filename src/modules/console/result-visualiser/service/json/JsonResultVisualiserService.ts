@@ -1,3 +1,8 @@
+import { ResultVisualiserService } from '@/modules/console/result-visualiser/service/ResultVisualiserService'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { VisualiserType } from '@/modules/console/result-visualiser/model/VisualiserType'
+import { VisualiserTypeType } from '@/modules/console/result-visualiser/model/VisualiserTypeType'
+
 /**
  * Common abstract for all JSON-based result visualiser services.
  */

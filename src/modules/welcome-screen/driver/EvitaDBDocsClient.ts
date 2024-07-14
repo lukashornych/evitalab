@@ -1,11 +1,16 @@
-import { ApiClient } from '@/services/api-client'
-import { EvitaDBBlogPost } from '@/model/EvitaDBBlogPost'
+import { EvitaDBBlogPost } from '@/modules/welcome-screen/model/EvitaDBBlogPost'
+import { HttpApiClient } from '@/modules/driver-support/service/HttpApiClient'
+import { EvitaLabConfig } from '@/modules/config/EvitaLabConfig'
 
 /**
  * HTTP client for evitaDB docs website. Should not be used directly in components, instead it should be used as a low level
  * abstraction of raw HTTP API.
  */
-export class EvitaDBDocsClient extends ApiClient {
+export class EvitaDBDocsClient extends HttpApiClient {
+
+    constructor(evitaLabConfig: EvitaLabConfig) {
+        super(evitaLabConfig)
+    }
 
     async getBlogPosts(): Promise<EvitaDBBlogPost[]> {
         try {

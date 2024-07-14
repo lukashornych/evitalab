@@ -1,4 +1,4 @@
-import { TabRequestComponentDataDto } from '@/model/editor/tab/TabRequestComponentDataDto'
+import { TabDataDto } from '@/modules/workspace/tab/model/TabDataDto'
 
 /**
  * Represents injectable/storable data of a component. This is used to pre-fill the component with
@@ -6,7 +6,7 @@ import { TabRequestComponentDataDto } from '@/model/editor/tab/TabRequestCompone
  * Also, the component should provide updated data when user changes them, so they can be stored for later
  * reconstruction of tabs.
  */
-export interface TabData<DTO extends TabRequestComponentDataDto> {
+export interface TabData<DTO extends TabDataDto> {
 
     /**
      * Converts the params to a DTO that can be safely serialized.

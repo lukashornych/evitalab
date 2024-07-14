@@ -1,5 +1,3 @@
-import { LabService } from '@/services/lab.service'
-import { CatalogSchema, EntitySchema } from '@/model/evitadb'
 import {
     GraphQLFacetSummaryVisualiserService
 } from '@/modules/graphql-console/console/result-visualiser/service/GraphQLFacetSummaryVisualiserService'
@@ -12,25 +10,45 @@ import {
 import {
     GraphQLPriceHistogramVisualiserService
 } from '@/modules/graphql-console/console/result-visualiser/service/GraphQLPriceHistogramVisualiserService'
-import { inject, InjectionKey } from 'vue'
-import { EvitaDBConnection } from '@/model/EvitaDBConnection'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { InjectionKey } from 'vue'
+import {
+    JsonResultVisualiserService
+} from '@/modules/console/result-visualiser/service/json/JsonResultVisualiserService'
+import { ConnectionService } from '@/modules/connection/service/ConnectionService'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { Connection } from '@/modules/connection/model/Connection'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import {
+    FacetSummaryVisualiserService
+} from '@/modules/console/result-visualiser/service/FacetSummaryVisualiserService'
+import { HierarchyVisualiserService } from '@/modules/console/result-visualiser/service/HierarchyVisualiserService'
+import {
+    AttributeHistogramsVisualiserService
+} from '@/modules/console/result-visualiser/service/AttributeHistogramsVisualiserService'
+import {
+    PriceHistogramVisualiserService
+} from '@/modules/console/result-visualiser/service/PriceHistogramVisualiserService'
+import { mandatoryInject } from '@/utils/reactivity'
+import { NamingConvention } from '@/modules/connection/model/NamingConvetion'
 
-export const key: InjectionKey<GraphQLResultVisualiserService> = Symbol()
+export const graphQLResultVisualiserServiceInjectionKey: InjectionKey<GraphQLResultVisualiserService> = Symbol('graphQLResultVisualiserService')
 
 /**
  * {@link ResultVisualiserService} for GraphQL query language.
  */
 export class GraphQLResultVisualiserService extends JsonResultVisualiserService {
-    private readonly labService: LabService
+
+    private readonly connectionService: ConnectionService
     private facetSummaryVisualiserService: GraphQLFacetSummaryVisualiserService | undefined = undefined
     private hierarchyVisualiserService: GraphQLHierarchyVisualiserService | undefined = undefined
     private attributeHistogramsVisualiserService: GraphQLAttributeHistogramsVisualiserService | undefined = undefined
     private priceHistogramVisualiserService: GraphQLPriceHistogramVisualiserService | undefined = undefined
 
-    constructor(labService: LabService) {
+    constructor(connectionService: ConnectionService) {
         super()
-        this.labService = labService
+        this.connectionService = connectionService
     }
 
     supportsMultipleQueries(): boolean {
@@ -57,17 +75,20 @@ export class GraphQLResultVisualiserService extends JsonResultVisualiserService 
         return dataResult[query]
     }
 
-    async getEntitySchemaForQuery(query: string, connection: EvitaDBConnection, catalogName: string): Promise<EntitySchema | undefined> {
+    async getEntitySchemaForQuery(query: string, connection: Connection, catalogName: string): Promise<EntitySchema | undefined> {
         const entityType: string = (query).replace(/^(get|list|query)/, '')
         if (entityType.toLowerCase() === this.genericEntityType) {
             // generic query, no specific collection for all returned entities (each entity may be from a different collection)
             return undefined
         }
-        const catalogSchema: CatalogSchema = await this.labService.getCatalogSchema(connection, catalogName)
-        const entitySchema: EntitySchema | undefined = Object.values(catalogSchema.entitySchemas)
-            .find(it => it.nameVariants.pascalCase === entityType)
+        const catalogSchema: CatalogSchema = await this.connectionService.getCatalogSchema(connection, catalogName)
+        const entitySchema: EntitySchema | undefined = catalogSchema.entitySchemas
+            .getIfSupported()
+            ?.find(it => it.nameVariants
+                .getIfSupported()
+                ?.get(NamingConvention.PascalCase) === entityType)
         if (entitySchema == undefined) {
-            throw new UnexpectedError(connection, `Entity schema '${entityType}' not found in catalog '${catalogName}'.`)
+            throw new UnexpectedError(`Entity schema '${entityType}' not found in catalog '${catalogName}'.`)
         }
         return entitySchema
     }
@@ -126,5 +147,5 @@ export class GraphQLResultVisualiserService extends JsonResultVisualiserService 
 }
 
 export const useGraphQLResultVisualiserService = (): GraphQLResultVisualiserService => {
-    return inject(key) as GraphQLResultVisualiserService
+    return mandatoryInject(graphQLResultVisualiserServiceInjectionKey) as GraphQLResultVisualiserService
 }

@@ -3,18 +3,18 @@
  * Dialog window to remove user-created connection.
  */
 
-import { LabService, useLabService } from '@/services/lab.service'
-import { Toaster, useToaster } from '@/services/editor/toaster'
 import { useI18n } from 'vue-i18n'
-import { EvitaDBConnection } from '@/model/EvitaDBConnection'
+import { ConnectionService, useConnectionService } from '@/modules/connection/service/ConnectionService'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { Connection } from '@/modules/connection/model/Connection'
 
-const labService: LabService = useLabService()
+const connectionService: ConnectionService = useConnectionService()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
 const props = defineProps<{
     modelValue: boolean
-    connection: EvitaDBConnection
+    connection: Connection
 }>()
 
 const emit = defineEmits<{
@@ -27,7 +27,7 @@ function cancel() {
 
 function removeConnection(): void {
     try {
-        labService.removeConnection(props.connection.id)
+        connectionService.removeConnection(props.connection.id)
     } catch (e: any) {
         toaster.error(e)
         return

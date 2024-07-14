@@ -4,16 +4,19 @@
  */
 
 import { computed, ref } from 'vue'
-import VMarkdown from '@/components/base/VMarkdown.vue'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import LabEditorResultVisualiserFacetStatistics
-    from '@/components/lab/editor/result-visualiser/facet-summary/LabEditorResultVisualiserFacetStatistics.vue'
-import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
-import { Result, VisualisedFacetGroupStatistics } from '@/model/editor/result-visualiser'
-import VListItemLazyIterator from '@/components/base/VListItemLazyIterator.vue'
-import { ReferenceSchema } from '@/model/evitadb'
 import { useI18n } from 'vue-i18n'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { ResultVisualiserService } from '@/modules/console/result-visualiser/service/ResultVisualiserService'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import {
+    VisualisedFacetGroupStatistics
+} from '@/modules/console/result-visualiser/model/facet-summary/VisualisedFacetGroupStatistics'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import VMarkdown from '@/modules/base/component/VMarkdown.vue'
+import VListItemLazyIterator from '@/modules/base/component/VListItemLazyIterator.vue'
+import FacetStatisticsVisualiser
+    from '@/modules/console/result-visualiser/component/facet-summary/FacetStatisticsVisualiser.vue'
 
 const facetStatisticsPageSize: number = 10
 
@@ -69,7 +72,7 @@ function copyPrimaryKey(): void {
         navigator.clipboard.writeText(`${groupStatistics.value?.primaryKey}`).then(() => {
             toaster.info(t('resultVisualizer.facetStatisticsVisualiser.notification.primaryKeyCopiedToClipboard'))
         }).catch(() => {
-            toaster.error(new UnexpectedError(undefined, t('common.notification.failedToCopyToClipboard')))
+            toaster.error(new UnexpectedError(t('common.notification.failedToCopyToClipboard')))
         })
     }
 }
@@ -111,7 +114,7 @@ function copyPrimaryKey(): void {
                                         </VTooltip>
                                     </span>
                                 </VChip>
-                                <VChip v-if="!referenceSchema.referencedGroupTypeManaged" prepend-icon="mdi-open-in-new">
+                                <VChip v-if="!referenceSchema.referencedGroupTypeManaged.getOrElse(false)" prepend-icon="mdi-open-in-new">
                                     {{ t('resultVisualizer.facetStatisticsVisualiser.label.externalGroup') }}
                                     <VTooltip activator="parent">
                                         {{ t('resultVisualizer.facetStatisticsVisualiser.help.externalGroup') }}
@@ -131,7 +134,7 @@ function copyPrimaryKey(): void {
                 :page-size="facetStatisticsPageSize"
             >
                 <template #item="{ item: facetStatisticsResult }">
-                    <LabEditorResultVisualiserFacetStatistics
+                    <FacetStatisticsVisualiser
                         :visualiser-service="visualiserService"
                         :reference-schema="referenceSchema"
                         :query-result="queryResult"

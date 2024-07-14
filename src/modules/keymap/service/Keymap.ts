@@ -1,13 +1,14 @@
-import { inject, InjectionKey } from 'vue'
+import { InjectionKey } from 'vue'
 import { KeyBinding } from '@codemirror/view'
 import keymaster from 'keymaster'
-import { Command } from '@/model/editor/keymap/Command'
-import { keyboardShortcutMappingIndex } from '@/model/editor/keymap/keyboardShortcutMappings'
-import { KeyboardShortcut } from '@/model/editor/keymap/KeyboardShortcut'
-import { SystemType } from '@/model/editor/keymap/SystemType'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { SystemType } from '@/modules/keymap/model/SystemType'
+import { Command } from '@/modules/keymap/model/Command'
+import { keyboardShortcutMappingIndex } from '@/modules/keymap/model/keyboardShortcutMappings'
+import { KeyboardShortcut } from '@/modules/keymap/model/KeyboardShortcut'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { mandatoryInject } from '@/utils/reactivity'
 
-export const key: InjectionKey<Keymap> = Symbol()
+export const keymapInjectionKey: InjectionKey<Keymap> = Symbol('keymap')
 
 /**
  * Provides access to keyboard shortcut bindings based on current system.
@@ -195,7 +196,7 @@ export class Keymap {
     private getKeyboardShortcut(command: Command): KeyboardShortcut {
         const mapping: KeyboardShortcut | undefined = keyboardShortcutMappingIndex.get(command)
         if (mapping == undefined) {
-            throw new UnexpectedError(undefined, `No shortcut mapping found for command '${command}'. This should never happen!`)
+            throw new UnexpectedError(`No shortcut mapping found for command '${command}'. This should never happen!`)
         }
         return mapping
     }
@@ -225,7 +226,7 @@ export class Keymap {
     private getScopes(contextId: string): string[] {
         const scopes: string[] | undefined = this.activeContexts.get(contextId)
         if (scopes == undefined) {
-            throw new UnexpectedError(undefined, `Cannot get scopes for context '${contextId}' without setting context first!`)
+            throw new UnexpectedError(`Cannot get scopes for context '${contextId}' without setting context first!`)
         }
         return scopes
     }
@@ -274,7 +275,7 @@ export class Keymap {
      */
     private validateContextId(contextId: string): void {
         if (contextId.includes('_')) {
-            throw new UnexpectedError(undefined, `Context ID '${contextId}' cannot contain underscore character!`)
+            throw new UnexpectedError(`Context ID '${contextId}' cannot contain underscore character!`)
         }
     }
 
@@ -286,11 +287,11 @@ export class Keymap {
      */
     private validateScopeId(scopeId: string): void {
         if (scopeId.includes('_')) {
-            throw new UnexpectedError(undefined, `Scope ID '${scopeId}' cannot contain underscore character!`)
+            throw new UnexpectedError(`Scope ID '${scopeId}' cannot contain underscore character!`)
         }
     }
 }
 
 export function useKeymap(): Keymap {
-    return inject(key) as Keymap
+    return mandatoryInject(keymapInjectionKey) as Keymap
 }

@@ -3,15 +3,25 @@
  * Entity property value renderer that tries to render the value as Markdown.
  */
 
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import LabEditorDataGridGridCellDetailValueRenderer
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailValueRenderer.vue'
-import VMarkdown from '@/components/base/VMarkdown.vue'
-import { computed, ref } from 'vue'
-import { BigDecimal, DateTime, Long, Range, Scalar } from '@/model/evitadb'
-import { EntityPropertyValue, ExtraEntityObjectType, NativeValue } from '@/model/editor/tab/dataGrid/data-grid'
+import { computed, ComputedRef, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import { Scalar } from '@/modules/connection/model/data-type/Scalar'
+import { ExtraEntityObjectType } from '@/modules/entity-viewer/viewer/model/ExtraEntityObjectType'
+import { DateTime } from '@/modules/connection/model/data-type/DateTime'
+import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
+import { Long } from '@/modules/connection/model/data-type/Long'
+import { Range } from '@/modules/connection/model/data-type/Range'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { NativeValue } from '@/modules/entity-viewer/viewer/model/entity-property-value/NativeValue'
+import ValueDetailRenderer
+    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/ValueDetailRenderer.vue'
+import VMarkdown from '@/modules/base/component/VMarkdown.vue'
+import {
+    MarkdownDetailRendererActionType
+} from '@/modules/entity-viewer/viewer/model/entity-grid/detail-renderer/MarkdownDetailRendererActionType'
+import { MenuAction } from '@/modules/base/model/menu/MenuAction'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -23,11 +33,6 @@ const localDateTimeFormatter = new Intl.DateTimeFormat([], { dateStyle: 'medium'
 const localDateFormatter = new Intl.DateTimeFormat([], { dateStyle: "medium" })
 const localTimeFormatter = new Intl.DateTimeFormat([], { timeStyle: "medium" })
 
-enum ActionType {
-    Copy = 'copy',
-    PrettyPrint = 'pretty-print'
-}
-
 const props = withDefaults(defineProps<{
     value: EntityPropertyValue | EntityPropertyValue[],
     dataType: Scalar | ExtraEntityObjectType | undefined,
@@ -37,24 +42,10 @@ const props = withDefaults(defineProps<{
 })
 
 const prettyPrint = ref<boolean>(true)
-const actions = computed(() => {
-    return [
-        {
-            title: t('common.button.copy'),
-            value: ActionType.Copy,
-            props: {
-                prependIcon: 'mdi-content-copy'
-            }
-        },
-        {
-            title: prettyPrint.value ? t('entityGrid.grid.renderer.button.displayRawValue') : t('entityGrid.grid.renderer.button.prettyPrintValue'),
-            value: ActionType.PrettyPrint,
-            props: {
-                prependIcon: prettyPrint.value ? 'mdi-raw' : 'mdi-auto-fix'
-            }
-        }
-    ]
-})
+
+const actions: ComputedRef<Map<MarkdownDetailRendererActionType, MenuAction<MarkdownDetailRendererActionType>>> = computed(() => createActions())
+const actionList: ComputedRef<MenuAction<MarkdownDetailRendererActionType>[]> = computed(() => Array.from(actions.value.values()))
+
 const formattedValue = computed<string>(() => {
     if (!prettyPrint.value || !props.dataType || (props.value instanceof EntityPropertyValue && props.value.isEmpty())) {
         return props.value instanceof Array ? `[${props.value.map(it => it.toPreviewString()).join(', ')}]` : (props.value as EntityPropertyValue).toPreviewString()
@@ -150,7 +141,7 @@ function prettyPrintRangeValue(rawRange: any, prefix: string, endPrettyPrinter: 
         // range represented as direct array, this happens when the data type of attribute is a single range
 
         if (rawRange.length !== 2) {
-            throw new UnexpectedError(undefined, `Invalid DateTimeRange value. Expected array with 2 elements, got ${rawRange.length}.`)
+            throw new UnexpectedError(`Invalid DateTimeRange value. Expected array with 2 elements, got ${rawRange.length}.`)
         }
 
         const range: EntityPropertyValue[] = rawRange as EntityPropertyValue[]
@@ -163,7 +154,7 @@ function prettyPrintRangeValue(rawRange: any, prefix: string, endPrettyPrinter: 
         from = range[0]
         to = range[1]
     } else {
-        throw new UnexpectedError(undefined, `Invalid DateTimeRange value.`)
+        throw new UnexpectedError(`Invalid DateTimeRange value.`)
     }
 
     const formatEnd = (end: DateTime | BigDecimal | Long | number): string => {
@@ -177,35 +168,51 @@ function prettyPrintRangeValue(rawRange: any, prefix: string, endPrettyPrinter: 
 }
 
 function handleActionClick(action: any) {
-    switch (action) {
-        case ActionType.Copy:
-            copyRenderedValue()
-            break
-        case ActionType.PrettyPrint:
-            prettyPrint.value = !prettyPrint.value
-            break
-    }
+    actions.value.get(action as MarkdownDetailRendererActionType)?.execute()
 }
 
 function copyRenderedValue() {
     navigator.clipboard.writeText(formattedValue.value).then(() => {
         toaster.info(t('common.notification.copiedToClipboard'))
     }).catch(() => {
-        toaster.error(new UnexpectedError(undefined, t('common.notification.failedToCopyToClipboard')))
+        toaster.error(new UnexpectedError(t('common.notification.failedToCopyToClipboard')))
     })
+}
+
+function createActions(): Map<MarkdownDetailRendererActionType, MenuAction<MarkdownDetailRendererActionType>> {
+    const actions: Map<MarkdownDetailRendererActionType, MenuAction<MarkdownDetailRendererActionType>> = new Map()
+    actions.set(
+        MarkdownDetailRendererActionType.Copy,
+        new MenuAction<MarkdownDetailRendererActionType>(
+            MarkdownDetailRendererActionType.Copy,
+            t('common.button.copy'),
+            'mdi-content-copy',
+            () => copyRenderedValue()
+        )
+    )
+    actions.set(
+        MarkdownDetailRendererActionType.PrettyPrint,
+        new MenuAction<MarkdownDetailRendererActionType>(
+            MarkdownDetailRendererActionType.PrettyPrint,
+            prettyPrint.value ? t('entityGrid.grid.renderer.button.displayRawValue') : t('entityGrid.grid.renderer.button.prettyPrintValue'),
+            prettyPrint.value ? 'mdi-raw' : 'mdi-auto-fix',
+            () => prettyPrint.value = !prettyPrint.value
+        )
+    )
+    return actions
 }
 </script>
 
 <template>
-    <LabEditorDataGridGridCellDetailValueRenderer
+    <ValueDetailRenderer
         :fill-space="fillSpace"
-        :actions="actions"
+        :actions="actionList"
         @click:action="handleActionClick"
     >
         <div class="markdown-renderer">
             <VMarkdown :source="formattedValue" />
         </div>
-    </LabEditorDataGridGridCellDetailValueRenderer>
+    </ValueDetailRenderer>
 </template>
 
 <style lang="scss" scoped>

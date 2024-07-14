@@ -1,27 +1,31 @@
-import { inject, InjectionKey } from 'vue'
-import { EvitaDBClient } from '@/services/evitadb-client'
-import { EvitaQLDataPointer } from '@/model/editor/tab/evitaQLConsole/EvitaQLDataPointer'
+import { EvitaDBDriver } from '@/modules/connection/driver/EvitaDBDriver'
+import { EvitaQLConsoleDataPointer } from '@/modules/evitaql-console/console/model/EvitaQLConsoleDataPointer'
+import { InjectionKey } from 'vue'
+import { EvitaDBDriverResolver } from '@/modules/connection/driver/EvitaDBDriverResolver'
+import { mandatoryInject } from '@/utils/reactivity'
 
-export const key: InjectionKey<EvitaQLConsoleService> = Symbol()
+export const evitaQLConsoleServiceInjectionKey: InjectionKey<EvitaQLConsoleService> = Symbol('evitaQLConsoleService')
 
 /**
  * Service for running EvitaQL console component.
  */
 export class EvitaQLConsoleService {
-    private readonly evitaDBClient: EvitaDBClient
+    private readonly evitaDBDriverResolver: EvitaDBDriverResolver
 
-    constructor(evitaDBClient: EvitaDBClient) {
-        this.evitaDBClient = evitaDBClient
+    constructor(evitaDBDriver: EvitaDBDriverResolver) {
+        this.evitaDBDriverResolver = evitaDBDriver
     }
 
     /**
      * Executes user GraphQL query against a given evitaDB server and catalog.
      */
     // todo lho variables
-    async executeEvitaQLQuery(dataPointer: EvitaQLDataPointer, query: string, variables?: object): Promise<string> {
+    async executeEvitaQLQuery(dataPointer: EvitaQLConsoleDataPointer, query: string, variables?: object): Promise<string> {
+        const evitaDBDriver: EvitaDBDriver = await this.evitaDBDriverResolver.resolveDriver(dataPointer.connection)
+
         let result: any
         try {
-           result = await this.evitaDBClient.queryEntities(dataPointer.connection, dataPointer.catalogName, query)
+           result = await evitaDBDriver.query(dataPointer.connection, dataPointer.catalogName, query)
         } catch (e: any) {
             if (e.name === 'QueryError') {
                 result = e.error
@@ -34,5 +38,5 @@ export class EvitaQLConsoleService {
 }
 
 export const useEvitaQLConsoleService = (): EvitaQLConsoleService => {
-    return inject(key) as EvitaQLConsoleService
+    return mandatoryInject(evitaQLConsoleServiceInjectionKey) as EvitaQLConsoleService
 }

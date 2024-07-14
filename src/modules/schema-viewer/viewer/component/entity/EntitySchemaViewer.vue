@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import LabEditorViewerNameVariants from './LabEditorSchemaViewerNameVariants.vue'
-import LabEditorViewerAttributes from './LabEditorSchemaViewerAttributes.vue'
-import LabEditorViewerContainer from './LabEditorSchemaViewerContainer.vue'
-import LabEditorSchemaViewerAssociatedData from './LabEditorSchemaViewerAssociatedData.vue'
-import LabEditorSchemaViewerReferences from './LabEditorSchemaViewerReferences.vue'
-import { EntitySchema } from '@/model/evitadb'
-import { KeywordValue, Property, PropertyValue } from '@/model/properties-table'
-import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaViewerDataPointer'
 import { useI18n } from 'vue-i18n'
+import { SchemaViewerDataPointer } from '@/modules/schema-viewer/viewer/model/SchemaViewerDataPointer'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { Property } from '@/modules/base/model/properties-table/Property'
+import { PropertyValue } from '@/modules/base/model/properties-table/PropertyValue'
+import { KeywordValue } from '@/modules/base/model/properties-table/KeywordValue'
+import { List } from 'immutable'
+import AttributeSchemaList from '@/modules/schema-viewer/viewer/component/attribute/AttributeSchemaList.vue'
+import NameVariants from '@/modules/schema-viewer/viewer/component/NameVariants.vue'
+import SchemaContainer from '@/modules/schema-viewer/viewer/component/SchemaContainer.vue'
+import AssociatedDataSchemaList
+    from '@/modules/schema-viewer/viewer/component/associated-data/AssociatedDataSchemaList.vue'
+import ReferenceSchemaList from '@/modules/schema-viewer/viewer/component/reference/ReferenceSchemaList.vue'
 
 const { t } = useI18n()
 
@@ -18,43 +22,44 @@ const props = defineProps<{
 }>()
 
 const baseProperties = ref<Property[]>([
-    { name: t('schemaViewer.entity.label.version'), value: new PropertyValue(props.schema.version) },
-    { name: t('schemaViewer.entity.label.description'), value: new PropertyValue(props.schema.description) },
-    { name: t('schemaViewer.entity.label.deprecationNotice'), value: new PropertyValue(props.schema.deprecationNotice) },
-    { name: t('schemaViewer.entity.label.locales'), value: props.schema.locales.map(locale => new PropertyValue(new KeywordValue(locale))) },
-    { name: t('schemaViewer.entity.label.currencies'), value: props.schema.currencies.map(currency => new PropertyValue(new KeywordValue(currency))) },
-    { name: t('schemaViewer.entity.label.generatedPrimaryKey'), value: new PropertyValue(props.schema.withGeneratedPrimaryKey) },
-    { name: t('schemaViewer.entity.label.hierarchical'), value: new PropertyValue(props.schema.withHierarchy) },
-    { name: t('schemaViewer.entity.label.prices'), value: new PropertyValue(props.schema.withPrice) },
-    { name: t('schemaViewer.entity.label.indexedDecimalPlaces'), value: new PropertyValue(props.schema.indexedPricePlaces) },
-    { name: t('schemaViewer.entity.label.evolutionModes'), value: props.schema.evolutionMode.map(mode => new PropertyValue(new KeywordValue(mode))) }
+    { name: t('schemaViewer.entity.label.version'), value: new PropertyValue(props.schema.version.getIfSupported()!) },
+    { name: t('schemaViewer.entity.label.description'), value: new PropertyValue(props.schema.description.getIfSupported()!) },
+    { name: t('schemaViewer.entity.label.deprecationNotice'), value: new PropertyValue(props.schema.deprecationNotice.getIfSupported()!) },
+    { name: t('schemaViewer.entity.label.locales'), value: props.schema.locales.getOrElse(List()).map(locale => new PropertyValue(new KeywordValue(locale))) },
+    { name: t('schemaViewer.entity.label.currencies'), value: List(props.schema.currencies.getIfSupported()!.values()).map(currency => new PropertyValue(new KeywordValue(currency))) },
+    { name: t('schemaViewer.entity.label.generatedPrimaryKey'), value: new PropertyValue(props.schema.withGeneratedPrimaryKey.getOrElse(false)) },
+    { name: t('schemaViewer.entity.label.hierarchical'), value: new PropertyValue(props.schema.withHierarchy.getOrElse(false)) },
+    { name: t('schemaViewer.entity.label.prices'), value: new PropertyValue(props.schema.withPrice.getOrElse(false)) },
+    { name: t('schemaViewer.entity.label.indexedDecimalPlaces'), value: new PropertyValue(props.schema.indexedPricePlaces.getIfSupported()!) },
+    // todo lho i18n for items
+    { name: t('schemaViewer.entity.label.evolutionModes'), value: props.schema.evolutionMode.getOrElse(List()).map(mode => new PropertyValue(new KeywordValue(mode))) }
 ])
 </script>
 
 <template>
-    <LabEditorViewerContainer :properties="baseProperties">
+    <SchemaContainer :properties="baseProperties">
         <template #nested-details>
-            <LabEditorViewerNameVariants :name-variants="schema.nameVariants" />
+            <NameVariants :name-variants="schema.nameVariants.getIfSupported()!" />
 
-            <LabEditorViewerAttributes
-                v-if="schema.attributes && Object.values(schema.attributes).length > 0"
+            <AttributeSchemaList
+                v-if="schema.attributes.isSupported() && schema.attributes.getIfSupported()!.size > 0"
                 :data-pointer="dataPointer"
-                :attributes="Object.values(schema.attributes)"
+                :attributes="List(schema.attributes.getIfSupported()!.values())"
             />
 
-            <LabEditorSchemaViewerAssociatedData
-                v-if="schema.associatedData && Object.values(schema.associatedData).length > 0"
+            <AssociatedDataSchemaList
+                v-if="schema.associatedData.isSupported() && schema.associatedData.getIfSupported()!.size > 0"
                 :data-pointer="dataPointer"
-                :associated-data="Object.values(schema.associatedData)"
+                :associated-data="List(schema.associatedData.getIfSupported()!.values())"
             />
 
-            <LabEditorSchemaViewerReferences
-                v-if="schema.references && Object.values(schema.references).length > 0"
+            <ReferenceSchemaList
+                v-if="schema.references.isSupported() && schema.references.getIfSupported()!.size > 0"
                 :data-pointer="dataPointer"
-                :references="Object.values(schema.references)"
+                :references="List(schema.references.getIfSupported()!.values())"
             />
         </template>
-    </LabEditorViewerContainer>
+    </SchemaContainer>
 </template>
 
 <style lang="scss" scoped>

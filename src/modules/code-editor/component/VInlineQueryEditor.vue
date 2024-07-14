@@ -4,29 +4,25 @@
  */
 
 import { Codemirror } from 'vue-codemirror'
-import { Extension, EditorState } from '@codemirror/state'
+import { EditorState, Extension } from '@codemirror/state'
 import {
     crosshairCursor,
     drawSelection,
     dropCursor,
-    highlightSpecialChars, keymap as codeMirrorKeymap,
-    rectangularSelection
+    highlightSpecialChars,
+    keymap as codeMirrorKeymap,
+    rectangularSelection,
+    ViewUpdate
 } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
-import {
-    bracketMatching,
-    defaultHighlightStyle,
-    indentOnInput,
-    syntaxHighlighting
-} from '@codemirror/language'
+import { bracketMatching, defaultHighlightStyle, indentOnInput, syntaxHighlighting } from '@codemirror/language'
 import { autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete'
 import { lintKeymap } from '@codemirror/lint'
 import { dracula } from '@ddietr/codemirror-themes/dracula.js'
-import { ViewUpdate } from '@codemirror/view'
 import { computed, ref } from 'vue'
 import { EditorView } from 'codemirror'
-import { Keymap, useKeymap } from '@/model/editor/keymap/Keymap'
-import { Command } from '@/model/editor/keymap/Command'
+import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
+import { Command } from '@/modules/keymap/model/Command'
 
 const keymap: Keymap = useKeymap()
 

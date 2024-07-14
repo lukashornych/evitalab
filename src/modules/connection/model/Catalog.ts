@@ -1,5 +1,5 @@
 import { CatalogState } from '@/modules/connection/model/CatalogState'
-import { Map as ImmutableMap, List as ImmutableList } from 'immutable'
+import { List as ImmutableList, Map as ImmutableMap } from 'immutable'
 import { NamingConvention } from './NamingConvetion'
 import { Long } from '@/modules/connection/model/data-type/Long'
 import { Value } from '@/modules/connection/model/Value'
@@ -20,8 +20,9 @@ export class Catalog {
     readonly version: Value<Long>
     /**
      * Name of the catalog. Name must be unique across all catalogs inside same evitaDB instance.
+     * This is a mandatory value, it cannot be omitted.
      */
-    readonly name: Value<string>
+    readonly name: string
     /**
      * Name variant for different cases
      */
@@ -45,7 +46,7 @@ export class Catalog {
 
     constructor(catalogId: Value<string>,
                 version: Value<Long>,
-                name: Value<string>,
+                name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
                 entityTypes: Value<string[]>,
                 corrupted: Value<boolean>,
@@ -59,7 +60,5 @@ export class Catalog {
         this.corrupted = corrupted
         this.supportsTransaction = supportsTransaction
         this.catalogState = catalogState
-
-        this.catalogId.get()
     }
 }

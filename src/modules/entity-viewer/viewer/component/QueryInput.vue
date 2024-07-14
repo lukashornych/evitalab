@@ -4,36 +4,36 @@
  */
 
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import LabEditorDataGridPropertySelector
-    from '@/components/lab/editor/data-grid/property-selector/LabEditorDataGridPropertySelector.vue'
-import LabEditorDataGridDataLocaleSelector
-    from '@/components/lab/editor/data-grid/LabEditorDataGridDataLocaleSelector.vue'
-import LabEditorDataGridQueryLanguageSelector
-    from '@/components/lab/editor/data-grid/LabEditorDataGridQueryLanguageSelector.vue'
 import { Compartment, Extension } from '@codemirror/state'
 import { ConstraintListType, evitaQL, EvitaQLConstraintListMode } from '@lukashornych/codemirror-lang-evitaql'
 import { EditorView } from 'codemirror'
-import LabEditorDataGridDataPriceTypeSelector
-    from '@/components/lab/editor/data-grid/LabEditorDataGridDataPriceTypeSelector.vue'
-import { QueryPriceMode } from '@/model/evitadb'
-import { mandatoryInject } from '@/helpers/reactivity'
-import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import VInlineQueryEditor from '@/components/base/VInlineQueryEditor.vue'
-import { Keymap, useKeymap } from '@/model/editor/keymap/Keymap'
-import { Command } from '@/model/editor/keymap/Command'
-import { FilterByHistoryRecord } from '@/model/editor/tab/dataGrid/history/FilterByHistoryRecord'
-import { createFilterByHistoryKey, FilterByHistoryKey } from '@/model/editor/tab/dataGrid/history/FilterByHistoryKey'
-import { OrderByHistoryRecord } from '@/model/editor/tab/dataGrid/history/OrderByHistoryRecord'
-import { createOrderByByHistoryKey, OrderByHistoryKey } from '@/model/editor/tab/dataGrid/history/OrderByHistoryKey'
-import { EntityPropertyKey, gridPropsKey } from '@/model/editor/tab/dataGrid/data-grid'
-import { propertySelectorScope } from '@/model/editor/tab/dataGrid/keymap/scopes'
 import { useI18n } from 'vue-i18n'
-import { QueryLanguage } from '@/model/QueryLanguage'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { QueryLanguage } from '@/modules/entity-viewer/viewer/model/QueryLanguage'
+import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
+import { EntityPropertyKey } from '@/modules/entity-viewer/viewer/model/EntityPropertyKey'
+import QueryLanguageSelector from '@/modules/entity-viewer/viewer/component/QueryLanguageSelector.vue'
+import { createFilterByHistoryKey, FilterByHistoryKey } from '@/modules/entity-viewer/viewer/history/FilterByHistoryKey'
+import { FilterByHistoryRecord } from '@/modules/entity-viewer/viewer/history/FilterByHistoryRecord'
+import { createOrderByByHistoryKey, OrderByHistoryKey } from '@/modules/entity-viewer/viewer/history/OrderByHistoryKey'
+import { OrderByHistoryRecord } from '@/modules/entity-viewer/viewer/history/OrderByHistoryRecord'
+import LocaleSelector from '@/modules/entity-viewer/viewer/component/LocaleSelector.vue'
+import PriceTypeSelector from '@/modules/entity-viewer/viewer/component/PriceTypeSelector.vue'
+import { propertySelectorScope } from '@/modules/entity-viewer/viewer/keymap/scopes'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { Command } from '@/modules/keymap/model/Command'
+import VInlineQueryEditor from '@/modules/code-editor/component/VInlineQueryEditor.vue'
+import EntityPropertySelector
+    from '@/modules/entity-viewer/viewer/component/entity-property-selector/EntityPropertySelector.vue'
+import { useTabProps } from '@/modules/entity-viewer/viewer/component/dependencies'
+import { List } from 'immutable'
+import { EntityViewerService, useEntityViewerService } from '@/modules/entity-viewer/viewer/service/EntityViewerService'
 
 const keymap: Keymap = useKeymap()
-const editorService: EditorService = useEditorService()
+const workspaceService: WorkspaceService = useWorkspaceService()
+const entityViewerService: EntityViewerService = useEntityViewerService()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
@@ -41,9 +41,9 @@ const props = defineProps<{
     selectedQueryLanguage: QueryLanguage,
     filterBy: string,
     orderBy: string,
-    dataLocales: string[],
+    dataLocales: List<string>,
     selectedDataLocale: string | undefined,
-    selectedPriceType: QueryPriceMode | undefined,
+    selectedPriceType: QueryPriceMode,
     displayedEntityProperties: EntityPropertyKey[]
 }>()
 const emit = defineEmits<{
@@ -55,25 +55,25 @@ const emit = defineEmits<{
     (e: 'update:selectedPriceType', value: QueryPriceMode): void
     (e: 'update:displayedEntityProperties', value: EntityPropertyKey[]): void
 }>()
-const gridProps = mandatoryInject(gridPropsKey)
+const tabProps = useTabProps()
 
-const queryLanguageSelectorRef = ref<InstanceType<typeof LabEditorDataGridQueryLanguageSelector> | undefined>()
+const queryLanguageSelectorRef = ref<InstanceType<typeof QueryLanguageSelector> | undefined>()
 
 // todo this approach to autocompletion in grid is temporary until i'm able to pass the entire query with cropped view
 const filterByInputView = ref<EditorView>()
 const filterByInputLangSupportCompartment = new Compartment()
 const filterByInputExtensions: Extension[] = [filterByInputLangSupportCompartment.of(createFilterByLangSupportExtension(props.selectedQueryLanguage))]
-const filterByHistoryKey = computed<FilterByHistoryKey>(() => createFilterByHistoryKey(gridProps.params.dataPointer))
+const filterByHistoryKey = computed<FilterByHistoryKey>(() => createFilterByHistoryKey(tabProps.params.dataPointer))
 const filterByHistoryRecords = computed<FilterByHistoryRecord[]>(() => {
-    return [...editorService.getTabHistoryRecords(filterByHistoryKey.value)].reverse()
+    return [...workspaceService.getTabHistoryRecords(filterByHistoryKey.value)].reverse()
 })
 
 const orderByInputView = ref<EditorView>()
 const orderByInputLangSupportCompartment = new Compartment()
 const orderByInputExtensions: Extension[] = [orderByInputLangSupportCompartment.of(createOrderByLangSupportExtension(props.selectedQueryLanguage))]
-const orderByHistoryKey = computed<OrderByHistoryKey>(() => createOrderByByHistoryKey(gridProps.params.dataPointer))
+const orderByHistoryKey = computed<OrderByHistoryKey>(() => createOrderByByHistoryKey(tabProps.params.dataPointer))
 const orderByHistoryRecords = computed<OrderByHistoryRecord[]>(() => {
-    return [...editorService.getTabHistoryRecords(orderByHistoryKey.value)].reverse()
+    return [...workspaceService.getTabHistoryRecords(orderByHistoryKey.value)].reverse()
 })
 
 watch(() => props.selectedQueryLanguage, (newValue) => {
@@ -101,54 +101,57 @@ function createOrderByLangSupportExtension(queryLanguage: QueryLanguage): Extens
     }
 }
 
-const dataLocaleSelectorRef = ref<InstanceType<typeof LabEditorDataGridDataLocaleSelector> | undefined>()
-const priceTypeSelectorRef = ref<InstanceType<typeof LabEditorDataGridDataPriceTypeSelector> | undefined>()
+const dataLocaleSelectorRef = ref<InstanceType<typeof LocaleSelector> | undefined>()
+const supportsPrices = ref<boolean>(false)
+const priceTypeSelectorRef = ref<InstanceType<typeof PriceTypeSelector> | undefined>()
+entityViewerService.supportsPrices(tabProps.params.dataPointer)
+    .then(it => supportsPrices.value = it)
 
 const showPropertiesSelect = ref<boolean>(false)
 watch(showPropertiesSelect, (newValue) => {
     if (newValue) {
-        keymap.pushScope(gridProps.id, propertySelectorScope)
+        keymap.pushScope(tabProps.id, propertySelectorScope)
     } else {
-        keymap.popScope(gridProps.id)
+        keymap.popScope(tabProps.id)
     }
 })
 
 function executeQuery(): void {
     try {
-        editorService.addTabHistoryRecord(filterByHistoryKey.value, props.filterBy)
-        editorService.addTabHistoryRecord(orderByHistoryKey.value, props.orderBy)
+        workspaceService.addTabHistoryRecord(filterByHistoryKey.value, props.filterBy)
+        workspaceService.addTabHistoryRecord(orderByHistoryKey.value, props.orderBy)
     } catch (e) {
         console.error(e)
-        toaster.error(new UnexpectedError(gridProps.params.dataPointer.connection, t('entityGrid.queryInput.notification.failedToSaveQueryToHistory')))
+        toaster.error(new UnexpectedError(t('entityGrid.queryInput.notification.failedToSaveQueryToHistory')))
     }
     emit('executeQuery')
 }
 
 onMounted(() => {
     // register grid specific keyboard shortcuts
-    keymap.bind(Command.EntityGrid_ExecuteQuery, gridProps.id, () => executeQuery())
-    keymap.bind(Command.EntityGrid_ChangeQueryLanguage, gridProps.id, () => queryLanguageSelectorRef.value?.focus())
-    keymap.bind(Command.EntityGrid_FilterBy, gridProps.id, () => filterByInputView.value?.focus())
-    keymap.bind(Command.EntityGrid_OrderBy, gridProps.id, () => orderByInputView.value?.focus())
-    keymap.bind(Command.EntityGrid_ChangeDataLocale, gridProps.id, () => dataLocaleSelectorRef.value?.focus())
-    keymap.bind(Command.EntityGrid_ChangePriceType, gridProps.id, () => priceTypeSelectorRef.value?.focus())
-    keymap.bind(Command.EntityGrid_OpenPropertySelector, gridProps.id, () => showPropertiesSelect.value = true)
+    keymap.bind(Command.EntityGrid_ExecuteQuery, tabProps.id, () => executeQuery())
+    keymap.bind(Command.EntityGrid_ChangeQueryLanguage, tabProps.id, () => queryLanguageSelectorRef.value?.focus())
+    keymap.bind(Command.EntityGrid_FilterBy, tabProps.id, () => filterByInputView.value?.focus())
+    keymap.bind(Command.EntityGrid_OrderBy, tabProps.id, () => orderByInputView.value?.focus())
+    keymap.bind(Command.EntityGrid_ChangeDataLocale, tabProps.id, () => dataLocaleSelectorRef.value?.focus())
+    keymap.bind(Command.EntityGrid_ChangePriceType, tabProps.id, () => priceTypeSelectorRef.value?.focus())
+    keymap.bind(Command.EntityGrid_OpenPropertySelector, tabProps.id, () => showPropertiesSelect.value = true)
 })
 onUnmounted(() => {
     // unregister grid specific keyboard shortcuts
-    keymap.unbind(Command.EntityGrid_ExecuteQuery, gridProps.id)
-    keymap.unbind(Command.EntityGrid_ChangeQueryLanguage, gridProps.id)
-    keymap.unbind(Command.EntityGrid_FilterBy, gridProps.id)
-    keymap.unbind(Command.EntityGrid_OrderBy, gridProps.id)
-    keymap.unbind(Command.EntityGrid_ChangeDataLocale, gridProps.id)
-    keymap.unbind(Command.EntityGrid_ChangePriceType, gridProps.id)
-    keymap.unbind(Command.EntityGrid_OpenPropertySelector, gridProps.id)
+    keymap.unbind(Command.EntityGrid_ExecuteQuery, tabProps.id)
+    keymap.unbind(Command.EntityGrid_ChangeQueryLanguage, tabProps.id)
+    keymap.unbind(Command.EntityGrid_FilterBy, tabProps.id)
+    keymap.unbind(Command.EntityGrid_OrderBy, tabProps.id)
+    keymap.unbind(Command.EntityGrid_ChangeDataLocale, tabProps.id)
+    keymap.unbind(Command.EntityGrid_ChangePriceType, tabProps.id)
+    keymap.unbind(Command.EntityGrid_OpenPropertySelector, tabProps.id)
 })
 </script>
 
 <template>
     <div class="query-input">
-        <LabEditorDataGridQueryLanguageSelector
+        <QueryLanguageSelector
             ref="queryLanguageSelectorRef"
             :selected="selectedQueryLanguage"
             @update:selected="emit('update:selectedQueryLanguage', $event)"
@@ -160,7 +163,7 @@ onUnmounted(() => {
                 prepend-inner-icon="mdi-filter-menu-outline"
                 :placeholder="`Filter by (${keymap.prettyPrint(Command.EntityGrid_FilterBy)})`"
                 @update:model-value="emit('update:filterBy', $event)"
-                @update:history-clear="editorService.clearTabHistory(filterByHistoryKey)"
+                @update:history-clear="workspaceService.clearTabHistory(filterByHistoryKey)"
                 @update:editor="filterByInputView = $event.view"
                 :additional-extensions="filterByInputExtensions"
                 :history-records="filterByHistoryRecords"
@@ -174,7 +177,7 @@ onUnmounted(() => {
                 prepend-inner-icon="mdi-sort"
                 :placeholder="`Order by (${keymap.prettyPrint(Command.EntityGrid_OrderBy)})`"
                 @update:model-value="emit('update:orderBy', $event)"
-                @update:history-clear="editorService.clearTabHistory(orderByHistoryKey)"
+                @update:history-clear="workspaceService.clearTabHistory(orderByHistoryKey)"
                 @update:editor="orderByInputView = $event.view"
                 :additional-extensions="orderByInputExtensions"
                 :history-records="orderByHistoryRecords"
@@ -183,20 +186,20 @@ onUnmounted(() => {
         </div>
 
         <div class="query-input__selectors">
-            <LabEditorDataGridDataLocaleSelector
+            <LocaleSelector
                 ref="dataLocaleSelectorRef"
                 :selected="selectedDataLocale"
                 @update:selected="emit('update:selectedDataLocale', $event)"
                 :data-locales="dataLocales"
             />
-            <LabEditorDataGridDataPriceTypeSelector
-                v-if="selectedPriceType != undefined"
+            <PriceTypeSelector
+                v-if="supportsPrices"
                 ref="priceTypeSelectorRef"
                 :selected="selectedPriceType"
                 @update:selected="emit('update:selectedPriceType', $event)"
             />
 
-            <LabEditorDataGridPropertySelector
+            <EntityPropertySelector
                 v-model="showPropertiesSelect"
                 :selected="displayedEntityProperties"
                 @update:selected="emit('update:displayedEntityProperties', $event)"

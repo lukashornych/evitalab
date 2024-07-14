@@ -1,6 +1,7 @@
-import { SchemaPointer } from '@/model/editor/tab/schemaViewer/SchemaPointer'
 import { DefineComponent, markRaw, Raw } from 'vue'
-import LabEditorSchemaViewerCatalog from '@/components/lab/editor/schema-viewer/LabEditorSchemaViewerCatalog.vue'
+import { SchemaPointer } from '@/modules/schema-viewer/viewer/model/SchemaPointer'
+import CatalogSchemaViewer from '@/modules/schema-viewer/viewer/component/catalog/CatalogSchemaViewer.vue'
+import { List } from 'immutable'
 
 /**
  * Points to concrete evitaDB catalog schema
@@ -13,10 +14,10 @@ export class CatalogSchemaPointer implements SchemaPointer {
     }
 
     component(): Raw<DefineComponent<any, any, any>> {
-        return markRaw(LabEditorSchemaViewerCatalog as DefineComponent<any, any, any>)
+        return markRaw(CatalogSchemaViewer as DefineComponent<any, any, any>)
     }
 
-    path(): string[] {
-        return [this.catalogName]
+    path(): List<string> {
+        return List([this.catalogName])
     }
 }

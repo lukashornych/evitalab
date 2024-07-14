@@ -1,8 +1,9 @@
 import { AttributeSchema, AttributeSchemaFlag } from '@/modules/connection/model/schema/AttributeSchema'
 import Immutable, { List as ImmutableList } from 'immutable'
 import { AttributeUniquenessType } from '@/modules/connection/model/schema/AttributeUniquenessType'
-import { NamingConvention } from './NamingConvetion'
+import { NamingConvention } from '../NamingConvetion'
 import { Value } from '@/modules/connection/model/Value'
+import { Scalar } from '@/modules/connection/model/data-type/Scalar'
 
 /**
  * evitaLab's representation of a single evitaDB entity attribute schema independent of specific evitaDB version
@@ -14,11 +15,11 @@ export class EntityAttributeSchema extends AttributeSchema {
      */
     readonly representative: Value<boolean>
 
-    constructor(name: Value<string>,
+    constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
                 description: Value<string | null>,
                 deprecationNotice: Value<string | null>,
-                type: Value<string>,
+                type: Value<Scalar>,
                 uniquenessType: Value<AttributeUniquenessType>,
                 filterable: Value<boolean>,
                 sortable: Value<boolean>,
@@ -35,16 +36,18 @@ export class EntityAttributeSchema extends AttributeSchema {
         if (this.representativeFlags == undefined) {
             const representativeFlags: string[] = []
 
-            if (this.type.isSupported()) representativeFlags.push(this.formatDataTypeForFlag(this.type.get()))
+            this.type.ifSupported(type =>
+                representativeFlags.push(this.formatDataTypeForFlag(type)))
 
             if (this.representative.getOrElse(false)) representativeFlags.push(EntityAttributeSchemaFlag.Representative)
-            if (this.uniquenessType.isSupported()) {
-                if (this.uniquenessType.get() === AttributeUniquenessType.UniqueWithinCollection) {
+
+            this.uniquenessType.ifSupported(uniquenessType => {
+                if (uniquenessType === AttributeUniquenessType.UniqueWithinCollection) {
                     representativeFlags.push(AttributeSchemaFlag.Unique)
-                } else if (this.uniquenessType.get() === AttributeUniquenessType.UniqueWithinCollectionLocale) {
+                } else if (uniquenessType === AttributeUniquenessType.UniqueWithinCollectionLocale) {
                     representativeFlags.push(AttributeSchemaFlag.UniquePerLocale)
                 }
-            }
+            })
 
             if (this.uniquenessType.getOrElse(AttributeUniquenessType.NotUnique) != AttributeUniquenessType.NotUnique ||
                 this.filterable.getOrElse(false))

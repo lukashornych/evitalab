@@ -1,10 +1,13 @@
 <script setup lang="ts">
 
-import { EntityPrice } from '@/model/editor/tab/dataGrid/data-grid'
-import VPropertiesTable from '@/components/base/VPropertiesTable.vue'
 import { computed } from 'vue'
-import { KeywordValue, Property, PropertyValue, RangeValue } from '@/model/properties-table'
 import { useI18n } from 'vue-i18n'
+import { EntityPrice } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPrice'
+import { Property } from '@/modules/base/model/properties-table/Property'
+import { PropertyValue } from '@/modules/base/model/properties-table/PropertyValue'
+import { KeywordValue } from '@/modules/base/model/properties-table/KeywordValue'
+import { RangeValue } from '@/modules/base/model/properties-table/RangeValue'
+import VPropertiesTable from '@/modules/base/component/VPropertiesTable.vue'
 
 const { t } = useI18n()
 

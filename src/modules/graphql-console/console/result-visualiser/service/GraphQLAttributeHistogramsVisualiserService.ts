@@ -1,6 +1,9 @@
 import {
     GraphQLResultVisualiserService
 } from '@/modules/graphql-console/console/result-visualiser/service/GraphQLResultVisualiserService'
+import {
+    JsonAttributeHistogramsVisualiserService
+} from '@/modules/console/result-visualiser/service/json/JsonAttributeHistogramsVisualiserService'
 
 /**
  * {@link AttributeHistogramsVisualiserService} for GraphQL query language.

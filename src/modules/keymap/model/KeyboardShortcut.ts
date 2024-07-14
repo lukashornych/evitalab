@@ -1,6 +1,6 @@
 import keymaster from 'keymaster'
 import { KeyBinding } from '@codemirror/view'
-import { SystemType } from '@/model/editor/keymap/SystemType'
+import { SystemType } from '@/modules/keymap/model/SystemType'
 
 /**
  * Represents a single mapping of keyboard shortcuts to a single named command.

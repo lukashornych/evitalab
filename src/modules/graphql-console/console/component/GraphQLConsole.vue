@@ -11,42 +11,45 @@ import { graphql } from 'cm6-graphql'
 import { json } from '@codemirror/lang-json'
 
 import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
-import { GraphQLConsoleService, useGraphQLConsoleService } from '@/services/editor/graphql-console.service'
-import { GraphQLSchema, printSchema } from 'graphql'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import VExecuteQueryButton from '@/components/base/VExecuteQueryButton.vue'
-import VTabToolbar from '@/components/base/VTabToolbar.vue'
-import VSideTabs from '@/components/base/VSideTabs.vue'
-import LabEditorResultVisualiser from '@/components/lab/editor/result-visualiser/LabEditorResultVisualiser.vue'
-import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
+import { useI18n } from 'vue-i18n'
+import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
+import {
+    GraphQLConsoleService,
+    useGraphQLConsoleService
+} from '@/modules/graphql-console/console/service/GraphQLConsoleService'
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import { ResultVisualiserService } from '@/modules/console/result-visualiser/service/ResultVisualiserService'
 import {
     useGraphQLResultVisualiserService
-} from '@/services/editor/result-visualiser/graphql-result-visualiser.service'
-import LabEditorTabShareButton from '@/components/lab/editor/tab/LabEditorTabShareButton.vue'
-
-import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import LabEditorGraphQLConsoleHistory from '@/components/lab/editor/graphql-console/LabEditorGraphQLConsoleHistory.vue'
-import { Keymap, useKeymap } from '@/model/editor/keymap/Keymap'
-import VQueryEditor from '@/components/base/VQueryEditor.vue'
-import VPreviewEditor from '@/components/base/VPreviewEditor.vue'
-import { Command } from '@/model/editor/keymap/Command'
-import VActionTooltip from '@/components/base/VActionTooltip.vue'
-import { TabComponentProps } from '@/model/editor/tab/TabComponentProps'
-import { GraphQLConsoleParams } from '@/model/editor/tab/graphQLConsole/GraphQLConsoleParams'
-import { GraphQLConsoleData } from '@/model/editor/tab/graphQLConsole/GraphQLConsoleData'
-import { TabComponentEvents } from '@/model/editor/tab/TabComponentEvents'
-import { GraphQLInstanceType } from '@/model/editor/tab/graphQLConsole/GraphQLInstanceType'
+} from '@/modules/graphql-console/console/result-visualiser/service/GraphQLResultVisualiserService'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { TabComponentProps } from '@/modules/workspace/tab/model/TabComponentProps'
+import { GraphQLConsoleTabData } from '@/modules/graphql-console/console/workspace/model/GraphQLConsoleTabData'
+import { GraphQLConsoleTabParams } from '@/modules/graphql-console/console/workspace/model/GraphQLConsoleTabParams'
+import { TabComponentEvents } from '@/modules/workspace/tab/model/TabComponentEvents'
+import { GraphQLInstanceType } from '@/modules/graphql-console/console/model/GraphQLInstanceType'
+import ShareTabButton from '@/modules/workspace/tab/component/ShareTabButton.vue'
+import { GraphQLSchema, printSchema } from 'graphql'
+import VQueryEditor from '@/modules/code-editor/component/VQueryEditor.vue'
+import GraphQLConsoleHistory from '@/modules/graphql-console/console/history/component/GraphQLConsoleHistory.vue'
 import {
     createGraphQLConsoleHistoryKey,
     GraphQLConsoleHistoryKey
-} from '@/model/editor/tab/graphQLConsole/history/GraphQLConsoleHistoryKey'
+} from '@/modules/graphql-console/console/history/model/GraphQLConsoleHistoryKey'
 import {
     createGraphQLConsoleHistoryRecord,
     GraphQLConsoleHistoryRecord
-} from '@/model/editor/tab/graphQLConsole/history/GraphQLConsoleHistoryRecord'
-import { TabType } from '@/model/editor/tab/TabType'
-import { useI18n } from 'vue-i18n'
-import { UnexpectedError } from '@/model/UnexpectedError'
+} from '@/modules/graphql-console/console/history/model/GraphQLConsoleHistoryRecord'
+import VPreviewEditor from '@/modules/code-editor/component/VPreviewEditor.vue'
+import ResultVisualiser from '@/modules/console/result-visualiser/component/ResultVisualiser.vue'
+import { Command } from '@/modules/keymap/model/Command'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
+import { TabType } from '@/modules/workspace/tab/model/TabType'
+import VExecuteQueryButton from '@/modules/base/component/VExecuteQueryButton.vue'
+import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
+import VSideTabs from '@/modules/base/component/VSideTabs.vue'
+import { List } from 'immutable'
 
 enum EditorTabType {
     Query = 'query',
@@ -62,38 +65,40 @@ enum ResultTabType {
 
 const keymap: Keymap = useKeymap()
 const graphQLConsoleService: GraphQLConsoleService = useGraphQLConsoleService()
-const editorService: EditorService = useEditorService()
+const workspaceService: WorkspaceService = useWorkspaceService()
 const visualiserService: ResultVisualiserService = useGraphQLResultVisualiserService()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
-const props = defineProps<TabComponentProps<GraphQLConsoleParams, GraphQLConsoleData>>()
+const props = defineProps<TabComponentProps<GraphQLConsoleTabParams, GraphQLConsoleTabData>>()
 const emit = defineEmits<TabComponentEvents>()
 
 const path = ref<string[]>([])
-if (props.params.instancePointer.instanceType !== GraphQLInstanceType.System) {
-    path.value.push(props.params.instancePointer.catalogName)
+if (props.params.dataPointer.instanceType !== GraphQLInstanceType.System) {
+    path.value.push(props.params.dataPointer.catalogName)
 }
-path.value.push(t(`graphQLConsole.instanceType.${props.params.instancePointer.instanceType}`))
+path.value.push(t(`graphQLConsole.instanceType.${props.params.dataPointer.instanceType}`))
+// todo lho fix this workaround, where should we use the immutable list and where array?
+const immutablePath = computed(() => List(path.value))
 const editorTab = ref<EditorTabType>(EditorTabType.Query)
 const resultTab = ref<ResultTabType>(ResultTabType.Raw)
 
-const shareTabButtonRef = ref<InstanceType<typeof LabEditorTabShareButton> | undefined>()
+const shareTabButtonRef = ref<InstanceType<typeof ShareTabButton> | undefined>()
 
 const graphQLSchema = ref<GraphQLSchema>()
 
 const queryEditorRef = ref<InstanceType<typeof VQueryEditor> | undefined>()
-const queryCode = ref<string>(props.data.query ? props.data.query : t('graphQLConsole.placeholder.writeQuery', { catalogName: props.params.instancePointer.catalogName }))
+const queryCode = ref<string>(props.data.query ? props.data.query : t('graphQLConsole.placeholder.writeQuery', { catalogName: props.params.dataPointer.catalogName }))
 const queryExtensions: Extension[] = []
 
 const variablesEditorRef = ref<InstanceType<typeof VQueryEditor> | undefined>()
 const variablesCode = ref<string>(props.data.variables ? props.data.variables : '{\n  \n}')
 const variablesExtensions: Extension[] = [json()]
 
-const historyRef = ref<InstanceType<typeof LabEditorGraphQLConsoleHistory> | undefined>()
-const historyKey = computed<GraphQLConsoleHistoryKey>(() => createGraphQLConsoleHistoryKey(props.params.instancePointer))
+const historyRef = ref<InstanceType<typeof GraphQLConsoleHistory> | undefined>()
+const historyKey = computed<GraphQLConsoleHistoryKey>(() => createGraphQLConsoleHistoryKey(props.params.dataPointer))
 const historyRecords = computed<GraphQLConsoleHistoryRecord[]>(() => {
-    return [...editorService.getTabHistoryRecords(historyKey.value)].reverse()
+    return [...workspaceService.getTabHistoryRecords(historyKey.value)].reverse()
 })
 function pickHistoryRecord(record: GraphQLConsoleHistoryRecord): void {
     queryCode.value = record[1] || ''
@@ -102,7 +107,7 @@ function pickHistoryRecord(record: GraphQLConsoleHistoryRecord): void {
     setTimeout(() => queryEditorRef.value?.focus())
 }
 function clearHistory(): void {
-    editorService.clearTabHistory(historyKey.value)
+    workspaceService.clearTabHistory(historyKey.value)
 }
 
 const schemaEditorRef = ref<InstanceType<typeof VPreviewEditor> | undefined>()
@@ -115,23 +120,23 @@ const rawResultEditorRef = ref<InstanceType<typeof VPreviewEditor> | undefined>(
 const resultCode = ref<string>('')
 const resultExtensions: Extension[] = [json()]
 
-const resultVisualiserRef = ref<InstanceType<typeof LabEditorResultVisualiser> | undefined>()
+const resultVisualiserRef = ref<InstanceType<typeof ResultVisualiser> | undefined>()
 const supportsVisualisation = computed<boolean>(() => {
-    return props.params.instancePointer.instanceType === GraphQLInstanceType.Data
+    return props.params.dataPointer.instanceType === GraphQLInstanceType.Data
 })
 
 const loading = ref<boolean>(false)
 const initialized = ref<boolean>(false)
 
-const currentData = computed<GraphQLConsoleData>(() => {
-    return new GraphQLConsoleData(queryCode.value, variablesCode.value)
+const currentData = computed<GraphQLConsoleTabData>(() => {
+    return new GraphQLConsoleTabData(queryCode.value, variablesCode.value)
 })
 watch(currentData, (data) => {
     emit('dataUpdate', data)
 })
 
 onBeforeMount(() => {
-    graphQLConsoleService.getGraphQLSchema(props.params.instancePointer)
+    graphQLConsoleService.getGraphQLSchema(props.params.dataPointer)
         .then(schema => {
             graphQLSchema.value = schema
             queryExtensions.push(graphql(schema))
@@ -191,15 +196,15 @@ onUnmounted(() => {
 
 async function executeQuery(): Promise<void> {
     try {
-        editorService.addTabHistoryRecord(historyKey.value, createGraphQLConsoleHistoryRecord(queryCode.value, variablesCode.value))
+        workspaceService.addTabHistoryRecord(historyKey.value, createGraphQLConsoleHistoryRecord(queryCode.value, variablesCode.value))
     } catch (e) {
         console.error(e)
-        toaster.error(new UnexpectedError(props.params.instancePointer.connection, t('graphQLConsole.notification.failedToSaveQueryToHistory')))
+        toaster.error(new UnexpectedError(t('graphQLConsole.notification.failedToSaveQueryToHistory')))
     }
 
     loading.value = true
     try {
-        resultCode.value = await graphQLConsoleService.executeGraphQLQuery(props.params.instancePointer, queryCode.value, JSON.parse(variablesCode.value))
+        resultCode.value = await graphQLConsoleService.executeGraphQLQuery(props.params.dataPointer, queryCode.value, JSON.parse(variablesCode.value))
         loading.value = false
         lastAppliedQueryCode.value = queryCode.value
 
@@ -250,15 +255,15 @@ function focusResultVisualiser(): void {
     >
         <VTabToolbar
             prepend-icon="mdi-graphql"
-            :path="path"
+            :path="immutablePath"
         >
             <template #append>
-                <LabEditorTabShareButton
+                <ShareTabButton
                     ref="shareTabButtonRef"
                     :tab-type="TabType.GraphQLConsole"
                     :tab-params="params"
                     :tab-data="currentData"
-                    :disabled="!params.instancePointer.connection.preconfigured"
+                    :disabled="!params.dataPointer.connection.preconfigured"
                 />
 
                 <VBtn
@@ -327,7 +332,7 @@ function focusResultVisualiser(): void {
                         </VWindowItem>
 
                         <VWindowItem :value="EditorTabType.History">
-                            <LabEditorGraphQLConsoleHistory
+                            <GraphQLConsoleHistory
                                 ref="historyRef"
                                 :items="historyRecords"
                                 @select-history-record="pickHistoryRecord"
@@ -363,10 +368,10 @@ function focusResultVisualiser(): void {
                         </VWindowItem>
 
                         <VWindowItem v-if="supportsVisualisation" :value="ResultTabType.Visualiser">
-                            <LabEditorResultVisualiser
+                            <ResultVisualiser
                                 v-if="resultTab === ResultTabType.Visualiser"
                                 ref="resultVisualiserRef"
-                                :catalog-pointer="params.instancePointer"
+                                :catalog-pointer="params.dataPointer"
                                 :visualiser-service="visualiserService"
                                 :input-query="lastAppliedQueryCode || ''"
                                 :result="resultCode == undefined || !resultCode ? undefined : JSON.parse(resultCode)"

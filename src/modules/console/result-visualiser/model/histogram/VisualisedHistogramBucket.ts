@@ -1,4 +1,4 @@
-import { BigDecimal } from '@/model/evitadb'
+import { BigDecimal } from '@/modules/connection/driver/2024_8/model/model'
 
 /**
  * Single histogram bucket DTO ready for visualisation.

@@ -1,7 +1,7 @@
-import { EntityPropertyValueFormatter } from '@/services/editor/data-grid/entity-property-value-formatter'
 import xmlFormat from 'xml-formatter'
-import { EntityPropertyValue } from '@/model/editor/tab/dataGrid/data-grid'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { EntityPropertyValueFormatter } from '@/modules/entity-viewer/viewer/service/EntityPropertyValueFormatter'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 
 /**
  * Fake root element for pretty printing XML with multiple roots which is not valid XML but we in data, there may be partial
@@ -16,7 +16,7 @@ export class EntityPropertyValueXmlFormatter implements EntityPropertyValueForma
 
     format(value: EntityPropertyValue | EntityPropertyValue[], prettyPrint: boolean = false): string {
         if (value instanceof Array || typeof value.value() != 'string') {
-            throw new UnexpectedError(undefined, 'Cannot format JSON as XML')
+            throw new UnexpectedError('Cannot format JSON as XML')
         }
         // validates the value as XML, and also pretty prints it if needed
         const formattedXml: string = this.formatXml(value.value())

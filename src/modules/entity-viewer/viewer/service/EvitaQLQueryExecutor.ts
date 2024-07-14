@@ -1,38 +1,45 @@
-import { QueryExecutor } from '@/services/editor/data-grid/query-executor'
-import { LabService } from '@/services/lab.service'
-import { EvitaDBClient } from '@/services/evitadb-client'
-import { Response } from '@/model/evitadb'
-import {
-    DataGridDataPointer,
-    EntityPrice,
-    EntityPrices,
-    EntityPropertyKey,
-    EntityPropertyType,
-    EntityPropertyValue,
-    EntityReferenceValue,
-    FlatEntity,
-    NativeValue,
-    QueryResult,
-    StaticEntityProperties,
-    WritableEntityProperty
-} from '@/model/editor/tab/dataGrid/data-grid'
+import { QueryExecutor } from '@/modules/entity-viewer/viewer/service/QueryExecutor'
+import { EvitaDBDriver } from '@/modules/connection/driver/EvitaDBDriver'
+import { ConnectionService } from '@/modules/connection/service/ConnectionService'
+import { EntityViewerDataPointer } from '@/modules/entity-viewer/viewer/model/EntityViewerDataPointer'
+import { QueryResult } from '@/modules/entity-viewer/viewer/model/QueryResult'
+import { Response } from '@/modules/connection/model/data/Response'
+import { PaginatedList } from '@/modules/connection/model/data/PaginatedList'
+import { FlatEntity } from '@/modules/entity-viewer/viewer/model/FlatEntity'
+import { WritableEntityProperty } from '@/modules/entity-viewer/viewer/model/WritableEntityProperty'
+import { EntityPropertyKey } from '@/modules/entity-viewer/viewer/model/EntityPropertyKey'
+import { StaticEntityProperties } from '@/modules/entity-viewer/viewer/model/StaticEntityProperties'
+import { NativeValue } from '@/modules/entity-viewer/viewer/model/entity-property-value/NativeValue'
+import { EntityReferenceValue } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityReferenceValue'
+import { EntityPropertyType } from '@/modules/entity-viewer/viewer/model/EntityPropertyType'
+import { EntityPrices } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPrices'
+import { EntityPrice } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPrice'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import { EvitaDBDriverResolver } from '@/modules/connection/driver/EvitaDBDriverResolver'
 
 /**
  * Query executor for EvitaQL language.
  */
 export class EvitaQLQueryExecutor extends QueryExecutor {
-    private readonly evitaDBClient: EvitaDBClient
+    private readonly evitaDBDriverResolver: EvitaDBDriverResolver
 
-    constructor(labService: LabService, evitaDBClient: EvitaDBClient) {
-        super(labService)
-        this.evitaDBClient = evitaDBClient
+    constructor(connectionService: ConnectionService, evitaDBDriverResolver: EvitaDBDriverResolver) {
+        super(connectionService)
+        this.evitaDBDriverResolver = evitaDBDriverResolver
     }
 
-    async executeQuery(dataPointer: DataGridDataPointer, query: string): Promise<QueryResult> {
-        const result: Response = await this.evitaDBClient.queryEntities(dataPointer.connection, dataPointer.catalogName, query)
+    async executeQuery(dataPointer: EntityViewerDataPointer, query: string): Promise<QueryResult> {
+        const evitaDBDriver: EvitaDBDriver = await this.evitaDBDriverResolver.resolveDriver(dataPointer.connection)
+        const result: Response = await evitaDBDriver.query(dataPointer.connection, dataPointer.catalogName, query)
+        const paginatedList = result.recordPage.map(it => it as PaginatedList)
         return {
-            entities: result?.recordPage?.data.map((entity: any) => this.flattenEntity(entity)) || [],
-            totalEntitiesCount: result?.recordPage?.totalRecordCount || 0
+            entities: paginatedList.getIfSupported()
+                ?.data
+                .getIfSupported()
+                ?.map((entity: any) => this.flattenEntity(entity)) || [],
+            totalEntitiesCount: paginatedList.getIfSupported()
+                ?.totalRecordCount
+                ?.getIfSupported() || 0
         }
     }
 

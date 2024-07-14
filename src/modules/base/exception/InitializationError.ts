@@ -1,14 +1,13 @@
-import { LabInternalError } from '@/model/LabInternalError'
+import { LabError } from '@/modules/base/exception/LabError'
 
 /**
  * Error that occurs only because of incorrect internal state initialization.
  */
-export class InitializationError extends LabInternalError {
+export class InitializationError extends LabError {
     constructor(detail: string) {
         super(
             'InitializationError',
-            undefined,
-            'Unexpected error occurred during intial initialization.',
+            `Unexpected error occurred during initial initialization: ${detail}`,
             detail
         )
     }

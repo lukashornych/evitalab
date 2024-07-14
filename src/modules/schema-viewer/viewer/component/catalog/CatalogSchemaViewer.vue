@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import LabEditorViewerNameVariants from './LabEditorSchemaViewerNameVariants.vue'
-import LabEditorViewerAttributes from './LabEditorSchemaViewerAttributes.vue'
-import LabEditorViewerContainer from './LabEditorSchemaViewerContainer.vue'
-import { CatalogSchema } from '@/model/evitadb'
-import { Property, PropertyValue } from '@/model/properties-table'
-import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaViewerDataPointer'
-import LabEditorSchemaViewerEntities from '@/components/lab/editor/schema-viewer/LabEditorSchemaViewerEntities.vue'
 import { useI18n } from 'vue-i18n'
+import { SchemaViewerDataPointer } from '@/modules/schema-viewer/viewer/model/SchemaViewerDataPointer'
+import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
+import { Property } from '@/modules/base/model/properties-table/Property'
+import { PropertyValue } from '@/modules/base/model/properties-table/PropertyValue'
+import SchemaContainer from '@/modules/schema-viewer/viewer/component/SchemaContainer.vue'
+import NameVariants from '@/modules/schema-viewer/viewer/component/NameVariants.vue'
+import AttributeSchemaList from '@/modules/schema-viewer/viewer/component/attribute/AttributeSchemaList.vue'
+import EntitySchemaList from '@/modules/schema-viewer/viewer/component/entity/EntitySchemaList.vue'
+import { List } from 'immutable'
 
 const { t } = useI18n()
 
@@ -17,29 +19,29 @@ const props = defineProps<{
 }>()
 
 const baseProperties = ref<Property[]>([
-    { name: t('schemaViewer.catalog.label.version'), value: new PropertyValue(props.schema.version) },
-    { name: t('schemaViewer.catalog.label.description'), value: new PropertyValue(props.schema.description) }
+    { name: t('schemaViewer.catalog.label.version'), value: new PropertyValue(props.schema.version.getIfSupported()) },
+    { name: t('schemaViewer.catalog.label.description'), value: new PropertyValue(props.schema.description.getIfSupported()!) }
 ])
 </script>
 
 <template>
-    <LabEditorViewerContainer :properties="baseProperties">
+    <SchemaContainer :properties="baseProperties">
         <template #nested-details>
-            <LabEditorViewerNameVariants :name-variants="schema.nameVariants" />
+            <NameVariants :name-variants="schema.nameVariants.getIfSupported()!" />
 
-            <LabEditorViewerAttributes
-                v-if="schema.attributes && Object.values(schema.attributes).length > 0"
+            <AttributeSchemaList
+                v-if="schema.attributes.isSupported() && schema.attributes.getIfSupported()!.size > 0"
                 :data-pointer="dataPointer"
-                :attributes="Object.values(schema.attributes)"
+                :attributes="List(schema.attributes.getIfSupported()!.values())"
             />
 
-            <LabEditorSchemaViewerEntities
-                v-if="schema.entitySchemas && Object.values(schema.entitySchemas).length > 0"
+            <EntitySchemaList
+                v-if="schema.entitySchemas.isSupported() && schema.entitySchemas.getIfSupported()!.size > 0"
                 :data-pointer="dataPointer"
-                :entities="Object.values(schema.entitySchemas)"
+                :entities="List(schema.entitySchemas.getIfSupported()!.values())"
             />
         </template>
-    </LabEditorViewerContainer>
+    </SchemaContainer>
 </template>
 
 <style lang="scss" scoped>

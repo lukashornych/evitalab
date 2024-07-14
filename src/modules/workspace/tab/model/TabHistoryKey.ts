@@ -1,6 +1,6 @@
-import { TabType } from '@/model/editor/tab/TabType'
 import XXH from 'xxhashjs'
-import { EvitaDBConnection } from '@/model/EvitaDBConnection'
+import { Connection } from '@/modules/connection/model/Connection'
+import { TabType } from '@/modules/workspace/tab/model/TabType'
 
 const hasher: XXH.HashObject = XXH.h64()
 
@@ -11,7 +11,7 @@ const hasher: XXH.HashObject = XXH.h64()
 export class TabHistoryKey<R> {
     readonly hash: string;
 
-    constructor(connection: EvitaDBConnection, tabType: TabType, sectionPath: string[]) {
+    constructor(connection: Connection, tabType: TabType, sectionPath: string[]) {
         const hashObject = hasher.update(connection.id).update(tabType)
         sectionPath.forEach(item => hashObject.update(item))
         this.hash = hashObject.digest().toString(16);

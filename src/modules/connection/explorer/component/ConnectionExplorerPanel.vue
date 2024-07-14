@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { LabService, useLabService } from '@/services/lab.service'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ConnectionService, useConnectionService } from '@/modules/connection/service/ConnectionService'
+import { Connection } from '@/modules/connection/model/Connection'
 import ConnectionItem from '@/modules/connection/explorer/component/ConnectionItem.vue'
+import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
 import ConnectionEditor from '@/modules/connection/explorer/component/ConnectionEditor.vue'
-import { EvitaDBConnection } from '@/model/EvitaDBConnection'
 
-const labService: LabService = useLabService()
+const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
+const connectionService: ConnectionService = useConnectionService()
 const { t } = useI18n()
 
 const props = defineProps<{
@@ -18,7 +20,7 @@ const emit = defineEmits<{
 }>()
 
 const addConnectionDialogOpen = ref<boolean>(false)
-const connections = computed<EvitaDBConnection[]>(() => labService.getConnections())
+const connections = computed<Connection[]>(() => connectionService.getConnections())
 </script>
 
 <template>
@@ -43,7 +45,7 @@ const connections = computed<EvitaDBConnection[]>(() => labService.getConnection
 
         <template #append>
             <div
-                v-if="!labService.isReadOnly()"
+                v-if="!evitaLabConfig.readOnly"
                 class="pa-2"
             >
                 <ConnectionEditor
@@ -57,7 +59,7 @@ const connections = computed<EvitaDBConnection[]>(() => labService.getConnection
                             v-bind="props"
                             @click="addConnectionDialogOpen = true"
                         >
-                            Add connection
+                            {{ t('explorer.button.addConnection') }}
                         </VBtn>
                     </template>
                 </ConnectionEditor>

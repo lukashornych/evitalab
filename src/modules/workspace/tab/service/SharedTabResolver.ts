@@ -1,23 +1,33 @@
-import { inject, InjectionKey } from 'vue'
+import { InjectionKey } from 'vue'
 import { ShareTabObject } from '@/modules/workspace/tab/model/ShareTabObject'
 import { TabDefinition } from '@/modules/workspace/tab/model/TabDefinition'
 import { TabType } from '@/modules/workspace/tab/model/TabType'
-import { EntityViewerTabDefinition } from '@/modules/entity-viewer/viewer/workspace/EntityViewerTabDefinition'
-import { EvitaQLConsoleTabDefinition } from '@/modules/evitaql-console/console/workspace/EvitaQLConsoleTabDefinition'
-import { GraphQLConsoleTabDefinition } from '@/modules/graphql-console/console/workspace/GraphQLConsoleTabDefinition'
-import { SchemaViewerTabDefinition } from '@/modules/schema-viewer/viewer/workspace/SchemaViewerTabDefinition'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { EntityViewerTabFactory } from '@/modules/entity-viewer/viewer/workspace/service/EntityViewerTabFactory'
+import { EvitaQLConsoleTabFactory } from '@/modules/evitaql-console/console/workspace/service/EvitaQLConsoleTabFactory'
+import { GraphQLConsoleTabFactory } from '@/modules/graphql-console/console/workspace/service/GraphQLConsoleTabFactory'
+import { SchemaViewerTabFactory } from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
+import { mandatoryInject } from '@/utils/reactivity'
 
-export const key: InjectionKey<SharedTabResolver> = Symbol()
+export const sharedTabResolverInjectionKey: InjectionKey<SharedTabResolver> = Symbol('sharedTabResolver')
 
 /**
- * Resolves shared tab requests from URL into {@link TabRequest}s.
+ * Resolves shared tab requests from URL into {@link TabDefinition}s.
  */
 export class SharedTabResolver {
-    private readonly labService: LabService
+    private readonly entityViewerTabFactory: EntityViewerTabFactory
+    private readonly evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory
+    private readonly graphQLConsoleTabFactory: GraphQLConsoleTabFactory
+    private readonly schemaViewerTabFactory: SchemaViewerTabFactory
 
-    constructor(labService: LabService) {
-        this.labService = labService
+    constructor(entityViewerTabFactory: EntityViewerTabFactory,
+                evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory,
+                graphQLConsoleTabFactory: GraphQLConsoleTabFactory,
+                schemaViewerTabFactory: SchemaViewerTabFactory) {
+        this.entityViewerTabFactory = entityViewerTabFactory
+        this.evitaQLConsoleTabFactory = evitaQLConsoleTabFactory
+        this.graphQLConsoleTabFactory = graphQLConsoleTabFactory
+        this.schemaViewerTabFactory = schemaViewerTabFactory
     }
 
     async resolve(shareTabObjectSerialized: string | undefined): Promise<TabDefinition<any, any> | undefined> {
@@ -30,22 +40,22 @@ export class SharedTabResolver {
             case 'data-grid':
             case 'dataGrid':
             case TabType.EntityViewer:
-                return EntityViewerTabDefinition.restoreFromJson(this.labService, shareTabObject.tabParams, shareTabObject.tabData)
+                return this.entityViewerTabFactory.restoreFromJson(shareTabObject.tabParams, shareTabObject.tabData)
             case 'evitaql-console':
             case TabType.EvitaQLConsole:
-                return EvitaQLConsoleTabDefinition.restoreFromJson(this.labService, shareTabObject.tabParams, shareTabObject.tabData)
+                return this.evitaQLConsoleTabFactory.restoreFromJson(shareTabObject.tabParams, shareTabObject.tabData)
             case 'graphql-console':
             case TabType.GraphQLConsole:
-                return GraphQLConsoleTabDefinition.restoreFromJson(this.labService, shareTabObject.tabParams, shareTabObject.tabData)
+                return this.graphQLConsoleTabFactory.restoreFromJson(shareTabObject.tabParams, shareTabObject.tabData)
             case 'schema-viewer':
             case TabType.SchemaViewer:
-                return SchemaViewerTabDefinition.restoreFromJson(this.labService, shareTabObject.tabParams)
+                return this.schemaViewerTabFactory.restoreFromJson(shareTabObject.tabParams)
             default:
-                throw new UnexpectedError(undefined, `Unsupported shared tab type '${shareTabObject.tabType}'.`)
+                throw new UnexpectedError(`Unsupported shared tab type '${shareTabObject.tabType}'.`)
         }
     }
 }
 
 export const useSharedTabResolver = (): SharedTabResolver => {
-    return inject(key) as SharedTabResolver
+    return mandatoryInject(sharedTabResolverInjectionKey) as SharedTabResolver
 }

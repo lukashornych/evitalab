@@ -4,38 +4,39 @@
  */
 
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import {
-    EntityPropertyDescriptor, entityPropertyDescriptorIndexKey,
-    EntityPropertyKey,
-    EntityPropertySectionSelection,
-    EntityPropertyType, gridPropsKey,
-    parentEntityPropertyType
-} from '@/model/editor/tab/dataGrid/data-grid'
-import VCardTitleWithActions from '@/components/base/VCardTitleWithActions.vue'
-import LabEditorDataGridPropertySelectorSection from './LabEditorDataGridPropertySelectorSection.vue'
-import LabEditorDataGridPropertySelectorSectionAttributeItem
-    from './LabEditorDataGridPropertySelectorSectionAttributeItem.vue'
-import LabEditorDataGridPropertySelectorSectionAssociatedDataItem
-    from './LabEditorDataGridPropertySelectorSectionAssociatedDataItem.vue'
-import LabEditorDataGridPropertySelectorSectionEntityItem
-    from './LabEditorDataGridPropertySelectorSectionEntityItem.vue'
-import LabEditorDataGridPropertySelectorSectionReferenceItem
-    from './LabEditorDataGridPropertySelectorSectionReferenceItem.vue'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import VListItemDivider from '@/components/base/VListItemDivider.vue'
-import LabEditorDataGridPropertySelectorSectionReferenceAttributeItem
-    from '@/components/lab/editor/data-grid/property-selector/LabEditorDataGridPropertySelectorSectionReferenceAttributeItem.vue'
-import LabEditorDataGridPropertySelectorSectionItemGroup
-    from '@/components/lab/editor/data-grid/property-selector/LabEditorDataGridPropertySelectorSectionItemGroup.vue'
-import LabEditorDataGridPropertySelectorSectionPricesItem
-    from '@/components/lab/editor/data-grid/property-selector/LabEditorDataGridPropertySelectorSectionPricesItem.vue'
-import { mandatoryInject } from '@/helpers/reactivity'
-import { Keymap, useKeymap } from '@/model/editor/keymap/Keymap'
-import { Command } from '@/model/editor/keymap/Command'
-import VActionTooltip from '@/components/base/VActionTooltip.vue'
-import { propertySelectorScope } from '@/model/editor/tab/dataGrid/keymap/scopes'
 import { useI18n } from 'vue-i18n'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { EntityPropertyType } from '@/modules/entity-viewer/viewer/model/EntityPropertyType'
+import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { EntityPropertyKey } from '@/modules/entity-viewer/viewer/model/EntityPropertyKey'
+import { EntityPropertyDescriptor } from '@/modules/entity-viewer/viewer/model/EntityPropertyDescriptor'
+import { EntityPropertySectionSelection } from '@/modules/entity-viewer/viewer/model/EntityPropertySectionSelection'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { Command } from '@/modules/keymap/model/Command'
+import { propertySelectorScope } from '@/modules/entity-viewer/viewer/keymap/scopes'
+import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
+import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithActions.vue'
+import PropertySection from '@/modules/entity-viewer/viewer/component/entity-property-selector/PropertySection.vue'
+import PropertySectionEntityItem
+    from '@/modules/entity-viewer/viewer/component/entity-property-selector/PropertySectionEntityItem.vue'
+import VListItemDivider from '@/modules/base/component/VListItemDivider.vue'
+import PropertySectionAttributeItem
+    from '@/modules/entity-viewer/viewer/component/entity-property-selector/PropertySectionAttributeItem.vue'
+import PropertySectionAssociatedDataItem
+    from '@/modules/entity-viewer/viewer/component/entity-property-selector/PropertySectionAssociatedDataItem.vue'
+import PropertySectionPricesItem
+    from '@/modules/entity-viewer/viewer/component/entity-property-selector/PropertySectionPricesItem.vue'
+import PropertySectionReferenceItem
+    from '@/modules/entity-viewer/viewer/component/entity-property-selector/PropertySectionReferenceItem.vue'
+import PropertySectionItemGroup
+    from '@/modules/entity-viewer/viewer/component/entity-property-selector/PropertySectionItemGroup.vue'
+import PropertySectionReferenceAttributeItem
+    from '@/modules/entity-viewer/viewer/component/entity-property-selector/PropertySectionReferenceAttributeItem.vue'
+import {
+    parentEntityPropertyType,
+    useEntityPropertyDescriptorIndex,
+    useTabProps
+} from '@/modules/entity-viewer/viewer/component/dependencies'
 
 const topLevelSections: EntityPropertyType[] = [
     EntityPropertyType.Entity,
@@ -58,8 +59,8 @@ const emit = defineEmits<{
     (e: 'update:selected', value: EntityPropertyKey[]): void
     (e: 'schemaOpen'): void
 }>()
-const gridProps = mandatoryInject(gridPropsKey)
-const entityPropertyDescriptorIndex = mandatoryInject(entityPropertyDescriptorIndexKey)
+const tabProps = useTabProps()
+const entityPropertyDescriptorIndex = useEntityPropertyDescriptorIndex()
 
 const filter = ref<string>('')
 const filterInput = ref<HTMLInputElement | null>(null)
@@ -189,7 +190,7 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
 
         emit('update:selected', newSelected)
     } else {
-        toaster.error(new UnexpectedError(gridProps.params.dataPointer.connection, t('entityGrid.propertySelector.notification.invalidPropertySectionSelection')))
+        toaster.error(new UnexpectedError(t('entityGrid.propertySelector.notification.invalidPropertySectionSelection')))
     }
 }
 
@@ -232,11 +233,11 @@ function toggleReferenceAttributeProperty(referenceProperty: EntityPropertyDescr
 
 onMounted(() => {
     // register keyboard shortcuts for property selector
-    keymap.bindWithinScope(Command.EntityGrid_PropertySelector_FindProperty, gridProps.id, propertySelectorScope, () => filterInput?.value?.select())
+    keymap.bindWithinScope(Command.EntityGrid_PropertySelector_FindProperty, tabProps.id, propertySelectorScope, () => filterInput?.value?.select())
 })
 onUnmounted(() => {
     // unregister keyboard shortcuts for property selector
-    keymap.unbindWithinScope(Command.EntityGrid_PropertySelector_FindProperty, gridProps.id, propertySelectorScope)
+    keymap.unbindWithinScope(Command.EntityGrid_PropertySelector_FindProperty, tabProps.id, propertySelectorScope)
 })
 </script>
 
@@ -302,7 +303,7 @@ onUnmounted(() => {
                     select-strategy="classic"
                     class="property-list"
                 >
-                    <LabEditorDataGridPropertySelectorSection
+                    <PropertySection
                         :property-type="EntityPropertyType.Entity"
                         :selected="sectionedSelected.get(EntityPropertyType.Entity) || []"
                         :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.Entity) || []"
@@ -311,14 +312,14 @@ onUnmounted(() => {
                         @toggle="togglePropertySectionSelection(EntityPropertyType.Entity, $event)"
                     >
                         <template #default="{ property }">
-                            <LabEditorDataGridPropertySelectorSectionEntityItem
+                            <PropertySectionEntityItem
                                 :property-descriptor="property"
                                 @schema-open="emit('schemaOpen')"
                             />
                         </template>
-                    </LabEditorDataGridPropertySelectorSection>
+                    </PropertySection>
                     <VListItemDivider />
-                    <LabEditorDataGridPropertySelectorSection
+                    <PropertySection
                         :property-type="EntityPropertyType.Attributes"
                         :selected="sectionedSelected.get(EntityPropertyType.Attributes) || []"
                         :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.Attributes) || []"
@@ -327,14 +328,14 @@ onUnmounted(() => {
                         @toggle="togglePropertySectionSelection(EntityPropertyType.Attributes, $event)"
                     >
                         <template #default="{ property }">
-                            <LabEditorDataGridPropertySelectorSectionAttributeItem
+                            <PropertySectionAttributeItem
                                 :property-descriptor="property"
                                 @schema-open="emit('schemaOpen')"
                             />
                         </template>
-                    </LabEditorDataGridPropertySelectorSection>
+                    </PropertySection>
                     <VListItemDivider />
-                    <LabEditorDataGridPropertySelectorSection
+                    <PropertySection
                         :property-type="EntityPropertyType.AssociatedData"
                         :selected="sectionedSelected.get(EntityPropertyType.AssociatedData) || []"
                         :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.AssociatedData) || []"
@@ -343,20 +344,20 @@ onUnmounted(() => {
                         @toggle="togglePropertySectionSelection(EntityPropertyType.AssociatedData, $event)"
                     >
                         <template #default="{ property }">
-                            <LabEditorDataGridPropertySelectorSectionAssociatedDataItem
+                            <PropertySectionAssociatedDataItem
                                 :property-descriptor="property"
                                 @schema-open="emit('schemaOpen')"
                             />
                         </template>
-                    </LabEditorDataGridPropertySelectorSection>
+                    </PropertySection>
                     <template v-if="(sectionedPropertyDescriptors.get(EntityPropertyType.Prices)?.length || 0) > 0 && (filteredSectionedPropertyDescriptors.get(EntityPropertyType.Prices)?.length || 0) > 0">
                         <VListItemDivider />
-                        <LabEditorDataGridPropertySelectorSectionPricesItem
+                        <PropertySectionPricesItem
                             :property-descriptor="sectionedPropertyDescriptors.get(EntityPropertyType.Prices)![0]"
                         />
                     </template>
                     <VListItemDivider />
-                    <LabEditorDataGridPropertySelectorSection
+                    <PropertySection
                         :property-type="EntityPropertyType.References"
                         :selected="sectionedSelected.get(EntityPropertyType.References) || []"
                         :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.References) || []"
@@ -365,19 +366,19 @@ onUnmounted(() => {
                         @toggle="togglePropertySectionSelection(EntityPropertyType.References, $event)"
                     >
                         <template #default="{ property }">
-                            <LabEditorDataGridPropertySelectorSectionReferenceItem
-                                v-if="property.children.length === 0"
+                            <PropertySectionReferenceItem
+                                v-if="property.children.size === 0"
                                 :property-descriptor="property"
                                 @schema-open="emit('schemaOpen')"
                             />
 
-                            <LabEditorDataGridPropertySelectorSectionItemGroup
+                            <PropertySectionItemGroup
                                 v-else
                                 :filtered-property-descriptors="property.children"
                                 :property-descriptors="property.children"
                             >
                                 <template #activator="{ props }">
-                                    <LabEditorDataGridPropertySelectorSectionReferenceItem
+                                    <PropertySectionReferenceItem
                                         :property-descriptor="property"
                                         v-bind="props"
                                         group-parent
@@ -387,15 +388,15 @@ onUnmounted(() => {
                                 </template>
 
                                 <template #child="{ childProperty }">
-                                    <LabEditorDataGridPropertySelectorSectionReferenceAttributeItem
+                                    <PropertySectionReferenceAttributeItem
                                         :reference-property-descriptor="property"
                                         :attribute-property-descriptor="childProperty"
                                         @toggle="toggleReferenceAttributeProperty(property, $event.selected)"
                                     />
                                 </template>
-                            </LabEditorDataGridPropertySelectorSectionItemGroup>
+                            </PropertySectionItemGroup>
                         </template>
-                    </LabEditorDataGridPropertySelectorSection>
+                    </PropertySection>
                 </VList>
             </VCardText>
         </VCard>

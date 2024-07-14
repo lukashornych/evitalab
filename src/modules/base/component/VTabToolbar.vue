@@ -3,6 +3,7 @@
  * Common pre-configured toolbar for tab windows.
  */
 import { computed } from 'vue'
+import { List } from 'immutable'
 
 type Flag = {
     title: string,
@@ -11,14 +12,14 @@ type Flag = {
 
 const props = withDefaults(defineProps<{
     prependIcon: string,
-    path: string[],
-    flags?: any[]
+    path: List<string>,
+    flags?: List<string>
 }>(), {
-    flags: () => []
+    flags: () => List()
 })
 
-const normalizedFlags = computed<Flag[]>(() => {
-    const normalizedFlags: Flag[] = props.flags.map((flag: any) => {
+const normalizedFlags = computed<List<Flag>>(() => {
+    const normalizedFlags: List<Flag> = props.flags.map((flag: any) => {
         if (typeof flag === 'string') {
             return {
                 title: flag,
@@ -47,7 +48,7 @@ const normalizedFlags = computed<Flag[]>(() => {
         <VToolbarTitle class="ml-0 font-weight-bold">
             <div style="display: flex">
                 <VBreadcrumbs
-                    :items="path"
+                    :items="path.toArray()"
                     class="pl-0 pr-0 pt-0 pb-0 mr-4"
                 />
 

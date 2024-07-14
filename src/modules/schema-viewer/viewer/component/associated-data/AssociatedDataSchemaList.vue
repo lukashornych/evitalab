@@ -1,33 +1,34 @@
 <script setup lang="ts">
-import LabEditorViewerAssociatedDataItem from './LabEditorSchemaViewerAssociatedDataItem.vue'
-import LabEditorSchemaViewerContainerSection from './LabEditorSchemaViewerContainerSection.vue'
-import { AssociatedDataSchema } from '@/model/evitadb'
-import LabEditorSchemaViewerContainerSectionList
-    from '@/components/lab/editor/schema-viewer/LabEditorSchemaViewerContainerSectionList.vue'
-import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaViewerDataPointer'
 import { useI18n } from 'vue-i18n'
+import { SchemaViewerDataPointer } from '@/modules/schema-viewer/viewer/model/SchemaViewerDataPointer'
+import { AssociatedDataSchema } from '@/modules/connection/model/schema/AssociatedDataSchema'
+import SchemaContainerSection from '@/modules/schema-viewer/viewer/component/SchemaContainerSection.vue'
+import SchemaContainerSectionList from '@/modules/schema-viewer/viewer/component/SchemaContainerSectionList.vue'
+import AssociatedDataSchemaListItem
+    from '@/modules/schema-viewer/viewer/component/associated-data/AssociatedDataSchemaListItem.vue'
+import { List } from 'immutable'
 
 const { t } = useI18n()
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
-    associatedData: AssociatedDataSchema[]
+    associatedData: List<AssociatedDataSchema>
 }>()
 </script>
 
 <template>
-    <LabEditorSchemaViewerContainerSection :name="t('schemaViewer.associatedData.title')">
-        <LabEditorSchemaViewerContainerSectionList
+    <SchemaContainerSection :name="t('schemaViewer.associatedData.title')">
+        <SchemaContainerSectionList
             :items="associatedData"
             :nameSupplier="item => item.name"
             v-slot="{ item }"
         >
-            <LabEditorViewerAssociatedDataItem
+            <AssociatedDataSchemaListItem
                 :data-pointer="dataPointer"
                 :schema="item"
             />
-        </LabEditorSchemaViewerContainerSectionList>
-    </LabEditorSchemaViewerContainerSection>
+        </SchemaContainerSectionList>
+    </SchemaContainerSection>
 </template>
 
 <style lang="scss" scoped>

@@ -1,17 +1,18 @@
 import { Schema } from '@/modules/connection/model/schema/Schema'
-import { Map as ImmutableMap, List as ImmutableList } from 'immutable'
-import { NamingConvention } from './NamingConvetion';
+import { List as ImmutableList, Map as ImmutableMap } from 'immutable'
+import { NamingConvention } from '../NamingConvetion'
 import { AssociatedDataSchema } from '@/modules/connection/model/schema/AssociatedDataSchema'
 import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
 import { SortableAttributeCompoundSchema } from '@/modules/connection/model/schema/SortableAttributeCompoundSchema'
 import { EntityAttributeSchema } from '@/modules/connection/model/schema/EntityAttributeSchema'
 import { Value } from '@/modules/connection/model/Value'
 import { EvolutionMode } from '@/modules/connection/model/schema/EvolutionMode'
+import { AbstractSchema } from '@/modules/connection/model/schema/AbstractSchema'
 
 /**
  * evitaLab's representation of a single evitaDB entity schema independent of specific evitaDB version
  */
-export class EntitySchema extends Schema {
+export class EntitySchema extends AbstractSchema {
 
     /**
      * Contains version of this definition object and gets increased with any entity type update. Allows to execute optimistic locking i.e. avoiding parallel modifications.
@@ -19,8 +20,9 @@ export class EntitySchema extends Schema {
     readonly version: Value<number>
     /**
      * Contains unique name of the model. Case-sensitive. Distinguishes one model item from another within single entity instance.
+     * This is a mandatory value, it cannot be omitted.
      */
-    readonly name: Value<string>
+    readonly name: string
     readonly nameVariants: Value<ImmutableMap<NamingConvention, string>>
     /**
      * Contains description of the model is optional but helps authors of the schema / client API to better explain the original purpose of the model to the consumers.
@@ -67,7 +69,7 @@ export class EntitySchema extends Schema {
     private representativeFlags?: ImmutableList<string>
 
     constructor(version: Value<number>,
-                name: Value<string>,
+                name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
                 description: Value<string | null>,
                 deprecationNotice: Value<string | null>,
@@ -96,13 +98,13 @@ export class EntitySchema extends Schema {
         this.currencies = currencies.map(it => ImmutableList(it))
         this.evolutionMode = evolutionMode.map(it => ImmutableList(it))
         this.attributes = attributes.map(it =>
-            ImmutableMap(it.map(attribute => [attribute.name.get(), attribute])))
+            ImmutableMap(it.map(attribute => [attribute.name, attribute])))
         this.sortableAttributeCompounds = sortableAttributeCompounds.map(it =>
-            ImmutableMap(it.map(sac => [sac.name.get(), sac])))
+            ImmutableMap(it.map(sac => [sac.name, sac])))
         this.associatedData = associatedData.map(it =>
-            ImmutableMap(it.map(ad => [ad.name.get(), ad])))
+            ImmutableMap(it.map(ad => [ad.name, ad])))
         this.references = references.map(it =>
-            ImmutableMap(it.map(reference => [reference.name.get(), reference])))
+            ImmutableMap(it.map(reference => [reference.name, reference])))
     }
 
     getRepresentativeFlags(): ImmutableList<string> {

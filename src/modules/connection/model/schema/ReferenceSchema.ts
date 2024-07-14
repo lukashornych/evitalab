@@ -1,20 +1,22 @@
-import { Map as ImmutableMap, List as ImmutableList } from 'immutable'
-import { Schema } from '@/modules/connection/model/Schema'
-import { NamingConvention } from './NamingConvetion';
-import { Cardinality } from '@/modules/connection/model/Cardinality'
-import { AttributeSchema } from '@/modules/connection/model/AttributeSchema'
-import { SortableAttributeCompoundSchema } from '@/modules/connection/model/SortableAttributeCompoundSchema'
+import { List as ImmutableList, Map as ImmutableMap } from 'immutable'
+import { Schema } from '@/modules/connection/model/schema/Schema'
+import { NamingConvention } from '../NamingConvetion'
+import { Cardinality } from '@/modules/connection/model/schema/Cardinality'
+import { AttributeSchema } from '@/modules/connection/model/schema/AttributeSchema'
+import { SortableAttributeCompoundSchema } from '@/modules/connection/model/schema/SortableAttributeCompoundSchema'
 import { Value } from '@/modules/connection/model/Value'
+import { AbstractSchema } from '@/modules/connection/model/schema/AbstractSchema'
 
 /**
  * evitaLab's representation of a single evitaDB reference schema independent of specific evitaDB version
  */
-export class ReferenceSchema extends Schema {
+export class ReferenceSchema extends AbstractSchema {
 
     /**
      * Contains unique name of the model. Case-sensitive. Distinguishes one model item from another within single entity instance.
+     * This is a mandatory value, it cannot be omitted.
      */
-    readonly name: Value<string>
+    readonly name: string
     readonly nameVariants: Value<ImmutableMap<NamingConvention, string>>
     /**
      * Contains description of the model is optional but helps authors of the schema / client API to better explain the original purpose of the model to the consumers.
@@ -66,7 +68,7 @@ export class ReferenceSchema extends Schema {
 
     private representativeFlags?: ImmutableList<string>
 
-    constructor(name: Value<string>,
+    constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
                 description: Value<string | null>,
                 deprecationNotice: Value<string | null>,
@@ -101,9 +103,9 @@ export class ReferenceSchema extends Schema {
         this.faceted = faceted
         this.cardinality = cardinality
         this.attributes = attributes.map(it =>
-            ImmutableMap(it.map(attribute => [attribute.name.get(), attribute])))
+            ImmutableMap(it.map(attribute => [attribute.name, attribute])))
         this.sortableAttributeCompounds = sortableAttributeCompounds.map(it =>
-            ImmutableMap(it.map(sac => [sac.name.get(), sac])))
+            ImmutableMap(it.map(sac => [sac.name, sac])))
     }
 
     getRepresentativeFlags(): ImmutableList<string> {

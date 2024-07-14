@@ -4,14 +4,14 @@
  */
 
 import { computed, ref } from 'vue'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import LabEditorResultVisualiserHierarchyTreeNode
-    from '@/components/lab/editor/result-visualiser/hierarchy/LabEditorResultVisualiserHierarchyTreeNode.vue'
-import { Result, VisualisedNamedHierarchy } from '@/model/editor/result-visualiser'
-import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
-import VMarkdown from '@/components/base/VMarkdown.vue'
-import VListItemLazyIterator from '@/components/base/VListItemLazyIterator.vue'
 import { useI18n } from 'vue-i18n'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { ResultVisualiserService } from '@/modules/console/result-visualiser/service/ResultVisualiserService'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { VisualisedNamedHierarchy } from '@/modules/console/result-visualiser/model/hierarchy/VisualisedNamedHierarchy'
+import VMarkdown from '@/modules/base/component/VMarkdown.vue'
+import VListItemLazyIterator from '@/modules/base/component/VListItemLazyIterator.vue'
+import HierarchyTreeNode from '@/modules/console/result-visualiser/component/hierarchy/HierarchyTreeNode.vue'
 
 const namedHierarchyTreesPageSize: number = 10
 
@@ -88,7 +88,7 @@ function initialize(): void {
                 :page-size="namedHierarchyTreesPageSize"
             >
                 <template #item="{ item: tree }">
-                    <LabEditorResultVisualiserHierarchyTreeNode
+                    <HierarchyTreeNode
                         :node="tree"
                         :entity-representative-attributes="entityRepresentativeAttributes"
                     />

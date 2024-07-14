@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import VLoadingCircular from '@/components/base/VLoadingCircular.vue'
+import VLoadingCircular from '@/modules/base/component/VLoadingCircular.vue'
 
 export interface Props {
     openable?: boolean,

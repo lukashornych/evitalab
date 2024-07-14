@@ -3,11 +3,13 @@
  * Renders title of a single hierarchy tree node.
  */
 
-import VMarkdown from '@/components/base/VMarkdown.vue'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import { VisualisedHierarchyTreeNode } from '@/model/editor/result-visualiser'
 import { useI18n } from 'vue-i18n'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import {
+    VisualisedHierarchyTreeNode
+} from '@/modules/console/result-visualiser/model/hierarchy/VisualisedHierarchyTreeNode'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import VMarkdown from '@/modules/base/component/VMarkdown.vue'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -21,7 +23,7 @@ function copyPrimaryKey(): void {
         navigator.clipboard.writeText(`${props.node.primaryKey}`).then(() => {
             toaster.info(t('resultVisualizer.hierarchyVisualiser.notification.primaryKeyCopiedToClipboard'))
         }).catch(() => {
-            toaster.error(new UnexpectedError(undefined, t('common.notification.failedToCopyToClipboard')))
+            toaster.error(new UnexpectedError(t('common.notification.failedToCopyToClipboard')))
         })
     } else {
         toaster.error(t('resultVisualizer.hierarchyVisualiser.notification.noPrimaryKeyProperty'))
@@ -32,7 +34,7 @@ function copyParentPrimaryKey(): void {
         navigator.clipboard.writeText(`${props.node.parentPrimaryKey}`).then(() => {
             toaster.info(t('resultVisualizer.hierarchyVisualiser.notification.parentPrimaryKeyCopiedToClipboard'))
         }).catch(() => {
-            toaster.error(new UnexpectedError(undefined, t('common.notification.failedToCopyToClipboard')))
+            toaster.error(new UnexpectedError(t('common.notification.failedToCopyToClipboard')))
         })
     } else {
         toaster.error(t('resultVisualizer.hierarchyVisualiser.notification.noParentPrimaryKeyProperty'))

@@ -1,19 +1,21 @@
-import { Map as ImmutableMap, List as ImmutableList } from 'immutable'
-import { NamingConvention } from './NamingConvetion';
+import { List as ImmutableList, Map as ImmutableMap } from 'immutable'
+import { NamingConvention } from '../NamingConvetion'
 import { OrderBehaviour } from '@/modules/connection/model/schema/OrderBehaviour'
 import { OrderDirection } from '@/modules/connection/model/schema/OrderDirection'
 import { Schema } from '@/modules/connection/model/schema/Schema'
 import { Value } from '@/modules/connection/model/Value'
+import { AbstractSchema } from '@/modules/connection/model/schema/AbstractSchema'
 
 /**
  * evitaLab's representation of a single evitaDB sortable attribute compound schema schema independent of specific evitaDB version
  */
-export class SortableAttributeCompoundSchema extends Schema {
+export class SortableAttributeCompoundSchema extends AbstractSchema {
 
     /**
      * Contains unique name of the model. Case-sensitive. Distinguishes one model item from another within single entity instance.
+     * This is a mandatory value, it cannot be omitted.
      */
-    readonly name: Value<string>
+    readonly name: string
     readonly nameVariants: Value<ImmutableMap<NamingConvention, string>>
     /**
      * Contains description of the model is optional but helps authors of the schema / client API to better explain the original purpose of the model to the consumers.
@@ -30,7 +32,7 @@ export class SortableAttributeCompoundSchema extends Schema {
 
     private readonly representativeAttributes: ImmutableList<string> = ImmutableList()
 
-    constructor(name: Value<string>,
+    constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
                 description: Value<string | null>,
                 deprecationNotice: Value<string | null>,

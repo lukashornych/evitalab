@@ -10,42 +10,45 @@ import { Extension } from '@codemirror/state'
 import { json } from '@codemirror/lang-json'
 
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { EvitaQLConsoleService, useEvitaQLConsoleService } from '@/services/editor/evitaql-console.service'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import VExecuteQueryButton from '@/components/base/VExecuteQueryButton.vue'
-import VTabToolbar from '@/components/base/VTabToolbar.vue'
-import VSideTabs from '@/components/base/VSideTabs.vue'
-import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
+
+import { useI18n } from 'vue-i18n'
+import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
+import {
+    EvitaQLConsoleService,
+    useEvitaQLConsoleService
+} from '@/modules/evitaql-console/console/service/EvitaQLConsoleService'
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import { ResultVisualiserService } from '@/modules/console/result-visualiser/service/ResultVisualiserService'
 import {
     useEvitaQLResultVisualiserService
-} from '@/services/editor/result-visualiser/evitaql-result-visualiser.service'
-import LabEditorResultVisualiser from '@/components/lab/editor/result-visualiser/LabEditorResultVisualiser.vue'
+} from '@/modules/evitaql-console/console/result-visualiser/service/EvitaQLResultVisualiserService'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { TabComponentProps } from '@/modules/workspace/tab/model/TabComponentProps'
+import { TabComponentEvents } from '@/modules/workspace/tab/model/TabComponentEvents'
+import { EvitaQLConsoleTabParams } from '@/modules/evitaql-console/console/workspace/model/EvitaQLConsoleTabParams'
+import { EvitaQLConsoleTabData } from '@/modules/evitaql-console/console/workspace/model/EvitaQLConsoleTabData'
+import ShareTabButton from '@/modules/workspace/tab/component/ShareTabButton.vue'
+import VQueryEditor from '@/modules/code-editor/component/VQueryEditor.vue'
 import { evitaQL } from '@lukashornych/codemirror-lang-evitaql'
-import LabEditorTabShareButton from '@/components/lab/editor/tab/LabEditorTabShareButton.vue'
-
-import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import LabEditorEvitaQLConsoleHistory from '@/components/lab/editor/evitaql-console/LabEditorEvitaQLConsoleHistory.vue'
-import { Keymap, useKeymap } from '@/model/editor/keymap/Keymap'
-import VQueryEditor from '@/components/base/VQueryEditor.vue'
-import VPreviewEditor from '@/components/base/VPreviewEditor.vue'
-import LabEditorGraphQLConsoleHistory from '@/components/lab/editor/graphql-console/LabEditorGraphQLConsoleHistory.vue'
-import { Command } from '@/model/editor/keymap/Command'
-import VActionTooltip from '@/components/base/VActionTooltip.vue'
-import { TabComponentProps } from '@/model/editor/tab/TabComponentProps'
-import { EvitaQLConsoleParams } from '@/model/editor/tab/evitaQLConsole/EvitaQLConsoleParams'
-import { EvitaQLConsoleData } from '@/model/editor/tab/evitaQLConsole/EvitaQLConsoleData'
-import { TabComponentEvents } from '@/model/editor/tab/TabComponentEvents'
+import EvitaQLConsoleHistory from '@/modules/evitaql-console/console/history/component/EvitaQLConsoleHistory.vue'
 import {
     createEvitaQLConsoleHistoryKey,
     EvitaQLConsoleHistoryKey
-} from '@/model/editor/tab/evitaQLConsole/history/EvitaQLConsoleHistoryKey'
+} from '@/modules/evitaql-console/console/history/model/EvitaQLConsoleHistoryKey'
 import {
     createEvitaQLConsoleHistoryRecord,
     EvitaQLConsoleHistoryRecord
-} from '@/model/editor/tab/evitaQLConsole/history/EvitaQLConsoleHistoryRecord'
-import { TabType } from '@/model/editor/tab/TabType'
-import { useI18n } from 'vue-i18n'
-import { UnexpectedError } from '@/model/UnexpectedError'
+} from '@/modules/evitaql-console/console/history/model/EvitaQLConsoleHistoryRecord'
+import VPreviewEditor from '@/modules/code-editor/component/VPreviewEditor.vue'
+import ResultVisualiser from '@/modules/console/result-visualiser/component/ResultVisualiser.vue'
+import { Command } from '@/modules/keymap/model/Command'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
+import { TabType } from '@/modules/workspace/tab/model/TabType'
+import VExecuteQueryButton from '@/modules/base/component/VExecuteQueryButton.vue'
+import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
+import VSideTabs from '@/modules/base/component/VSideTabs.vue'
+import { List } from 'immutable'
 
 enum EditorTabType {
     Query = 'query',
@@ -60,21 +63,19 @@ enum ResultTabType {
 
 const keymap: Keymap = useKeymap()
 const evitaQLConsoleService: EvitaQLConsoleService = useEvitaQLConsoleService()
-const editorService: EditorService = useEditorService()
+const workspaceService: WorkspaceService = useWorkspaceService()
 const visualiserService: ResultVisualiserService = useEvitaQLResultVisualiserService()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
-const props = defineProps<TabComponentProps<EvitaQLConsoleParams, EvitaQLConsoleData>>()
+const props = defineProps<TabComponentProps<EvitaQLConsoleTabParams, EvitaQLConsoleTabData>>()
 const emit = defineEmits<TabComponentEvents>()
 
-const path = ref<string[]>([
-    props.params.dataPointer.catalogName
-])
+const path = List([props.params.dataPointer.catalogName])
 const editorTab = ref<EditorTabType>(EditorTabType.Query)
 const resultTab = ref<ResultTabType>(ResultTabType.Raw)
 
-const shareTabButtonRef = ref<InstanceType<typeof LabEditorTabShareButton> | undefined>()
+const shareTabButtonRef = ref<InstanceType<typeof ShareTabButton> | undefined>()
 
 const queryEditorRef = ref<InstanceType<typeof VQueryEditor> | undefined>()
 const queryCode = ref<string>(props.data.query ? props.data.query : t('evitaQLConsole.placeholder.writeQuery', { catalogName: props.params.dataPointer.catalogName }))
@@ -84,10 +85,10 @@ const variablesEditorRef = ref<InstanceType<typeof VQueryEditor> | undefined>()
 const variablesCode = ref<string>(props.data.variables ? props.data.variables : '{\n  \n}')
 const variablesExtensions: Extension[] = [json()]
 
-const historyRef = ref<InstanceType<typeof LabEditorGraphQLConsoleHistory> | undefined>()
+const historyRef = ref<InstanceType<typeof EvitaQLConsoleHistory> | undefined>()
 const historyKey = computed<EvitaQLConsoleHistoryKey>(() => createEvitaQLConsoleHistoryKey(props.params.dataPointer))
 const historyRecords = computed<EvitaQLConsoleHistoryRecord[]>(() => {
-    return [...editorService.getTabHistoryRecords(historyKey.value)].reverse()
+    return [...workspaceService.getTabHistoryRecords(historyKey.value)].reverse()
 })
 function pickHistoryRecord(record: EvitaQLConsoleHistoryRecord): void {
     queryCode.value = record[1] || ''
@@ -95,7 +96,7 @@ function pickHistoryRecord(record: EvitaQLConsoleHistoryRecord): void {
     editorTab.value = EditorTabType.Query
 }
 function clearHistory(): void {
-    editorService.clearTabHistory(historyKey.value)
+    workspaceService.clearTabHistory(historyKey.value)
 }
 
 const enteredQueryCode = ref<string>('')
@@ -103,12 +104,12 @@ const rawResultEditorRef = ref<InstanceType<typeof VPreviewEditor> | undefined>(
 const resultCode = ref<string>('')
 const resultExtensions: Extension[] = [json()]
 
-const resultVisualiserRef = ref<InstanceType<typeof LabEditorResultVisualiser> | undefined>()
+const resultVisualiserRef = ref<InstanceType<typeof ResultVisualiser> | undefined>()
 
 const loading = ref<boolean>(false)
 
-const currentData = computed<EvitaQLConsoleData>(() => {
-    return new EvitaQLConsoleData(queryCode.value, variablesCode.value)
+const currentData = computed<EvitaQLConsoleTabData>(() => {
+    return new EvitaQLConsoleTabData(queryCode.value, variablesCode.value)
 })
 watch(currentData, (data) => {
     emit('dataUpdate', data)
@@ -155,10 +156,10 @@ onUnmounted(() => {
 
 async function executeQuery(): Promise<void> {
     try {
-        editorService.addTabHistoryRecord(historyKey.value, createEvitaQLConsoleHistoryRecord(queryCode.value, variablesCode.value))
+        workspaceService.addTabHistoryRecord(historyKey.value, createEvitaQLConsoleHistoryRecord(queryCode.value, variablesCode.value))
     } catch (e) {
         console.error(e)
-        toaster.error(new UnexpectedError(props.params.dataPointer.connection, t('evitaQLConsole.notification.failedToSaveQueryToHistory')))
+        toaster.error(new UnexpectedError(t('evitaQLConsole.notification.failedToSaveQueryToHistory')))
     }
 
     loading.value = true
@@ -206,7 +207,7 @@ if (props.params.executeOnOpen) {
             :path="path"
         >
             <template #append>
-                <LabEditorTabShareButton
+                <ShareTabButton
                     ref="shareTabButtonRef"
                     :tab-type="TabType.EvitaQLConsole"
                     :tab-params="params"
@@ -265,7 +266,7 @@ if (props.params.executeOnOpen) {
                         </VWindowItem>
 
                         <VWindowItem :value="EditorTabType.History">
-                            <LabEditorEvitaQLConsoleHistory
+                            <EvitaQLConsoleHistory
                                 ref="historyRef"
                                 :items="historyRecords"
                                 @select-history-record="pickHistoryRecord"
@@ -292,7 +293,7 @@ if (props.params.executeOnOpen) {
                         </VWindowItem>
 
                         <VWindowItem :value="ResultTabType.Visualiser">
-                            <LabEditorResultVisualiser
+                            <ResultVisualiser
                                 v-if="resultTab === ResultTabType.Visualiser"
                                 ref="resultVisualiserRef"
                                 :catalog-pointer="params.dataPointer"

@@ -1,18 +1,24 @@
 import { Schema } from '@/modules/connection/model/schema/Schema'
-import { Map as ImmutableMap, List as ImmutableList } from 'immutable'
-import { NamingConvention } from './NamingConvetion';
+import { List as ImmutableList, Map as ImmutableMap } from 'immutable'
+import { NamingConvention } from '../NamingConvetion'
 import { AttributeUniquenessType } from '@/modules/connection/model/schema/AttributeUniquenessType'
 import { Value } from '@/modules/connection/model/Value'
+import { Scalar } from '@/modules/connection/model/data-type/Scalar'
+import { SortableSchema } from '@/modules/connection/model/schema/SortableSchema'
+import { LocalizedSchema } from '@/modules/connection/model/schema/LocalizedSchema'
+import { AbstractSchema } from '@/modules/connection/model/schema/AbstractSchema'
+import { TypedSchema } from '@/modules/connection/model/schema/TypedSchema'
 
 /**
  * evitaLab's representation of a single evitaDB attribute schema independent of specific evitaDB version
  */
-export class AttributeSchema extends Schema {
+export class AttributeSchema extends AbstractSchema implements TypedSchema, SortableSchema, LocalizedSchema {
 
     /**
      * Contains unique name of the model. Case-sensitive. Distinguishes one model item from another within single entity instance.
+     * This is a mandatory value, it cannot be omitted.
      */
-    readonly name: Value<string>
+    readonly name: string
     readonly nameVariants: Value<ImmutableMap<NamingConvention, string>>
     /**
      * Contains description of the model is optional but helps authors of the schema / client API to better explain the original purpose of the model to the consumers.
@@ -25,7 +31,7 @@ export class AttributeSchema extends Schema {
     /**
      * Data type of the attribute. Must be one of Evita-supported values. Internally the scalar is converted into Java-corresponding data type.
      */
-    readonly type: Value<string>
+    readonly type: Value<Scalar>
     /**
      * When attribute is unique it is automatically filterable, and it is ensured there is exactly one single entity having certain value of this attribute among other entities in the same collection.  As an example of unique attribute can be EAN - there is no sense in having two entities with same EAN, and it's better to have this ensured by the database engine.
      */
@@ -57,11 +63,11 @@ export class AttributeSchema extends Schema {
 
     protected representativeFlags?: ImmutableList<string>
 
-    constructor(name: Value<string>,
+    constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
                 description: Value<string | null>,
                 deprecationNotice: Value<string | null>,
-                type: Value<string>,
+                type: Value<Scalar>,
                 uniquenessType: Value<AttributeUniquenessType>,
                 filterable: Value<boolean>,
                 sortable: Value<boolean>,
@@ -88,15 +94,16 @@ export class AttributeSchema extends Schema {
         if (this.representativeFlags == undefined) {
             const representativeFlags: string[] = []
 
-            if (this.type.isSupported()) representativeFlags.push(this.formatDataTypeForFlag(this.type.get()))
+            this.type.ifSupported(type =>
+                representativeFlags.push(this.formatDataTypeForFlag(type)))
 
-            if (this.uniquenessType.isSupported()) {
-                if (this.uniquenessType.get() === AttributeUniquenessType.UniqueWithinCollection) {
+            this.uniquenessType.ifSupported(uniquenessType => {
+                if (uniquenessType === AttributeUniquenessType.UniqueWithinCollection) {
                     representativeFlags.push(AttributeSchemaFlag.Unique)
-                } else if (this.uniquenessType.get() === AttributeUniquenessType.UniqueWithinCollectionLocale) {
+                } else if (uniquenessType === AttributeUniquenessType.UniqueWithinCollectionLocale) {
                     representativeFlags.push(AttributeSchemaFlag.UniquePerLocale)
                 }
-            }
+            })
 
             if (this.sortable.getOrElse(false)) representativeFlags.push(AttributeSchemaFlag.Sortable)
             if (this.localized.getOrElse(false)) representativeFlags.push(AttributeSchemaFlag.Localized)

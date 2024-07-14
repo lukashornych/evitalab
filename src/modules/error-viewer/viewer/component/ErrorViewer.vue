@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import VTabToolbar from '@/components/base/VTabToolbar.vue'
-import VPreviewEditor from '@/components/base/VPreviewEditor.vue'
-import { TabComponentProps } from '@/model/editor/tab/TabComponentProps'
-import { ErrorViewerParams } from '@/model/editor/tab/errorViewer/ErrorViewerParams'
-import { VoidTabRequestComponentData } from '@/model/editor/tab/void/VoidTabRequestComponentData'
-import { TabComponentEvents } from '@/model/editor/tab/TabComponentEvents'
 import { useI18n } from 'vue-i18n'
+import { TabComponentProps } from '@/modules/workspace/tab/model/TabComponentProps'
+import { VoidTabData } from '@/modules/workspace/tab/model/void/VoidTabData'
+import { TabComponentEvents } from '@/modules/workspace/tab/model/TabComponentEvents'
+import { ErrorViewerTabParams } from '@/modules/error-viewer/viewer/workspace/model/ErrorViewerTabParams'
+import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
+import VPreviewEditor from '@/modules/code-editor/component/VPreviewEditor.vue'
+import { List } from 'immutable'
 
 const { t } = useI18n()
 
-const props = defineProps<TabComponentProps<ErrorViewerParams, VoidTabRequestComponentData>>()
+const props = defineProps<TabComponentProps<ErrorViewerTabParams, VoidTabData>>()
 const emit = defineEmits<TabComponentEvents>()
 
 const title = computed(() => {
@@ -31,7 +32,7 @@ emit('ready')
     <div class="error-viewer">
         <VTabToolbar
             prepend-icon="mdi-alert-outline"
-            :path="[title]"
+            :path="List([title])"
         >
             <!-- todo lho link to submit an issue to github -->
             <template #append>

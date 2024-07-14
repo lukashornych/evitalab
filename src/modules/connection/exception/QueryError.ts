@@ -1,14 +1,18 @@
-import { EvitaDBConnection } from '@/model/EvitaDBConnection'
-import { LabInvalidUsageError } from '@/model/LabInvalidUsageError'
+import { Connection } from '@/modules/connection/model/Connection'
+import { LabError } from '@/modules/base/exception/LabError'
 
 /**
  * Error that is thrown when a query to evitaDB fails.
  */
-export class QueryError extends LabInvalidUsageError {
+export class QueryError extends LabError {
     readonly error: any
 
-    constructor(connection: EvitaDBConnection, error: any) {
-        super('QueryError', connection, 'Query error occurred.', error instanceof Array ? error.map(it => it.message).join('; ') : error.message)
+    constructor(connection: Connection, error: any) {
+        super(
+            'QueryError',
+            `Query error occurred in connection ${connection.name}`,
+            error instanceof Array ? error.map(it => it.message).join('; ') : error.message
+        )
         this.error = error
     }
 }

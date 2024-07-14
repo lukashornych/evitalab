@@ -1,23 +1,40 @@
-import { LabService } from '@/services/lab.service'
-import { CatalogSchema, EntitySchema } from '@/model/evitadb'
+import { InjectionKey } from 'vue'
+import {
+    JsonResultVisualiserService
+} from '@/modules/console/result-visualiser/service/json/JsonResultVisualiserService'
+import { ConnectionService } from '@/modules/connection/service/ConnectionService'
 import {
     EvitaQLFacetSummaryVisualiserService
-} from '@/modules/console/result-visualiser/service/EvitaQLFacetSummaryVisualiser.service'
+} from '@/modules/evitaql-console/console/result-visualiser/service/EvitaQLFacetSummaryVisualiser.service'
 import {
     EvitaQLHierarchyVisualiserService
-} from '@/modules/console/result-visualiser/service/EvitaQLHierarchyVisualiserService'
+} from '@/modules/evitaql-console/console/result-visualiser/service/EvitaQLHierarchyVisualiserService'
 import {
     EvitaQLAttributeHistogramsVisualiserService
-} from '@/modules/console/result-visualiser/service/EvitaQLAttributeHistogramsVisualiserService'
+} from '@/modules/evitaql-console/console/result-visualiser/service/EvitaQLAttributeHistogramsVisualiserService'
 import {
     EvitaQLPriceHistogramVisualiserService
-} from '@/modules/console/result-visualiser/service/EvitaQLPriceHistogramVisualiserService'
-import { inject, InjectionKey } from 'vue'
-import { key } from '@/modules/console/result-visualiser/service/evitaql-result-visualiser.service'
-import { EvitaDBConnection } from '@/model/EvitaDBConnection'
-import { UnexpectedError } from '@/model/UnexpectedError'
+} from '@/modules/evitaql-console/console/result-visualiser/service/EvitaQLPriceHistogramVisualiserService'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { Connection } from '@/modules/connection/model/Connection'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import {
+    FacetSummaryVisualiserService
+} from '@/modules/console/result-visualiser/service/FacetSummaryVisualiserService'
+import { HierarchyVisualiserService } from '@/modules/console/result-visualiser/service/HierarchyVisualiserService'
+import {
+    AttributeHistogramsVisualiserService
+} from '@/modules/console/result-visualiser/service/AttributeHistogramsVisualiserService'
+import {
+    PriceHistogramVisualiserService
+} from '@/modules/console/result-visualiser/service/PriceHistogramVisualiserService'
+import { mandatoryInject } from '@/utils/reactivity'
+import { NamingConvention } from '@/modules/connection/model/NamingConvetion'
 
-export const key: InjectionKey<EvitaQLResultVisualiserService> = Symbol()
+
+export const evitaQLResultVisualiserServiceInjectionKey: InjectionKey<EvitaQLResultVisualiserService> = Symbol('evitaQLResultViewerService')
 
 /**
  * {@link ResultVisualiserService} for evitaQL query language.
@@ -26,15 +43,15 @@ export class EvitaQLResultVisualiserService extends JsonResultVisualiserService 
 
     private readonly collectionConstraintPattern: RegExp = /collection\(\s*['"]([A-Za-z0-9_.\-~]*)['"]\s*\)/
 
-    private readonly labService: LabService
+    private readonly connectionService: ConnectionService
     private facetSummaryVisualiserService: EvitaQLFacetSummaryVisualiserService | undefined = undefined
     private hierarchyVisualiserService: EvitaQLHierarchyVisualiserService | undefined = undefined
     private attributeHistogramsVisualiserService: EvitaQLAttributeHistogramsVisualiserService | undefined = undefined
     private priceHistogramVisualiserService: EvitaQLPriceHistogramVisualiserService | undefined = undefined
 
-    constructor(labService: LabService) {
+    constructor(connectionService: ConnectionService) {
         super()
-        this.labService = labService
+        this.connectionService = connectionService
     }
 
     supportsMultipleQueries(): boolean {
@@ -55,16 +72,19 @@ export class EvitaQLResultVisualiserService extends JsonResultVisualiserService 
         return result
     }
 
-    async getEntitySchemaForQuery(query: string, connection: EvitaDBConnection, catalogName: string): Promise<EntitySchema | undefined> {
+    async getEntitySchemaForQuery(query: string, connection: Connection, catalogName: string): Promise<EntitySchema | undefined> {
         const entityType: string = query
         if (entityType.toLowerCase() === this.genericEntityType) {
             return undefined
         }
-        const catalogSchema: CatalogSchema = await this.labService.getCatalogSchema(connection, catalogName)
-        const entitySchema: EntitySchema | undefined = Object.values(catalogSchema.entitySchemas)
-            .find(it => it.nameVariants.pascalCase === entityType)
+        const catalogSchema: CatalogSchema = await this.connectionService.getCatalogSchema(connection, catalogName)
+        const entitySchema: EntitySchema | undefined = catalogSchema.entitySchemas
+            .getIfSupported()
+            ?.find(it => it.nameVariants
+                .getIfSupported()
+                ?.get(NamingConvention.PascalCase) === entityType)
         if (entitySchema == undefined) {
-            throw new UnexpectedError(connection, `Entity schema '${entityType}' not found in catalog '${catalogName}'.`)
+            throw new UnexpectedError(`Entity schema '${entityType}' not found in catalog '${catalogName}'.`)
         }
         return entitySchema
     }
@@ -135,5 +155,5 @@ export class EvitaQLResultVisualiserService extends JsonResultVisualiserService 
 }
 
 export const useEvitaQLResultVisualiserService = (): EvitaQLResultVisualiserService => {
-    return inject(key) as EvitaQLResultVisualiserService
+    return mandatoryInject(evitaQLResultVisualiserServiceInjectionKey) as EvitaQLResultVisualiserService
 }

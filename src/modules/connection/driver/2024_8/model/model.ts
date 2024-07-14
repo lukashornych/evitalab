@@ -331,7 +331,7 @@ export interface DataChunk {
     /**
      *
      */
-    type: DataChunk;
+    type: string;
     /**
      * Actual found sorted page/strip of records.
      */

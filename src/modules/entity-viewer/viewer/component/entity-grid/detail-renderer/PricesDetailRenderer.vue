@@ -4,34 +4,35 @@
  */
 
 import { computed, ref, watch } from 'vue'
-import {
-    EntityPrice,
-    EntityPrices,
-    EntityPropertyKey,
-    EntityPropertyValue,
-    gridPropsKey,
-    NativeValue,
-    queryFilterKey,
-    queryLanguageKey,
-    selectedEntityKey,
-    StaticEntityProperties
-} from '@/model/editor/tab/dataGrid/data-grid'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import VMarkdown from '@/components/base/VMarkdown.vue'
-import LabEditorDataGridGridCellDetailPricesRendererPrice
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailPricesRendererPrice.vue'
-import { mandatoryInject } from '@/helpers/reactivity'
-import { PriceInnerRecordHandling } from '@/model/evitadb'
-import VExpansionPanelLazyIterator from '@/components/base/VExpansionPanelLazyIterator.vue'
-import { DataGridService, useDataGridService } from '@/services/editor/data-grid.service'
-import LabEditorDataGridGridCellDetailPricesRendererPriceItem
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailPricesRendererPriceItem.vue'
-import LabEditorDataGridGridCellDetailPricesRendererFilter
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailPricesRendererFilter.vue'
-import VPropertiesTable from '@/components/base/VPropertiesTable.vue'
-import { KeywordValue, Property, PropertyValue } from '@/model/properties-table'
 import { useI18n } from 'vue-i18n'
-import { QueryLanguage } from '@/model/QueryLanguage'
+import { QueryLanguage } from '@/modules/entity-viewer/viewer/model/QueryLanguage'
+import { EntityViewerService, useEntityViewerService } from '@/modules/entity-viewer/viewer/service/EntityViewerService'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import { PriceInnerRecordHandling } from '@/modules/entity-viewer/viewer/model/PriceInnerRecordHandling'
+import { EntityPropertyKey } from '@/modules/entity-viewer/viewer/model/EntityPropertyKey'
+import { StaticEntityProperties } from '@/modules/entity-viewer/viewer/model/StaticEntityProperties'
+import { Property } from '@/modules/base/model/properties-table/Property'
+import { KeywordValue } from '@/modules/base/model/properties-table/KeywordValue'
+import { PropertyValue } from '@/modules/base/model/properties-table/PropertyValue'
+import { EntityPrices } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPrices'
+import { EntityPrice } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPrice'
+import { NativeValue } from '@/modules/entity-viewer/viewer/model/entity-property-value/NativeValue'
+import VPropertiesTable from '@/modules/base/component/VPropertiesTable.vue'
+import VMarkdown from '@/modules/base/component/VMarkdown.vue'
+import PricesDetailRendererPrice
+    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/PricesDetailRendererPrice.vue'
+import PricesDetailRendererFilter
+    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/PricesDetailRendererFilter.vue'
+import PricesDetailRendererPriceItem
+    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/PricesDetailRendererPriceItem.vue'
+import VExpansionPanelLazyIterator from '@/modules/base/component/VExpansionPanelLazyIterator.vue'
+import {
+    useQueryFilter,
+    useQueryLanguage,
+    useSelectedEntity,
+    useTabProps
+} from '@/modules/entity-viewer/viewer/component/dependencies'
 
 const priceInPriceListsConstraintPattern = new Map<QueryLanguage, RegExp>([
     [QueryLanguage.EvitaQL, /priceInPriceLists\(\s*((?:['"][A-Za-z0-9_.\-~]*['"])(?:\s*,\s*(?:['"][A-Za-z0-9_.\-~]*['"]))*)/],
@@ -52,7 +53,7 @@ type FilterData = {
     innerRecordIds: number[]
 }
 
-const dataGridService: DataGridService = useDataGridService()
+const entityViewerService: EntityViewerService = useEntityViewerService()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
@@ -62,10 +63,10 @@ const props = withDefaults(defineProps<{
 }>(), {
     fillSpace: true
 })
-const gridProps = mandatoryInject(gridPropsKey)
-const queryLanguage = mandatoryInject(queryLanguageKey)
-const queryFilter = mandatoryInject(queryFilterKey)
-const selectedEntity = mandatoryInject(selectedEntityKey)
+const tabProps = useTabProps()
+const queryLanguage = useQueryLanguage()
+const queryFilter = useQueryFilter()
+const selectedEntity = useSelectedEntity()
 
 const priceInnerRecordHandling = computed<PriceInnerRecordHandling>(() => {
     return (selectedEntity[EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling).toString()] as EntityPropertyValue)?.value() ?? PriceInnerRecordHandling.Unknown
@@ -121,8 +122,8 @@ const computedPriceForSale = ref<EntityPrice | undefined>()
 watch([selectedPriceLists, selectedCurrencies], async () => {
     computedPriceForSale.value = undefined
     if (selectedPriceLists.value.length > 0 && selectedCurrencies.value.length === 1) {
-        computedPriceForSale.value = await dataGridService.computePriceForSale(
-            gridProps.params.dataPointer,
+        computedPriceForSale.value = await entityViewerService.computePriceForSale(
+            tabProps.params.dataPointer,
             queryLanguage.value!,
             (selectedEntity[EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey).toString()] as NativeValue).value() as number,
             selectedPriceLists.value,
@@ -207,14 +208,14 @@ preselectFilterFromQuery()
             </header>
 
             <VMarkdown v-if="prices.priceForSale == undefined" :source="t('entityGrid.grid.priceRenderer.filter.help.computePriceForSale')" />
-            <LabEditorDataGridGridCellDetailPricesRendererPrice v-else :price="prices.priceForSale"/>
+            <PricesDetailRendererPrice v-else :price="prices.priceForSale"/>
         </div>
 
         <div class="price-renderer-all-prices">
             <header>
                 <h3>All prices</h3>
 
-                <LabEditorDataGridGridCellDetailPricesRendererFilter
+                <PricesDetailRendererFilter
                     :filter-data="filterData"
                     :filtered-all-prices="filteredAllPrices"
                     v-model:selected-price-ids="selectedPriceIds"
@@ -226,7 +227,7 @@ preselectFilterFromQuery()
 
             <VExpansionPanels multiple>
                 <!-- virtual price for sale -->
-                <LabEditorDataGridGridCellDetailPricesRendererPriceItem
+                <PricesDetailRendererPriceItem
                     v-if="computedPriceForSale != undefined && priceInnerRecordHandling === PriceInnerRecordHandling.Sum"
                     :price="computedPriceForSale"
                     price-for-sale
@@ -240,7 +241,7 @@ preselectFilterFromQuery()
                     :items="filteredAllPrices"
                 >
                     <template #item="{ item }: { item: EntityPrice }">
-                        <LabEditorDataGridGridCellDetailPricesRendererPriceItem
+                        <PricesDetailRendererPriceItem
                             :price="item"
                             :price-for-sale="computedPriceForSale != undefined && item.priceId === computedPriceForSale.priceId"
                         />

@@ -3,15 +3,13 @@
  * Selector button to switch price type (with/without tax).
  */
 
-import { QueryPriceMode } from '@/model/evitadb'
-import { mandatoryInject } from '@/helpers/reactivity'
 import { ref } from 'vue'
-import { VBtn } from 'vuetify/components'
-import VActionTooltip from '@/components/base/VActionTooltip.vue'
-import { Command } from '@/model/editor/keymap/Command'
-import { gridPropsKey } from '@/model/editor/tab/dataGrid/data-grid'
 import { useI18n } from 'vue-i18n'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
+import { VBtn } from 'vuetify/components'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { Command } from '@/modules/keymap/model/Command'
+import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
 
 const { t } = useI18n()
 
@@ -26,7 +24,6 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'update:selected', value: QueryPriceMode): void
 }>()
-const gridProps = mandatoryInject(gridPropsKey)
 
 const priceTypeButtonRef = ref<InstanceType<typeof VBtn> | undefined>()
 
@@ -35,7 +32,7 @@ function handlePriceTypeSelect(selected: unknown[]) {
         const priceType: QueryPriceMode = selected[0] as QueryPriceMode
         emit('update:selected', priceType)
     } else {
-        throw new UnexpectedError(gridProps.params.dataPointer.connection, 'No price type selected!')
+        throw new UnexpectedError('No price type selected!')
     }
 }
 

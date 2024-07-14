@@ -3,16 +3,18 @@
  * Visualises raw JSON hierarchies of a single reference
  */
 import { ref } from 'vue'
-import { EntitySchema, ReferenceSchema } from '@/model/evitadb'
-import { LabService, useLabService } from '@/services/lab.service'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import LabEditorResultVisualiserNamedHierarchy
-    from '@/components/lab/editor/result-visualiser/hierarchy/LabEditorResultVisualiserNamedHierarchy.vue'
-import { Result } from '@/model/editor/result-visualiser'
-import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
-import { CatalogPointer } from '@/model/editor/tab/CatalogPointer'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { ConnectionService, useConnectionService } from '@/modules/connection/service/ConnectionService'
+import { CatalogPointer } from '@/modules/connection/model/CatalogPointer'
+import { ResultVisualiserService } from '@/modules/console/result-visualiser/service/ResultVisualiserService'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
+import NamedHierarchyVisualiser
+    from '@/modules/console/result-visualiser/component/hierarchy/NamedHierarchyVisualiser.vue'
+import { NamingConvention } from '@/modules/connection/model/NamingConvetion'
 
-const labService: LabService = useLabService()
+const connectionService: ConnectionService = useConnectionService()
 const toaster: Toaster = useToaster()
 
 const props = defineProps<{
@@ -30,23 +32,23 @@ function initialize() {
     let pipeline: Promise<string[]>
     if (!props.referenceSchema) {
         pipeline = new Promise(resolve => {
-            const representativeAttributes: string[] = Object.values(props.parentEntitySchema.attributes)
-                .filter(attributeSchema => 'representative' in attributeSchema && attributeSchema.representative)
-                .map(attributeSchema => attributeSchema.nameVariants.camelCase)
+            const representativeAttributes: string[] = Array.from(props.parentEntitySchema.attributes.getIfSupported()!.values()!)
+                .filter(attributeSchema => attributeSchema.representative.getOrElse(false))
+                .map(attributeSchema => attributeSchema.nameVariants.getIfSupported()!.get(NamingConvention.CamelCase)!)
             resolve(representativeAttributes)
         })
-    } else if (!props.referenceSchema.referencedEntityTypeManaged) {
+    } else if (!props.referenceSchema.referencedEntityTypeManaged.getOrElse(false)) {
         pipeline = new Promise(resolve => resolve([]))
     } else {
-        pipeline = labService.getEntitySchema(
+        pipeline = connectionService.getEntitySchema(
             props.catalogPointer.connection,
             props.catalogPointer.catalogName,
-            props.referenceSchema.referencedEntityType as string
+            props.referenceSchema.referencedEntityType.getIfSupported()! as string
         )
             .then((entitySchema: EntitySchema) => {
-                return Object.values(entitySchema.attributes)
-                    .filter(attributeSchema => 'representative' in attributeSchema && attributeSchema.representative)
-                    .map(attributeSchema => attributeSchema.nameVariants.camelCase)
+                return Array.from(entitySchema.attributes.getIfSupported()!.values()!)
+                    .filter(attributeSchema => attributeSchema.representative.getOrElse(false))
+                    .map(attributeSchema => attributeSchema.nameVariants.getIfSupported()!.get(NamingConvention.CamelCase)!)
             })
     }
 
@@ -62,7 +64,7 @@ initialize()
 
 <template>
     <VList v-if="initialized" density="compact">
-        <LabEditorResultVisualiserNamedHierarchy
+        <NamedHierarchyVisualiser
             v-for="(namedHierarchyResult, name) in namedHierarchiesResult"
             :key="name"
             :visualiser-service="visualiserService"

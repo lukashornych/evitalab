@@ -4,7 +4,7 @@
  */
 
 import { computed } from 'vue'
-import { EntityPropertyType } from '@/model/editor/tab/dataGrid/data-grid'
+import { EntityPropertyType } from '@/modules/entity-viewer/viewer/model/EntityPropertyType'
 
 const props = defineProps<{
     column: any,

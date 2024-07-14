@@ -1,33 +1,33 @@
 <script setup lang="ts">
-import LabEditorViewerReferencesItem from './LabEditorSchemaViewerReferencesItem.vue'
-import LabEditorSchemaViewerContainerSection from './LabEditorSchemaViewerContainerSection.vue'
-import { ReferenceSchema } from '@/model/evitadb'
-import LabEditorSchemaViewerContainerSectionList
-    from '@/components/lab/editor/schema-viewer/LabEditorSchemaViewerContainerSectionList.vue'
-import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaViewerDataPointer'
 import { useI18n } from 'vue-i18n'
+import { SchemaViewerDataPointer } from '@/modules/schema-viewer/viewer/model/SchemaViewerDataPointer'
+import ReferenceSchemaListItem from '@/modules/schema-viewer/viewer/component/reference/ReferenceSchemaListItem.vue'
+import SchemaContainerSectionList from '@/modules/schema-viewer/viewer/component/SchemaContainerSectionList.vue'
+import SchemaContainerSection from '@/modules/schema-viewer/viewer/component/SchemaContainerSection.vue'
+import { List } from 'immutable'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
 
 const { t } = useI18n()
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
-    references: ReferenceSchema[]
+    references: List<ReferenceSchema>
 }>()
 </script>
 
 <template>
-    <LabEditorSchemaViewerContainerSection :name="t('schemaViewer.references.title')">
-        <LabEditorSchemaViewerContainerSectionList
+    <SchemaContainerSection :name="t('schemaViewer.references.title')">
+        <SchemaContainerSectionList
             :items="references"
             :nameSupplier="item => item.name"
             v-slot="{ item }"
         >
-            <LabEditorViewerReferencesItem
+            <ReferenceSchemaListItem
                 :data-pointer="dataPointer"
                 :schema="item"
             />
-        </LabEditorSchemaViewerContainerSectionList>
-    </LabEditorSchemaViewerContainerSection>
+        </SchemaContainerSectionList>
+    </SchemaContainerSection>
 </template>
 
 <style lang="scss" scoped>

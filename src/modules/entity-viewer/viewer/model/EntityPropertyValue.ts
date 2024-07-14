@@ -1,6 +1,6 @@
 import {
     EntityPropertyValuePreviewStringContext
-} from '@/modules/entity-viewer/viewer/workspace/EntityPropertyValuePreviewStringContext'
+} from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPropertyValuePreviewStringContext'
 
 /**
  * Represents a single entity property value. It can be a wrapped scalar value or a custom object that needs special handling.

@@ -1,19 +1,19 @@
-import { LabService } from '@/services/lab.service'
-import {
-    DataGridDataPointer,
-    EntityPropertyValue, FlatEntity, NativeValue,
-    QueryResult,
-    WritableEntityProperty
-} from '@/model/editor/tab/dataGrid/data-grid'
+import { ConnectionService } from '@/modules/connection/service/ConnectionService'
+import { EntityViewerDataPointer } from '@/modules/entity-viewer/viewer/model/EntityViewerDataPointer'
+import { QueryResult } from '@/modules/entity-viewer/viewer/model/QueryResult'
+import { WritableEntityProperty } from '@/modules/entity-viewer/viewer/model/WritableEntityProperty'
+import { FlatEntity } from '@/modules/entity-viewer/viewer/model/FlatEntity'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import { NativeValue } from '@/modules/entity-viewer/viewer/model/entity-property-value/NativeValue'
 
 /**
  * Executes query against evitaDB server in language defined by implementation.
  */
 export abstract class QueryExecutor {
-    protected readonly labService: LabService
+    protected readonly connectionService: ConnectionService
 
-    protected constructor(labService: LabService) {
-        this.labService = labService
+    protected constructor(connectionService: ConnectionService) {
+        this.connectionService = connectionService
     }
 
     /**
@@ -22,7 +22,7 @@ export abstract class QueryExecutor {
      * @param dataPointer points to a collection where to fetch data from
      * @param query pre-built query to execute in language defined by implementation
      */
-    abstract executeQuery(dataPointer: DataGridDataPointer, query: string): Promise<QueryResult>
+    abstract executeQuery(dataPointer: EntityViewerDataPointer, query: string): Promise<QueryResult>
 
     /**
      * Creates immutable copy of entity from constructed properties

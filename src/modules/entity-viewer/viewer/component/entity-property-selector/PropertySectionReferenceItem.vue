@@ -3,16 +3,24 @@
  * A single selectable entity reference property item that will be then fetched into grid.
  */
 
-import { LabService, useLabService } from '@/services/lab.service'
-import LabEditorDataGridPropertyListItem from './LabEditorDataGridPropertySelectorSectionItem.vue'
-import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import { mandatoryInject } from '@/helpers/reactivity'
-import { EntityPropertyDescriptor, EntityPropertyKey, gridPropsKey } from '@/model/editor/tab/dataGrid/data-grid'
-import { SchemaViewerRequest } from '@/model/editor/tab/schemaViewer/SchemaViewerRequest'
-import { ReferenceSchemaPointer } from '@/model/editor/tab/schemaViewer/ReferenceSchemaPointer'
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import {
+    SchemaViewerTabFactory,
+    useSchemaViewerTabFactory
+} from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
+import { EntityPropertyDescriptor } from '@/modules/entity-viewer/viewer/model/EntityPropertyDescriptor'
+import { EntityPropertyKey } from '@/modules/entity-viewer/viewer/model/EntityPropertyKey'
+import { computed } from 'vue'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { List } from 'immutable'
+import { ReferenceSchemaPointer } from '@/modules/schema-viewer/viewer/model/ReferenceSchemaPointer'
+import PropertySectionItem
+    from '@/modules/entity-viewer/viewer/component/entity-property-selector/PropertySectionItem.vue'
+import { useTabProps } from '@/modules/entity-viewer/viewer/component/dependencies'
 
-const labService: LabService = useLabService()
-const editorService: EditorService = useEditorService()
+const workspaceService: WorkspaceService = useWorkspaceService()
+const schemaViewerTabFactory: SchemaViewerTabFactory = useSchemaViewerTabFactory()
 
 const props = withDefaults(defineProps<{
     propertyDescriptor: EntityPropertyDescriptor,
@@ -24,18 +32,25 @@ const emit = defineEmits<{
     (e: 'toggle', value: { key: EntityPropertyKey, selected: boolean }): void
     (e: 'schemaOpen'): void
 }>()
-const gridProps = mandatoryInject(gridPropsKey)
+const tabProps = useTabProps()
 
-const flags: string[] = labService.getReferenceSchemaFlags(props.propertyDescriptor.schema)
+const schema = computed(() => {
+    if (props.propertyDescriptor.schema == undefined || !(props.propertyDescriptor.schema instanceof ReferenceSchema)) {
+        throw new UnexpectedError(`Schema is expected to be present and of type 'ReferenceSchema'.`)
+    }
+    return props.propertyDescriptor.schema
+})
+
+const flags: List<string> = schema.value.getRepresentativeFlags()
 
 function openSchema(): void {
-    editorService.createTab(
-        SchemaViewerRequest.createNew(
-            gridProps.params.dataPointer.connection,
+    workspaceService.createTab(
+        schemaViewerTabFactory.createNew(
+            tabProps.params.dataPointer.connection,
             new ReferenceSchemaPointer(
-                gridProps.params.dataPointer.catalogName,
-                gridProps.params.dataPointer.entityType,
-                props.propertyDescriptor.schema.name
+                tabProps.params.dataPointer.catalogName,
+                tabProps.params.dataPointer.entityType,
+                schema.value.name
             )
         )
     )
@@ -44,10 +59,10 @@ function openSchema(): void {
 </script>
 
 <template>
-    <LabEditorDataGridPropertyListItem
+    <PropertySectionItem
         :value="propertyDescriptor.key"
         :title="propertyDescriptor.title"
-        :description="propertyDescriptor.schema?.description"
+        :description="schema.description.getIfSupported()!"
         :flags="flags"
         openable
         :group-parent="groupParent"

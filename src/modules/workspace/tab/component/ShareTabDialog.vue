@@ -5,13 +5,13 @@
  */
 
 import { computed } from 'vue'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import { TabType } from '@/model/editor/tab/TabType'
-import { TabRequestComponentData } from '@/model/editor/tab/TabRequestComponentData'
-import { TabRequestComponentParams } from '@/model/editor/tab/TabRequestComponentParams'
-import { ShareTabObject } from '@/model/editor/tab/ShareTabObject'
 import { useI18n } from 'vue-i18n'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { TabType } from '@/modules/workspace/tab/model/TabType'
+import { TabParams } from '@/modules/workspace/tab/model/TabParams'
+import { TabData } from '@/modules/workspace/tab/model/TabData'
+import { ShareTabObject } from '@/modules/workspace/tab/model/ShareTabObject'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 
 /**
  * Smallest possible number of characters in a URL valid across all browser. Usually browser support more characters.
@@ -24,8 +24,8 @@ const { t } = useI18n()
 const props = defineProps<{
     modelValue: boolean,
     tabType: TabType,
-    tabParams: TabRequestComponentParams<any>,
-    tabData: TabRequestComponentData<any> | undefined
+    tabParams: TabParams<any>,
+    tabData: TabData<any> | undefined
 }>()
 
 const emit = defineEmits<{
@@ -49,7 +49,7 @@ function copyLink(): void {
     navigator.clipboard.writeText(link.value).then(() => {
         toaster.info(t('tabShare.shareDialog.notification.linkCopied'))
     }).catch(() => {
-        toaster.error(new UnexpectedError(undefined, t('common.notification.failedToCopyToClipboard')))
+        toaster.error(new UnexpectedError(t('common.notification.failedToCopyToClipboard')))
     })
 
     emit('update:modelValue', false)

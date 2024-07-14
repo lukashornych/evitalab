@@ -3,25 +3,30 @@
  * Shows details of an entity property (table cell content) in the LabEditorDataGridGrid component.
  */
 
-import VCardTitleWithActions from '@/components/base/VCardTitleWithActions.vue'
-import {
-    EntityPropertyDescriptor, entityPropertyDescriptorKey,
-    EntityPropertyType,
-    EntityPropertyValue,
-    EntityPropertyValueDesiredOutputFormat,
-    ExtraEntityObjectType,
-    FlatEntity, selectedEntityKey,
-    StaticEntityProperties
-} from '@/model/editor/tab/dataGrid/data-grid'
-import { computed, provide, ref } from 'vue'
-import LabEditorDataGridGridCellDetailDelegateRenderer
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailDelegateRenderer.vue'
-import { Scalar } from '@/model/evitadb'
-import LabEditorDataGridGridDetailValueListItem
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridDetailValueListItem.vue'
-import LabEditorDataGridGridCellDetailOutputFormatSelector
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailOutputFormatSelector.vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { FlatEntity } from '@/modules/entity-viewer/viewer/model/FlatEntity'
+import { EntityPropertyDescriptor } from '@/modules/entity-viewer/viewer/model/EntityPropertyDescriptor'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import { EntityPropertyType } from '@/modules/entity-viewer/viewer/model/EntityPropertyType'
+import {
+    EntityPropertyValueDesiredOutputFormat
+} from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPropertyValueDesiredOutputFormat'
+import { ExtraEntityObjectType } from '@/modules/entity-viewer/viewer/model/ExtraEntityObjectType'
+import { Scalar } from '@/modules/connection/model/data-type/Scalar'
+import { StaticEntityProperties } from '@/modules/entity-viewer/viewer/model/StaticEntityProperties'
+import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithActions.vue'
+import DetailOutputFormatSelector
+    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/DetailOutputFormatSelector.vue'
+import DelegateDetailRenderer
+    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/DelegateDetailRenderer.vue'
+import EntityGridCellDetailValueListItem
+    from '@/modules/entity-viewer/viewer/component/entity-grid/EntityGridCellDetailValueListItem.vue'
+import {
+    provideEntityPropertyDescriptor,
+    provideSelectedEntity
+} from '@/modules/entity-viewer/viewer/component/dependencies'
+import { isTypedSchema } from '@/modules/connection/model/schema/TypedSchema'
 
 const { t } = useI18n()
 
@@ -34,8 +39,8 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void
 }>()
-provide(selectedEntityKey, props.entity)
-provide(entityPropertyDescriptorKey, props.propertyDescriptor)
+provideSelectedEntity(props.entity)
+provideEntityPropertyDescriptor(props.propertyDescriptor)
 
 const headerPrependIcon = computed<string | undefined>(() => {
     const propertyType: EntityPropertyType | undefined = props.propertyDescriptor?.type
@@ -64,8 +69,11 @@ const rawDataType = computed<Scalar | ExtraEntityObjectType | undefined>(() => {
         return ExtraEntityObjectType.Prices
     } else if (props.propertyDescriptor?.type === EntityPropertyType.ReferenceAttributes) {
         return ExtraEntityObjectType.ReferenceAttributes
+    } else if (props.propertyDescriptor?.schema != undefined && isTypedSchema(props.propertyDescriptor.schema)) {
+        return props.propertyDescriptor.schema.type.getIfSupported()!
+    } else {
+        return undefined
     }
-    return props.propertyDescriptor?.schema?.type
 })
 const isArray = computed<boolean>(() => rawDataType?.value?.endsWith('Array') || false)
 const componentDataType = computed<Scalar | ExtraEntityObjectType | undefined>(() => {
@@ -94,7 +102,7 @@ const componentDataType = computed<Scalar | ExtraEntityObjectType | undefined>((
                 <span>{{ propertyDescriptor?.flattenedTitle || t('entityGrid.grid.cell.detail.placeholder.unknownProperty') }}</span>
             </template>
             <template #actions>
-                <LabEditorDataGridGridCellDetailOutputFormatSelector
+                <DetailOutputFormatSelector
                     v-if="!isArray"
                     v-model="globalOutputFormat"
                 />
@@ -113,7 +121,7 @@ const componentDataType = computed<Scalar | ExtraEntityObjectType | undefined>((
         </VCardTitleWithActions>
         <VDivider />
         <VCardText class="data-grid-cell-detail__body">
-            <LabEditorDataGridGridCellDetailDelegateRenderer
+            <DelegateDetailRenderer
                 v-if="!isArray"
                 :data-type="componentDataType"
                 :value="propertyValue as EntityPropertyValue"
@@ -125,7 +133,7 @@ const componentDataType = computed<Scalar | ExtraEntityObjectType | undefined>((
                 multiple
                 class="pa-4 data-grid-cell-detail-array"
             >
-                <LabEditorDataGridGridDetailValueListItem
+                <EntityGridCellDetailValueListItem
                     v-for="(value, index) of propertyValue"
                     :key="index"
                     :value="value as EntityPropertyValue"

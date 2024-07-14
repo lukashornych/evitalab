@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import {
-    dataLocaleKey,
-    EntityPropertyDescriptor,
-    EntityPropertyType, EntityPropertyValue, priceTypeKey,
-    StaticEntityProperties
-} from '@/model/editor/tab/dataGrid/data-grid'
-import { computed, inject } from 'vue'
-import { Scalar } from '@/model/evitadb'
-import { Toaster, useToaster } from '@/services/editor/toaster'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { EntityPropertyDescriptor } from '@/modules/entity-viewer/viewer/model/EntityPropertyDescriptor'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import { EntityPropertyType } from '@/modules/entity-viewer/viewer/model/EntityPropertyType'
+import { StaticEntityProperties } from '@/modules/entity-viewer/viewer/model/StaticEntityProperties'
+import { Scalar } from '@/modules/connection/model/data-type/Scalar'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { useDataLocale, usePriceType } from '@/modules/entity-viewer/viewer/component/dependencies'
+import { AttributeSchema } from '@/modules/connection/model/schema/AttributeSchema'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
+import { isLocalizedSchema } from '@/modules/connection/model/schema/LocalizedSchema'
+import { isTypedSchema } from '@/modules/connection/model/schema/TypedSchema'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -21,24 +24,37 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'click'): void
 }>()
-const dataLocale = inject(dataLocaleKey)
-const priceType = inject(priceTypeKey)
+const dataLocale = useDataLocale()
+const priceType = usePriceType()
 
 const printablePropertyValue = computed<string>(() => toPrintablePropertyValue(props.propertyValue))
 const openableInNewTab = computed<boolean>(() => {
     if (props.propertyDescriptor?.type === EntityPropertyType.Entity && props.propertyDescriptor?.key.name === StaticEntityProperties.ParentPrimaryKey) {
         return true
-    } else if (props.propertyDescriptor?.type === EntityPropertyType.Attributes && props.propertyDescriptor.schema.type === Scalar.Predecessor) {
+    } else if (props.propertyDescriptor?.schema != undefined &&
+        isTypedSchema(props.propertyDescriptor.schema) &&
+        props.propertyDescriptor.schema.type.getIfSupported()! === Scalar.Predecessor) {
         return true
-    } else if (props.propertyDescriptor?.type === EntityPropertyType.AssociatedData && props.propertyDescriptor.schema.type === Scalar.Predecessor) {
-        return true
-    } else if (props.propertyDescriptor?.schema?.referencedEntityType) {
+    } else if (props.propertyDescriptor?.type === EntityPropertyType.References && props.propertyDescriptor.schema instanceof ReferenceSchema) {
         return true
     } else {
         return false
     }
 })
 const showDetailOnHover = computed<boolean>(() => printablePropertyValue.value.length <= 100)
+
+const noLocaleSelected = computed<boolean>(() => {
+    return props.propertyDescriptor?.schema != undefined &&
+        isLocalizedSchema(props.propertyDescriptor.schema) &&
+        props.propertyDescriptor.schema.localized.getOrElse(false) &&
+        !dataLocale
+})
+const emptyArray = computed<boolean>(() => {
+    return props.propertyValue instanceof Array && props.propertyValue.length === 0
+})
+const nullValue = computed<boolean>(() => {
+    return props.propertyValue == undefined
+})
 
 // todo lho we could format certain data types more human readable like we do in markdown pretty printer
 function toPrintablePropertyValue(value: EntityPropertyValue | EntityPropertyValue[] | undefined): string {
@@ -57,7 +73,7 @@ function toPrintablePropertyValue(value: EntityPropertyValue | EntityPropertyVal
         }
         return previewString
     } else {
-        throw new UnexpectedError(undefined, 'Unexpected property value type: ' + typeof value)
+        throw new UnexpectedError('Unexpected property value type: ' + typeof value)
     }
 }
 
@@ -66,7 +82,7 @@ function copyValue(): void {
         navigator.clipboard.writeText(printablePropertyValue.value).then(() => {
             toaster.info(t('common.notification.copiedToClipboard'))
         }).catch(() => {
-            toaster.error(new UnexpectedError(undefined, t('common.notification.failedToCopyToClipboard')))
+            toaster.error(new UnexpectedError(t('common.notification.failedToCopyToClipboard')))
         })
     }
 }
@@ -79,13 +95,13 @@ function copyValue(): void {
         @click.middle="copyValue"
     >
         <span class="data-grid-cell__body">
-            <template v-if="propertyDescriptor?.schema?.localized && !dataLocale">
+            <template v-if="noLocaleSelected">
                 <span class="text-disabled">{{ t('entityGrid.grid.cell.placeholder.noLocaleSelected') }}</span>
             </template>
-            <template v-else-if="propertyValue instanceof Array && propertyValue.length === 0">
+            <template v-else-if="emptyArray">
                 <span class="text-disabled">{{ t('common.placeholder.emptyArray') }}</span>
             </template>
-            <template v-else-if="!propertyValue">
+            <template v-else-if="nullValue">
                 <span class="text-disabled">{{ t('common.placeholder.null') }}</span>
             </template>
             <template v-else>

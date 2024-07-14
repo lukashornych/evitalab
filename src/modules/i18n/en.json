@@ -35,7 +35,7 @@
       }
     }
   },
-  "toolbar": {
+  "panel": {
     "manage": {
       "manage": {
         "title": "Manage",
@@ -239,6 +239,9 @@
   },
   "explorer": {
     "title": "Connections Explorer",
+    "button": {
+      "addConnection": "Add connection"
+    },
     "connection": {
       "actions": {
         "openGraphQLSystemApiConsole":  "Open GraphQL System API console",
@@ -255,6 +258,14 @@
             "validations": {
               "required": "Name of connection is required.",
               "duplicate": "Connection with this name already exists."
+            }
+          },
+          "systemApiUrl": {
+            "label": "System API URL",
+            "validations": {
+              "required": "System API URL is required.",
+              "invalidUrl": "System API URL is not a valid URL.",
+              "unreachable": "System API URL is not reachable."
             }
           },
           "labApiUrl": {
@@ -374,7 +385,7 @@
         },
         "format": {
           "autoPrettyPrint": "Auto pretty print",
-          "rawValue": "Raw value",
+          "raw": "Raw value",
           "markdown": "Markdown",
           "json": "JSON",
           "xml": "XML",

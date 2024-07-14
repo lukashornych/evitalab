@@ -2,32 +2,32 @@
 /**
  * Toolbar for the LabEditorDataGrid component.
  */
-import VExecuteQueryButton from '@/components/base/VExecuteQueryButton.vue'
-import VTabToolbar from '@/components/base/VTabToolbar.vue'
-import { computed, inject, onMounted, onUnmounted, ref } from 'vue'
-import LabEditorTabShareButton from '@/components/lab/editor/tab/LabEditorTabShareButton.vue'
-import { mandatoryInject } from '@/helpers/reactivity'
-
-import { Keymap, useKeymap } from '@/model/editor/keymap/Keymap'
-import { Command } from '@/model/editor/keymap/Command'
-import VActionTooltip from '@/components/base/VActionTooltip.vue'
-import { DataGridData, dataLocaleKey, gridPropsKey } from '@/model/editor/tab/dataGrid/data-grid'
-import { TabType } from '@/model/editor/tab/TabType'
 import { useI18n } from 'vue-i18n'
+import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
+import { EntityViewerTabData } from '@/modules/entity-viewer/viewer/workspace/model/EntityViewerTabData'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import ShareTabButton from '@/modules/workspace/tab/component/ShareTabButton.vue'
+import { Command } from '@/modules/keymap/model/Command'
+import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
+import { TabType } from '@/modules/workspace/tab/model/TabType'
+import VExecuteQueryButton from '@/modules/base/component/VExecuteQueryButton.vue'
+import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
+import { useDataLocale, useTabProps } from '@/modules/entity-viewer/viewer/component/dependencies'
+import { List } from 'immutable'
 
 const keymap: Keymap = useKeymap()
 const { t } = useI18n()
 
 const props = defineProps<{
-    currentData: DataGridData,
-    path: string[],
+    currentData: EntityViewerTabData,
+    path: List<string>,
     loading: boolean
 }>()
 const emit = defineEmits<{
     (e: 'executeQuery'): void
 }>()
-const gridProps = mandatoryInject(gridPropsKey)
-const dataLocale = inject(dataLocaleKey)
+const tabProps = useTabProps()
+const dataLocale = useDataLocale()
 
 const flags = computed<any>(() => {
     const flags: any[] = []
@@ -40,15 +40,15 @@ const flags = computed<any>(() => {
     return flags
 })
 
-const shareTabButtonRef = ref<InstanceType<typeof LabEditorTabShareButton> | undefined>()
+const shareTabButtonRef = ref<InstanceType<typeof ShareTabButton> | undefined>()
 
 onMounted(() => {
     // register grid specific keyboard shortcuts
-    keymap.bind(Command.EntityGrid_ShareTab, gridProps.id, () => shareTabButtonRef.value?.share())
+    keymap.bind(Command.EntityGrid_ShareTab, tabProps.id, () => shareTabButtonRef.value?.share())
 })
 onUnmounted(() => {
     // unregister grid specific keyboard shortcuts
-    keymap.unbind(Command.EntityGrid_ShareTab, gridProps.id)
+    keymap.unbind(Command.EntityGrid_ShareTab, tabProps.id)
 })
 </script>
 
@@ -59,12 +59,12 @@ onUnmounted(() => {
         :flags="flags"
     >
         <template #append>
-            <LabEditorTabShareButton
+            <ShareTabButton
                 ref="shareTabButtonRef"
-                :tab-type="TabType.DataGrid"
-                :tab-params="gridProps.params"
+                :tab-type="TabType.EntityViewer"
+                :tab-params="tabProps.params"
                 :tab-data="currentData"
-                :disabled="!gridProps.params.dataPointer.connection.preconfigured"
+                :disabled="!tabProps.params.dataPointer.connection.preconfigured"
             />
 
             <VExecuteQueryButton :loading="loading" @click="emit('executeQuery')">

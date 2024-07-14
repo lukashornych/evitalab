@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import VPropertiesTableValue from '@/components/base/VPropertiesTableValue.vue'
-
-import { Property } from '@/model/properties-table'
+import { Property } from '@/modules/base/model/properties-table/Property'
+import VPropertiesTableValue from '@/modules/base/component/VPropertiesTableValue.vue'
 
 const props = withDefaults(defineProps<{
     title?: string

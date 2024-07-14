@@ -1,5 +1,9 @@
-import { AttributeSchemaUnion, OrderDirection, QueryPriceMode, ReferenceSchema } from '@/model/evitadb'
-import { DataGridDataPointer, EntityPropertyKey } from '@/model/editor/tab/dataGrid/data-grid'
+import { EntityViewerDataPointer } from '@/modules/entity-viewer/viewer/model/EntityViewerDataPointer'
+import { EntityPropertyKey } from '@/modules/entity-viewer/viewer/model/EntityPropertyKey'
+import { OrderDirection } from '@/modules/connection/model/schema/OrderDirection'
+import { AttributeSchema } from '@/modules/connection/model/schema/AttributeSchema'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
+import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
 
 /**
  * Builds query from arguments based on language of implementation.
@@ -18,7 +22,7 @@ export interface QueryBuilder {
      * @param pageNumber page number of query result
      * @param pageSize page size of query result
      */
-    buildQuery(dataPointer: DataGridDataPointer,
+    buildQuery(dataPointer: EntityViewerDataPointer,
                filterBy: string,
                orderBy: string,
                dataLocale: string | undefined,
@@ -40,7 +44,7 @@ export interface QueryBuilder {
      * @param attributeSchema attribute schema to build constraint for
      * @param orderDirection direction of order by clause
      */
-    buildAttributeOrderBy(attributeSchema: AttributeSchemaUnion, orderDirection: OrderDirection): string
+    buildAttributeOrderBy(attributeSchema: AttributeSchema, orderDirection: OrderDirection): string
 
     /**
      * Builds a single attributeNatural order constraint wrapped within referenceProperty in language of implementation
@@ -50,7 +54,7 @@ export interface QueryBuilder {
      * @param attributeSchema attribute schema to build constraint for
      * @param orderDirection direction of order by clause
      */
-    buildReferenceAttributeOrderBy(referenceSchema: ReferenceSchema, attributeSchema: AttributeSchemaUnion, orderDirection: OrderDirection): string
+    buildReferenceAttributeOrderBy(referenceSchema: ReferenceSchema, attributeSchema: AttributeSchema, orderDirection: OrderDirection): string
 
     /**
      * Builds single entityPrimaryKeyInSet filter constraint in language of implementation for filter by clause of a parent entity.

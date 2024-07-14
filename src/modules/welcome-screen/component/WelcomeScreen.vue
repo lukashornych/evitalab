@@ -1,12 +1,12 @@
 <script setup lang="ts">
 
 import { computed, ref } from 'vue'
-import VMarkdown from '@/components/base/VMarkdown.vue'
 import { useI18n } from 'vue-i18n'
-import { useWelcomeScreenManager, WelcomeScreenManager } from '@/modules/welcome-screen/service/WelcomeScreenManager'
+import { useWelcomeScreenManager, WelcomeScreenService } from '@/modules/welcome-screen/service/WelcomeScreenService'
 import { EvitaDBBlogPost } from '@/modules/welcome-screen/model/EvitaDBBlogPost'
+import VMarkdown from '@/modules/base/component/VMarkdown.vue'
 
-const welcomeScreenManager: WelcomeScreenManager = useWelcomeScreenManager()
+const welcomeScreenManager: WelcomeScreenService = useWelcomeScreenManager()
 const { t } = useI18n()
 
 const version = computed(() => {

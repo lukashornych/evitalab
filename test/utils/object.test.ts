@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest'
-import { deepMerge } from '@/utils/object'
+import { deepMerge } from '../../src/utils/object'
 
 /**
  * Tests for object utils

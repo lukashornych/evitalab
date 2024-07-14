@@ -3,24 +3,24 @@
  * Entity property value renderer that automatically infers the best renderer for the given type of value.
  */
 
-import { Scalar } from '@/model/evitadb'
 import {
-    EntityPropertyValue,
-    EntityPropertyValueSupportedCodeLanguage,
-    ExtraEntityObjectType,
-    NativeValue
-} from '@/model/editor/tab/dataGrid/data-grid'
-import LabEditorDataGridGridCellDetailMarkdownRenderer
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailMarkdownRenderer.vue'
-import LabEditorDataGridGridCellDetailCodeRenderer
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailCodeRenderer.vue'
+    EntityPropertyValueSupportedCodeLanguage
+} from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPropertyValueSupportedCodeLanguage'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import { Scalar } from '@/modules/connection/model/data-type/Scalar'
+import { ExtraEntityObjectType } from '@/modules/entity-viewer/viewer/model/ExtraEntityObjectType'
 import { computed } from 'vue'
-import LabEditorDataGridGridCellDetailHtmlRenderer
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailHtmlRenderer.vue'
-import LabEditorDataGridGridCellDetailPricesRenderer
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailPricesRenderer.vue'
-import LabEditorDataGridGridCellDetailReferenceAttributesRenderer
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailReferenceAttributesRenderer.vue'
+import { NativeValue } from '@/modules/entity-viewer/viewer/model/entity-property-value/NativeValue'
+import CodeDetailRenderer
+    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/CodeDetailRenderer.vue'
+import HtmlDetailRenderer
+    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/HtmlDetailRenderer.vue'
+import MarkdownDetailRenderer
+    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/MarkdownDetailRenderer.vue'
+import PricesDetailRenderer
+    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/PricesDetailRenderer.vue'
+import ReferenceAttributesDetailRenderer
+    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/ReferenceAttributesDetailRenderer.vue'
 
 /**
  * Used to decide whether XML is actually HTML5.
@@ -143,25 +143,25 @@ function hasHtmlTag(s: string): boolean {
 </script>
 
 <template>
-    <LabEditorDataGridGridCellDetailMarkdownRenderer
+    <MarkdownDetailRenderer
         v-if="valueToRender.renderer.type === RendererType.Markdown"
         :value="valueToRender.value"
         :data-type="dataType"
     />
-    <LabEditorDataGridGridCellDetailCodeRenderer
+    <CodeDetailRenderer
         v-else-if="valueToRender.renderer.type === RendererType.Code"
         :value="valueToRender.value"
         :code-language="(valueToRender.renderer as CodeRenderer).codeLanguage"
     />
-    <LabEditorDataGridGridCellDetailHtmlRenderer
+    <HtmlDetailRenderer
         v-else-if="valueToRender.renderer.type === RendererType.Html"
         :value="valueToRender.value"
     />
-    <LabEditorDataGridGridCellDetailPricesRenderer
+    <PricesDetailRenderer
         v-else-if="valueToRender.renderer.type === RendererType.Price"
         :value="valueToRender.value"
     />
-    <LabEditorDataGridGridCellDetailReferenceAttributesRenderer
+    <ReferenceAttributesDetailRenderer
         v-else-if="valueToRender.renderer.type === RendererType.ReferenceAttribute"
         :value="valueToRender.value"
     />

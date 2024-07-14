@@ -1,14 +1,20 @@
-import { QueryExecutor } from '@/services/editor/data-grid/query-executor'
-import { LabService } from '@/services/lab.service'
-import { GraphQLClient } from '@/services/graphql-client'
-import { QueryError } from '@/services/evitadb-client'
-import {
-    DataGridDataPointer, EntityPrice, EntityPrices,
-    EntityPropertyKey, EntityPropertyType, EntityReferenceValue, FlatEntity, NativeValue,
-    QueryResult,
-    StaticEntityProperties, WritableEntityProperty
-} from '@/model/editor/tab/dataGrid/data-grid'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { QueryExecutor } from '@/modules/entity-viewer/viewer/service/QueryExecutor'
+import { GraphQLClient } from '@/modules/graphql-console/driver/service/GraphQLClient'
+import { ConnectionService } from '@/modules/connection/service/ConnectionService'
+import { EntityViewerDataPointer } from '@/modules/entity-viewer/viewer/model/EntityViewerDataPointer'
+import { QueryResult } from '@/modules/entity-viewer/viewer/model/QueryResult'
+import { QueryError } from '@/modules/connection/exception/QueryError'
+import { FlatEntity } from '@/modules/entity-viewer/viewer/model/FlatEntity'
+import { WritableEntityProperty } from '@/modules/entity-viewer/viewer/model/WritableEntityProperty'
+import { EntityPropertyKey } from '@/modules/entity-viewer/viewer/model/EntityPropertyKey'
+import { StaticEntityProperties } from '@/modules/entity-viewer/viewer/model/StaticEntityProperties'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { NativeValue } from '@/modules/entity-viewer/viewer/model/entity-property-value/NativeValue'
+import { EntityPropertyType } from '@/modules/entity-viewer/viewer/model/EntityPropertyType'
+import { EntityReferenceValue } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityReferenceValue'
+import { EntityPrices } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPrices'
+import { EntityPrice } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPrice'
+
 
 /**
  * Query executor for GraphQL language.
@@ -16,12 +22,12 @@ import { UnexpectedError } from '@/model/UnexpectedError'
 export class GraphQLQueryExecutor extends QueryExecutor {
     private readonly graphQLClient: GraphQLClient
 
-    constructor(labService: LabService, graphQLClient: GraphQLClient) {
-        super(labService)
+    constructor(connectionService: ConnectionService, graphQLClient: GraphQLClient) {
+        super(connectionService)
         this.graphQLClient = graphQLClient
     }
 
-    async executeQuery(dataPointer: DataGridDataPointer, query: string): Promise<QueryResult> {
+    async executeQuery(dataPointer: EntityViewerDataPointer, query: string): Promise<QueryResult> {
         const result = await this.graphQLClient.fetch(dataPointer.connection, dataPointer.catalogName, query)
         if (result.errors) {
             throw new QueryError(dataPointer.connection, result.errors)
@@ -36,7 +42,7 @@ export class GraphQLQueryExecutor extends QueryExecutor {
     /**
      * Converts original rich entity into simplified flat entity that is displayable in table
      */
-    private flattenEntity(dataPointer: DataGridDataPointer, entity: any): FlatEntity {
+    private flattenEntity(dataPointer: EntityViewerDataPointer, entity: any): FlatEntity {
         const flattenedProperties: (WritableEntityProperty | undefined)[] = []
 
         flattenedProperties.push([EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey), this.wrapRawValueIntoNativeValue(entity[StaticEntityProperties.PrimaryKey])])
@@ -53,13 +59,13 @@ export class GraphQLQueryExecutor extends QueryExecutor {
         return this.createFlatEntity(flattenedProperties)
     }
 
-    private flattenParent(dataPointer: DataGridDataPointer, entity: any): WritableEntityProperty | undefined {
+    private flattenParent(dataPointer: EntityViewerDataPointer, entity: any): WritableEntityProperty | undefined {
         const parentEntities: any[] | undefined = entity['parents']
         if (!parentEntities || parentEntities.length == 0) {
             return undefined
         }
         if (parentEntities.length > 1) {
-            throw new UnexpectedError(dataPointer.connection, `There are more than one parent entity.`)
+            throw new UnexpectedError(`There are more than one parent entity.`)
         }
         const parentEntity: any = parentEntities[0]
 

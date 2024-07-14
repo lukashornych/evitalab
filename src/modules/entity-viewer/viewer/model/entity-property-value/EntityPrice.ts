@@ -1,12 +1,14 @@
-import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/workspace/EntityPropertyValue'
-import { BigDecimal, QueryPriceMode } from '@/model/evitadb'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
 import {
     EntityPropertyValuePreviewStringContext
-} from '@/modules/entity-viewer/viewer/workspace/EntityPropertyValuePreviewStringContext'
+} from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPropertyValuePreviewStringContext'
+import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
 
 /**
  * Represents a single entity price.
  */
+// todo lho this should be probably in driver too and the computePrice logic aswell
 export class EntityPrice extends EntityPropertyValue {
     readonly priceId: number
     readonly priceList: string
@@ -66,9 +68,6 @@ export class EntityPrice extends EntityPropertyValue {
         )
         const actualPriceType: QueryPriceMode = context?.priceType != undefined ? context.priceType : QueryPriceMode.WithTax
         const price: BigDecimal = actualPriceType === QueryPriceMode.WithTax ? this.priceWithTax : this.priceWithoutTax
-        const formattedPrice: string = priceFormatter.format(parseFloat(price))
-
-        // return `<i class="mdi mdi-${this.sellable ? 'cash' : 'cash-off'}"></i> ${this.priceId} | ${this.priceList} | ${formattedPrice}`
-        return formattedPrice
+        return priceFormatter.format(parseFloat(price))
     }
 }

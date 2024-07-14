@@ -1,4 +1,4 @@
-import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/workspace/EntityPropertyValue'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
 
 /**
  * Represents a pointer to a referenced entity in another grid.

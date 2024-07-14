@@ -3,22 +3,22 @@
  * Dialog window to accept or reject a shared tab.
  */
 
-import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import { TabRequest } from '@/model/editor/tab/TabRequest'
 import { useI18n } from 'vue-i18n'
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import { TabDefinition } from '@/modules/workspace/tab/model/TabDefinition'
 
-const editorService: EditorService = useEditorService()
+const workspaceService: WorkspaceService = useWorkspaceService()
 const { t } = useI18n()
 
 const props = defineProps<{
-    tabRequest: TabRequest<any, any>
+    tabRequest: TabDefinition<any, any>
 }>()
 const emit = defineEmits<{
     (e: 'resolve'): void
 }>()
 
 function acceptSharedTab(): void {
-    editorService.createTab(props.tabRequest)
+    workspaceService.createTab(props.tabRequest)
     emit('resolve')
 }
 

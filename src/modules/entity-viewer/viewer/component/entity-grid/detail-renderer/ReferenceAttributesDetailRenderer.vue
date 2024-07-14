@@ -3,23 +3,34 @@
  * Special entity property value renderer for prices.
  */
 
-import { computed, inject } from 'vue'
-import {
-    DataGridData, dataLocaleKey,
-    entityPropertyDescriptorKey, EntityPropertyValue, EntityReferenceValue, gridPropsKey, queryLanguageKey
-} from '@/model/editor/tab/dataGrid/data-grid'
-import { Scalar } from '@/model/evitadb'
-import LabEditorDataGridGridDetailValueListItem
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridDetailValueListItem.vue'
-import { mandatoryInject } from '@/helpers/reactivity'
-import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import { DataGridRequest } from '@/model/editor/tab/dataGrid/data-grid-request'
-import { DataGridService, useDataGridService } from '@/services/editor/data-grid.service'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { QueryLanguage } from '@/model/QueryLanguage'
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import { EntityViewerService, useEntityViewerService } from '@/modules/entity-viewer/viewer/service/EntityViewerService'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import { EntityReferenceValue } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityReferenceValue'
+import { Scalar } from '@/modules/connection/model/data-type/Scalar'
+import {
+    EntityViewerTabFactory,
+    useEntityViewerTabFactory
+} from '@/modules/entity-viewer/viewer/workspace/service/EntityViewerTabFactory'
+import { EntityViewerTabData } from '@/modules/entity-viewer/viewer/workspace/model/EntityViewerTabData'
+import { QueryLanguage } from '@/modules/entity-viewer/viewer/model/QueryLanguage'
+import EntityGridCellDetailValueListItem
+    from '@/modules/entity-viewer/viewer/component/entity-grid/EntityGridCellDetailValueListItem.vue'
+import {
+    useDataLocale,
+    useEntityPropertyDescriptor,
+    useQueryLanguage,
+    useTabProps
+} from '@/modules/entity-viewer/viewer/component/dependencies'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
+import { AttributeSchema } from '@/modules/connection/model/schema/AttributeSchema'
 
-const editorService: EditorService = useEditorService()
-const dataGridService: DataGridService = useDataGridService()
+const workspaceService: WorkspaceService = useWorkspaceService()
+const entityViewerService: EntityViewerService = useEntityViewerService()
+const entityViewerTabFactory: EntityViewerTabFactory = useEntityViewerTabFactory()
 const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
@@ -28,10 +39,23 @@ const props = withDefaults(defineProps<{
 }>(), {
     fillSpace: true
 })
-const gridProps = mandatoryInject(gridPropsKey)
-const queryLanguage = mandatoryInject(queryLanguageKey)
-const dataLocale = inject(dataLocaleKey)
-const propertyDescriptor = mandatoryInject(entityPropertyDescriptorKey)
+const gridProps = useTabProps()
+const queryLanguage = useQueryLanguage()
+const dataLocale = useDataLocale()
+const propertyDescriptor = useEntityPropertyDescriptor()
+
+const parentReferenceSchema = computed(() => {
+    if (propertyDescriptor?.parentSchema == undefined || !(propertyDescriptor.parentSchema instanceof ReferenceSchema)) {
+        throw new UnexpectedError(`Parent schema is expected to be present and of type 'ReferenceSchema'.`)
+    }
+    return propertyDescriptor.parentSchema
+})
+const referenceAttributeSchema = computed(() => {
+    if (propertyDescriptor?.schema == undefined || !(propertyDescriptor.schema instanceof AttributeSchema)) {
+        throw new UnexpectedError(`Schema is expected to be present and of type 'AttributeSchema'.`)
+    }
+    return propertyDescriptor.schema
+})
 
 const referencesWithAttributes = computed<EntityReferenceValue[]>(() => {
     if (props.value instanceof Array) {
@@ -41,7 +65,7 @@ const referencesWithAttributes = computed<EntityReferenceValue[]>(() => {
 })
 
 const rawAttributeDataType = computed<Scalar>(() => {
-    return propertyDescriptor?.schema?.type
+    return referenceAttributeSchema.value.type.getIfSupported()!
 })
 const isArray = computed<boolean>(() => rawAttributeDataType?.value?.endsWith('Array') || false)
 const attributeDataType = computed<Scalar>(() => {
@@ -54,13 +78,13 @@ const attributeDataType = computed<Scalar>(() => {
 
 function openReference(primaryKey: number): void {
     // we want references to open referenced entities in appropriate new grid for referenced collection
-    editorService.createTab(DataGridRequest.createNew(
+    workspaceService.createTab(entityViewerTabFactory.createNew(
         gridProps.params.dataPointer.connection,
         gridProps.params.dataPointer.catalogName,
-        propertyDescriptor!.parentSchema!.referencedEntityType,
-        new DataGridData(
+        parentReferenceSchema.value.referencedEntityType.getIfSupported()!,
+        new EntityViewerTabData(
             queryLanguage.value,
-            dataGridService.buildReferencedEntityFilterBy(queryLanguage.value as QueryLanguage, [primaryKey]),
+            entityViewerService.buildReferencedEntityFilterBy(queryLanguage.value as QueryLanguage, [primaryKey]),
             undefined,
             dataLocale?.value
         ),
@@ -89,7 +113,7 @@ function openReference(primaryKey: number): void {
 
                 <VExpansionPanelText>
                     <VExpansionPanels>
-                        <LabEditorDataGridGridDetailValueListItem
+                        <EntityGridCellDetailValueListItem
                             v-for="(representativeAttribute, index) of reference.representativeAttributes"
                             :key="index"
                             :value="representativeAttribute as EntityPropertyValue"

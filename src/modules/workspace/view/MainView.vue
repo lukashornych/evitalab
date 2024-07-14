@@ -1,22 +1,18 @@
 <script lang="ts" setup>
-import LabPanel from '@/components/lab/panel/LabPanel.vue'
-import LabExplorer from '@/components/lab/explorer/LabExplorer.vue'
-import LabEditor from '@/components/lab/editor/LabEditor.vue'
 
 import { ref } from 'vue'
-
-import { PanelType } from '@/model/PanelType'
+import { PanelType } from '@/modules/workspace/panel/model/PanelType'
+import WorkspacePanel from '@/modules/workspace/panel/component/WorkspacePanel.vue'
+import ConnectionExplorerPanel from '@/modules/connection/explorer/component/ConnectionExplorerPanel.vue'
+import WorkspaceTabWindowList from '@/modules/workspace/tab/component/WorkspaceTabWindowList.vue'
 
 const panel = ref<string>(PanelType.Explorer)
 
 </script>
 
 <template>
-    <LabPanel
-        v-model:panel="panel"
-    />
+    <WorkspacePanel v-model:panel="panel"/>
+    <ConnectionExplorerPanel :model-value="panel === PanelType.Explorer"/>
 
-    <LabExplorer :model-value="panel === PanelType.Explorer"/>
-
-    <LabEditor />
+    <WorkspaceTabWindowList />
 </template>

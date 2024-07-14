@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import VPropertiesTable from '@/components/base/VPropertiesTable.vue'
-import { Property } from '@/model/properties-table'
+
+import { Property } from '@/modules/base/model/properties-table/Property'
+import VPropertiesTable from '@/modules/base/component/VPropertiesTable.vue'
 
 const props = defineProps<{
     properties: Property[]

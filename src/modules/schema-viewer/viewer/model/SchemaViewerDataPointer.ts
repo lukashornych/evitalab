@@ -1,14 +1,14 @@
-import { SchemaPointer } from '@/model/editor/tab/schemaViewer/SchemaPointer'
-import { EvitaDBConnection } from '@/model/EvitaDBConnection'
+import { Connection } from '@/modules/connection/model/Connection'
+import { SchemaPointer } from '@/modules/schema-viewer/viewer/model/SchemaPointer'
 
 /**
  * Points to concrete evitaDB schema (catalog, entity, attributes, ...)
  */
 export class SchemaViewerDataPointer {
-    readonly connection: EvitaDBConnection
+    readonly connection: Connection
     readonly schemaPointer: SchemaPointer
 
-    constructor(connection: EvitaDBConnection, schemaPointer: SchemaPointer) {
+    constructor(connection: Connection, schemaPointer: SchemaPointer) {
         this.connection = connection
         this.schemaPointer = schemaPointer
     }

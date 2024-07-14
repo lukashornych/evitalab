@@ -3,64 +3,42 @@
  * Explorer tree item representing a single connection to evitaDB.
  */
 
-import LabExplorerCatalogItem from './LabExplorerCatalogItem.vue'
-
-import { provide, readonly, ref } from 'vue'
-import { LabService, useLabService } from '@/services/lab.service'
-import VTreeViewItem from '@/components/base/VTreeViewItem.vue'
-import { Catalog } from '@/model/evitadb'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import LabExplorerConnectionRemoveDialog from './LabExplorerConnectionRemoveDialog.vue'
-import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import VTreeViewItemEmpty from '@/components/base/VTreeViewItemEmpty.vue'
-import { GraphQLConsoleRequest } from '@/model/editor/tab/graphQLConsole/GraphQLConsoleRequest'
-import { GraphQLInstanceType } from '@/model/editor/tab/graphQLConsole/GraphQLInstanceType'
+import { computed, ComputedRef, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { EvitaDBConnection } from '@/model/EvitaDBConnection'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import { ConnectionService, useConnectionService } from '@/modules/connection/service/ConnectionService'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { Connection } from '@/modules/connection/model/Connection'
+import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
+import { Catalog } from '@/modules/connection/model/Catalog'
+import {
+    GraphQLConsoleTabFactory,
+    useGraphQLConsoleTabFactory
+} from '@/modules/graphql-console/console/workspace/service/GraphQLConsoleTabFactory'
+import { GraphQLInstanceType } from '@/modules/graphql-console/console/model/GraphQLInstanceType'
+import { ConnectionActionType } from '@/modules/connection/explorer/model/ConnectionActionType'
+import { MenuAction } from '@/modules/base/model/menu/MenuAction'
+import { provideConnection } from '@/modules/connection/explorer/component/dependecies'
+import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
+import CatalogItem from '@/modules/connection/explorer/component/CatalogItem.vue'
+import RemoveConnectionDialog from '@/modules/connection/explorer/component/RemoveConnectionDialog.vue'
+import VTreeViewEmptyItem from '@/modules/base/component/VTreeViewEmptyItem.vue'
 
-const editorService: EditorService = useEditorService()
-const labService: LabService = useLabService()
+const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
+const workspaceService: WorkspaceService = useWorkspaceService()
+const connectionService: ConnectionService = useConnectionService()
+const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = useGraphQLConsoleTabFactory()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
-enum ActionType {
-    OpenGraphQLSystemAPIConsole = 'openGraphQLSystemApiConsole',
-    Edit = 'edit',
-    Remove = 'remove'
-}
-
 const props = defineProps<{
-    connection: EvitaDBConnection
+    connection: Connection
 }>()
+provideConnection(props.connection)
 
-provide('connection', readonly(props.connection))
+const actions: ComputedRef<Map<ConnectionActionType, MenuAction<ConnectionActionType>>> = computed(() => createActions())
+const actionList: ComputedRef<MenuAction<ConnectionActionType>[]> = computed(() => Array.from(actions.value.values()))
 
-const actions = ref<object[]>([
-    {
-        value: ActionType.OpenGraphQLSystemAPIConsole,
-        title: t(`explorer.connection.actions.${ActionType.OpenGraphQLSystemAPIConsole}`),
-        props: {
-            prependIcon: 'mdi-graphql'
-        }
-    }
-])
-if (!labService.isReadOnly() && !props.connection.preconfigured) {
-    // actions.value.push({
-    //     value: ActionType.Edit,
-    //     title: t(`explorer.connection.actions.${ActionType.Edit}`),
-    //     props: {
-    //         prependIcon: 'mdi-pencil'
-    //     }
-    // })
-    actions.value.push({
-        value: ActionType.Remove,
-        title: t(`explorer.connection.actions.${ActionType.Remove}`),
-        props: {
-            prependIcon: 'mdi-delete'
-        }
-    })
-}
 const removeConnectionDialogOpen = ref<boolean>(false)
 const catalogs = ref<Catalog[]>()
 const loading = ref<boolean>(false)
@@ -72,30 +50,64 @@ async function loadCatalogs(): Promise<void> {
 
     loading.value = true
     try {
-        catalogs.value = await labService.getCatalogs(props.connection)
+        catalogs.value = await connectionService.getCatalogs(props.connection)
     } catch (e: any) {
         toaster.error(e)
     }
     loading.value = false
 }
 
-function handleAction(action: string, payload?: any) {
-    switch (action) {
-        case ActionType.OpenGraphQLSystemAPIConsole:
-            editorService.createTab(
-                GraphQLConsoleRequest.createNew(
+function handleAction(action: string): void {
+    actions.value.get(action as ConnectionActionType)?.execute()
+}
+
+// todo lho these should be some kind of factories
+function createActions(): Map<ConnectionActionType, MenuAction<ConnectionActionType>> {
+    const actions: Map<ConnectionActionType, MenuAction<ConnectionActionType>> = new Map()
+    actions.set(
+        ConnectionActionType.OpenGraphQLSystemAPIConsole,
+        createMenuAction(
+            ConnectionActionType.OpenGraphQLSystemAPIConsole,
+            'mdi-graphql',
+            () => workspaceService.createTab(
+                graphQLConsoleTabFactory.createNew(
                     props.connection,
                     'system', // todo lho: this is not needed
                     GraphQLInstanceType.System
                 )
             )
-            break
-        case ActionType.Edit:
-            throw new UnexpectedError(undefined, 'Not implemented yet.')
-        case ActionType.Remove:
-            removeConnectionDialogOpen.value = true
-            break
+        )
+    )
+    if (!evitaLabConfig.readOnly && !props.connection.preconfigured) {
+        // todo lho implement
+        // actions.set(
+        //     ConnectionActionType.Edit,
+        //     createMenuAction(
+        //         ConnectionActionType.Edit,
+        //         'mdi-pencil',
+        //         () => {
+        //             throw new UnexpectedError('Not implemented yet.')
+        //         }
+        //     )
+        // )
+        actions.set(
+            ConnectionActionType.Remove,
+            createMenuAction(
+                ConnectionActionType.Remove,
+                'mdi-delete',
+                () => removeConnectionDialogOpen.value = true
+            )
+        )
     }
+    return actions
+}
+function createMenuAction(actionType: ConnectionActionType, prependIcon: string, execute: () => void): MenuAction<ConnectionActionType> {
+    return new MenuAction(
+        actionType,
+        t(`explorer.connection.actions.${actionType}`),
+        prependIcon,
+        execute
+    )
 }
 </script>
 
@@ -110,7 +122,7 @@ function handleAction(action: string, payload?: any) {
                 :is-open="isOpen"
                 prepend-icon="mdi-power-plug-outline"
                 :loading="loading"
-                :actions="actions"
+                :actions="actionList"
                 @click="loadCatalogs"
                 @click:action="handleAction"
                 class="font-weight-bold"
@@ -126,18 +138,18 @@ function handleAction(action: string, payload?: any) {
             v-if="catalogs !== undefined"
         >
             <template v-if="catalogs.length > 0">
-                <LabExplorerCatalogItem
+                <CatalogItem
                     v-for="catalog in catalogs"
                     :key="catalog.name"
                     :catalog="catalog"
                 />
             </template>
             <template v-else>
-                <VTreeViewItemEmpty />
+                <VTreeViewEmptyItem />
             </template>
         </div>
 
-        <LabExplorerConnectionRemoveDialog
+        <RemoveConnectionDialog
             v-model="removeConnectionDialogOpen"
             :connection="connection"
         />

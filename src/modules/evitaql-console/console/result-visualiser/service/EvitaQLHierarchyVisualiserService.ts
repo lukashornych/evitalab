@@ -1,6 +1,14 @@
 import {
+    JsonHierarchyVisualiserService
+} from '@/modules/console/result-visualiser/service/json/JsonHierarchyVisualiserService'
+import {
     EvitaQLResultVisualiserService
-} from '@/modules/console/result-visualiser/service/EvitaQLResultVisualiserService'
+} from '@/modules/evitaql-console/console/result-visualiser/service/EvitaQLResultVisualiserService'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { VisualisedNamedHierarchy } from '@/modules/console/result-visualiser/model/hierarchy/VisualisedNamedHierarchy'
+import {
+    VisualisedHierarchyTreeNode
+} from '@/modules/console/result-visualiser/model/hierarchy/VisualisedHierarchyTreeNode'
 
 /**
  * {@link HierarchyVisualiserService} for EvitaQL query language.

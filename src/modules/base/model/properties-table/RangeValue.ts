@@ -1,5 +1,7 @@
-import { BigDecimal, DateTime, Long } from '@/modules/connection/driver/model/evitadb'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { DateTime } from '@/modules/connection/model/data-type/DateTime'
+import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
+import { Long } from '@/modules/connection/model/data-type/Long'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 
 /**
  * Actual specific value of a property representing a range of values (e.g., date range, number range)
@@ -12,7 +14,7 @@ export class RangeValue {
 
     constructor(range: (DateTime | BigDecimal | Long | number | undefined)[] | undefined) {
         if (range != undefined && range.length != 2) {
-            throw new UnexpectedError(undefined, 'Range must have two items.')
+            throw new UnexpectedError('Range must have two items.')
         }
         this.range = range
     }

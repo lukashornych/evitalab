@@ -1,4 +1,6 @@
-import { VisualisedHierarchyTreeNode } from '@/modules/console/result-visualiser/model/VisualisedHierarchyTreeNode'
+import {
+    VisualisedHierarchyTreeNode
+} from '@/modules/console/result-visualiser/model/hierarchy/VisualisedHierarchyTreeNode'
 
 /**
  * Named hierarchy DTO ready for visualisation

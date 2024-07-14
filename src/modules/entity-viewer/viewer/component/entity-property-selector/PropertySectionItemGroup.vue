@@ -1,15 +1,15 @@
-<script setup lang="ts">
-/**
+<script setup lang="ts">/**
  * A single selectable subsection of selectable entity properties to fetch in grid where
  * the group is also a selectable entity property.
  */
+import { EntityPropertyDescriptor } from '@/modules/entity-viewer/viewer/model/EntityPropertyDescriptor'
+import VListItemDivider from '@/modules/base/component/VListItemDivider.vue'
+import { List } from 'immutable'
 
-import VListItemDivider from '@/components/base/VListItemDivider.vue'
-import { EntityPropertyDescriptor } from '@/model/editor/tab/dataGrid/data-grid'
 
 const props = defineProps<{
-    filteredPropertyDescriptors: EntityPropertyDescriptor[],
-    propertyDescriptors: EntityPropertyDescriptor[],
+    filteredPropertyDescriptors: List<EntityPropertyDescriptor>,
+    propertyDescriptors: List<EntityPropertyDescriptor>,
 }>()
 </script>
 
@@ -25,7 +25,7 @@ const props = defineProps<{
         >
             <slot name="child" :child-property="propertyDescriptor" />
             <VListItemDivider
-                v-if="index < filteredPropertyDescriptors.length - 1"
+                v-if="index < filteredPropertyDescriptors.size - 1"
                 inset
             />
         </template>

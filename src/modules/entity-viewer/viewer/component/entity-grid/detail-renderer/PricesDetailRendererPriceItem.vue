@@ -3,13 +3,13 @@
  * Represents single item in all entity prices list in price renderer.
  */
 
-import { QueryPriceMode } from '@/model/evitadb'
-import { EntityPrice, priceTypeKey } from '@/model/editor/tab/dataGrid/data-grid'
-import { mandatoryInject } from '@/helpers/reactivity'
-import LabEditorDataGridGridCellDetailPricesRendererPrice
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailPricesRendererPrice.vue'
-import VMarkdown from '@/components/base/VMarkdown.vue'
 import { useI18n } from 'vue-i18n'
+import { EntityPrice } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPrice'
+import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
+import VMarkdown from '@/modules/base/component/VMarkdown.vue'
+import PricesDetailRendererPrice
+    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/PricesDetailRendererPrice.vue'
+import { usePriceType } from '@/modules/entity-viewer/viewer/component/dependencies'
 
 const { t } = useI18n()
 
@@ -21,7 +21,7 @@ const props = withDefaults(defineProps<{
     priceForSale: false,
     virtualPriceForSale: false
 })
-const priceType = mandatoryInject(priceTypeKey)
+const priceType = usePriceType()
 
 </script>
 
@@ -88,7 +88,7 @@ const priceType = mandatoryInject(priceTypeKey)
                     {{ price.toPreviewString({ priceType }) }}
 
                     <VTooltip activator="parent">
-                        <template v-if="priceType == QueryPriceMode.WithTax">
+                        <template v-if="priceType === QueryPriceMode.WithTax">
                             {{ t('entityGrid.grid.priceRenderer.price.label.priceWithTax') }}
                         </template>
                         <template v-else>
@@ -100,7 +100,7 @@ const priceType = mandatoryInject(priceTypeKey)
         </VExpansionPanelTitle>
 
         <VExpansionPanelText>
-            <LabEditorDataGridGridCellDetailPricesRendererPrice :price="price" />
+            <PricesDetailRendererPrice :price="price" />
         </VExpansionPanelText>
     </VExpansionPanel>
 </template>

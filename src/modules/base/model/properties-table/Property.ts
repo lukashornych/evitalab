@@ -1,4 +1,5 @@
 import { PropertyValue } from '@/modules/base/model/properties-table/PropertyValue'
+import { List } from 'immutable'
 
 /**
  * Single property of a table (row)
@@ -11,5 +12,5 @@ export type Property = {
     /**
      * Value of the property
      */
-    value: PropertyValue | PropertyValue[]
+    value: PropertyValue | List<PropertyValue>
 }

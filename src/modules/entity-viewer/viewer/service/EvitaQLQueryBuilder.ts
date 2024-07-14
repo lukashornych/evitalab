@@ -1,30 +1,28 @@
-import { QueryBuilder } from '@/services/editor/data-grid/query-builder'
-import { LabService } from '@/services/lab.service'
-import {
-    AssociatedDataSchema,
-    AttributeSchemaUnion,
-    EntitySchema, OrderDirection,
-    QueryPriceMode,
-    ReferenceSchema
-} from '@/model/evitadb'
-import {
-    DataGridDataPointer,
-    EntityPropertyKey,
-    EntityPropertyType,
-    StaticEntityProperties
-} from '@/model/editor/tab/dataGrid/data-grid'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { QueryBuilder } from '@/modules/entity-viewer/viewer/service/QueryBuilder'
+import { StaticEntityProperties } from '@/modules/entity-viewer/viewer/model/StaticEntityProperties'
+import { EntityViewerDataPointer } from '../model/EntityViewerDataPointer'
+import { EntityPropertyKey } from '@/modules/entity-viewer/viewer/model/EntityPropertyKey'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { EntityPropertyType } from '@/modules/entity-viewer/viewer/model/EntityPropertyType'
+import { AttributeSchema } from '@/modules/connection/model/schema/AttributeSchema'
+import { ConnectionService } from '@/modules/connection/service/ConnectionService'
+import { NamingConvention } from '@/modules/connection/model/NamingConvetion'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { AssociatedDataSchema } from '@/modules/connection/model/schema/AssociatedDataSchema'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
+import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
+import { OrderDirection } from '@/modules/connection/model/schema/OrderDirection'
 
 /**
  * Query builder for EvitaQL language.
  */
 export class EvitaQLQueryBuilder implements QueryBuilder {
-    private readonly labService: LabService
+    private readonly connectionService: ConnectionService
 
     private readonly entityBodyProperties: Set<string> = new Set<string>()
 
-    constructor(labService: LabService) {
-        this.labService = labService
+    constructor(connectionService: ConnectionService) {
+        this.connectionService = connectionService
 
         this.entityBodyProperties.add(StaticEntityProperties.ParentPrimaryKey)
         this.entityBodyProperties.add(StaticEntityProperties.Locales)
@@ -32,7 +30,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
         this.entityBodyProperties.add(StaticEntityProperties.PriceInnerRecordHandling)
     }
 
-    async buildQuery(dataPointer: DataGridDataPointer,
+    async buildQuery(dataPointer: EntityViewerDataPointer,
                      filterBy: string,
                      orderBy: string,
                      dataLocale: string | undefined,
@@ -40,7 +38,11 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                      requiredData: EntityPropertyKey[],
                      pageNumber: number,
                      pageSize: number): Promise<string> {
-        const entitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, dataPointer.entityType)
+        const entitySchema: EntitySchema = await this.connectionService.getEntitySchema(
+            dataPointer.connection,
+            dataPointer.catalogName,
+            dataPointer.entityType
+        )
 
         const constraints: string[] = []
 
@@ -110,19 +112,22 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
 
     private buildAttributesFetchRequires(requiredData: EntityPropertyKey[],
                                          entitySchema: EntitySchema,
-                                         dataPointer: DataGridDataPointer,
+                                         dataPointer: EntityViewerDataPointer,
                                          dataLocale: string | undefined,
                                          entityFetchRequires: string[]) {
         const requiredAttributes: string[] = requiredData
             .filter(({ type }) => type === EntityPropertyType.Attributes)
             .map(({ name }) => name)
             .map(it => {
-                const attributeSchema: AttributeSchemaUnion | undefined = Object.values(entitySchema.attributes)
-                    .find(attributeSchema => attributeSchema.nameVariants.camelCase === it)
+                const attributeSchema: AttributeSchema | undefined = entitySchema.attributes
+                    .getIfSupported()
+                    ?.find(attributeSchema => attributeSchema.nameVariants
+                        .getIfSupported()
+                        ?.get(NamingConvention.CamelCase) === it)
                 if (attributeSchema == undefined) {
-                    throw new UnexpectedError(dataPointer.connection, `Could not find attribute '${it}' in '${dataPointer.entityType}'.`)
+                    throw new UnexpectedError(`Could not find attribute '${it}' in '${dataPointer.entityType}' in connection '${dataPointer.connection.name}'.`)
                 }
-                if (!dataLocale && attributeSchema.localized) {
+                if (!dataLocale && attributeSchema.localized.getOrElse(false)) {
                     // we don't want try to fetch localized attributes when no locale is specified, that would throw an error in evitaDB
                     return undefined
                 }
@@ -138,19 +143,22 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
 
     private buildAssociatedDataFetchRequires(requiredData: EntityPropertyKey[],
                                              entitySchema: EntitySchema,
-                                             dataPointer: DataGridDataPointer,
+                                             dataPointer: EntityViewerDataPointer,
                                              dataLocale: string | undefined,
-                                             entityFetchRequires: string[]) {
+                                             entityFetchRequires: string[]): void {
         const requiredAssociatedData: string[] = requiredData
             .filter(({ type }) => type === EntityPropertyType.AssociatedData)
             .map(({ name }) => name)
             .map(it => {
-                const associatedDataSchema: AssociatedDataSchema | undefined = Object.values(entitySchema.associatedData)
-                    .find(associatedDataSchema => associatedDataSchema.nameVariants.camelCase === it)
+                const associatedDataSchema: AssociatedDataSchema | undefined = entitySchema.associatedData
+                    .getIfSupported()
+                    ?.find(associatedDataSchema => associatedDataSchema.nameVariants
+                        .getIfSupported()
+                        ?.get(NamingConvention.CamelCase) === it)
                 if (associatedDataSchema == undefined) {
-                    throw new UnexpectedError(dataPointer.connection, `Could not find associated data '${it}' in '${dataPointer.entityType}'.`)
+                    throw new UnexpectedError(`Could not find associated data '${it}' in '${dataPointer.entityType}' in connection '${dataPointer.connection.name}'.`)
                 }
-                if (!dataLocale && associatedDataSchema.localized) {
+                if (!dataLocale && associatedDataSchema.localized.getOrElse(false)) {
                     // we don't want try to fetch localized associated data when no locale is specified, that would throw an error in evitaDB
                     return undefined
                 }
@@ -174,7 +182,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
 
     private async buildReferencesFetchRequires(requiredData: EntityPropertyKey[],
                                                entitySchema: EntitySchema,
-                                               dataPointer: DataGridDataPointer,
+                                               dataPointer: EntityViewerDataPointer,
                                                dataLocale: string | undefined,
                                                entityFetchRequires: string[]) {
         const requiredReferences: string[] = []
@@ -196,10 +204,13 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
         }
 
         for (const requiredReference of requiredReferences) {
-            const referenceSchema: ReferenceSchema | undefined = Object.values(entitySchema.references)
-                .find(referenceSchema => referenceSchema.nameVariants.camelCase === requiredReference)
+            const referenceSchema: ReferenceSchema | undefined = entitySchema.references
+                .getIfSupported()
+                ?.find(referenceSchema => referenceSchema.nameVariants
+                    .getIfSupported()
+                    ?.get(NamingConvention.CamelCase) === requiredReference)
             if (referenceSchema == undefined) {
-                throw new UnexpectedError(undefined, `Could not find reference '${requiredReference}' in '${dataPointer.entityType}'.`)
+                throw new UnexpectedError(`Could not find reference '${requiredReference}' in '${dataPointer.entityType}' in connection '${dataPointer.connection.name}'.`)
             }
 
             const requiredAttributes: string[] = requiredData
@@ -208,12 +219,15 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                 .filter(names => names[0] === requiredReference)
                 .map(names => names[1])
                 .map(referenceAttribute => {
-                    const attributeSchema: AttributeSchemaUnion | undefined = Object.values(referenceSchema.attributes)
-                        .find(attributeSchema => attributeSchema.nameVariants.camelCase === referenceAttribute)
+                    const attributeSchema: AttributeSchema | undefined = referenceSchema.attributes
+                        .getIfSupported()
+                        ?.find(attributeSchema => attributeSchema.nameVariants
+                            .getIfSupported()
+                            ?.get(NamingConvention.CamelCase) === referenceAttribute)
                     if (attributeSchema == undefined) {
-                        throw new UnexpectedError(dataPointer.connection, `Could not find attribute '${referenceAttribute}' in reference '${requiredReference}' in '${dataPointer.entityType}'.`)
+                        throw new UnexpectedError(`Could not find attribute '${referenceAttribute}' in reference '${requiredReference}' in '${dataPointer.entityType}' in connection '${dataPointer.connection.name}'.`)
                     }
-                    if (!dataLocale && attributeSchema.localized) {
+                    if (!dataLocale && attributeSchema.localized.getOrElse(false)) {
                         // we don't want try to fetch localized attributes when no locale is specified, that would throw an error in evitaDB
                         return undefined
                     }
@@ -223,9 +237,13 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                 .map(it => it as string)
 
             let requiredRepresentativeAttributes: string[] = []
-            if (referenceSchema.referencedEntityTypeManaged) {
+            if (referenceSchema.referencedEntityTypeManaged.getOrElse(false)) {
                 requiredRepresentativeAttributes = this.findRepresentativeAttributes(
-                    await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, referenceSchema.referencedEntityType),
+                    await this.connectionService.getEntitySchema(
+                        dataPointer.connection,
+                        dataPointer.catalogName,
+                        referenceSchema.referencedEntityType.getIfSupported()!
+                    ),
                     dataLocale
                 )
                     .map(attributeSchema => attributeSchema.name)
@@ -248,12 +266,12 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
         }
     }
 
-    private findRepresentativeAttributes(entitySchema: EntitySchema, dataLocale: string | undefined): AttributeSchemaUnion[] {
-        return Object.values(entitySchema.attributes)
-            .filter(attributeSchema => 'representative' in attributeSchema && attributeSchema.representative)
+    private findRepresentativeAttributes(entitySchema: EntitySchema, dataLocale: string | undefined): AttributeSchema[] {
+        return Array.from(entitySchema.attributes.getIfSupported()?.values() || [])
+            .filter(attributeSchema => attributeSchema.representative.getOrElse(false))
             .filter(attributeSchema => {
                 if (!dataLocale) {
-                    return !attributeSchema.localized
+                    return !attributeSchema.localized.getOrElse(false)
                 }
                 return true
             })
@@ -263,11 +281,11 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
         return `entityPrimaryKeyNatural(${orderDirection})`
     }
 
-    buildAttributeOrderBy(attributeSchema: AttributeSchemaUnion, orderDirection: OrderDirection): string {
+    buildAttributeOrderBy(attributeSchema: AttributeSchema, orderDirection: OrderDirection): string {
         return `attributeNatural("${attributeSchema.name}", ${orderDirection})`
     }
 
-    buildReferenceAttributeOrderBy(referenceSchema: ReferenceSchema, attributeSchema: AttributeSchemaUnion, orderDirection: OrderDirection): string {
+    buildReferenceAttributeOrderBy(referenceSchema: ReferenceSchema, attributeSchema: AttributeSchema, orderDirection: OrderDirection): string {
         return `referenceProperty("${referenceSchema.name}", attributeNatural("${attributeSchema.name}", ${orderDirection}))`
     }
 

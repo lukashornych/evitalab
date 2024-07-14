@@ -1,14 +1,15 @@
 import { Catalog } from '@/modules/connection/model/Catalog'
-import { NamingConvention } from '@/modules/connection/model/schema/NamingConvetion'
+import { NamingConvention } from '@/modules/connection/model/NamingConvetion'
 import { Catalog as DriverCatalog, CatalogState as DriverCatalogState } from '../model/model'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { CatalogState } from '@/modules/connection/model/CatalogState'
 import { Value } from '@/modules/connection/model/Value'
+import { Converter } from '@/modules/connection/driver/2024_8/service/Converter'
 
 /**
  * Converts driver's representation of catalog into evitaLab's representation of catalog
  */
-export class CatalogConverter {
+export class CatalogConverter implements Converter<DriverCatalog, Catalog> {
 
     /**
      * Converts driver's representation of catalog into evitaLab's representation of catalog
@@ -17,7 +18,7 @@ export class CatalogConverter {
         return new Catalog(
             Value.notSupported(),
             Value.of(driverCatalog.version),
-            Value.of(driverCatalog.name),
+            driverCatalog.name,
             Value.of(new Map([
                 [NamingConvention.CamelCase, driverCatalog.nameVariants.camelCase],
                 [NamingConvention.PascalCase, driverCatalog.nameVariants.pascalCase],
@@ -36,7 +37,7 @@ export class CatalogConverter {
         switch (driverCatalogState) {
             case DriverCatalogState.WarmingUp: return CatalogState.WarmingUp
             case DriverCatalogState.Alive: return CatalogState.Alive
-            default: throw new UnexpectedError(undefined, `Unsupported catalog state '${driverCatalogState}'.`)
+            default: throw new UnexpectedError(`Unsupported catalog state '${driverCatalogState}'.`)
         }
     }
 }

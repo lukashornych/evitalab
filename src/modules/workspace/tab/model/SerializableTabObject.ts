@@ -1,16 +1,16 @@
-import { TabType } from '@/model/editor/tab/TabType'
-import { TabRequestComponentParamsDto } from '@/model/editor/tab/TabRequestComponentParamsDto'
-import { TabRequestComponentDataDto } from '@/model/editor/tab/TabRequestComponentDataDto'
+import { TabType } from '@/modules/workspace/tab/model/TabType'
+import { TabParamsDto } from '@/modules/workspace/tab/model/TabParamsDto'
+import { TabDataDto } from '@/modules/workspace/tab/model/TabDataDto'
 
 /**
  * Represents an object that holds serializable info about a specific tab.
  */
 export abstract class SerializableTabObject {
     readonly tabType: TabType
-    readonly tabParams: TabRequestComponentParamsDto
-    readonly tabData: TabRequestComponentDataDto
+    readonly tabParams: TabParamsDto
+    readonly tabData: TabDataDto
 
-    protected constructor(tabType: TabType, tabParams: TabRequestComponentParamsDto, tabData: TabRequestComponentDataDto) {
+    protected constructor(tabType: TabType, tabParams: TabParamsDto, tabData: TabDataDto) {
         this.tabType = tabType
         this.tabParams = tabParams
         this.tabData = tabData

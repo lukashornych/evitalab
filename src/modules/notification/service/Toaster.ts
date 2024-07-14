@@ -1,12 +1,15 @@
-import { useToast as baseUseToast } from 'vue-toastification'
 import { ToastInterface } from 'vue-toastification/src/ts/interface'
 import { ToastOptions } from 'vue-toastification/dist/types/types'
 import { TYPE } from 'vue-toastification/src/ts/constants'
-import { EditorService, useEditorService } from '@/services/editor/editor.service'
 import { v4 as uuidv4 } from 'uuid'
-import { ErrorViewerRequest } from '@/model/editor/tab/errorViewer/ErrorViewerRequest'
-import { LabError } from '@/model/LabError'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import { LabError } from '@/modules/base/exception/LabError'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { InjectionKey } from 'vue'
+import { mandatoryInject } from '@/utils/reactivity'
+import { ErrorViewerTabFactory } from '@/modules/error-viewer/viewer/workspace/service/ErrorViewerTabFactory'
+
+export const toasterInjectionKey: InjectionKey<Toaster> = Symbol('toaster')
 
 /**
  * Wrapper around the toastification plugin. Provides a more convenient API for firing toast notifications
@@ -14,11 +17,13 @@ import { UnexpectedError } from '@/model/UnexpectedError'
  */
 export class Toaster {
     private readonly toast: ToastInterface
-    private readonly editorService: EditorService
+    private readonly workspaceService: WorkspaceService
+    private readonly errorViewerTabFactory: ErrorViewerTabFactory
 
-    constructor(toast: ToastInterface, editorService: EditorService) {
+    constructor(toast: ToastInterface, workspaceService: WorkspaceService, errorViewerTabFactory: ErrorViewerTabFactory) {
         this.toast = toast
-        this.editorService = editorService
+        this.workspaceService = workspaceService
+        this.errorViewerTabFactory = errorViewerTabFactory
     }
 
     success(title: string): void {
@@ -51,7 +56,7 @@ export class Toaster {
                 )
             }
         } else if (error instanceof Error) {
-            this.error(new UnexpectedError(undefined, error.message))
+            this.error(new UnexpectedError(error.message))
         }
     }
 
@@ -61,15 +66,13 @@ export class Toaster {
             id,
             icon: 'mdi mdi-alert-circle-outline',
             onClick: () => {
-                this.editorService.createTab(ErrorViewerRequest.createNew(error.connection, error))
+                this.workspaceService.createTab(this.errorViewerTabFactory.createNew(error))
                 this.toast.dismiss(id)
             }
         }
     }
 }
 
-export function useToaster() {
-    const toast: ToastInterface = baseUseToast()
-    const editorService: EditorService = useEditorService()
-    return new Toaster(toast, editorService)
+export const useToaster = (): Toaster => {
+    return mandatoryInject(toasterInjectionKey) as Toaster
 }

@@ -4,13 +4,16 @@
  */
 
 import { computed } from 'vue'
-import VMarkdown from '@/components/base/VMarkdown.vue'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
-import { Result, VisualisedFacetStatistics } from '@/model/editor/result-visualiser'
-import { ReferenceSchema } from '@/model/evitadb'
 import { useI18n } from 'vue-i18n'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { ResultVisualiserService } from '@/modules/console/result-visualiser/service/ResultVisualiserService'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import {
+    VisualisedFacetStatistics
+} from '@/modules/console/result-visualiser/model/facet-summary/VisualisedFacetStatistics'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import VMarkdown from '@/modules/base/component/VMarkdown.vue'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -39,7 +42,7 @@ function copyPrimaryKey(): void {
         navigator.clipboard.writeText(`${facetStatistics.value?.primaryKey}`).then(() => {
             toaster.info(t('resultVisualizer.facetStatisticsVisualiser.notification.primaryKeyCopiedToClipboard'))
         }).catch(() => {
-            toaster.error(new UnexpectedError(undefined, t('common.notification.failedToCopyToClipboard')))
+            toaster.error(new UnexpectedError(t('common.notification.failedToCopyToClipboard')))
         })
     } else {
         toaster.error(t('resultVisualizer.facetStatisticsVisualiser.notification.noPrimaryKeyProperty'))
@@ -133,7 +136,7 @@ function copyPrimaryKey(): void {
                             </VTooltip>
                         </VChip>
 
-                        <VChip v-if="!referenceSchema.referencedEntityTypeManaged" prepend-icon="mdi-open-in-new">
+                        <VChip v-if="!referenceSchema.referencedEntityTypeManaged.getOrElse(false)" prepend-icon="mdi-open-in-new">
                             {{ t('resultVisualizer.facetStatisticsVisualiser.label.externalReference') }}
                             <VTooltip activator="parent">
                                 {{ t('resultVisualizer.facetStatisticsVisualiser.help.externalReference') }}

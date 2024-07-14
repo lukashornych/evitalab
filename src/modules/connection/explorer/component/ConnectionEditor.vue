@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { LabService, useLabService } from '@/services/lab.service'
-import { Toaster, useToaster } from '@/services/editor/toaster'
 import ky from 'ky'
 import { useI18n } from 'vue-i18n'
-import { EvitaDBConnection } from '@/model/EvitaDBConnection'
+import { ConnectionService, useConnectionService } from '@/modules/connection/service/ConnectionService'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { Connection } from '@/modules/connection/model/Connection'
 
 enum Mode {
     Add,
@@ -17,13 +17,13 @@ enum ApiTestResult {
     Failure
 }
 
-const labService: LabService = useLabService()
+const connectionService: ConnectionService = useConnectionService()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
     modelValue: boolean,
-    connection?: EvitaDBConnection
+    connection?: Connection
 }>(), {
     connection: undefined
 })
@@ -39,9 +39,32 @@ const nameRules = [
         return t('explorer.connection.editor.form.connectionName.validations.required')
     },
     (value: any) => {
-        const exists = labService.isConnectionExists(value)
+        const exists = connectionService.isConnectionExists(value)
         if (!exists) return true
         return t('explorer.connection.editor.form.connectionName.validations.duplicate')
+    }
+]
+const systemApiUrlRules = [
+    (value: any) => {
+        if (value) return true
+        return t('explorer.connection.editor.form.systemApiUrl.validations.required')
+    },
+    (value: any) => {
+        try {
+            new URL(value)
+            return true
+        } catch (e) {
+            return t('explorer.connection.editor.form.systemApiUrl.validations.invalidUrl')
+        }
+    },
+    async (value: any) => {
+        const result = await testSystemApiConnection()
+        if (result) {
+            modifiedConnection.value.systemApiUrlTested = ApiTestResult.Success
+            return true
+        }
+        modifiedConnection.value.systemApiUrlTested = ApiTestResult.Failure
+        return t('explorer.connection.editor.form.systemApiUrl.validations.unreachable')
     }
 ]
 const labApiUrlRules = [
@@ -95,12 +118,16 @@ const form = ref<HTMLFormElement | null>(null)
 const mode = computed<Mode>(() => props.connection ? Mode.Modify : Mode.Add)
 const modifiedConnection = ref<{
     name: string,
+    systemApiUrl: string,
+    systemApiUrlTested: ApiTestResult,
     labApiUrl: string
     labApiUrlTested: ApiTestResult
     gqlUrl: string,
     gqlUrlTested: ApiTestResult
 }>({
     name: '',
+    systemApiUrl: '',
+    systemApiUrlTested: ApiTestResult.NotTested,
     labApiUrl: '',
     labApiUrlTested: ApiTestResult.NotTested,
     gqlUrl: '',
@@ -115,6 +142,15 @@ function getApiTestedIndicator(result: ApiTestResult): any  {
             return 'mdi-check-circle-outline'
         case ApiTestResult.Failure:
             return 'mdi-close-circle-outline'
+    }
+}
+
+async function testSystemApiConnection(): Promise<boolean> {
+    try {
+        const response: string | undefined = await ky.get(modifiedConnection.value.systemApiUrlTested + '/server-name').text()
+        return response != undefined && response.length > 0
+    } catch (e) {
+        return false
     }
 }
 
@@ -153,6 +189,14 @@ async function testGqlApiConnection(): Promise<boolean> {
 async function testConnection(): Promise<boolean> {
     let success: boolean = true
 
+    // test system API
+    const systemApiResult = await testSystemApiConnection()
+    if (systemApiResult) {
+        modifiedConnection.value.systemApiUrlTested = ApiTestResult.Success
+    } else {
+        modifiedConnection.value.systemApiUrlTested = ApiTestResult.Failure
+    }
+
     // test lab API
     const labApiResult = await testLabApiConnection()
     if (labApiResult) {
@@ -184,6 +228,8 @@ function cancel(): void {
     form.value.reset()
     modifiedConnection.value = {
         name: '',
+        systemApiUrl: '',
+        systemApiUrlTested: ApiTestResult.NotTested,
         labApiUrl: '',
         labApiUrlTested: ApiTestResult.NotTested,
         gqlUrl: '',
@@ -200,10 +246,11 @@ async function storeConnection(): Promise<void> {
     }
 
     try {
-        labService.addConnection(new EvitaDBConnection(
+        connectionService.addConnection(new Connection(
             undefined,
             modifiedConnection.value.name!,
             false,
+            modifiedConnection.value.systemApiUrl,
             modifiedConnection.value.labApiUrl!,
             'https://localhost:5555/rest', // todo lho implement rest
             modifiedConnection.value.gqlUrl!
@@ -246,6 +293,15 @@ async function storeConnection(): Promise<void> {
                         variant="solo-filled"
                         :rules="nameRules"
                         required
+                    />
+                    <VTextField
+                        v-model="modifiedConnection.systemApiUrl"
+                        :label="t('explorer.connection.editor.form.systemApiUrl.label')"
+                        placeholder="https://{evitadb-server}:5555/system"
+                        variant="solo-filled"
+                        required
+                        :rules="systemApiUrlRules"
+                        :append-inner-icon="getApiTestedIndicator(modifiedConnection.systemApiUrlTested)"
                     />
                     <VTextField
                         v-model="modifiedConnection.labApiUrl"

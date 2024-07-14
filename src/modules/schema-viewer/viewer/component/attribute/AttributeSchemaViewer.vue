@@ -1,39 +1,36 @@
 <script setup lang="ts">
-import LabEditorViewerNameVariants from './LabEditorSchemaViewerNameVariants.vue'
-import LabEditorViewerContainer from './LabEditorSchemaViewerContainer.vue'
-import {
-    AttributeSchemaUnion,
-    AttributeUniquenessType,
-    EntityAttributeSchema,
-    GlobalAttributeSchema,
-    GlobalAttributeUniquenessType
-} from '@/model/evitadb'
-import {
-    MultiValueFlagValue,
-    KeywordValue,
-    Property,
-    PropertyValue,
-    NotApplicableValue
-} from '@/model/properties-table'
-import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaViewerDataPointer'
+
 import { useI18n } from 'vue-i18n'
+import { SchemaViewerDataPointer } from '@/modules/schema-viewer/viewer/model/SchemaViewerDataPointer'
+import { GlobalAttributeSchema } from '@/modules/connection/model/schema/GlobalAttributeSchema'
+import { EntityAttributeSchema } from '@/modules/connection/model/schema/EntityAttributeSchema'
+import { AttributeSchema } from '@/modules/connection/model/schema/AttributeSchema'
+import { Property } from '@/modules/base/model/properties-table/Property'
+import { PropertyValue } from '@/modules/base/model/properties-table/PropertyValue'
+import { KeywordValue } from '@/modules/base/model/properties-table/KeywordValue'
+import { AttributeUniquenessType } from '@/modules/connection/model/schema/AttributeUniquenessType'
+import { MultiValueFlagValue } from '@/modules/base/model/properties-table/MultiValueFlagValue'
+import { GlobalAttributeUniquenessType } from '@/modules/connection/model/schema/GlobalAttributeUniquenessType'
+import { NotApplicableValue } from '@/modules/base/model/properties-table/NotApplicableValue'
+import SchemaContainer from '@/modules/schema-viewer/viewer/component/SchemaContainer.vue'
+import NameVariants from '@/modules/schema-viewer/viewer/component/NameVariants.vue'
 
 const { t } = useI18n()
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
-    schema: AttributeSchemaUnion
+    schema: AttributeSchema
 }>()
 
-const globalAttribute = 'globalUniquenessType' in props.schema
-const entityAttribute = 'representative' in props.schema
+const globalAttribute = props.schema instanceof GlobalAttributeSchema
+const entityAttribute = props.schema instanceof EntityAttributeSchema
 
 const properties: Property[] = []
-properties.push({ name: t('schemaViewer.attribute.label.type'), value: new PropertyValue(new KeywordValue(props.schema.type)) })
-properties.push({ name: t('schemaViewer.attribute.label.description'), value: new PropertyValue(props.schema.description) })
-properties.push({ name: t('schemaViewer.attribute.label.deprecationNotice'), value: new PropertyValue(props.schema.deprecationNotice) })
-if (entityAttribute) properties.push({ name: t('schemaViewer.attribute.label.representative'), value: new PropertyValue((props.schema as EntityAttributeSchema).representative as boolean ) })
-switch (props.schema.uniquenessType) {
+properties.push({ name: t('schemaViewer.attribute.label.type'), value: new PropertyValue(new KeywordValue(props.schema.type.getIfSupported()!)) })
+properties.push({ name: t('schemaViewer.attribute.label.description'), value: new PropertyValue(props.schema.description.getIfSupported()!) })
+properties.push({ name: t('schemaViewer.attribute.label.deprecationNotice'), value: new PropertyValue(props.schema.deprecationNotice.getIfSupported()!) })
+if (entityAttribute) properties.push({ name: t('schemaViewer.attribute.label.representative'), value: new PropertyValue((props.schema as EntityAttributeSchema).representative.getOrElse(false) ) })
+switch (props.schema.uniquenessType.getIfSupported()!) {
     case AttributeUniquenessType.NotUnique:
         properties.push({
             name: t('schemaViewer.attribute.label.unique'),
@@ -62,7 +59,7 @@ switch (props.schema.uniquenessType) {
         break
 }
 if (globalAttribute) {
-    switch ((props.schema as GlobalAttributeSchema).globalUniquenessType) {
+    switch ((props.schema as GlobalAttributeSchema).globalUniquenessType.getIfSupported()!) {
         case GlobalAttributeUniquenessType.NotUnique:
             properties.push({
                 name: t('schemaViewer.attribute.label.globallyUnique'),
@@ -91,10 +88,10 @@ if (globalAttribute) {
             break
     }
 }
-if (props.schema.filterable) {
+if (props.schema.filterable.getOrElse(false)) {
     properties.push({ name: t('schemaViewer.attribute.label.filterable'), value: new PropertyValue(true) })
-} else if ((globalAttribute && (props.schema as GlobalAttributeSchema).globalUniquenessType != GlobalAttributeUniquenessType.NotUnique) ||
-    props.schema.uniquenessType != AttributeUniquenessType.NotUnique) {
+} else if ((globalAttribute && (props.schema as GlobalAttributeSchema).globalUniquenessType.getIfSupported()! != GlobalAttributeUniquenessType.NotUnique) ||
+    props.schema.uniquenessType.getIfSupported()! != AttributeUniquenessType.NotUnique) {
     // implicitly filterable because of unique index
     properties.push({
         name: t('schemaViewer.attribute.label.filterable'),
@@ -103,20 +100,20 @@ if (props.schema.filterable) {
 } else {
     properties.push({ name: t('schemaViewer.attribute.label.filterable'), value: new PropertyValue(false) })
 }
-properties.push({ name: t('schemaViewer.attribute.label.sortable'), value: new PropertyValue(props.schema.sortable as boolean) })
-properties.push({ name: t('schemaViewer.attribute.label.localized'), value: new PropertyValue(props.schema.localized as boolean) })
-properties.push({ name: t('schemaViewer.attribute.label.nullable'), value: new PropertyValue(props.schema.nullable as boolean) })
-properties.push({ name: t('schemaViewer.attribute.label.defaultValue'), value: new PropertyValue(props.schema.defaultValue) })
-properties.push({ name: t('schemaViewer.attribute.label.indexedDecimalPlaces'), value: new PropertyValue(props.schema.indexedDecimalPlaces) })
+properties.push({ name: t('schemaViewer.attribute.label.sortable'), value: new PropertyValue(props.schema.sortable.getOrElse(false)) })
+properties.push({ name: t('schemaViewer.attribute.label.localized'), value: new PropertyValue(props.schema.localized.getOrElse(false)) })
+properties.push({ name: t('schemaViewer.attribute.label.nullable'), value: new PropertyValue(props.schema.nullable.getOrElse(false)) })
+properties.push({ name: t('schemaViewer.attribute.label.defaultValue'), value: new PropertyValue(props.schema.defaultValue.getIfSupported()!) })
+properties.push({ name: t('schemaViewer.attribute.label.indexedDecimalPlaces'), value: new PropertyValue(props.schema.indexedDecimalPlaces.getIfSupported()!) })
 
 </script>
 
 <template>
-    <LabEditorViewerContainer :properties="properties">
+    <SchemaContainer :properties="properties">
         <template #nested-details>
-            <LabEditorViewerNameVariants :name-variants="schema.nameVariants" />
+            <NameVariants :name-variants="schema.nameVariants.getIfSupported()!" />
         </template>
-    </LabEditorViewerContainer>
+    </SchemaContainer>
 </template>
 
 <style lang="scss" scoped>

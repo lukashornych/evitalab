@@ -1,6 +1,5 @@
-import { CatalogPointer } from '@/model/editor/tab/CatalogPointer'
-
-import { EvitaDBConnection } from '@/model/EvitaDBConnection'
+import { CatalogPointer } from '@/modules/connection/model/CatalogPointer'
+import { Connection } from '@/modules/connection/model/Connection'
 
 /**
  * Points to concrete evitaDB collection to fetch data from.
@@ -8,7 +7,7 @@ import { EvitaDBConnection } from '@/model/EvitaDBConnection'
 export class EntityViewerDataPointer extends CatalogPointer {
     readonly entityType: string
 
-    constructor(connection: EvitaDBConnection, catalogName: string, entityType: string) {
+    constructor(connection: Connection, catalogName: string, entityType: string) {
         super(connection, catalogName)
         this.entityType = entityType
     }

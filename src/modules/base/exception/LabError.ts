@@ -1,20 +1,32 @@
-import { EvitaDBConnection } from '@/model/EvitaDBConnection'
+import { WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
 
 /**
  * Base for all lab-specific errors.
  */
 export abstract class LabError extends Error {
-    readonly connection?: EvitaDBConnection
 
     protected readonly _detail?: string | undefined
-    get detail(): string | undefined {
-        return this._detail
+
+    readonly onClick: (workspaceService: WorkspaceService) => boolean
+
+    protected constructor(name: string,
+                          title: string,
+                          detail?: string,
+                          onClick?: (workspaceService: WorkspaceService) => boolean) {
+        super(title)
+        this.name = name
+        this._detail = detail
+        this.onClick = onClick != undefined ? onClick : _ => false
     }
 
-    protected constructor(name: string, connection: EvitaDBConnection | undefined, message: string, detail?: string) {
-        super(detail ? `${message}: ${detail}` : message)
-        this.name = name
-        this.connection = connection
-        this._detail = detail
+    get detail(): string {
+        const parts: string[] = []
+        if (this._detail !== undefined) {
+            parts.push(this._detail)
+        }
+        if (this.stack !== undefined) {
+            parts.push(this.stack)
+        }
+        return parts.join('\n\n')
     }
 }

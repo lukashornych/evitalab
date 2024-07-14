@@ -1,4 +1,5 @@
 import { DefineComponent, Raw } from 'vue'
+import { List } from 'immutable'
 
 /**
  * Defines which concrete schema to show.
@@ -14,5 +15,5 @@ export interface SchemaPointer {
     /**
      * Returns path to this schema.
      */
-    path(): string[]
+    path(): List<string>
 }

@@ -3,21 +3,24 @@
  * Visualises raw JSON facet group statistics of a single reference
  */
 import { computed, ref } from 'vue'
-import { EntitySchema, ReferenceSchema } from '@/model/evitadb'
-import { LabService, useLabService } from '@/services/lab.service'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import LabEditorResultVisualiserFacetGroupStatistics
-    from '@/components/lab/editor/result-visualiser/facet-summary/LabEditorResultVisualiserFacetGroupStatistics.vue'
-import LabEditorResultVisualiserFacetStatistics
-    from '@/components/lab/editor/result-visualiser/facet-summary/LabEditorResultVisualiserFacetStatistics.vue'
-import { Result } from '@/model/editor/result-visualiser'
-import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
-import VListItemLazyIterator from '@/components/base/VListItemLazyIterator.vue'
-import { CatalogPointer } from '@/model/editor/tab/CatalogPointer'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { CatalogPointer } from '@/modules/connection/model/CatalogPointer'
+import { ResultVisualiserService } from '@/modules/console/result-visualiser/service/ResultVisualiserService'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
+import { ConnectionService, useConnectionService } from '@/modules/connection/service/ConnectionService'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { NamingConvention } from '@/modules/connection/model/NamingConvetion'
+import VListItemLazyIterator from '@/modules/base/component/VListItemLazyIterator.vue'
+import FacetGroupStatisticsVisualiser
+    from '@/modules/console/result-visualiser/component/facet-summary/FacetGroupStatisticsVisualiser.vue'
+import FacetStatisticsVisualiser
+    from '@/modules/console/result-visualiser/component/facet-summary/FacetStatisticsVisualiser.vue'
+import { List } from 'immutable'
 
 const statisticsPageSize: number = 10
 
-const labService: LabService = useLabService()
+const connectionService: ConnectionService = useConnectionService()
 const toaster: Toaster = useToaster()
 
 const props = defineProps<{
@@ -34,7 +37,7 @@ const groupRepresentativeAttributes: string[] = []
 const facetRepresentativeAttributes: string[] = []
 
 const isGroupedFacets = computed<boolean>(() => {
-    return props.referenceSchema.referencedGroupType != undefined
+    return props.referenceSchema.referencedGroupType.getIfSupported()! != undefined
 })
 
 const facetStatisticsResults = computed<Result[]>(() => {
@@ -57,18 +60,18 @@ const facetStatisticsResultsPage = ref<number>(1)
 
 function initialize() {
     let pipeline: Promise<string[]>
-    if (!props.referenceSchema.referencedGroupTypeManaged) {
+    if (!props.referenceSchema.referencedGroupTypeManaged.getOrElse(false)) {
         pipeline = new Promise(resolve => resolve([]))
     } else {
-        pipeline = labService.getEntitySchema(
+        pipeline = connectionService.getEntitySchema(
             props.catalogPointer.connection,
             props.catalogPointer.catalogName,
-            props.referenceSchema.referencedGroupType as string
+            props.referenceSchema.referencedGroupType.getIfSupported()!
         )
             .then((entitySchema: EntitySchema) => {
-                return Object.values(entitySchema.attributes)
-                    .filter(attributeSchema => 'representative' in attributeSchema && attributeSchema.representative)
-                    .map(attributeSchema => attributeSchema.nameVariants.camelCase)
+                return Array.from(entitySchema.attributes.getIfSupported()?.values() || [])
+                    .filter(attributeSchema => attributeSchema.representative.getOrElse(false))
+                    .map(attributeSchema => attributeSchema.nameVariants.getIfSupported()!.get(NamingConvention.CamelCase)!)
             })
     }
 
@@ -76,14 +79,14 @@ function initialize() {
         .then((representativeAttributes: string[]) => {
             groupRepresentativeAttributes.push(...representativeAttributes)
 
-            return labService.getEntitySchema(
+            return connectionService.getEntitySchema(
                 props.catalogPointer.connection,
                 props.catalogPointer.catalogName,
-                props.referenceSchema.referencedEntityType as string
+                props.referenceSchema.referencedEntityType.getIfSupported()! as string
             ).then((entitySchema: EntitySchema) => {
-                return Object.values(entitySchema.attributes)
-                    .filter(attributeSchema => 'representative' in attributeSchema && attributeSchema.representative)
-                    .map(attributeSchema => attributeSchema.nameVariants.camelCase)
+                return Array.from(entitySchema.attributes.getIfSupported()!.values())
+                    .filter(attributeSchema => attributeSchema.representative.getOrElse(false))
+                    .map(attributeSchema => attributeSchema.nameVariants.getIfSupported()!.get(NamingConvention.CamelCase)!)
             })
         })
         .then((representativeAttributes: string[]) => {
@@ -106,7 +109,7 @@ initialize()
                 :page-size="statisticsPageSize"
             >
                 <template #item="{ item: groupStatisticsResult }">
-                    <LabEditorResultVisualiserFacetGroupStatistics
+                    <FacetGroupStatisticsVisualiser
                         :visualiser-service="visualiserService"
                         :reference-schema="referenceSchema"
                         :query-result="queryResult"
@@ -124,7 +127,7 @@ initialize()
                 :page-size="statisticsPageSize"
             >
                 <template #item="{ item: facetStatisticsResult }">
-                    <LabEditorResultVisualiserFacetStatistics
+                    <FacetStatisticsVisualiser
                         :visualiser-service="visualiserService"
                         :reference-schema="referenceSchema"
                         :query-result="queryResult"

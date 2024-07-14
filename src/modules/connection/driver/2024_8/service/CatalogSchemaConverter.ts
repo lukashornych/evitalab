@@ -1,27 +1,27 @@
 import {
-    CatalogSchema as DriverCatalogSchema,
-    GlobalAttributeSchemas as DriverGlobalAttributeSchemas,
-    GlobalAttributeSchema as DriverGlobalAttributeSchema,
-    EntitySchemas as DriverEntitySchemas,
-    EntitySchema as DriverEntitySchema,
-    AttributeUniquenessType as DriverAttributeUniquenessType,
-    GlobalAttributeUniquenessType as DriverGlobalAttributeUniquenessType,
+    AssociatedDataSchema as DriverAssociatedDataSchema,
+    AssociatedDataSchemas as DriverAssociatedDataSchemas,
+    AttributeElement as DriverAttributeElement,
     AttributeSchemas as DriverAttributeSchemas,
     AttributeSchemaUnion as DriverAttributeSchemaUnion,
-    SortableAttributeCompoundSchemas as DriverSortableAttributeCompoundSchemas,
-    SortableAttributeCompoundSchema as DriverSortableAttributeCompoundSchema,
-    AttributeElement as DriverAttributeElement,
+    AttributeUniquenessType as DriverAttributeUniquenessType,
+    Cardinality as DriverCardinality,
+    CatalogSchema as DriverCatalogSchema,
+    EntitySchema as DriverEntitySchema,
+    EntitySchemas as DriverEntitySchemas,
+    GlobalAttributeSchema as DriverGlobalAttributeSchema,
+    GlobalAttributeSchemas as DriverGlobalAttributeSchemas,
+    GlobalAttributeUniquenessType as DriverGlobalAttributeUniquenessType,
     OrderBehaviour as DriverOrderBehaviour,
     OrderDirection as DriverOrderDirection,
-    AssociatedDataSchemas as DriverAssociatedDataSchemas,
-    AssociatedDataSchema as DriverAssociatedDataSchema,
-    ReferenceSchemas as DriverReferenceSchemas,
     ReferenceSchema as DriverReferenceSchema,
-    Cardinality as DriverCardinality
+    ReferenceSchemas as DriverReferenceSchemas,
+    SortableAttributeCompoundSchema as DriverSortableAttributeCompoundSchema,
+    SortableAttributeCompoundSchemas as DriverSortableAttributeCompoundSchemas
 } from '../model/model'
 import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
 import { Value } from '@/modules/connection/model/Value'
-import { NamingConvention } from '@/modules/connection/model/schema/NamingConvetion'
+import { NamingConvention } from '@/modules/connection/model/NamingConvetion'
 import { GlobalAttributeSchema } from '@/modules/connection/model/schema/GlobalAttributeSchema'
 import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
 import { GlobalAttributeUniquenessType } from '@/modules/connection/model/schema/GlobalAttributeUniquenessType'
@@ -39,11 +39,13 @@ import { OrderDirection } from '@/modules/connection/model/schema/OrderDirection
 import { AssociatedDataSchema } from '@/modules/connection/model/schema/AssociatedDataSchema'
 import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
 import { Cardinality } from '@/modules/connection/model/schema/Cardinality'
+import { Converter } from '@/modules/connection/driver/2024_8/service/Converter'
+import { Scalar } from '@/modules/connection/model/data-type/Scalar'
 
 /**
  * Converts driver's representation of catalog schema into evitaLab's representation of catalog schema
  */
-export class CatalogSchemaConverter {
+export class CatalogSchemaConverter implements Converter<DriverCatalogSchema, CatalogSchema> {
 
     /**
      * Converts driver's representation of catalog schema into evitaLab's representation of catalog schema
@@ -51,7 +53,7 @@ export class CatalogSchemaConverter {
     convert(driverCatalogSchema: DriverCatalogSchema): CatalogSchema {
         return new CatalogSchema(
             Value.of(driverCatalogSchema.version),
-            Value.of(driverCatalogSchema.name),
+            driverCatalogSchema.name,
             Value.of(new Map([
                 [NamingConvention.CamelCase, driverCatalogSchema.nameVariants.camelCase],
                 [NamingConvention.PascalCase, driverCatalogSchema.nameVariants.pascalCase],
@@ -86,7 +88,7 @@ export class CatalogSchemaConverter {
     private convertEntitySchema(driverEntitySchema: DriverEntitySchema): EntitySchema {
         return new EntitySchema(
             Value.of(driverEntitySchema.version),
-            Value.of(driverEntitySchema.name),
+            driverEntitySchema.name,
             Value.of(new Map([
                 [NamingConvention.CamelCase, driverEntitySchema.nameVariants.camelCase],
                 [NamingConvention.PascalCase, driverEntitySchema.nameVariants.pascalCase],
@@ -123,7 +125,7 @@ export class CatalogSchemaConverter {
         const globalAttribute = 'globalUniquenessType' in driverAttributeSchemaUnion
         const entityAttribute = 'representative' in driverAttributeSchemaUnion
 
-        const name: Value<string> = Value.of(driverAttributeSchemaUnion.name)
+        const name: string = driverAttributeSchemaUnion.name
         const nameVariants: Value<Map<NamingConvention, string>> = Value.of(new Map([
             [NamingConvention.CamelCase, driverAttributeSchemaUnion.nameVariants.camelCase],
             [NamingConvention.PascalCase, driverAttributeSchemaUnion.nameVariants.pascalCase],
@@ -133,7 +135,7 @@ export class CatalogSchemaConverter {
         ]))
         const description: Value<string | null> = Value.of(driverAttributeSchemaUnion.description || null)
         const deprecationNotice: Value<string | null> = Value.of(driverAttributeSchemaUnion.deprecationNotice || null)
-        const type: Value<string> = Value.of(driverAttributeSchemaUnion.type)
+        const type: Value<Scalar> = Value.of(driverAttributeSchemaUnion.type as Scalar)
         const uniquenessType: Value<AttributeUniquenessType> = Value.of(this.convertAttributeUniquenessType(driverAttributeSchemaUnion.uniquenessType))
         const filterable: Value<boolean> = Value.of(driverAttributeSchemaUnion.filterable)
         const sortable: Value<boolean> = Value.of(driverAttributeSchemaUnion.sortable)
@@ -166,7 +168,7 @@ export class CatalogSchemaConverter {
 
     private convertSortableAttributeCompoundSchema(driverSortableAttributeCompoundSchema: DriverSortableAttributeCompoundSchema): SortableAttributeCompoundSchema {
         return new SortableAttributeCompoundSchema(
-            Value.of(driverSortableAttributeCompoundSchema.name),
+            driverSortableAttributeCompoundSchema.name,
             Value.of(new Map([
                 [NamingConvention.CamelCase, driverSortableAttributeCompoundSchema.nameVariants.camelCase],
                 [NamingConvention.PascalCase, driverSortableAttributeCompoundSchema.nameVariants.pascalCase],
@@ -203,7 +205,7 @@ export class CatalogSchemaConverter {
 
     private convertAssociatedDataSchema(driverAssociatedDataSchema: DriverAssociatedDataSchema): AssociatedDataSchema {
         return new AssociatedDataSchema(
-            Value.of(driverAssociatedDataSchema.name),
+            driverAssociatedDataSchema.name,
             Value.of(new Map([
                 [NamingConvention.CamelCase, driverAssociatedDataSchema.nameVariants.camelCase],
                 [NamingConvention.PascalCase, driverAssociatedDataSchema.nameVariants.pascalCase],
@@ -213,7 +215,7 @@ export class CatalogSchemaConverter {
             ])),
             Value.of(driverAssociatedDataSchema.description || null),
             Value.of(driverAssociatedDataSchema.deprecationNotice || null),
-            Value.of(driverAssociatedDataSchema.type),
+            Value.of(driverAssociatedDataSchema.type as Scalar),
             Value.of(driverAssociatedDataSchema.nullable),
             Value.of(driverAssociatedDataSchema.localized)
         )
@@ -230,7 +232,7 @@ export class CatalogSchemaConverter {
 
     private convertReferenceSchema(driverReferenceSchema: DriverReferenceSchema): ReferenceSchema {
         return new ReferenceSchema(
-            Value.of(driverReferenceSchema.name),
+            driverReferenceSchema.name,
             Value.of(new Map([
                 [NamingConvention.CamelCase, driverReferenceSchema.nameVariants.camelCase],
                 [NamingConvention.PascalCase, driverReferenceSchema.nameVariants.pascalCase],
@@ -282,7 +284,7 @@ export class CatalogSchemaConverter {
             case DriverAttributeUniquenessType.NotUnique: return AttributeUniquenessType.NotUnique
             case DriverAttributeUniquenessType.UniqueWithinCollection: return AttributeUniquenessType.UniqueWithinCollection
             case DriverAttributeUniquenessType.UniqueWithinCollectionLocale: return AttributeUniquenessType.UniqueWithinCollectionLocale
-            default: throw new UnexpectedError(undefined, `Unsupported attribute uniqueness type '${driverAttributeUniquenessType}'.`)
+            default: throw new UnexpectedError(`Unsupported attribute uniqueness type '${driverAttributeUniquenessType}'.`)
         }
     }
 
@@ -291,7 +293,7 @@ export class CatalogSchemaConverter {
             case DriverGlobalAttributeUniquenessType.NotUnique: return GlobalAttributeUniquenessType.NotUnique
             case DriverGlobalAttributeUniquenessType.UniqueWithinCatalog: return GlobalAttributeUniquenessType.UniqueWithinCatalog
             case DriverGlobalAttributeUniquenessType.UniqueWithinCatalogLocale: return GlobalAttributeUniquenessType.UniqueWithinCatalogLocale
-            default: throw new UnexpectedError(undefined, `Unsupported global attribute uniqueness type '${driverGlobalAttributeUniquenessType}'.`)
+            default: throw new UnexpectedError(`Unsupported global attribute uniqueness type '${driverGlobalAttributeUniquenessType}'.`)
         }
     }
 
@@ -309,7 +311,7 @@ export class CatalogSchemaConverter {
             case 'ADDING_LOCALES': return EvolutionMode.AddingLocales
             case 'ADDING_CURRENCIES': return EvolutionMode.AddingCurrencies
             case 'ADDING_HIERARCHY': return EvolutionMode.AddingHierarchy
-            default: throw new UnexpectedError(undefined, `Could not convert evolution mode '${driverEvolutionMode}'.`)
+            default: throw new UnexpectedError(`Could not convert evolution mode '${driverEvolutionMode}'.`)
         }
     }
 
@@ -317,7 +319,7 @@ export class CatalogSchemaConverter {
         switch (driverOrderBehaviour) {
             case DriverOrderBehaviour.NullsFirst: return OrderBehaviour.NullsFirst
             case DriverOrderBehaviour.NullsLast: return OrderBehaviour.NullsLast
-            default: throw new UnexpectedError(undefined, `Unsupported order behaviour '${driverOrderBehaviour}'.`)
+            default: throw new UnexpectedError(`Unsupported order behaviour '${driverOrderBehaviour}'.`)
         }
     }
 
@@ -325,7 +327,7 @@ export class CatalogSchemaConverter {
         switch (driverOrderDirection) {
             case DriverOrderDirection.Asc: return OrderDirection.Desc
             case DriverOrderDirection.Desc: return OrderDirection.Desc
-            default: throw new UnexpectedError(undefined, `Unsupported order direction '${driverOrderDirection}'.`)
+            default: throw new UnexpectedError(`Unsupported order direction '${driverOrderDirection}'.`)
         }
     }
 
@@ -335,7 +337,7 @@ export class CatalogSchemaConverter {
             case DriverCardinality.OneOrMore: return Cardinality.OneOrMore
             case DriverCardinality.ZeroOrMore: return Cardinality.ZeroOrMore
             case DriverCardinality.ZeroOrOne: return Cardinality.ZeroOrOne
-            default: throw new UnexpectedError(undefined, `Unsupported cardinality '${driverCardinality}'.`)
+            default: throw new UnexpectedError(`Unsupported cardinality '${driverCardinality}'.`)
         }
     }
 }

@@ -3,24 +3,24 @@
  * Visualises the raw JSON result of a GraphQL queries in human-readable GUI.
  */
 import { computed, ref, watch } from 'vue'
-import LabEditorResultVisualiserFacetSummary
-    from '@/components/lab/editor/result-visualiser/facet-summary/LabEditorResultVisualiserFacetSummary.vue'
-import LabEditorResultVisualiserMissingDataIndicator
-    from '@/components/lab/editor/result-visualiser/LabEditorResultVisualiserMissingDataIndicator.vue'
-import { EntitySchema } from '@/model/evitadb'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import VLoadingCircular from '@/components/base/VLoadingCircular.vue'
-import LabEditorResultVisualiserHierarchy
-    from '@/components/lab/editor/result-visualiser/hierarchy/LabEditorResultVisualiserHierarchy.vue'
-import { Result, VisualiserType, VisualiserTypeType } from '@/model/editor/result-visualiser'
-import { ResultVisualiserService } from '@/services/editor/result-visualiser/result-visualiser.service'
-import LabEditorResultVisualiserAttributeHistograms
-    from '@/components/lab/editor/result-visualiser/histogram/LabEditorResultVisualiserAttributeHistograms.vue'
-import LabEditorResultVisualiserPriceHistogram
-    from '@/components/lab/editor/result-visualiser/histogram/LabEditorResultVisualiserPriceHistogram.vue'
-import { VCombobox } from 'vuetify/components'
-import { CatalogPointer } from '@/model/editor/tab/CatalogPointer'
 import { useI18n } from 'vue-i18n'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { CatalogPointer } from '@/modules/connection/model/CatalogPointer'
+import { ResultVisualiserService } from '@/modules/console/result-visualiser/service/ResultVisualiserService'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { VCombobox } from 'vuetify/components'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { VisualiserType } from '@/modules/console/result-visualiser/model/VisualiserType'
+import { VisualiserTypeType } from '@/modules/console/result-visualiser/model/VisualiserTypeType'
+import FacetSummaryVisualiser
+    from '@/modules/console/result-visualiser/component/facet-summary/FacetSummaryVisualiser.vue'
+import HierarchyVisualiser from '@/modules/console/result-visualiser/component/hierarchy/HierarchyVisualiser.vue'
+import AttributeHistogramsVisualiser
+    from '@/modules/console/result-visualiser/component/histogram/AttributeHistogramsVisualiser.vue'
+import PriceHistogramVisualiser
+    from '@/modules/console/result-visualiser/component/histogram/PriceHistogramVisualiser.vue'
+import MissingDataIndicator from '@/modules/console/result-visualiser/component/MissingDataIndicator.vue'
+import VLoadingCircular from '@/modules/base/component/VLoadingCircular.vue'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -199,7 +199,7 @@ defineExpose<{
             />
         </header>
 
-        <LabEditorResultVisualiserFacetSummary
+        <FacetSummaryVisualiser
             v-if="selectedVisualiserType == VisualiserTypeType.FacetSummary && selectedQueryResult != undefined && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
             :catalog-pointer="catalogPointer"
             :visualiser-service="visualiserService"
@@ -207,43 +207,43 @@ defineExpose<{
             :facet-summary-result="resultForVisualiser"
             :entity-schema="selectedQueryEntitySchema"
         />
-        <LabEditorResultVisualiserHierarchy
+        <HierarchyVisualiser
             v-if="selectedVisualiserType == VisualiserTypeType.Hierarchy && selectedQueryResult != undefined && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
             :catalog-pointer="catalogPointer"
             :visualiser-service="visualiserService"
             :hierarchy-result="resultForVisualiser"
             :entity-schema="selectedQueryEntitySchema"
         />
-        <LabEditorResultVisualiserAttributeHistograms
+        <AttributeHistogramsVisualiser
             v-if="selectedVisualiserType == VisualiserTypeType.AttributeHistograms && selectedQueryResult != undefined && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
             :visualiser-service="visualiserService"
             :attribute-histograms-result="resultForVisualiser"
             :entity-schema="selectedQueryEntitySchema"
         />
-        <LabEditorResultVisualiserPriceHistogram
+        <PriceHistogramVisualiser
             v-if="selectedVisualiserType == VisualiserTypeType.PriceHistogram && selectedQueryResult != undefined && selectedQueryEntitySchema != undefined && resultForVisualiser != undefined"
             :visualiser-service="visualiserService"
             :price-histogram-result="resultForVisualiser"
         />
 
-        <LabEditorResultVisualiserMissingDataIndicator
+        <MissingDataIndicator
             v-else-if="queries.length == 0"
             icon="mdi-text-search"
             :title="t('resultVisualizer.visualiser.placeholder.noQueries')"
         />
-        <LabEditorResultVisualiserMissingDataIndicator
+        <MissingDataIndicator
             v-else-if="selectedQuery == undefined"
             icon="mdi-database-search"
             :title="t('resultVisualizer.visualiser.placeholder.noSelectedQuery')"
         />
-        <LabEditorResultVisualiserMissingDataIndicator
+        <MissingDataIndicator
             v-else-if="selectedVisualiserType == undefined"
             icon="mdi-format-list-bulleted-type"
             :title="t('resultVisualizer.visualiser.placeholder.noSelectedData')"
         />
-        <LabEditorResultVisualiserMissingDataIndicator v-else-if="selectedQueryResult == undefined || selectedQueryEntitySchema == undefined || resultForVisualiser == undefined">
+        <MissingDataIndicator v-else-if="selectedQueryResult == undefined || selectedQueryEntitySchema == undefined || resultForVisualiser == undefined">
             <VLoadingCircular :size="64" />
-        </LabEditorResultVisualiserMissingDataIndicator>
+        </MissingDataIndicator>
     </div>
 </template>
 

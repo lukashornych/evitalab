@@ -1,15 +1,13 @@
-import { EvitaDBConnectionId } from '@/modules/connection/model/EvitaDBConnectionId'
-import { EvitaDBConnection } from '@/modules/connection/model/EvitaDBConnection'
+import { LabError } from '@/modules/base/exception/LabError'
 
 /**
  * Unexpected error that should never happen. We don't know what happened.
  */
-export class UnexpectedError extends LabInternalError {
-    constructor(connection: EvitaDBConnection | undefined, detail: string) {
+export class UnexpectedError extends LabError {
+    constructor(detail: string) {
         super(
             'UnexpectedError',
-            connection,
-            'Unexpected error occurred.',
+            `Unexpected error occurred: ${detail}`,
             detail
         )
     }

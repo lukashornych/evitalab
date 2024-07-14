@@ -1,7 +1,7 @@
-import { TabRequestComponentDataDto } from '@/model/editor/tab/TabRequestComponentDataDto'
+import { TabDataDto } from '@/modules/workspace/tab/model/TabDataDto'
 
 /**
- * Specific DTO for {@link VoidTabRequestComponentData}.
+ * Specific DTO for {@link VoidTabData}.
  */
-export interface VoidTabDataDto extends TabRequestComponentDataDto {
+export interface VoidTabDataDto extends TabDataDto {
 }

@@ -4,15 +4,14 @@
  * The entire section can be selected as well.
  */
 
-import {
-    EntityPropertyDescriptor,
-    EntityPropertyKey,
-    EntityPropertySectionSelection,
-    EntityPropertyType
-} from '@/model/editor/tab/dataGrid/data-grid'
-import LabEditorDataGridPropertySelectorSectionEmptyItem from './LabEditorDataGridPropertySelectorSectionEmptyItem.vue'
-import VListItemDivider from '@/components/base/VListItemDivider.vue'
 import { useI18n } from 'vue-i18n'
+import { EntityPropertyType } from '@/modules/entity-viewer/viewer/model/EntityPropertyType'
+import { EntityPropertyKey } from '@/modules/entity-viewer/viewer/model/EntityPropertyKey'
+import { EntityPropertyDescriptor } from '@/modules/entity-viewer/viewer/model/EntityPropertyDescriptor'
+import { EntityPropertySectionSelection } from '@/modules/entity-viewer/viewer/model/EntityPropertySectionSelection'
+import VListItemDivider from '@/modules/base/component/VListItemDivider.vue'
+import PropertySectionEmptyItem
+    from '@/modules/entity-viewer/viewer/component/entity-property-selector/PropertySectionEmptyItem.vue'
 
 const { t } = useI18n()
 
@@ -87,7 +86,7 @@ function resolveNewSelection() {
             </template>
         </template>
         <template v-else>
-            <LabEditorDataGridPropertySelectorSectionEmptyItem />
+            <PropertySectionEmptyItem />
         </template>
     </VListGroup>
 </template>

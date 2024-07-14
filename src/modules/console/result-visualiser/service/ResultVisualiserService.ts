@@ -1,4 +1,3 @@
-import { EntitySchema } from '@/model/evitadb'
 import {
     FacetSummaryVisualiserService
 } from '@/modules/console/result-visualiser/service/FacetSummaryVisualiserService'
@@ -9,7 +8,10 @@ import {
 import {
     PriceHistogramVisualiserService
 } from '@/modules/console/result-visualiser/service/PriceHistogramVisualiserService'
-import { EvitaDBConnection } from '@/model/EvitaDBConnection'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { Connection } from '@/modules/connection/model/Connection'
+import { VisualiserType } from '@/modules/console/result-visualiser/model/VisualiserType'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
 
 /**
  * Service for visualising raw JSON results from query executions of specific query language into interactive GUI.
@@ -34,7 +36,7 @@ export abstract class ResultVisualiserService {
     /**
      * Returns entity schema for selected query.
      */
-    abstract getEntitySchemaForQuery(query: string, connection: EvitaDBConnection, catalogName: string): Promise<EntitySchema | undefined>
+    abstract getEntitySchemaForQuery(query: string, connection: Connection, catalogName: string): Promise<EntitySchema | undefined>
 
     /**
      * Tries to find result-result-visualiser types in the root result.

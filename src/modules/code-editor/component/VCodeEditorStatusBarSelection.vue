@@ -3,7 +3,7 @@
  * Render detailed info about the current text selection.
  */
 
-import { Text, SelectionRange, Line } from '@codemirror/state'
+import { Line, SelectionRange, Text } from '@codemirror/state'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 

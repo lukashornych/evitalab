@@ -1,7 +1,7 @@
 <script setup lang="ts">/**
  * Histogram note component for displaying warning notes about input data.
  */
-import VMarkdown from '@/components/base/VMarkdown.vue'
+import VMarkdown from '@/modules/base/component/VMarkdown.vue'
 
 const props = defineProps<{
     note: string

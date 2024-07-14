@@ -3,12 +3,14 @@
  * Visualises histogram as a range slider.
  */
 
-import { VisualisedHistogram, VisualisedHistogramBucket } from '@/model/editor/result-visualiser'
 import { computed } from 'vue'
-import LabEditorResultVisualiserHistogramNote
-    from '@/components/lab/editor/result-visualiser/histogram/LabEditorResultVisualiserHistogramNote.vue'
-import { BigDecimal } from '@/model/evitadb'
 import { useI18n } from 'vue-i18n'
+import { VisualisedHistogram } from '@/modules/console/result-visualiser/model/histogram/VisualisedHistogram'
+import {
+    VisualisedHistogramBucket
+} from '@/modules/console/result-visualiser/model/histogram/VisualisedHistogramBucket'
+import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
+import HistogramNote from '@/modules/console/result-visualiser/component/histogram/HistogramNote.vue'
 
 const { t } = useI18n()
 
@@ -123,7 +125,7 @@ const rangeInfo = computed<RangeInfo>(() => {
         hide-details
         :class="{ 'histogram-range__real-values': rangeInfo.simulatedReason == undefined }"
     />
-    <LabEditorResultVisualiserHistogramNote v-if="rangeInfo.simulatedReason != undefined" :note="rangeInfo.simulatedReason" />
+    <HistogramNote v-if="rangeInfo.simulatedReason != undefined" :note="rangeInfo.simulatedReason" />
 </template>
 
 <style lang="scss" scoped>

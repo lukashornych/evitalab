@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import LabEditorSchemaViewerContainerSectionListItem
-    from '@/components/lab/editor/schema-viewer/LabEditorSchemaViewerContainerSectionListItem.vue'
-import VListItemDivider from '@/components/base/VListItemDivider.vue'
 import { useI18n } from 'vue-i18n'
+import SchemaContainerSectionListItem from '@/modules/schema-viewer/viewer/component/SchemaContainerSectionListItem.vue'
+import VListItemDivider from '@/modules/base/component/VListItemDivider.vue'
+import { List } from 'immutable'
 
 const { t } = useI18n()
 
 const props = defineProps<{
-    items: any[],
+    items: List<any>,
     nameSupplier: (item: any) => string
 }>()
 
@@ -42,11 +42,11 @@ const filteredItems = computed(() => {
             :key="nameSupplier(item)"
         >
             <slot :item="item" />
-            <VListItemDivider v-if="index < filteredItems.length - 1"/>
+            <VListItemDivider v-if="index < filteredItems.size - 1"/>
         </template>
 
-        <LabEditorSchemaViewerContainerSectionListItem
-            v-if="filteredItems.length === 0"
+        <SchemaContainerSectionListItem
+            v-if="filteredItems.size === 0"
             :name="t('schemaViewer.section.placeholder.noItemsForSearchedTerm')"
             :openable="false"
         />

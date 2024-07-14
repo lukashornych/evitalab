@@ -1,6 +1,7 @@
-import { SchemaPointer } from '@/model/editor/tab/schemaViewer/SchemaPointer'
 import { DefineComponent, markRaw, Raw } from 'vue'
-import LabEditorSchemaViewerReference from '@/components/lab/editor/schema-viewer/LabEditorSchemaViewerReference.vue'
+import { SchemaPointer } from '@/modules/schema-viewer/viewer/model/SchemaPointer'
+import ReferenceSchemaViewer from '@/modules/schema-viewer/viewer/component/reference/ReferenceSchemaViewer.vue'
+import { List } from 'immutable'
 
 /**
  * Points to evitaDB reference schema nested inside an entity schema.
@@ -17,10 +18,10 @@ export class ReferenceSchemaPointer implements SchemaPointer {
     }
 
     component(): Raw<DefineComponent<any, any, any>> {
-        return markRaw(LabEditorSchemaViewerReference as DefineComponent<any, any, any>)
+        return markRaw(ReferenceSchemaViewer as DefineComponent<any, any, any>)
     }
 
-    path(): string[] {
-        return [this.catalogName, 'entities', this.entityType, 'references', this.referenceName]
+    path(): List<string> {
+        return List([this.catalogName, 'entities', this.entityType, 'references', this.referenceName])
     }
 }

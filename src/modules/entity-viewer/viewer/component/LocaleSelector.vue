@@ -3,18 +3,19 @@
  * Selector button to switch data locale.
  */
 
-import VListItemDivider from '@/components/base/VListItemDivider.vue'
 import { ref } from 'vue'
-import { VBtn } from 'vuetify/components'
-import VActionTooltip from '@/components/base/VActionTooltip.vue'
-import { Command } from '@/model/editor/keymap/Command'
 import { useI18n } from 'vue-i18n'
+import { VBtn } from 'vuetify/components'
+import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
+import { Command } from '@/modules/keymap/model/Command'
+import VListItemDivider from '@/modules/base/component/VListItemDivider.vue'
+import { List } from 'immutable'
 
 const { t } = useI18n()
 
 const props = defineProps<{
     selected: string | undefined,
-    dataLocales: string[]
+    dataLocales: List<string>
 }>()
 const emit = defineEmits<{
     (e: 'update:selected', value: string | undefined): void

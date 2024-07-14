@@ -1,5 +1,6 @@
-import { NotificationType } from '@/modules/workspace/notification/model/NotificationType'
+import { NotificationType } from '@/modules/notification/model/NotificationType'
 
+// todo docs
 export type NotificationData = {
     readonly type: NotificationType,
     readonly message: string,

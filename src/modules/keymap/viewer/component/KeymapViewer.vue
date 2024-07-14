@@ -3,14 +3,17 @@
  * Viewer tab for all evitaLab supported keybindings.
  */
 
-import VTabToolbar from '@/components/base/VTabToolbar.vue'
-import { Keymap, useKeymap } from '@/model/editor/keymap/Keymap'
-import { KeywordValue, Property, PropertyValue } from '@/model/properties-table'
-import VPropertiesTable from '@/components/base/VPropertiesTable.vue'
-import { Command } from '@/model/editor/keymap/Command'
-import { TabComponentEvents } from '@/model/editor/tab/TabComponentEvents'
 import { useI18n } from 'vue-i18n'
-import { UnexpectedError } from '@/model/UnexpectedError'
+import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
+import { TabComponentEvents } from '@/modules/workspace/tab/model/TabComponentEvents'
+import { Property } from '@/modules/base/model/properties-table/Property'
+import { Command } from '@/modules/keymap/model/Command'
+import { PropertyValue } from '@/modules/base/model/properties-table/PropertyValue'
+import { KeywordValue } from '@/modules/base/model/properties-table/KeywordValue'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
+import VPropertiesTable from '@/modules/base/component/VPropertiesTable.vue'
+import { List } from 'immutable'
 
 const keymap: Keymap = useKeymap()
 const { t } = useI18n()
@@ -55,7 +58,7 @@ keymap.prettyPrintAll().forEach((shortcut: string, command: Command) => {
             value: new PropertyValue(new KeywordValue(shortcut))
         })
     } else {
-        throw new UnexpectedError(undefined, `Unsupported command syntax '${command}'.`)
+        throw new UnexpectedError(`Unsupported command syntax '${command}'.`)
     }
 })
 
@@ -66,7 +69,7 @@ emit('ready')
     <div class="keymap-viewer">
         <VTabToolbar
             prepend-icon="mdi-keyboard-outline"
-            :path="['Keymap']"
+            :path="List(['Keymap'])"
         />
 
         <VSheet class="keymap-viewer__body">

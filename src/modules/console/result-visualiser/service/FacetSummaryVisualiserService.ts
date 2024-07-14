@@ -1,4 +1,12 @@
-import { EntitySchema, ReferenceSchema } from '@/model/evitadb'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
+import {
+    VisualisedFacetGroupStatistics
+} from '@/modules/console/result-visualiser/model/facet-summary/VisualisedFacetGroupStatistics'
+import {
+    VisualisedFacetStatistics
+} from '@/modules/console/result-visualiser/model/facet-summary/VisualisedFacetStatistics'
 
 /**
  * Service for visualising raw JSON facet summary results.

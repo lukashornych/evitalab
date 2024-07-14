@@ -5,11 +5,11 @@
 
 import { Codemirror } from 'vue-codemirror'
 import { EditorState, Extension } from '@codemirror/state'
-import { ViewUpdate, keymap } from '@codemirror/view'
+import { keymap, ViewUpdate } from '@codemirror/view'
 import { basicSetup, EditorView } from 'codemirror'
 import { dracula } from '@ddietr/codemirror-themes/dracula.js'
 import { ref } from 'vue'
-import VCodeEditorStatusBar from '@/components/base/VCodeEditorStatusBar.vue'
+import VCodeEditorStatusBar from '@/modules/code-editor/component/VCodeEditorStatusBar.vue'
 
 const props = withDefaults(
     defineProps<{

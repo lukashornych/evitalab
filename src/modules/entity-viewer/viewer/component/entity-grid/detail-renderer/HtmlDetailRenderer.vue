@@ -3,12 +3,12 @@
  * Entity property value renderer that tries to render the value as HTML.
  */
 
-import LabEditorDataGridGridCellDetailValueRenderer
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailValueRenderer.vue'
 import { computed } from 'vue'
 import DOMPurify from 'dompurify'
-import { EntityPropertyValue } from '@/model/editor/tab/dataGrid/data-grid'
 import { useI18n } from 'vue-i18n'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import ValueDetailRenderer
+    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/ValueDetailRenderer.vue'
 
 const { t } = useI18n()
 
@@ -29,11 +29,11 @@ const formattedValue = computed<string>(() => {
 </script>
 
 <template>
-    <LabEditorDataGridGridCellDetailValueRenderer :fill-space="fillSpace">
+    <ValueDetailRenderer :fill-space="fillSpace">
         <div class="html-renderer">
             <div v-html="formattedValue"/>
         </div>
-    </LabEditorDataGridGridCellDetailValueRenderer>
+    </ValueDetailRenderer>
 </template>
 
 <style lang="scss" scoped>

@@ -1,16 +1,23 @@
 <script setup lang="ts">
-import LabEditorViewerNameVariants from './LabEditorSchemaViewerNameVariants.vue'
-import LabEditorViewerContainer from './LabEditorSchemaViewerContainer.vue'
-import LabEditorSchemaViewerAttributes from './LabEditorSchemaViewerAttributes.vue'
-import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import { ReferenceSchema } from '@/model/evitadb'
-import { KeywordValue, Property, PropertyValue } from '@/model/properties-table'
-import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaViewerDataPointer'
-import { SchemaViewerRequest } from '@/model/editor/tab/schemaViewer/SchemaViewerRequest'
-import { EntitySchemaPointer } from '@/model/editor/tab/schemaViewer/EntitySchemaPointer'
 import { useI18n } from 'vue-i18n'
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import { SchemaViewerDataPointer } from '@/modules/schema-viewer/viewer/model/SchemaViewerDataPointer'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
+import { Property } from '@/modules/base/model/properties-table/Property'
+import { PropertyValue } from '@/modules/base/model/properties-table/PropertyValue'
+import { KeywordValue } from '@/modules/base/model/properties-table/KeywordValue'
+import {
+    SchemaViewerTabFactory,
+    useSchemaViewerTabFactory
+} from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
+import { EntitySchemaPointer } from '@/modules/schema-viewer/viewer/model/EntitySchemaPointer'
+import SchemaContainer from '@/modules/schema-viewer/viewer/component/SchemaContainer.vue'
+import NameVariants from '@/modules/schema-viewer/viewer/component/NameVariants.vue'
+import AttributeSchemaList from '@/modules/schema-viewer/viewer/component/attribute/AttributeSchemaList.vue'
+import { List } from 'immutable'
 
-const editorService: EditorService = useEditorService()
+const workspaceService: WorkspaceService = useWorkspaceService()
+const schemaViewerTabFactory: SchemaViewerTabFactory = useSchemaViewerTabFactory()
 const { t } = useI18n()
 
 const props = defineProps<{
@@ -19,21 +26,21 @@ const props = defineProps<{
 }>()
 
 const properties: Property[] = []
-properties.push({ name: t('schemaViewer.reference.label.description'), value: new PropertyValue(props.schema.description) })
-properties.push({ name: t('schemaViewer.reference.label.deprecationNotice'), value: new PropertyValue(props.schema.deprecationNotice) })
-properties.push({ name: t('schemaViewer.reference.label.cardinality'), value: new PropertyValue(new KeywordValue(props.schema.cardinality)) })
-if (props.schema.referencedEntityTypeManaged) {
+properties.push({ name: t('schemaViewer.reference.label.description'), value: new PropertyValue(props.schema.description.getIfSupported()!) })
+properties.push({ name: t('schemaViewer.reference.label.deprecationNotice'), value: new PropertyValue(props.schema.deprecationNotice.getIfSupported()!) })
+properties.push({ name: t('schemaViewer.reference.label.cardinality'), value: new PropertyValue(new KeywordValue(props.schema.cardinality.getIfSupported()!)) })
+if (props.schema.referencedEntityTypeManaged.getOrElse(false)) {
     properties.push({
         name: t('schemaViewer.reference.label.referencedEntity'),
         value: new PropertyValue(
-            new KeywordValue(props.schema.referencedEntityType),
+            new KeywordValue(props.schema.referencedEntityType.getIfSupported()!),
             undefined,
             item => {
-                editorService.createTab(SchemaViewerRequest.createNew(
+                workspaceService.createTab(schemaViewerTabFactory.createNew(
                     props.dataPointer.connection,
                     new EntitySchemaPointer(
                         props.dataPointer.schemaPointer.catalogName,
-                        props.schema.referencedEntityType
+                        props.schema.referencedEntityType.getIfSupported()!
                     )
                 ))
             }
@@ -42,24 +49,24 @@ if (props.schema.referencedEntityTypeManaged) {
 } else {
     properties.push({
         name: t('schemaViewer.reference.label.referencedEntity'),
-        value: new PropertyValue(new KeywordValue(props.schema.referencedEntityType))
+        value: new PropertyValue(new KeywordValue(props.schema.referencedEntityType.getIfSupported()!))
     })
 }
-properties.push({ name: t('schemaViewer.reference.label.referencedEntityManaged'), value: new PropertyValue(props.schema.referencedEntityTypeManaged) })
-if (props.schema.referencedGroupType == undefined) {
+properties.push({ name: t('schemaViewer.reference.label.referencedEntityManaged'), value: new PropertyValue(props.schema.referencedEntityTypeManaged.getOrElse(false)) })
+if (props.schema.referencedGroupType.getIfSupported() == undefined) {
     properties.push({ name: t('schemaViewer.reference.label.referencedGroup'), value: new PropertyValue(undefined) })
-} else if (props.schema.referencedGroupTypeManaged) {
+} else if (props.schema.referencedGroupTypeManaged.getOrElse(false)) {
     properties.push({
         name: t('schemaViewer.reference.label.referencedGroup'),
         value: new PropertyValue(
-            props.schema.referencedGroupType ? new KeywordValue(props.schema.referencedGroupType) : undefined,
+            props.schema.referencedGroupType ? new KeywordValue(props.schema.referencedGroupType.getIfSupported()!) : undefined,
             undefined,
             item => {
-                editorService.createTab(SchemaViewerRequest.createNew(
+                workspaceService.createTab(schemaViewerTabFactory.createNew(
                     props.dataPointer.connection,
                     new EntitySchemaPointer(
                         props.dataPointer.schemaPointer.catalogName,
-                        props.schema.referencedGroupType as string
+                        props.schema.referencedGroupType.getIfSupported()! as string
                     )
                 ))
             }
@@ -68,38 +75,38 @@ if (props.schema.referencedGroupType == undefined) {
 } else {
     properties.push({
         name: t('schemaViewer.reference.label.referencedGroup'),
-        value: new PropertyValue(props.schema.referencedGroupType ? new KeywordValue(props.schema.referencedGroupType) : undefined)
+        value: new PropertyValue(props.schema.referencedGroupType ? new KeywordValue(props.schema.referencedGroupType.getIfSupported()!) : undefined)
     })
 }
-properties.push({ name: t('schemaViewer.reference.label.referencedGroupManaged'), value: new PropertyValue(props.schema.referencedGroupTypeManaged) })
-properties.push({ name: t('schemaViewer.reference.label.indexed'), value: new PropertyValue(props.schema.indexed) })
-properties.push({ name: t('schemaViewer.reference.label.faceted'), value: new PropertyValue(props.schema.faceted) })
+properties.push({ name: t('schemaViewer.reference.label.referencedGroupManaged'), value: new PropertyValue(props.schema.referencedGroupTypeManaged.getOrElse(false) || false) })
+properties.push({ name: t('schemaViewer.reference.label.indexed'), value: new PropertyValue(props.schema.indexed.getIfSupported()) })
+properties.push({ name: t('schemaViewer.reference.label.faceted'), value: new PropertyValue(props.schema.faceted.getIfSupported()) })
 
 </script>
 
 <template>
-    <LabEditorViewerContainer :properties="properties">
+    <SchemaContainer :properties="properties">
         <template #nested-details>
-            <LabEditorViewerNameVariants :name-variants="schema.nameVariants" />
+            <NameVariants :name-variants="schema.nameVariants.getIfSupported()!" />
 
-            <LabEditorViewerNameVariants
+            <NameVariants
                 :prefix="t('schemaViewer.reference.label.referencedEntityNameVariants')"
-                :name-variants="schema.entityTypeNameVariants"
+                :name-variants="schema.entityTypeNameVariants.getIfSupported()!"
             />
 
-            <LabEditorViewerNameVariants
-                v-if="schema.referencedGroupType && schema.groupTypeNameVariants"
+            <NameVariants
+                v-if="schema.referencedGroupType.isSupported() && schema.referencedGroupType.getIfSupported() != undefined && schema.groupTypeNameVariants.isSupported() && schema.groupTypeNameVariants.getIfSupported()"
                 :prefix="t('schemaViewer.reference.label.referencedGroupNameVariants')"
-                :name-variants="schema.groupTypeNameVariants"
+                :name-variants="schema.groupTypeNameVariants.getIfSupported()!"
             />
 
-            <LabEditorSchemaViewerAttributes
-                v-if="Object.values(schema.attributes) && Object.values(schema.attributes).length > 0"
+            <AttributeSchemaList
+                v-if="schema.attributes.isSupported() && schema.attributes.getIfSupported()!.size > 0"
                 :data-pointer="dataPointer"
-                :attributes="Object.values(schema.attributes)"
+                :attributes="List(schema.attributes.getIfSupported()!.values())"
             />
         </template>
-    </LabEditorViewerContainer>
+    </SchemaContainer>
 </template>
 
 <style lang="scss" scoped>

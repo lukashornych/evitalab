@@ -3,11 +3,12 @@
  * Visualises hierarchy tree node from raw JSON.
  */
 
-import LabEditorResultVisualiserHierarchyTreeNodeTitle
-    from '@/components/lab/editor/result-visualiser/hierarchy/LabEditorResultVisualiserHierarchyTreeNodeTitle.vue'
-import { VisualisedHierarchyTreeNode } from '@/model/editor/result-visualiser'
-import VListItemLazyIterator from '@/components/base/VListItemLazyIterator.vue'
 import { ref } from 'vue'
+import {
+    VisualisedHierarchyTreeNode
+} from '@/modules/console/result-visualiser/model/hierarchy/VisualisedHierarchyTreeNode'
+import HierarchyTreeNodeTitle from '@/modules/console/result-visualiser/component/hierarchy/HierarchyTreeNodeTitle.vue'
+import VListItemLazyIterator from '@/modules/base/component/VListItemLazyIterator.vue'
 
 const nodeChildrenPageSize: number = 10
 
@@ -23,7 +24,7 @@ const nodeChildrenPage = ref<number>(1)
     <VListGroup v-if="!node.isLeaf()">
         <template #activator="{ props }">
             <VListItem v-bind="props">
-                <LabEditorResultVisualiserHierarchyTreeNodeTitle :node="node" />
+                <HierarchyTreeNodeTitle :node="node" />
             </VListItem>
         </template>
 
@@ -33,7 +34,7 @@ const nodeChildrenPage = ref<number>(1)
             :page-size="nodeChildrenPageSize"
         >
             <template #item="{ item: childNode }">
-                <LabEditorResultVisualiserHierarchyTreeNode
+                <HierarchyTreeNode
                     :node="childNode"
                     :entity-representative-attributes="entityRepresentativeAttributes"
                 />
@@ -41,7 +42,7 @@ const nodeChildrenPage = ref<number>(1)
         </VListItemLazyIterator>
     </VListGroup>
     <VListItem v-else>
-        <LabEditorResultVisualiserHierarchyTreeNodeTitle :node="node" />
+        <HierarchyTreeNodeTitle :node="node" />
     </VListItem>
 </template>
 

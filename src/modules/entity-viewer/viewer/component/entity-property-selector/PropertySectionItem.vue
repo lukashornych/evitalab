@@ -3,9 +3,10 @@
  * Ancestor for selectable entity property items.
  */
 
-import VMarkdown from '@/components/base/VMarkdown.vue'
-import { EntityPropertyKey } from '@/model/editor/tab/dataGrid/data-grid'
 import { useI18n } from 'vue-i18n'
+import { EntityPropertyKey } from '@/modules/entity-viewer/viewer/model/EntityPropertyKey'
+import VMarkdown from '@/modules/base/component/VMarkdown.vue'
+import { List } from 'immutable'
 
 const { t } = useI18n()
 
@@ -13,7 +14,7 @@ const props = withDefaults(defineProps<{
     value: EntityPropertyKey,
     title: string,
     description?: string,
-    flags?: string[],
+    flags?: List<string>,
     /**
      * Whether this item has openable detail.
      */
@@ -26,7 +27,7 @@ const props = withDefaults(defineProps<{
     description: undefined,
     openable: false,
     groupParent: false,
-    flags: () => []
+    flags: () => List()
 })
 const emit = defineEmits<{
     (e: 'toggle', value: { key: EntityPropertyKey, selected: boolean }): void

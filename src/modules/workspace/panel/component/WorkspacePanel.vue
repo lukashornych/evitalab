@@ -3,13 +3,14 @@
  * Main lab panel with navigation and useful links
  */
 
-import LabPanelManageMenu from '@/components/lab/panel/LabPanelManageMenu.vue'
-import { Keymap, useKeymap } from '@/model/editor/keymap/Keymap'
 import { onMounted, onUnmounted } from 'vue'
-import { Command } from '@/model/editor/keymap/Command'
 import { useI18n } from 'vue-i18n'
-import VActionTooltip from '@/components/base/VActionTooltip.vue'
-import { PanelType } from '@/model/PanelType'
+import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
+import { PanelType } from '@/modules/workspace/panel/model/PanelType'
+import { Command } from '@/modules/keymap/model/Command'
+import ManageMenu from '@/modules/workspace/panel/component/ManageMenu.vue'
+import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
+import { MenuAction } from '@/modules/base/model/menu/MenuAction'
 
 const keymap: Keymap = useKeymap()
 const { t } = useI18n()
@@ -22,14 +23,19 @@ const emit = defineEmits<{
     (e: 'update:panel', value: string | null): void
 }>()
 
-const mainItems = [
-    {
-        title: t(`panel.item.${PanelType.Explorer}`),
-        value: PanelType.Explorer,
-        prependIcon: 'mdi-connection',
-        command: Command.System_Panels_ConnectionsExplorer
-    }
-]
+const mainItems: MenuAction<PanelType>[] = createMainItems()
+
+function createMainItems(): MenuAction<PanelType>[] {
+    const mainItems: MenuAction<PanelType>[] = []
+    mainItems.push(new MenuAction(
+        PanelType.Explorer,
+        t(`panel.item.${PanelType.Explorer}`),
+        'mdi-connection',
+        () => {},
+        Command.System_Panels_ConnectionsExplorer
+    ))
+    return mainItems
+}
 
 function selectPanel(item: any): void {
     if (!item.value) {
@@ -62,7 +68,7 @@ onUnmounted(() => {
         class="bg-primary-dark"
     >
         <template #prepend>
-            <LabPanelManageMenu>
+            <ManageMenu>
                 <VAvatar size="30px">
                     <VImg
                         alt="evitaLab Logo"
@@ -71,7 +77,7 @@ onUnmounted(() => {
                         src="/logo/evitalab-logo-mini.png?raw=true"
                     />
                 </VAvatar>
-            </LabPanelManageMenu>
+            </ManageMenu>
         </template>
 
         <VList

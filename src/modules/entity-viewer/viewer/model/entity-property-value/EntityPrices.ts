@@ -1,10 +1,10 @@
-import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/workspace/EntityPropertyValue'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import { EntityPrice } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPrice'
 import {
     EntityPropertyValuePreviewStringContext
-} from '@/modules/entity-viewer/viewer/workspace/EntityPropertyValuePreviewStringContext'
-import { BigDecimal, QueryPriceMode } from '@/model/evitadb'
-
-import { EntityPrice } from '@/modules/entity-viewer/viewer/workspace/EntityPrice'
+} from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPropertyValuePreviewStringContext'
+import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
+import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
 
 /**
  * Holder for entity prices displayable data grid.

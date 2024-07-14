@@ -1,17 +1,22 @@
 import { EvitaDBDriver } from '@/modules/connection/driver/EvitaDBDriver'
-import { EvitaDBConnection } from '@/modules/connection/model/EvitaDBConnection'
+import { Connection } from '@/modules/connection/model/Connection'
 import { HttpApiClient } from '@/modules/driver-support/service/HttpApiClient'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import {
     Catalog as DriverCatalog,
     CatalogSchema as DriverCatalogSchema,
+    ModelError as DriverModelError,
     QueryEntitiesRequestBody as DriverQueryEntitiesRequestBody,
-    ModelError as DriverModelError
+    Response as DriverResponse
 } from './model/model'
 import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
 import { QueryError } from '@/modules/connection/exception/QueryError'
 import { CatalogConverter } from '@/modules/connection/driver/2024_8/service/CatalogConverter'
 import { CatalogSchemaConverter } from '@/modules/connection/driver/2024_8/service/CatalogSchemaConverter'
+import { Response } from '@/modules/connection/model/data/Response'
+import { ResponseConverter } from '@/modules/connection/driver/2024_8/service/ResponseConverter'
+import { EvitaLabConfig } from '@/modules/config/EvitaLabConfig'
+import { List } from 'immutable'
 
 /**
  * evitaDB driver implementation for version >=2024.8.0
@@ -20,12 +25,18 @@ export class EvitaDBDriver_2024_8 extends HttpApiClient implements EvitaDBDriver
 
     private readonly catalogConverter: CatalogConverter = new CatalogConverter()
     private readonly catalogSchemaConverter: CatalogSchemaConverter = new CatalogSchemaConverter()
+    private readonly responseConverter: ResponseConverter = new ResponseConverter()
 
-    getSupportedVersions(): string {
-        return '>=2024.8.x'
+    constructor(evitaLabConfig: EvitaLabConfig) {
+        super(evitaLabConfig)
     }
 
-    async getCatalogs(connection: EvitaDBConnection): Promise<Catalog[]> {
+    getSupportedVersions(): List<string> {
+        // todo lho we need semver with snapshots i quess
+        return List(['all'])
+    }
+
+    async getCatalogs(connection: Connection): Promise<Catalog[]> {
         try {
             const driverCatalogs: DriverCatalog[] = await this.httpClient.get(
                 `${connection.labApiUrl}/data/catalogs`,
@@ -42,7 +53,7 @@ export class EvitaDBDriver_2024_8 extends HttpApiClient implements EvitaDBDriver
         }
     }
 
-    async getCatalogSchema(connection: EvitaDBConnection, catalogName: string): Promise<CatalogSchema> {
+    async getCatalogSchema(connection: Connection, catalogName: string): Promise<CatalogSchema> {
         try {
             const driverCatalogSchema: DriverCatalogSchema = await this.httpClient.get(
                 `${connection.labApiUrl}/schema/catalogs/${catalogName}`,
@@ -59,9 +70,9 @@ export class EvitaDBDriver_2024_8 extends HttpApiClient implements EvitaDBDriver
         }
     }
 
-    async queryEntities(connection: EvitaDBConnection, catalogName: string, query: string): Promise<Response> {
+    async query(connection: Connection, catalogName: string, query: string): Promise<Response> {
         try {
-            const driverQueryEntitiesRequestBody = await this.httpClient.post(
+            const driverResponse: DriverResponse = await this.httpClient.post(
                 `${connection.labApiUrl}/data/catalogs/${catalogName}/collections/query`,
                 {
                     headers: {
@@ -73,8 +84,8 @@ export class EvitaDBDriver_2024_8 extends HttpApiClient implements EvitaDBDriver
                     } as DriverQueryEntitiesRequestBody)
                 }
             )
-                .json() as Response
-            return this.entitiesConverter()
+                .json() as DriverResponse
+            return this.responseConverter.convert(driverResponse)
         } catch (e: any) {
             if (e.name === 'HTTPError' && e.response.status === 400) {
                 // this is a special case where this might be a user's error

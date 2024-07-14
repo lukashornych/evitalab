@@ -1,15 +1,11 @@
-<script setup lang="ts">
-/**
+<script setup lang="ts">/**
  * Visualises histogram extracted from JSON extra results.
  */
+import { VisualisedHistogram } from '@/modules/console/result-visualiser/model/histogram/VisualisedHistogram'
+import HistogramChart from '@/modules/console/result-visualiser/component/histogram/HistogramChart.vue'
+import HistogramRange from '@/modules/console/result-visualiser/component/histogram/HistogramRange.vue'
+import HistogramInfo from '@/modules/console/result-visualiser/component/histogram/HistogramInfo.vue'
 
-import { VisualisedHistogram } from '@/model/editor/result-visualiser'
-import LabEditorResultVisualiserHistogramInfo
-    from '@/components/lab/editor/result-visualiser/histogram/LabEditorResultVisualiserHistogramInfo.vue'
-import LabEditorResultVisualiserHistogramRange
-    from '@/components/lab/editor/result-visualiser/histogram/LabEditorResultVisualiserHistogramRange.vue'
-import LabEditorResultVisualiserHistogramChart
-    from '@/components/lab/editor/result-visualiser/histogram/LabEditorResultVisualiserHistogramChart.vue'
 
 const props = defineProps<{
     histogram: VisualisedHistogram
@@ -18,9 +14,9 @@ const props = defineProps<{
 
 <template>
     <div class="histogram">
-        <LabEditorResultVisualiserHistogramChart :histogram="histogram" />
-        <LabEditorResultVisualiserHistogramRange :histogram="histogram" />
-        <LabEditorResultVisualiserHistogramInfo :histogram="histogram" />
+        <HistogramChart :histogram="histogram" />
+        <HistogramRange :histogram="histogram" />
+        <HistogramInfo :histogram="histogram" />
     </div>
 </template>
 

@@ -1,52 +1,67 @@
-import { inject, InjectionKey } from 'vue'
+import { InjectionKey } from 'vue'
+import { EntityViewerDataPointer } from '@/modules/entity-viewer/viewer/model/EntityViewerDataPointer'
+import { GraphQLClient } from '@/modules/graphql-console/driver/service/GraphQLClient'
+import { QueryLanguage } from '@/modules/entity-viewer/viewer/model/QueryLanguage'
+import { EvitaQLQueryBuilder } from '@/modules/entity-viewer/viewer/service/EvitaQLQueryBuilder'
+import { EvitaQLQueryExecutor } from '@/modules/entity-viewer/viewer/service/EvitaQLQueryExecutor'
+import { GraphQLQueryBuilder } from '@/modules/entity-viewer/viewer/service/GraphQLQueryBuilder'
+import { GraphQLQueryExecutor } from '@/modules/entity-viewer/viewer/service/GraphQLQueryExecutor'
 import {
-    DataGridDataPointer, EntityPrice, EntityPrices,
-    EntityPropertyDescriptor,
-    EntityPropertyKey,
-    EntityPropertyType,
-    EntityPropertyValue,
-    EntityPropertyValueSupportedCodeLanguage,
-    QueryResult,
-    StaticEntityProperties
-} from '@/model/editor/tab/dataGrid/data-grid'
-import { QueryExecutor } from '@/services/editor/data-grid/query-executor'
-import { QueryBuilder } from '@/services/editor/data-grid/query-builder'
-import { EvitaQLQueryBuilder } from '@/services/editor/data-grid/evitaql-query-builder'
-import { EvitaQLQueryExecutor } from '@/services/editor/data-grid/evitaql-query-executor'
-import { LabService } from '@/services/lab.service'
-import { GraphQLQueryBuilder } from '@/services/editor/data-grid/graphql-query-builder'
-import { GraphQLQueryExecutor } from '@/services/editor/data-grid/graphql-query-executor'
-import { EvitaDBClient } from '@/services/evitadb-client'
-import { AttributeSchemaUnion, EntitySchema, QueryPriceMode, ReferenceSchema } from '@/model/evitadb'
-import { GraphQLClient } from '@/services/graphql-client'
-import { EntityPropertyValueFormatter } from '@/services/editor/data-grid/entity-property-value-formatter'
-import { EntityPropertyValueRawFormatter } from '@/services/editor/data-grid/entity-property-value-raw-formatter'
-import { EntityPropertyValueJsonFormatter } from '@/services/editor/data-grid/entity-property-value-json-formatter'
-import { EntityPropertyValueXmlFormatter } from '@/services/editor/data-grid/entity-property-value-xml-formatter'
-import { QueryLanguage } from '@/model/QueryLanguage'
-import { UnexpectedError } from '@/model/UnexpectedError'
+    EntityPropertyValueSupportedCodeLanguage
+} from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPropertyValueSupportedCodeLanguage'
+import {
+    EntityPropertyValueRawFormatter
+} from '@/modules/entity-viewer/viewer/service/entity-property-value-formatter/EntityPropertyValueRawFormatter'
+import {
+    EntityPropertyValueJsonFormatter
+} from '@/modules/entity-viewer/viewer/service/entity-property-value-formatter/EntityPropertyValueJsonFormatter'
+import {
+    EntityPropertyValueXmlFormatter
+} from '@/modules/entity-viewer/viewer/service/entity-property-value-formatter/EntityPropertyValueXmlFormatter'
+import { QueryBuilder } from '@/modules/entity-viewer/viewer/service/QueryBuilder'
+import { QueryExecutor } from '@/modules/entity-viewer/viewer/service/QueryExecutor'
+import { EntityPropertyValueFormatter } from '@/modules/entity-viewer/viewer/service/EntityPropertyValueFormatter'
+import { EntityPropertyKey } from '@/modules/entity-viewer/viewer/model/EntityPropertyKey'
+import { QueryResult } from '@/modules/entity-viewer/viewer/model/QueryResult'
+import { EntityPrice } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPrice'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { EntityPrices } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPrices'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import { ConnectionService } from '@/modules/connection/service/ConnectionService'
+import { EntityPropertyType } from '@/modules/entity-viewer/viewer/model/EntityPropertyType'
+import { StaticEntityProperties } from '@/modules/entity-viewer/viewer/model/StaticEntityProperties'
+import { EntityAttributeSchema } from '@/modules/connection/model/schema/EntityAttributeSchema'
+import { NamingConvention } from '@/modules/connection/model/NamingConvetion'
+import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
+import { AttributeSchema } from '@/modules/connection/model/schema/AttributeSchema'
+import { List as ImmutableList, Map as ImmutableMap } from 'immutable'
+import { EntityPropertyDescriptor } from '@/modules/entity-viewer/viewer/model/EntityPropertyDescriptor'
+import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
+import { EvitaDBDriverResolver } from '@/modules/connection/driver/EvitaDBDriverResolver'
+import { mandatoryInject } from '@/utils/reactivity'
 
-export const key: InjectionKey<EntityViewerService> = Symbol()
+export const entityViewerServiceInjectionKey: InjectionKey<EntityViewerService> = Symbol('entityViewerService')
 
 /**
  * Service for running the entity viewer component.
  */
 export class EntityViewerService {
-    private readonly labService: LabService
+    private readonly connectionService: ConnectionService
 
     private readonly queryBuilders: Map<QueryLanguage, QueryBuilder> = new Map<QueryLanguage, QueryBuilder>()
     private readonly queryExecutors: Map<QueryLanguage, QueryExecutor> = new Map<QueryLanguage, QueryExecutor>()
 
     private readonly entityPropertyValueFormatters: Map<EntityPropertyValueSupportedCodeLanguage, EntityPropertyValueFormatter> = new Map<EntityPropertyValueSupportedCodeLanguage, EntityPropertyValueFormatter>()
 
-    constructor(labService: LabService, evitaDBClient: EvitaDBClient, graphQLClient: GraphQLClient) {
-        this.labService = labService
+    constructor(connectionService: ConnectionService, evitaDBDriverResolver: EvitaDBDriverResolver, graphQLClient: GraphQLClient) {
+        this.connectionService = connectionService
 
-        this.queryBuilders.set(QueryLanguage.EvitaQL, new EvitaQLQueryBuilder(this.labService))
-        this.queryExecutors.set(QueryLanguage.EvitaQL, new EvitaQLQueryExecutor(this.labService, evitaDBClient))
+        this.queryBuilders.set(QueryLanguage.EvitaQL, new EvitaQLQueryBuilder(this.connectionService))
+        this.queryExecutors.set(QueryLanguage.EvitaQL, new EvitaQLQueryExecutor(this.connectionService, evitaDBDriverResolver))
 
-        this.queryBuilders.set(QueryLanguage.GraphQL, new GraphQLQueryBuilder(this.labService))
-        this.queryExecutors.set(QueryLanguage.GraphQL, new GraphQLQueryExecutor(this.labService, graphQLClient))
+        this.queryBuilders.set(QueryLanguage.GraphQL, new GraphQLQueryBuilder(this.connectionService))
+        this.queryExecutors.set(QueryLanguage.GraphQL, new GraphQLQueryExecutor(this.connectionService, graphQLClient))
 
         this.entityPropertyValueFormatters.set(EntityPropertyValueSupportedCodeLanguage.Raw, new EntityPropertyValueRawFormatter())
         this.entityPropertyValueFormatters.set(EntityPropertyValueSupportedCodeLanguage.Json, new EntityPropertyValueJsonFormatter())
@@ -66,7 +81,7 @@ export class EntityViewerService {
      * @param pageNumber page number of query result
      * @param pageSize page size of query result
      */
-    async executeQuery(dataPointer: DataGridDataPointer,
+    async executeQuery(dataPointer: EntityViewerDataPointer,
                        language: QueryLanguage,
                        filterBy: string,
                        orderBy: string,
@@ -100,7 +115,7 @@ export class EntityViewerService {
      * @param priceLists price lists to use for price computation, order is important
      * @param currency currency to use for price computation
      */
-    async computePriceForSale(dataPointer: DataGridDataPointer,
+    async computePriceForSale(dataPointer: EntityViewerDataPointer,
                               language: QueryLanguage,
                               entityPrimaryKey: number,
                               priceLists: string[],
@@ -122,7 +137,7 @@ export class EntityViewerService {
         if (result.totalEntitiesCount === 0) {
             return undefined
         } else if (result.totalEntitiesCount != 1) {
-            throw new UnexpectedError(dataPointer.connection, `Expected 1 entity with price for sale, got ${result.totalEntitiesCount} entities.`)
+            throw new UnexpectedError(`Expected 1 entity with price for sale, got ${result.totalEntitiesCount} entities.`)
         }
         return (result.entities[0][EntityPropertyKey.prices().toString()] as EntityPrices | undefined)?.priceForSale
     }
@@ -134,8 +149,10 @@ export class EntityViewerService {
      * @param language language of query, defines how query will be built and executed
      * @param columns columns that represents by which entity properties we want to sort
      */
-    async buildOrderByFromGridColumns(dataPointer: DataGridDataPointer, language: QueryLanguage, columns: any[]): Promise<string> {
-        const entitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, dataPointer.entityType)
+    async buildOrderByFromGridColumns(dataPointer: EntityViewerDataPointer,
+                                      language: QueryLanguage,
+                                      columns: any[]): Promise<string> {
+        const entitySchema: EntitySchema = await this.connectionService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, dataPointer.entityType)
         const queryBuilder: QueryBuilder = this.getQueryBuilder(language)
 
         const orderBy: string[] = []
@@ -144,28 +161,37 @@ export class EntityViewerService {
             if (propertyKey.type === EntityPropertyType.Entity && propertyKey.name === StaticEntityProperties.PrimaryKey) {
                 orderBy.push(queryBuilder.buildPrimaryKeyOrderBy(column.order.toUpperCase()))
             } else if (propertyKey.type === EntityPropertyType.Attributes) {
-                const attributeSchema: AttributeSchemaUnion | undefined = Object.values(entitySchema.attributes)
-                    .find(attributeSchema => attributeSchema.nameVariants.camelCase === propertyKey.name)
+                const attributeSchema: EntityAttributeSchema | undefined = entitySchema.attributes
+                    .getIfSupported()
+                    ?.find(attributeSchema => attributeSchema.nameVariants
+                        .getIfSupported()
+                        ?.get(NamingConvention.CamelCase) === propertyKey.name)
                 if (attributeSchema == undefined) {
-                    throw new UnexpectedError(undefined, `Entity ${entitySchema.name} does not have attribute ${propertyKey.name}.`)
+                    throw new UnexpectedError(`Entity ${entitySchema.name} does not have attribute ${propertyKey.name}.`)
                 }
 
                 orderBy.push(queryBuilder.buildAttributeOrderBy(attributeSchema, column.order.toUpperCase()))
             } else if (propertyKey.type === EntityPropertyType.ReferenceAttributes) {
-                const referenceSchema: ReferenceSchema | undefined = Object.values(entitySchema.references)
-                    .find(referenceSchema => referenceSchema.nameVariants.camelCase === propertyKey.parentName)
+                const referenceSchema: ReferenceSchema | undefined = entitySchema.references
+                    .getIfSupported()
+                    ?.find(referenceSchema => referenceSchema.nameVariants
+                        .getIfSupported()
+                        ?.get(NamingConvention.CamelCase) === propertyKey.parentName)
                 if (referenceSchema == undefined) {
-                    throw new UnexpectedError(undefined, `Entity ${entitySchema.name} does not have reference ${propertyKey.parentName}.`)
+                    throw new UnexpectedError(`Entity ${entitySchema.name} does not have reference ${propertyKey.parentName}.`)
                 }
-                const attributeSchema: AttributeSchemaUnion | undefined = Object.values(referenceSchema.attributes)
-                    .find(attributeSchema => attributeSchema.nameVariants.camelCase === propertyKey.name)
+                const attributeSchema: AttributeSchema | undefined = referenceSchema.attributes
+                    .getIfSupported()
+                    ?.find(attributeSchema => attributeSchema.nameVariants
+                        .getIfSupported()
+                        ?.get(NamingConvention.CamelCase) === propertyKey.name)
                 if (attributeSchema == undefined) {
-                    throw new UnexpectedError(undefined, `Reference ${referenceSchema.name} does not have attribute ${propertyKey.name}.`)
+                    throw new UnexpectedError(`Reference ${referenceSchema.name} does not have attribute ${propertyKey.name}.`)
                 }
 
                 orderBy.push(queryBuilder.buildReferenceAttributeOrderBy(referenceSchema, attributeSchema, column.order.toUpperCase()))
             } else {
-                throw new UnexpectedError(undefined, `Entity property ${column.key} is not supported to be sortable.`)
+                throw new UnexpectedError(`Entity property ${column.key} is not supported to be sortable.`)
             }
         }
 
@@ -205,21 +231,33 @@ export class EntityViewerService {
     /**
      * Returns a list of locales in which data are stored in given collection.
      */
-    async getDataLocales(dataPointer: DataGridDataPointer): Promise<string[]> {
-        const entitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, dataPointer.entityType)
-        return entitySchema.locales
+    async getDataLocales(dataPointer: EntityViewerDataPointer): Promise<ImmutableList<string>> {
+        const entitySchema: EntitySchema = await this.connectionService.getEntitySchema(
+            dataPointer.connection,
+            dataPointer.catalogName,
+            dataPointer.entityType
+        )
+        return entitySchema.locales.getOrElseGet(() => ImmutableList())
     }
 
-    async supportsPrices(dataPointer: DataGridDataPointer): Promise<boolean> {
-        const entitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, dataPointer.entityType)
-        return entitySchema.withPrice
+    async supportsPrices(dataPointer: EntityViewerDataPointer): Promise<boolean> {
+        const entitySchema: EntitySchema = await this.connectionService.getEntitySchema(
+            dataPointer.connection,
+            dataPointer.catalogName,
+            dataPointer.entityType
+        )
+        return entitySchema.withPrice.getOrElse(false)
     }
 
     /**
      * Builds a list of all possible entity properties for entities of given schema.
      */
-    async getEntityPropertyDescriptors(dataPointer: DataGridDataPointer): Promise<EntityPropertyDescriptor[]> {
-        const entitySchema: EntitySchema = await this.labService.getEntitySchema(dataPointer.connection, dataPointer.catalogName, dataPointer.entityType)
+    async getEntityPropertyDescriptors(dataPointer: EntityViewerDataPointer): Promise<EntityPropertyDescriptor[]> {
+        const entitySchema: EntitySchema = await this.connectionService.getEntitySchema(
+            dataPointer.connection,
+            dataPointer.catalogName,
+            dataPointer.entityType
+        )
         const descriptors: EntityPropertyDescriptor[] = []
         descriptors.push(new EntityPropertyDescriptor(
             EntityPropertyType.Entity,
@@ -228,9 +266,9 @@ export class EntityViewerService {
             'Primary key',
             undefined,
             undefined,
-            []
+            ImmutableList()
         ))
-        if (entitySchema.withHierarchy) {
+        if (entitySchema.withHierarchy.getOrElse(false)) {
             descriptors.push(new EntityPropertyDescriptor(
                 EntityPropertyType.Entity,
                 EntityPropertyKey.entity(StaticEntityProperties.ParentPrimaryKey),
@@ -238,10 +276,10 @@ export class EntityViewerService {
                 'Parent',
                 undefined,
                 undefined,
-                []
+                ImmutableList()
             ))
         }
-        if (entitySchema.locales.length > 0) {
+        if (entitySchema.locales.getOrElseGet(() => ImmutableList()).size > 0) {
             descriptors.push(new EntityPropertyDescriptor(
                 EntityPropertyType.Entity,
                 EntityPropertyKey.entity(StaticEntityProperties.Locales),
@@ -249,7 +287,7 @@ export class EntityViewerService {
                 'Locales',
                 undefined,
                 undefined,
-                []
+                ImmutableList()
             ))
             descriptors.push(new EntityPropertyDescriptor(
                 EntityPropertyType.Entity,
@@ -258,10 +296,10 @@ export class EntityViewerService {
                 'All locales',
                 undefined,
                 undefined,
-                []
+                ImmutableList()
             ))
         }
-        if (entitySchema.withPrice) {
+        if (entitySchema.withPrice.getOrElse(false)) {
             descriptors.push(new EntityPropertyDescriptor(
                 EntityPropertyType.Entity,
                 EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling),
@@ -269,35 +307,35 @@ export class EntityViewerService {
                 'Price inner record handling',
                 undefined,
                 undefined,
-                []
+                ImmutableList()
             ))
         }
 
-        for (const attributeSchema of Object.values(entitySchema.attributes)) {
+        for (const attributeSchema of entitySchema.attributes.getOrElseGet(() => ImmutableMap()).values()) {
             descriptors.push(new EntityPropertyDescriptor(
                 EntityPropertyType.Attributes,
-                EntityPropertyKey.attributes(attributeSchema.nameVariants.camelCase),
+                EntityPropertyKey.attributes(attributeSchema.nameVariants.getIfSupported()?.get(NamingConvention.CamelCase)!),
                 attributeSchema.name,
                 attributeSchema.name,
                 undefined,
                 attributeSchema,
-                []
+                ImmutableList()
             ))
         }
 
-        for (const associatedDataSchema of Object.values(entitySchema.associatedData)) {
+        for (const associatedDataSchema of entitySchema.associatedData.getOrElseGet(() => ImmutableMap()).values()) {
             descriptors.push(new EntityPropertyDescriptor(
                 EntityPropertyType.AssociatedData,
-                EntityPropertyKey.associatedData(associatedDataSchema.nameVariants.camelCase),
+                EntityPropertyKey.associatedData(associatedDataSchema.nameVariants.getIfSupported()?.get(NamingConvention.CamelCase)!),
                 associatedDataSchema.name,
                 associatedDataSchema.name,
                 undefined,
                 associatedDataSchema,
-                []
+                ImmutableList()
             ))
         }
 
-        if (entitySchema.withPrice) {
+        if (entitySchema.withPrice.getOrElse(false)) {
             descriptors.push(new EntityPropertyDescriptor(
                 EntityPropertyType.Prices,
                 EntityPropertyKey.prices(),
@@ -305,29 +343,35 @@ export class EntityViewerService {
                 'Prices',
                 undefined,
                 undefined,
-                []
+                ImmutableList()
             ))
         }
 
-        for (const referenceSchema of Object.values(entitySchema.references)) {
+        for (const referenceSchema of entitySchema.references.getOrElseGet(() => ImmutableMap()).values()) {
             descriptors.push(new EntityPropertyDescriptor(
                 EntityPropertyType.References,
-                EntityPropertyKey.references(referenceSchema.nameVariants.camelCase),
+                EntityPropertyKey.references(referenceSchema.nameVariants.getIfSupported()?.get(NamingConvention.CamelCase)!),
                 referenceSchema.name,
                 referenceSchema.name,
                 undefined,
                 referenceSchema,
-                Object.values(referenceSchema.attributes).map(attributeSchema => {
-                    return new EntityPropertyDescriptor(
-                        EntityPropertyType.ReferenceAttributes,
-                        EntityPropertyKey.referenceAttributes(referenceSchema.nameVariants.camelCase, attributeSchema.nameVariants.camelCase),
-                        attributeSchema.name,
-                        `${referenceSchema.name}: ${attributeSchema.name}`,
-                        referenceSchema,
-                        attributeSchema,
-                        []
-                    )
-                })
+                ImmutableList(
+                    Array.from(referenceSchema.attributes.getIfSupported()?.values()!)
+                        .map(attributeSchema => {
+                            return new EntityPropertyDescriptor(
+                                EntityPropertyType.ReferenceAttributes,
+                                EntityPropertyKey.referenceAttributes(
+                                    referenceSchema.nameVariants.getIfSupported()?.get(NamingConvention.CamelCase)!,
+                                    attributeSchema.nameVariants.getIfSupported()?.get(NamingConvention.CamelCase)!
+                                ),
+                                attributeSchema.name,
+                                `${referenceSchema.name}: ${attributeSchema.name}`,
+                                referenceSchema,
+                                attributeSchema,
+                                ImmutableList()
+                            )
+                        })
+                )
             ))
         }
 
@@ -345,7 +389,7 @@ export class EntityViewerService {
         // todo lho maybe markdown pretty printing logic should be here as well
         const formatter: EntityPropertyValueFormatter | undefined = this.entityPropertyValueFormatters.get(language)
         if (formatter == undefined) {
-            throw new UnexpectedError(undefined, `Property value formatter for language ${language} is not registered.`)
+            throw new UnexpectedError(`Property value formatter for language ${language} is not registered.`)
         }
         return formatter.format(value, prettyPrint)
     }
@@ -353,7 +397,7 @@ export class EntityViewerService {
     private getQueryBuilder(language: QueryLanguage): QueryBuilder {
         const queryBuilder: QueryBuilder | undefined = this.queryBuilders.get(language)
         if (queryBuilder == undefined) {
-            throw new UnexpectedError(undefined, `Query builder for language ${language} is not registered.`)
+            throw new UnexpectedError(`Query builder for language ${language} is not registered.`)
         }
         return queryBuilder
     }
@@ -361,12 +405,12 @@ export class EntityViewerService {
     private getQueryExecutor(language: QueryLanguage): QueryExecutor {
         const queryExecutor: QueryExecutor | undefined = this.queryExecutors.get(language)
         if (queryExecutor == undefined) {
-            throw new UnexpectedError(undefined, `Query executor for language ${language} is not registered.`)
+            throw new UnexpectedError(`Query executor for language ${language} is not registered.`)
         }
         return queryExecutor
     }
 }
 
 export const useEntityViewerService = (): EntityViewerService => {
-    return inject(key) as EntityViewerService
+    return mandatoryInject(entityViewerServiceInjectionKey) as EntityViewerService
 }

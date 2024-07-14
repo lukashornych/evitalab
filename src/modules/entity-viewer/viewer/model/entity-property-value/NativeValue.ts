@@ -1,5 +1,8 @@
-import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/workspace/EntityPropertyValue'
-import { BigDecimal, DateTime, Long, Range } from '@/model/evitadb'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
+import { DateTime } from '@/modules/connection/model/data-type/DateTime'
+import { Long } from '@/modules/connection/model/data-type/Long'
+import { Range } from '@/modules/connection/model/data-type/Range'
 
 /**
  * Represents a single entity property value that is a scalar (native to JavaScript). Cannot be an array, each array item

@@ -3,16 +3,19 @@
  * A single selectable entity prices property item that will be then fetched into grid.
  */
 
-import { LabService, useLabService } from '@/services/lab.service'
-import LabEditorDataGridPropertySelectorSectionItem from './LabEditorDataGridPropertySelectorSectionItem.vue'
-import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import { mandatoryInject } from '@/helpers/reactivity'
-import { EntityPropertyDescriptor, gridPropsKey } from '@/model/editor/tab/dataGrid/data-grid'
-import { SchemaViewerRequest } from '@/model/editor/tab/schemaViewer/SchemaViewerRequest'
-import { EntitySchemaPointer } from '@/model/editor/tab/schemaViewer/EntitySchemaPointer'
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import { EntityPropertyDescriptor } from '@/modules/entity-viewer/viewer/model/EntityPropertyDescriptor'
+import {
+    SchemaViewerTabFactory,
+    useSchemaViewerTabFactory
+} from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
+import { EntitySchemaPointer } from '@/modules/schema-viewer/viewer/model/EntitySchemaPointer'
+import PropertySectionItem
+    from '@/modules/entity-viewer/viewer/component/entity-property-selector/PropertySectionItem.vue'
+import { useTabProps } from '@/modules/entity-viewer/viewer/component/dependencies'
 
-const labService: LabService = useLabService()
-const editorService: EditorService = useEditorService()
+const workspaceService: WorkspaceService = useWorkspaceService()
+const schemaViewerTabFactory: SchemaViewerTabFactory = useSchemaViewerTabFactory()
 
 const props = defineProps<{
     propertyDescriptor: EntityPropertyDescriptor
@@ -20,15 +23,15 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'schemaOpen'): void
 }>()
-const gridProps = mandatoryInject(gridPropsKey)
+const tabProps = useTabProps()
 
 function openSchema(): void {
-    editorService.createTab(
-        SchemaViewerRequest.createNew(
-            gridProps.params.dataPointer.connection,
+    workspaceService.createTab(
+        schemaViewerTabFactory.createNew(
+            tabProps.params.dataPointer.connection,
             new EntitySchemaPointer(
-                gridProps.params.dataPointer.catalogName,
-                gridProps.params.dataPointer.entityType
+                tabProps.params.dataPointer.catalogName,
+                tabProps.params.dataPointer.entityType
             )
         )
     )
@@ -37,7 +40,7 @@ function openSchema(): void {
 </script>
 
 <template>
-    <LabEditorDataGridPropertySelectorSectionItem
+    <PropertySectionItem
         :value="propertyDescriptor.key"
         :title="propertyDescriptor.title"
         openable

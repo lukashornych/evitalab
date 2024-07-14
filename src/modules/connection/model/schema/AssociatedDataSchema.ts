@@ -1,17 +1,22 @@
-import { Map as ImmutableMap, List as ImmutableList } from 'immutable'
-import { Schema } from '@/modules/connection/model/Schema'
-import { NamingConvention } from './NamingConvetion';
+import { List as ImmutableList, Map as ImmutableMap } from 'immutable'
+import { Schema } from '@/modules/connection/model/schema/Schema'
+import { NamingConvention } from '../NamingConvetion'
 import { Value } from '@/modules/connection/model/Value'
+import { Scalar } from '@/modules/connection/model/data-type/Scalar'
+import { LocalizedSchema } from '@/modules/connection/model/schema/LocalizedSchema'
+import { AbstractSchema } from '@/modules/connection/model/schema/AbstractSchema'
+import { TypedSchema } from '@/modules/connection/model/schema/TypedSchema'
 
 /**
  * evitaLab's representation of a single evitaDB associated data schema independent of specific evitaDB version
  */
-export class AssociatedDataSchema extends Schema {
+export class AssociatedDataSchema extends AbstractSchema implements TypedSchema, LocalizedSchema {
 
     /**
      * Contains unique name of the model. Case-sensitive. Distinguishes one model item from another within single entity instance.
+     * This is a mandatory value, it cannot be omitted.
      */
-    readonly name: Value<string>
+    readonly name: string
     /**
      * Contains name variants
      */
@@ -27,7 +32,7 @@ export class AssociatedDataSchema extends Schema {
     /**
      * Data type of the associated data. Must be one of Evita-supported values. Internally the type is converted into Java-corresponding data type. The type may be scalar type or may represent complex object type (JSON).
      */
-    readonly type: Value<string>
+    readonly type: Value<Scalar>
     /**
      * When associated data is nullable, its values may be missing in the entities. Otherwise, the system will enforce non-null checks upon upserting of the entity.
      */
@@ -40,11 +45,11 @@ export class AssociatedDataSchema extends Schema {
 
     private representativeFlags?: ImmutableList<string>
 
-    constructor(name: Value<string>,
+    constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
                 description: Value<string | null>,
                 deprecationNotice: Value<string | null>,
-                type: Value<string>,
+                type: Value<Scalar>,
                 nullable: Value<boolean>,
                 localized: Value<boolean>) {
         super()
@@ -61,7 +66,9 @@ export class AssociatedDataSchema extends Schema {
         if (this.representativeFlags == undefined) {
             const representativeFlags: string[] = []
 
-            if (this.type.isSupported()) representativeFlags.push(this.formatDataTypeForFlag(this.type.get()))
+            this.type.ifSupported(type =>
+                representativeFlags.push(this.formatDataTypeForFlag(type)))
+
             if (this.localized.getOrElse(false)) representativeFlags.push(AssociatedDataSchemaFlag.Localized)
             if (this.nullable.getOrElse(false)) representativeFlags.push(AssociatedDataSchemaFlag.Nullable)
 

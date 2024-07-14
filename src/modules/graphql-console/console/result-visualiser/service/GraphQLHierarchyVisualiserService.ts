@@ -1,6 +1,14 @@
 import {
     GraphQLResultVisualiserService
 } from '@/modules/graphql-console/console/result-visualiser/service/GraphQLResultVisualiserService'
+import {
+    JsonHierarchyVisualiserService
+} from '@/modules/console/result-visualiser/service/json/JsonHierarchyVisualiserService'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { VisualisedNamedHierarchy } from '@/modules/console/result-visualiser/model/hierarchy/VisualisedNamedHierarchy'
+import {
+    VisualisedHierarchyTreeNode
+} from '@/modules/console/result-visualiser/model/hierarchy/VisualisedHierarchyTreeNode'
 
 /**
  * {@link HierarchyVisualiserService} for GraphQL query language.

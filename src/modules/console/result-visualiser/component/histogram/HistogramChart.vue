@@ -4,10 +4,12 @@
  */
 
 import { computed } from 'vue'
-import { VisualisedHistogram, VisualisedHistogramBucket } from '@/model/editor/result-visualiser'
-import LabEditorResultVisualiserHistogramNote
-    from '@/components/lab/editor/result-visualiser/histogram/LabEditorResultVisualiserHistogramNote.vue'
 import { useI18n } from 'vue-i18n'
+import { VisualisedHistogram } from '@/modules/console/result-visualiser/model/histogram/VisualisedHistogram'
+import {
+    VisualisedHistogramBucket
+} from '@/modules/console/result-visualiser/model/histogram/VisualisedHistogramBucket'
+import HistogramNote from '@/modules/console/result-visualiser/component/histogram/HistogramNote.vue'
 
 const { t } = useI18n()
 
@@ -147,11 +149,11 @@ const chartOptions = {
 
 <template>
     <apexchart v-if="canChartBeRendered" type="bar" height="350" :options="chartOptions" :series="chartSeries" class="histogram-chart" />
-    <LabEditorResultVisualiserHistogramNote
+    <HistogramNote
         v-if="missingRequiredProperties.length > 0"
         :note="t('resultVisualizer.histogram.placeholder.missingPropertiesForChart', { properties: missingRequiredProperties.map(it => '`' + it + '`').join(', ') })"
     />
-    <LabEditorResultVisualiserHistogramNote
+    <HistogramNote
         v-if="missingRequiredProperties.length === 0 && missingOptionalProperties.length > 0"
         :note="t('resultVisualizer.histogram.placeholder.missingProperties', { properties: missingOptionalProperties.map(it => '`' + it + '`').join(', ') })"
     />

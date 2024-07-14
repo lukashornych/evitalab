@@ -1,5 +1,7 @@
 import store, { StoreBase } from 'store2'
 import XXH, { HashObject } from 'xxhashjs'
+import { InjectionKey } from 'vue'
+import { mandatoryInject } from '@/utils/reactivity'
 
 const hasher: HashObject = XXH.h64()
 
@@ -12,15 +14,17 @@ const hasher: HashObject = XXH.h64()
  */
 const buildVersion = 2
 
+export const labStorageInjectionKey: InjectionKey<LabStorage> = Symbol('labStorage')
+
 /**
  * System-wide manager of storage. Used for all data that need to be persisted between lab starts (connections, settings, ...).
  */
 export class LabStorage {
     private readonly storage: StoreBase
 
-    constructor(serverName: string) {
+    constructor(providerName: string) {
         // obtain storage for the current build version a namespace
-        this.storage = store.namespace(`evitaLab:${hasher.update(serverName).digest().toString(16)}:${buildVersion}`)
+        this.storage = store.namespace(`evitaLab:${hasher.update(providerName).digest().toString(16)}:${buildVersion}`)
     }
 
     get<V>(key: string, def?: V): V {
@@ -34,4 +38,8 @@ export class LabStorage {
     remove(key: string): void {
         this.storage.remove(key)
     }
+}
+
+export const useLabStorage = (): LabStorage => {
+    return mandatoryInject(labStorageInjectionKey) as LabStorage
 }

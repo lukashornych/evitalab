@@ -3,33 +3,28 @@
  * Menu for managing evitaLab and getting help
  */
 
-import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import { Toaster, useToaster } from '@/services/editor/toaster'
 import { onMounted, onUnmounted } from 'vue'
-import { Keymap, useKeymap } from '@/model/editor/keymap/Keymap'
-import { Command } from '@/model/editor/keymap/Command'
-import VActionTooltip from '@/components/base/VActionTooltip.vue'
-import { KeymapViewerRequest } from '@/model/editor/tab/keymapViewer/KeymapViewerRequest'
 import { useI18n } from 'vue-i18n'
-import { UnexpectedError } from '@/model/UnexpectedError'
-
-enum ManageOptionType {
-    Keymap = 'keymap',
-    EvitaLabGithub = 'evitaLabGithub',
-    DiscussEvitaLab = 'discussEvitaLab',
-    ReportEvitaLabIssue = 'reportEvitaLabIssue',
-    EvitaDBDocumentation = 'evitaDBDocumentation',
-    EvitaDBGithub = 'evitaDBGithub',
-    DiscussEvitaDB = 'discussEvitaDB',
-    ReportEvitaDBIssue = 'reportEvitaDBIssue',
-}
+import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { Command } from '@/modules/keymap/model/Command'
+import {
+    KeymapViewerTabFactory,
+    useKeymapViewerTabFactory
+} from '@/modules/keymap/viewer/workspace/service/KeymapViewerTabFactory'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
+import { ManageOptionType } from '@/modules/workspace/panel/model/ManageOptionType'
 
 const keymap: Keymap = useKeymap()
-const editorService: EditorService = useEditorService()
+const workspaceService: WorkspaceService = useWorkspaceService()
+const keymapViewerTabFactory: KeymapViewerTabFactory = useKeymapViewerTabFactory()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
 // todo convert to VList component and add key board shortcut to keymap
+// todo lho think about how to transform it into MenuAction items
 const options = [
     { type: 'subheader', title: t(`panel.manage.manage.title`) },
     {
@@ -94,7 +89,7 @@ const options = [
 ]
 
 function openKeymap() {
-    editorService.createTab(KeymapViewerRequest.createNew())
+    workspaceService.createTab(keymapViewerTabFactory.createNew())
 }
 
 function handleOptionClick(selected: any): void {
@@ -126,7 +121,7 @@ function handleOptionClick(selected: any): void {
                 window.open('https://github.com/FgForrest/evitaDB/issues/new', '_blank');
                 break
             default:
-                toaster.error(new UnexpectedError(undefined, `Unknown manage option ${selected[0]}`))
+                toaster.error(new UnexpectedError(`Unknown manage option ${selected[0]}`))
         }
     }
 }

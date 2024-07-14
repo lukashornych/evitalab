@@ -4,17 +4,18 @@
  * instance.
  */
 import { ref } from 'vue'
-import LabEditorTabShareDialog from '@/components/lab/editor/tab/LabEditorTabShareDialog.vue'
-import { TabType } from '@/model/editor/tab/TabType'
-import { TabRequestComponentData } from '@/model/editor/tab/TabRequestComponentData'
-import { TabRequestComponentParams } from '@/model/editor/tab/TabRequestComponentParams'
 import { useI18n } from 'vue-i18n'
+import { TabType } from '@/modules/workspace/tab/model/TabType'
+import { TabParams } from '@/modules/workspace/tab/model/TabParams'
+import { TabData } from '@/modules/workspace/tab/model/TabData'
+import ShareTabDialog from '@/modules/workspace/tab/component/ShareTabDialog.vue'
+
 const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
     tabType: TabType,
-    tabParams: TabRequestComponentParams<any>,
-    tabData: TabRequestComponentData<any> | undefined,
+    tabParams: TabParams<any>,
+    tabData: TabData<any> | undefined,
     disabled?: boolean
 }>(), {
     disabled: false
@@ -34,7 +35,7 @@ defineExpose<{
 </script>
 
 <template>
-    <LabEditorTabShareDialog
+    <ShareTabDialog
         v-model="shareDialogOpen"
         :tab-type="props.tabType"
         :tab-params="props.tabParams"
@@ -59,7 +60,7 @@ defineExpose<{
                 </VTooltip>
             </VBtn>
         </template>
-    </LabEditorTabShareDialog>
+    </ShareTabDialog>
 </template>
 
 <style lang="scss" scoped>

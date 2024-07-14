@@ -1,32 +1,33 @@
 <script setup lang="ts">
-import { EditorService, useEditorService } from '@/services/editor/editor.service'
-import { EntitySchema } from '@/model/evitadb'
-import LabEditorSchemaViewerContainerSectionListItem
-    from '@/components/lab/editor/schema-viewer/LabEditorSchemaViewerContainerSectionListItem.vue'
-import { LabService, useLabService } from '@/services/lab.service'
-import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaViewerDataPointer'
-import { CatalogSchemaPointer } from '@/model/editor/tab/schemaViewer/CatalogSchemaPointer'
-import { SchemaViewerRequest } from '@/model/editor/tab/schemaViewer/SchemaViewerRequest'
-import { EntitySchemaPointer } from '@/model/editor/tab/schemaViewer/EntitySchemaPointer'
-import { useI18n } from 'vue-i18n'
-import { UnexpectedError } from '@/model/UnexpectedError'
 
-const labService: LabService = useLabService()
-const editorService: EditorService = useEditorService()
-const { t } = useI18n()
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import { SchemaViewerDataPointer } from '@/modules/schema-viewer/viewer/model/SchemaViewerDataPointer'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { List } from 'immutable'
+import { CatalogSchemaPointer } from '@/modules/schema-viewer/viewer/model/CatalogSchemaPointer'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import {
+    SchemaViewerTabFactory,
+    useSchemaViewerTabFactory
+} from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
+import { EntitySchemaPointer } from '@/modules/schema-viewer/viewer/model/EntitySchemaPointer'
+import SchemaContainerSectionListItem from '@/modules/schema-viewer/viewer/component/SchemaContainerSectionListItem.vue'
+
+const workspaceService: WorkspaceService = useWorkspaceService()
+const schemaViewerTabFactory: SchemaViewerTabFactory = useSchemaViewerTabFactory()
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
     schema: EntitySchema
 }>()
 
-const flags: string[] = labService.getEntitySchemaFlags(props.schema)
+const flags: List<string> = props.schema.getRepresentativeFlags()
 
 function openEntitySchema(): void {
     if (!(props.dataPointer.schemaPointer instanceof CatalogSchemaPointer)) {
-        throw new UnexpectedError(props.dataPointer.connection, 'Unsupported parent schema for entities.')
+        throw new UnexpectedError('Unsupported parent schema for entities.')
     }
-    editorService.createTab(SchemaViewerRequest.createNew(
+    workspaceService.createTab(schemaViewerTabFactory.createNew(
         props.dataPointer.connection,
         new EntitySchemaPointer(
             props.dataPointer.schemaPointer.catalogName,
@@ -37,9 +38,9 @@ function openEntitySchema(): void {
 </script>
 
 <template>
-    <LabEditorSchemaViewerContainerSectionListItem
+    <SchemaContainerSectionListItem
         :name="schema.name"
-        :deprecated="!!schema.deprecationNotice"
+        :deprecated="!!schema.deprecationNotice.getIfSupported()"
         :flags="flags"
         @open="openEntitySchema"
     />

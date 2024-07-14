@@ -4,10 +4,10 @@
  * action.
  */
 
-import { Command } from '@/model/editor/keymap/Command'
 import { computed } from 'vue'
-import { Keymap, useKeymap } from '@/model/editor/keymap/Keymap'
 import { useI18n } from 'vue-i18n'
+import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
+import { Command } from '@/modules/keymap/model/Command'
 
 const keymap: Keymap = useKeymap()
 const { t } = useI18n()

@@ -4,7 +4,7 @@
  */
 
 import { EditorState } from '@codemirror/state'
-import VCodeEditorStatusBarSelection from '@/components/base/VCodeEditorStatusBarSelection.vue'
+import VCodeEditorStatusBarSelection from '@/modules/code-editor/component/VCodeEditorStatusBarSelection.vue'
 
 const props = defineProps<{
     state?: EditorState

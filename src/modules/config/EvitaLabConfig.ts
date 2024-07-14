@@ -1,4 +1,6 @@
 import Cookies from 'js-cookie'
+import { InjectionKey } from 'vue'
+import { mandatoryInject } from '@/utils/reactivity'
 
 /**
  * Cookie containing the name of a hosting server. This is mainly for namespacing storages.
@@ -10,6 +12,8 @@ const providerNameCookieName: string = 'evitalab_servername'
 const readonlyCookieName: string = 'evitalab_readonly'
 
 const defaultName: string = 'standalone'
+
+export const evitaLabConfigInjectionKey: InjectionKey<EvitaLabConfig> = Symbol('evitaLabConfig')
 
 /**
  * Holds current evitaLab config
@@ -39,4 +43,8 @@ export class EvitaLabConfig {
 
         return new EvitaLabConfig(providerName, readOnly);
     }
+}
+
+export const useEvitaLabConfig = (): EvitaLabConfig => {
+    return mandatoryInject(evitaLabConfigInjectionKey) as EvitaLabConfig
 }

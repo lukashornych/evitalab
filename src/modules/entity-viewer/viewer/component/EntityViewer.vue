@@ -5,45 +5,47 @@
 
 import 'splitpanes/dist/splitpanes.css'
 
-import { computed, onBeforeMount, provide, readonly, ref, watch } from 'vue'
-import {
-    DataGridData,
-    DataGridParams,
-    dataLocaleKey,
-    EntityPropertyDescriptor,
-    entityPropertyDescriptorIndexKey,
-    EntityPropertyKey,
-    EntityPropertyType,
-    FlatEntity,
-    gridPropsKey,
-    priceTypeKey,
-    queryFilterKey,
-    queryLanguageKey,
-    QueryResult
-} from '@/model/editor/tab/dataGrid/data-grid'
-import { DataGridService, useDataGridService } from '@/services/editor/data-grid.service'
-import { Toaster, useToaster } from '@/services/editor/toaster'
-import LabEditorDataGridQueryInput from '@/components/lab/editor/data-grid/LabEditorDataGridQueryInput.vue'
-import LabEditorDataGridToolbar from '@/components/lab/editor/data-grid/LabEditorDataGridToolbar.vue'
-import LabEditorDataGridGrid from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGrid.vue'
-import { QueryPriceMode } from '@/model/evitadb'
-import { TabComponentProps } from '@/model/editor/tab/TabComponentProps'
-import { TabComponentEvents } from '@/model/editor/tab/TabComponentEvents'
-import VActionTooltip from '@/components/base/VActionTooltip.vue'
-import { Command } from '@/model/editor/keymap/Command'
+import { computed, onBeforeMount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { QueryLanguage } from '@/model/QueryLanguage'
+import { EntityViewerService, useEntityViewerService } from '@/modules/entity-viewer/viewer/service/EntityViewerService'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { TabComponentProps } from '@/modules/workspace/tab/model/TabComponentProps'
+import { TabComponentEvents } from '@/modules/workspace/tab/model/TabComponentEvents'
+import { EntityViewerTabParams } from '@/modules/entity-viewer/viewer/workspace/model/EntityViewerTabParams'
+import { EntityViewerTabData } from '@/modules/entity-viewer/viewer/workspace/model/EntityViewerTabData'
+import { EntityPropertyDescriptor } from '@/modules/entity-viewer/viewer/model/EntityPropertyDescriptor'
+import { QueryLanguage } from '@/modules/entity-viewer/viewer/model/QueryLanguage'
+import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
+import { EntityPropertyKey } from '@/modules/entity-viewer/viewer/model/EntityPropertyKey'
+import { FlatEntity } from '@/modules/entity-viewer/viewer/model/FlatEntity'
+import { EntityPropertyType } from '@/modules/entity-viewer/viewer/model/EntityPropertyType'
+import { QueryResult } from '@/modules/entity-viewer/viewer/model/QueryResult'
+import { Command } from '@/modules/keymap/model/Command'
+import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
+import EntityGrid from '@/modules/entity-viewer/viewer/component/entity-grid/EntityGrid.vue'
+import Toolbar from '@/modules/entity-viewer/viewer/component/Toolbar.vue'
+import QueryInput from '@/modules/entity-viewer/viewer/component/QueryInput.vue'
+import { List } from 'immutable'
+import { EntityAttributeSchema } from '@/modules/connection/model/schema/EntityAttributeSchema'
+import {
+    provideDataLocale,
+    provideEntityPropertyDescriptorIndex,
+    providePriceType,
+    provideQueryFilter,
+    provideQueryLanguage,
+    provideTabProps
+} from '@/modules/entity-viewer/viewer/component/dependencies'
 
-const dataGridService: DataGridService = useDataGridService()
+const entityViewerService: EntityViewerService = useEntityViewerService()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
-const props = defineProps<TabComponentProps<DataGridParams, DataGridData>>()
+const props = defineProps<TabComponentProps<EntityViewerTabParams, EntityViewerTabData>>()
 const emit = defineEmits<TabComponentEvents>()
-provide(gridPropsKey, props!)
+provideTabProps(props!)
 
 // static data
-const path = ref<string[]>([
+const path = List([
     props.params.dataPointer.catalogName,
     props.params.dataPointer.entityType
 ])
@@ -51,14 +53,14 @@ const path = ref<string[]>([
 let sortedEntityPropertyKeys: string[] = []
 let entityPropertyDescriptors: EntityPropertyDescriptor[] = []
 const entityPropertyDescriptorIndex = ref<Map<string, EntityPropertyDescriptor>>(new Map<string, EntityPropertyDescriptor>())
-provide(entityPropertyDescriptorIndexKey, entityPropertyDescriptorIndex)
+provideEntityPropertyDescriptorIndex(entityPropertyDescriptorIndex)
 
 let gridHeaders: Map<string, any> = new Map<string, any>()
-let dataLocales: string[] = []
+let dataLocales: List<string> = List()
 
 // dynamic user data
 const selectedQueryLanguage = ref<QueryLanguage>(props.data.queryLanguage ? props.data.queryLanguage : QueryLanguage.EvitaQL)
-provide(queryLanguageKey, readonly(selectedQueryLanguage))
+provideQueryLanguage(selectedQueryLanguage)
 watch(selectedQueryLanguage, (newValue, oldValue) => {
     if (newValue[0] === oldValue[0]) {
         return
@@ -76,16 +78,16 @@ const pageSize = ref<number>(props.data.pageSize ? props.data.pageSize : 25)
 
 const filterByCode = ref<string>(props.data.filterBy ? props.data.filterBy : '')
 const lastAppliedFilterByCode = ref<string>('')
-provide(queryFilterKey, readonly(lastAppliedFilterByCode))
+provideQueryFilter(lastAppliedFilterByCode)
 const orderByCode = ref<string>(props.data.orderBy ? props.data.orderBy : '')
 
 const selectedDataLocale = ref<string | undefined>(props.data.dataLocale ? props.data.dataLocale : undefined)
-provide(dataLocaleKey, readonly(selectedDataLocale))
+provideDataLocale(selectedDataLocale)
 watch(selectedDataLocale, () => executeQueryAutomatically())
 
-const selectedPriceType = ref<QueryPriceMode | undefined>(props.data.priceType ? props.data.priceType : undefined)
+const selectedPriceType = ref<QueryPriceMode>(props.data.priceType ? props.data.priceType : QueryPriceMode.WithTax)
 watch(selectedPriceType, () => executeQueryAutomatically())
-provide(priceTypeKey, readonly(selectedPriceType))
+providePriceType(selectedPriceType)
 
 const displayedEntityProperties = ref<EntityPropertyKey[]>([])
 watch(displayedEntityProperties, (newValue, oldValue) => {
@@ -106,8 +108,8 @@ const initialized = ref<boolean>(false)
 const queryExecutedManually = ref<boolean>(false)
 const queryExecuted = computed<boolean>(() => queryExecutedManually.value || props.params.executeOnOpen)
 
-const currentData = computed<DataGridData>(() => {
-    return new DataGridData(
+const currentData = computed<EntityViewerTabData>(() => {
+    return new EntityViewerTabData(
         selectedQueryLanguage.value,
         filterByCode.value,
         orderByCode.value,
@@ -125,14 +127,10 @@ onBeforeMount(() => {
     // note: we can't use async/await here, because that would make this component async which currently doesn't seem to work
     // properly in combination with dynamic <component> rendering and tabs
 
-    dataGridService.getDataLocales(props.params.dataPointer)
+    entityViewerService.getDataLocales(props.params.dataPointer)
         .then(dl => {
             dataLocales = dl
-            return dataGridService.supportsPrices(props.params.dataPointer)
-        })
-        .then(supportsPrices => {
-            preselectPriceType(supportsPrices)
-            return dataGridService.getEntityPropertyDescriptors(props.params.dataPointer)
+            return entityViewerService.getEntityPropertyDescriptors(props.params.dataPointer)
         })
         .then(ep => {
             entityPropertyDescriptors = ep
@@ -163,13 +161,6 @@ onBeforeMount(() => {
             toaster.error(error)
         })
 })
-
-function preselectPriceType(supportsPrices: boolean): void {
-    // we want to preselect price type only if it's not already preselected by initial data
-    if (selectedPriceType.value == undefined) {
-        selectedPriceType.value = supportsPrices ? QueryPriceMode.WithTax : undefined
-    }
-}
 
 async function initializeGridHeaders(entityPropertyDescriptors: EntityPropertyDescriptor[]): Promise<Map<string, any>> {
     const gridHeaders: Map<string, any> = new Map<string, any>()
@@ -237,7 +228,11 @@ function preselectEntityProperties(): void {
         // preselect default properties
 
         displayedEntityProperties.value = entityPropertyDescriptors
-            .filter(it => it.key.type === EntityPropertyType.Entity || it.key.type === EntityPropertyType.Prices || it.schema?.representative)
+            .filter(it => it.key.type === EntityPropertyType.Entity ||
+                it.key.type === EntityPropertyType.Prices ||
+                (it.schema != undefined &&
+                    it.schema instanceof EntityAttributeSchema &&
+                    it.schema.representative.getOrElse(false)))
             .map(it => it.key)
     }
 
@@ -248,7 +243,7 @@ async function gridUpdated({ page, itemsPerPage, sortBy }: { page: number, items
     pageSize.value = itemsPerPage
     if (sortBy.length > 0) {
         try {
-            orderByCode.value = await dataGridService.buildOrderByFromGridColumns(props.params.dataPointer, selectedQueryLanguage.value, sortBy)
+            orderByCode.value = await entityViewerService.buildOrderByFromGridColumns(props.params.dataPointer, selectedQueryLanguage.value, sortBy)
         } catch (error: any) {
             toaster.error(error)
         }
@@ -288,7 +283,7 @@ async function executeQuery(): Promise<void> {
     loading.value = true
 
     try {
-        const result: QueryResult = await dataGridService.executeQuery(
+        const result: QueryResult = await entityViewerService.executeQuery(
             props.params.dataPointer,
             selectedQueryLanguage.value,
             filterByCode.value,
@@ -317,14 +312,14 @@ async function executeQuery(): Promise<void> {
         v-if="initialized"
         class="data-grid"
     >
-        <LabEditorDataGridToolbar
+        <Toolbar
             :current-data="currentData"
             :path="path"
             :loading="loading"
             @execute-query="executeQueryManually"
         >
             <template #query>
-                <LabEditorDataGridQueryInput
+                <QueryInput
                     v-model:selected-query-language="selectedQueryLanguage"
                     v-model:filter-by="filterByCode"
                     v-model:order-by="orderByCode"
@@ -335,9 +330,9 @@ async function executeQuery(): Promise<void> {
                     @execute-query="executeQueryManually"
                 />
             </template>
-        </LabEditorDataGridToolbar>
+        </Toolbar>
 
-        <LabEditorDataGridGrid
+        <EntityGrid
             v-if="queryExecuted"
             :displayed-grid-headers="displayedGridHeaders"
             :loading="loading"

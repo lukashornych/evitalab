@@ -1,13 +1,16 @@
 <script setup lang="ts">
 
-import LabEditorDataGridGridCellDetailDelegateRenderer
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailDelegateRenderer.vue'
-import LabEditorDataGridGridCellDetailOutputFormatSelector
-    from '@/components/lab/editor/data-grid/grid/LabEditorDataGridGridCellDetailOutputFormatSelector.vue'
-import { EntityPropertyValue, EntityPropertyValueDesiredOutputFormat } from '@/model/editor/tab/dataGrid/data-grid'
 import { computed, ref } from 'vue'
-import { Scalar } from '@/model/evitadb'
 import { useI18n } from 'vue-i18n'
+import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
+import { Scalar } from '@/modules/connection/model/data-type/Scalar'
+import {
+    EntityPropertyValueDesiredOutputFormat
+} from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPropertyValueDesiredOutputFormat'
+import DetailOutputFormatSelector
+    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/DetailOutputFormatSelector.vue'
+import DelegateDetailRenderer
+    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/DelegateDetailRenderer.vue'
 
 const { t } = useI18n()
 
@@ -32,7 +35,7 @@ const previewString = computed(() => props.value.toPreviewString())
                 </div>
                 <VSpacer />
                 <div class="mr-2">
-                    <LabEditorDataGridGridCellDetailOutputFormatSelector
+                    <DetailOutputFormatSelector
                         v-model="outputFormat"
                         class="mr-4"
                     />
@@ -42,7 +45,7 @@ const previewString = computed(() => props.value.toPreviewString())
 
         <VExpansionPanelText v-if="previewString != undefined">
             <div class="array-item__content">
-                <LabEditorDataGridGridCellDetailDelegateRenderer
+                <DelegateDetailRenderer
                     :data-type="componentDataType"
                     :value="value"
                     :output-format="outputFormat"

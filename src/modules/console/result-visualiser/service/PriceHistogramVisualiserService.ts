@@ -1,3 +1,6 @@
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { VisualisedHistogram } from '@/modules/console/result-visualiser/model/histogram/VisualisedHistogram'
+
 /**
  * Service for visualising raw JSON price histograms.
  */

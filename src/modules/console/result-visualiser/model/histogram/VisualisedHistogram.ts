@@ -1,6 +1,7 @@
-import { BigDecimal } from '@/model/evitadb'
-
-import { VisualisedHistogramBucket } from '@/modules/console/result-visualiser/model/VisualisedHistogramBucket'
+import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
+import {
+    VisualisedHistogramBucket
+} from '@/modules/console/result-visualiser/model/histogram/VisualisedHistogramBucket'
 
 /**
  * Single returned histogram DTO ready for visualisation.

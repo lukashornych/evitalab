@@ -3,9 +3,9 @@
  * Visualises overall histogram info.
  */
 
-import { VisualisedHistogram } from '@/model/editor/result-visualiser'
-import VMarkdown from '@/components/base/VMarkdown.vue'
 import { useI18n } from 'vue-i18n'
+import { VisualisedHistogram } from '@/modules/console/result-visualiser/model/histogram/VisualisedHistogram'
+import VMarkdown from '@/modules/base/component/VMarkdown.vue'
 
 const { t } = useI18n()
 

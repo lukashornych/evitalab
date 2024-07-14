@@ -1,7 +1,7 @@
-import { TabRequestComponentParamsDto } from '@/model/editor/tab/TabRequestComponentParamsDto'
+import { TabParamsDto } from '@/modules/workspace/tab/model/TabParamsDto'
 
 /**
  * Specific DTO for {@link VoidTabRequestComponentParams}.
  */
-export interface VoidTabParamsDto extends TabRequestComponentParamsDto {
+export interface VoidTabParamsDto extends TabParamsDto {
 }

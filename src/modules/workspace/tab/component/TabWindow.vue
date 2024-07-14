@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import LabEditorTabLoadingScreen from '@/components/lab/editor/tab/LabEditorTabLoadingScreen.vue'
-import { TabRequestComponentData } from '@/model/editor/tab/TabRequestComponentData'
+import { TabData } from '@/modules/workspace/tab/model/TabData'
+import TabLoadingScreen from '@/modules/workspace/tab/component/TabLoadingScreen.vue'
 
 const props = defineProps<{
     component: any,
     componentProps: any
 }>()
 const emit = defineEmits<{
-    (e: 'dataUpdate', value: TabRequestComponentData<any>): void
+    (e: 'dataUpdate', value: TabData<any>): void
 }>()
 
 const componentReady = ref<boolean>(false)
@@ -24,7 +24,7 @@ const componentReady = ref<boolean>(false)
             @data-update="emit('dataUpdate', $event)"
         />
     </KeepAlive>
-    <LabEditorTabLoadingScreen v-if="!componentReady" />
+    <TabLoadingScreen v-if="!componentReady" />
 </template>
 
 <style lang="scss" scoped>

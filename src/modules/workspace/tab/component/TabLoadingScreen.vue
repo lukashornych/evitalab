@@ -3,8 +3,8 @@
  * Generic loading screen to display while a tab component is being initialized.
  */
 
-import VLoadingCircular from '@/components/base/VLoadingCircular.vue'
 import { useI18n } from 'vue-i18n'
+import VLoadingCircular from '@/modules/base/component/VLoadingCircular.vue'
 
 const { t } = useI18n()
 </script>

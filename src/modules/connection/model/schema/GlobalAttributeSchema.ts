@@ -2,9 +2,10 @@ import { AttributeSchemaFlag } from '@/modules/connection/model/schema/Attribute
 import { List as ImmutableList } from 'immutable'
 import { AttributeUniquenessType } from '@/modules/connection/model/schema/AttributeUniquenessType'
 import { GlobalAttributeUniquenessType } from '@/modules/connection/model/schema/GlobalAttributeUniquenessType'
-import { NamingConvention } from './NamingConvetion'
+import { NamingConvention } from '../NamingConvetion'
 import { Value } from '@/modules/connection/model/Value'
 import { EntityAttributeSchema } from '@/modules/connection/model/schema/EntityAttributeSchema'
+import { Scalar } from '@/modules/connection/model/data-type/Scalar'
 
 /**
  * evitaLab's representation of a single evitaDB global attribute schema independent of specific evitaDB version
@@ -16,11 +17,11 @@ export class GlobalAttributeSchema extends EntityAttributeSchema {
      */
     readonly globalUniquenessType: Value<GlobalAttributeUniquenessType>
 
-    constructor(name: Value<string>,
+    constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
                 description: Value<string | null>,
                 deprecationNotice: Value<string | null>,
-                type: Value<string>,
+                type: Value<Scalar>,
                 uniquenessType: Value<AttributeUniquenessType>,
                 filterable: Value<boolean>,
                 sortable: Value<boolean>,
@@ -38,7 +39,8 @@ export class GlobalAttributeSchema extends EntityAttributeSchema {
         if (this.representativeFlags == undefined) {
             const representativeFlags: string[] = []
 
-            if (this.type.isSupported()) representativeFlags.push(this.formatDataTypeForFlag(this.type.get()))
+            this.type.ifSupported(type =>
+                representativeFlags.push(this.formatDataTypeForFlag(type)))
 
             const globalUniquenessType = this.globalUniquenessType.getOrElse(GlobalAttributeUniquenessType.NotUnique)
             const uniquenessType = this.uniquenessType.getOrElse(AttributeUniquenessType.NotUnique)

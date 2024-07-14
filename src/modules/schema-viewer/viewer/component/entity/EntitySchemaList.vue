@@ -1,33 +1,34 @@
 <script setup lang="ts">
-import LabEditorSchemaViewerEntitiesItem from './LabEditorSchemaViewerEntitiesItem.vue'
-import LabEditorSchemaViewerContainerSection from './LabEditorSchemaViewerContainerSection.vue'
-import { EntitySchema } from '@/model/evitadb'
-import LabEditorSchemaViewerContainerSectionList
-    from '@/components/lab/editor/schema-viewer/LabEditorSchemaViewerContainerSectionList.vue'
-import { SchemaViewerDataPointer } from '@/model/editor/tab/schemaViewer/SchemaViewerDataPointer'
+
 import { useI18n } from 'vue-i18n'
+import { SchemaViewerDataPointer } from '@/modules/schema-viewer/viewer/model/SchemaViewerDataPointer'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import SchemaContainerSection from '@/modules/schema-viewer/viewer/component/SchemaContainerSection.vue'
+import SchemaContainerSectionList from '@/modules/schema-viewer/viewer/component/SchemaContainerSectionList.vue'
+import EntitySchemaListItem from '@/modules/schema-viewer/viewer/component/entity/EntitySchemaListItem.vue'
+import { List } from 'immutable'
 
 const { t } = useI18n()
 
 const props = defineProps<{
     dataPointer: SchemaViewerDataPointer,
-    entities: EntitySchema[]
+    entities: List<EntitySchema>
 }>()
 </script>
 
 <template>
-    <LabEditorSchemaViewerContainerSection :name="t('schemaViewer.entities.title')">
-        <LabEditorSchemaViewerContainerSectionList
+    <SchemaContainerSection :name="t('schemaViewer.entities.title')">
+        <SchemaContainerSectionList
             :items="entities"
             :nameSupplier="item => item.name"
             v-slot="{ item }"
         >
-            <LabEditorSchemaViewerEntitiesItem
+            <EntitySchemaListItem
                 :data-pointer="dataPointer"
                 :schema="item"
             />
-        </LabEditorSchemaViewerContainerSectionList>
-    </LabEditorSchemaViewerContainerSection>
+        </SchemaContainerSectionList>
+    </SchemaContainerSection>
 </template>
 
 <style lang="scss" scoped>
