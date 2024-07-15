@@ -252,8 +252,8 @@ async function storeConnection(): Promise<void> {
             false,
             modifiedConnection.value.systemApiUrl,
             modifiedConnection.value.labApiUrl!,
-            'https://localhost:5555/rest', // todo lho implement rest
-            modifiedConnection.value.gqlUrl!
+            modifiedConnection.value.gqlUrl!,
+            'https://localhost:5555/rest' // todo lho implement rest
         ))
     } catch (e: any) {
         toaster.error(e)

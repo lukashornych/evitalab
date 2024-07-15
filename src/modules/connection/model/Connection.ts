@@ -32,7 +32,15 @@ export class Connection {
     }
 
     static fromJson(json: any, preconfigured: boolean): Connection {
-        return new Connection(json.id, json.name, preconfigured, json.labApiUrl, json.gqlUrl, json.restUrl)
+        return new Connection(
+            json.id,
+            json.name,
+            preconfigured,
+            json.systemUrl,
+            json.labApiUrl,
+            json.gqlUrl,
+            json.restUrl
+        )
     }
 
     private normalizeApiUrl(url: string | undefined): string | undefined {

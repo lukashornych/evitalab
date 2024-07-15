@@ -60,7 +60,7 @@ export class ConnectionService {
                 'demo',
                 'Demo (dev)',
                 true,
-                'http://demo.evitadb.io:5557/system',
+                'http://demo.evitadb.io:5555/system',
                 'https://demo.evitadb.io/lab/api',
                 'https://demo.evitadb.io:5555/gql',
                 'https://demo.evitadb.io:5555/rest'
@@ -69,7 +69,7 @@ export class ConnectionService {
                 'localhost',
                 'Localhost (dev)',
                 true,
-                'http://localhost:5557/system',
+                'http://localhost:5555/system',
                 'https://localhost:5555/lab/api',
                 'https://localhost:5555/gql',
                 'https://localhost:5555/rest'
