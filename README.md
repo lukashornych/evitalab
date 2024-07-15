@@ -1,5 +1,5 @@
 <h1 align="center" style="border-bottom: none">
-    <a href="https://evitadb.io" target="_blank"><img src="https://raw.githubusercontent.com/lukashornych/evitalab/dev/documentation/assets/img/evitalab.svg"/></a><br>evitaLab
+    <a href="https://evitadb.io" target="_blank"><img src="https://raw.githubusercontent.com/lukashornych/evitalab/dev/documentation/user/assets/img/evitalab.svg"/></a><br>evitaLab
 </h1>
 
 <p align="center">
@@ -24,7 +24,7 @@ In the future, evitaLab will hopefully also allow data modifications.
 
 You can try out evitaLab with evitaDB demo dataset at [demo.evitadb.io](https://demo.evitadb.io).
 
-![evitaLab preview](documentation/assets/img/preview.png)
+![evitaLab preview](documentation/user/assets/img/preview.png)
 
 ## Features
 
@@ -78,8 +78,8 @@ For example, you can use [nginx](https://docs.nginx.com/nginx/admin-guide/web-se
 
 If you want to run a development version of the evitaLab, you can clone this repository.
 
-Before you start, make sure you have [Node.js](https://nodejs.org/en/) v18.16.1 installed. 
-Optionally, you can also install [Yarn](https://yarnpkg.com/) package manager.
+Before you start, make sure you have [Node.js](https://nodejs.org/en/) in version specified in `.nvmrc` and [Yarn](https://yarnpkg.com/) 
+package manager installed.
 
 ```shell
 # running using npm
@@ -96,19 +96,16 @@ This will start a development server on [localhost:3000/lab](http://localhost:30
 ## Development
 
 If you would like to contribute to evitaLab source code or just simply play with it locally, you just need to
-clone the project, install the [Node.js](https://nodejs.org/en/) v18.16.1 
-(you can also install [Yarn](https://yarnpkg.com/) as that's what we use for development)
+clone the project, install the [Node.js](https://nodejs.org/en/) in version specified in `.nvmrc` and [Yarn](https://yarnpkg.com/) (as that's what we use for development)
 and run the following commands to run the evitaLab locally:
 
 ```shell
-# running using npm
-npm install
-npm run dev
-
 # running using yarn
 yarn install
 yarn dev
 ```
+
+You can find more indepth info about internal structure of evitaLab in [developer documentation](/documentation/developer/index.md).
 
 ## Licence
 
