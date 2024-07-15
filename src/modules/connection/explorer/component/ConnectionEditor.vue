@@ -147,7 +147,7 @@ function getApiTestedIndicator(result: ApiTestResult): any  {
 
 async function testSystemApiConnection(): Promise<boolean> {
     try {
-        const response: string | undefined = await ky.get(modifiedConnection.value.systemApiUrlTested + '/server-name').text()
+        const response: string | undefined = await ky.get(modifiedConnection.value.systemApiUrl + '/server-name').text()
         return response != undefined && response.length > 0
     } catch (e) {
         return false
