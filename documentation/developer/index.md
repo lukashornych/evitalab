@@ -10,5 +10,5 @@ building process.
 For more indepth knowledge, check these sections:
 
 - [Codebase architecture](architecture.md)
-- [Code guidelines](guidelines.md)
 - [Developer toolkit](toolkit.md)
+- [Guidelines](guidelines.md)
