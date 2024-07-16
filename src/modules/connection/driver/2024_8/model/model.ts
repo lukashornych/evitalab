@@ -236,6 +236,10 @@ export enum Cardinality {
  */
 export interface Catalog {
     /**
+     * Returns UUID 
+     */
+    catalogId: string;
+    /**
      * Whether this catalog is corrupted or can be freely used.
      */
     corrupted: boolean;
