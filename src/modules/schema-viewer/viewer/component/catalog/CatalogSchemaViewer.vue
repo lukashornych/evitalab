@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-    ConnectionService,
-    useConnectionService,
-} from '@/modules/connection/service/ConnectionService'
 import { SchemaViewerDataPointer } from '@/modules/schema-viewer/viewer/model/SchemaViewerDataPointer'
+import {
+    SchemaViewerService,
+    useSchemaViewerService,
+} from '../../service/SchemaViewerService'
 import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
 import { Property } from '@/modules/base/model/properties-table/Property'
 import { PropertyValue } from '@/modules/base/model/properties-table/PropertyValue'
@@ -25,14 +25,13 @@ const props = defineProps<{
 
 const catalogId = ref<string>()
 const loaded = ref<boolean>(false)
+
 const toaster: Toaster = useToaster()
-const connectionService: ConnectionService = useConnectionService()
-connectionService
-    .getCatalog(props.dataPointer.connection, props.schema.name)
-    .then((x) => {
-        catalogId.value = x.catalogId.getIfSupported()
-        loaded.value = true
-    })
+const schemaViewerService: SchemaViewerService = useSchemaViewerService()
+
+schemaViewerService
+    .getCatalog(props.dataPointer, props.schema.name)
+    .then((x) => {(catalogId.value = x.catalogId.getIfSupported()); loaded.value = true})
     .catch((e) => toaster.error(e))
 
 const baseProperties = ref<Property[]>([

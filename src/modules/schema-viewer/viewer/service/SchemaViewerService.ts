@@ -19,6 +19,7 @@ import { GlobalAttributeSchema } from '@/modules/connection/model/schema/GlobalA
 import { EntityAttributeSchema } from '@/modules/connection/model/schema/EntityAttributeSchema'
 import { InjectionKey } from 'vue'
 import { mandatoryInject } from '@/utils/reactivity'
+import { Catalog } from '@/modules/connection/model/Catalog'
 
 const emptyGlobalAttributeSchemasMap: ImmutableMap<string, GlobalAttributeSchema> = ImmutableMap()
 const emptyEntityAttributeSchemasMap: ImmutableMap<string, EntityAttributeSchema> = ImmutableMap()
@@ -57,6 +58,11 @@ export class SchemaViewerService {
         } else {
             throw new UnexpectedError(`Unsupported type of schema ${schemaPointer}`)
         }
+    }
+
+    async getCatalog(dataPointer: SchemaViewerDataPointer, 
+                     schemaName: string): Promise<Catalog> {
+        return await this.connectionService.getCatalog(dataPointer.connection, schemaName)
     }
 
     private async getCatalogSchema(dataPointer: SchemaViewerDataPointer,
