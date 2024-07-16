@@ -645,6 +645,7 @@
     },
     "catalog": {
       "label": {
+        "catalogId": "Catalog ID",
         "version": "Version",
         "description": "Description"
       }
