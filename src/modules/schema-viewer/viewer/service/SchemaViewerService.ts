@@ -61,8 +61,8 @@ export class SchemaViewerService {
     }
 
     async getCatalog(dataPointer: SchemaViewerDataPointer, 
-                     schemaName: string): Promise<Catalog> {
-        return await this.connectionService.getCatalog(dataPointer.connection, schemaName)
+                    catalogName: string): Promise<Catalog> {
+        return await this.connectionService.getCatalog(dataPointer.connection, catalogName)
     }
 
     private async getCatalogSchema(dataPointer: SchemaViewerDataPointer,
