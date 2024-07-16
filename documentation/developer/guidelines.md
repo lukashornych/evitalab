@@ -1,6 +1,7 @@
 # Guidelines
 
-Each module should respect the vertical slice architecture in conjunction with the Model-View-ViewModel for UI components.
+Basic rules
+Each module should respect the vertical slice architecture.
 We are also big fans of immutability (where it makes sense) in Domain-Driver-Design, so we try to build the codebase using
 these practices.
 
@@ -27,13 +28,11 @@ places with proper injection keys and `provideX` and `injectX` methods so that t
 
 ### UI components
 
-Complex components that access data should be backed by custom services that abstract access to other generic services.
-A complex component representing some bigger domain should only access its own service, not the generic ones. This
-is to minimize imports to the generic services as well to abstract mapping and transforming generic results.
+Complex components that access data should adhere to the [Model-View-ViewModel architecture](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel),
+preferably in conjunction with the [mediator pattern](https://en.wikipedia.org/wiki/Mediator_pattern) in form of 
+custom service for the component to abstract access to generic services.
 
 ![Component-service hierarchy](assets/component-service-hierarchy.svg)
-
-This should reflect the [Model-View-ViewModel](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel) architectural pattern.
 
 ## Git
 
