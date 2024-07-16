@@ -16,7 +16,7 @@ export class CatalogConverter implements Converter<DriverCatalog, Catalog> {
      */
     convert(driverCatalog: DriverCatalog): Catalog {
         return new Catalog(
-            Value.notSupported(),
+            Value.of(driverCatalog.catalogId),
             Value.of(driverCatalog.version),
             driverCatalog.name,
             Value.of(new Map([
