@@ -41,6 +41,7 @@ import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSche
 import { Cardinality } from '@/modules/connection/model/schema/Cardinality'
 import { Converter } from '@/modules/connection/driver/2024_8/service/Converter'
 import { Scalar } from '@/modules/connection/model/data-type/Scalar'
+import { List, Map } from 'immutable'
 
 /**
  * Converts driver's representation of catalog schema into evitaLab's representation of catalog schema
@@ -54,7 +55,7 @@ export class CatalogSchemaConverter implements Converter<DriverCatalogSchema, Ca
         return new CatalogSchema(
             Value.of(driverCatalogSchema.version),
             driverCatalogSchema.name,
-            Value.of(new Map([
+            Value.of(Map([
                 [NamingConvention.CamelCase, driverCatalogSchema.nameVariants.camelCase],
                 [NamingConvention.PascalCase, driverCatalogSchema.nameVariants.pascalCase],
                 [NamingConvention.SnakeCase, driverCatalogSchema.nameVariants.snakeCase],
@@ -63,8 +64,15 @@ export class CatalogSchemaConverter implements Converter<DriverCatalogSchema, Ca
             ])),
             Value.of(driverCatalogSchema.description || null),
             Value.of(this.convertGlobalAttributeSchemas(driverCatalogSchema.attributes)),
-            Value.of(this.convertEntitySchemas(driverCatalogSchema.entitySchemas))
+            this.tmp
         )
+    }
+
+    tmp = () :Promise<Value<List<EntitySchema>>> =>  {
+        return new Promise(function() {
+          const tmp: Value<List<EntitySchema>> = Value.of(List<EntitySchema>());
+          return tmp;
+        })
     }
 
     private convertGlobalAttributeSchemas(driverAttributeSchemas: DriverGlobalAttributeSchemas): GlobalAttributeSchema[] {
@@ -89,7 +97,7 @@ export class CatalogSchemaConverter implements Converter<DriverCatalogSchema, Ca
         return new EntitySchema(
             Value.of(driverEntitySchema.version),
             driverEntitySchema.name,
-            Value.of(new Map([
+            Value.of(Map([
                 [NamingConvention.CamelCase, driverEntitySchema.nameVariants.camelCase],
                 [NamingConvention.PascalCase, driverEntitySchema.nameVariants.pascalCase],
                 [NamingConvention.SnakeCase, driverEntitySchema.nameVariants.snakeCase],
@@ -126,7 +134,7 @@ export class CatalogSchemaConverter implements Converter<DriverCatalogSchema, Ca
         const entityAttribute = 'representative' in driverAttributeSchemaUnion
 
         const name: string = driverAttributeSchemaUnion.name
-        const nameVariants: Value<Map<NamingConvention, string>> = Value.of(new Map([
+        const nameVariants: Value<Map<NamingConvention, string>> = Value.of(Map([
             [NamingConvention.CamelCase, driverAttributeSchemaUnion.nameVariants.camelCase],
             [NamingConvention.PascalCase, driverAttributeSchemaUnion.nameVariants.pascalCase],
             [NamingConvention.SnakeCase, driverAttributeSchemaUnion.nameVariants.snakeCase],
@@ -169,7 +177,7 @@ export class CatalogSchemaConverter implements Converter<DriverCatalogSchema, Ca
     private convertSortableAttributeCompoundSchema(driverSortableAttributeCompoundSchema: DriverSortableAttributeCompoundSchema): SortableAttributeCompoundSchema {
         return new SortableAttributeCompoundSchema(
             driverSortableAttributeCompoundSchema.name,
-            Value.of(new Map([
+            Value.of(Map([
                 [NamingConvention.CamelCase, driverSortableAttributeCompoundSchema.nameVariants.camelCase],
                 [NamingConvention.PascalCase, driverSortableAttributeCompoundSchema.nameVariants.pascalCase],
                 [NamingConvention.SnakeCase, driverSortableAttributeCompoundSchema.nameVariants.snakeCase],
@@ -206,7 +214,7 @@ export class CatalogSchemaConverter implements Converter<DriverCatalogSchema, Ca
     private convertAssociatedDataSchema(driverAssociatedDataSchema: DriverAssociatedDataSchema): AssociatedDataSchema {
         return new AssociatedDataSchema(
             driverAssociatedDataSchema.name,
-            Value.of(new Map([
+            Value.of(Map([
                 [NamingConvention.CamelCase, driverAssociatedDataSchema.nameVariants.camelCase],
                 [NamingConvention.PascalCase, driverAssociatedDataSchema.nameVariants.pascalCase],
                 [NamingConvention.SnakeCase, driverAssociatedDataSchema.nameVariants.snakeCase],
@@ -233,7 +241,7 @@ export class CatalogSchemaConverter implements Converter<DriverCatalogSchema, Ca
     private convertReferenceSchema(driverReferenceSchema: DriverReferenceSchema): ReferenceSchema {
         return new ReferenceSchema(
             driverReferenceSchema.name,
-            Value.of(new Map([
+            Value.of(Map([
                 [NamingConvention.CamelCase, driverReferenceSchema.nameVariants.camelCase],
                 [NamingConvention.PascalCase, driverReferenceSchema.nameVariants.pascalCase],
                 [NamingConvention.SnakeCase, driverReferenceSchema.nameVariants.snakeCase],
@@ -244,7 +252,7 @@ export class CatalogSchemaConverter implements Converter<DriverCatalogSchema, Ca
             Value.of(driverReferenceSchema.deprecationNotice || null),
             Value.of(driverReferenceSchema.referencedEntityType),
             Value.of(driverReferenceSchema.referencedEntityTypeManaged),
-            Value.of(new Map([
+            Value.of(Map([
                 [NamingConvention.CamelCase, driverReferenceSchema.entityTypeNameVariants.camelCase],
                 [NamingConvention.PascalCase, driverReferenceSchema.entityTypeNameVariants.pascalCase],
                 [NamingConvention.SnakeCase, driverReferenceSchema.entityTypeNameVariants.snakeCase],
@@ -254,7 +262,7 @@ export class CatalogSchemaConverter implements Converter<DriverCatalogSchema, Ca
             Value.of(driverReferenceSchema.referencedGroupType || null),
             Value.of(driverReferenceSchema.referencedGroupTypeManaged || null),
             driverReferenceSchema.groupTypeNameVariants != undefined
-                ? Value.of(new Map([
+                ? Value.of(Map([
                     [NamingConvention.CamelCase, driverReferenceSchema.groupTypeNameVariants.camelCase],
                     [NamingConvention.PascalCase, driverReferenceSchema.groupTypeNameVariants.pascalCase],
                     [NamingConvention.SnakeCase, driverReferenceSchema.groupTypeNameVariants.snakeCase],

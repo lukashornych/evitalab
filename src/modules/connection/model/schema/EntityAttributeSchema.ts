@@ -1,5 +1,5 @@
 import { AttributeSchema, AttributeSchemaFlag } from '@/modules/connection/model/schema/AttributeSchema'
-import Immutable, { List as ImmutableList } from 'immutable'
+import Immutable, { List, Map } from 'immutable'
 import { AttributeUniquenessType } from '@/modules/connection/model/schema/AttributeUniquenessType'
 import { NamingConvention } from '../NamingConvetion'
 import { Value } from '@/modules/connection/model/Value'
@@ -57,7 +57,7 @@ export class EntityAttributeSchema extends AttributeSchema {
             if (this.localized.getOrElse(false)) representativeFlags.push(AttributeSchemaFlag.Localized)
             if (this.nullable.getOrElse(false)) representativeFlags.push(AttributeSchemaFlag.Nullable)
 
-            this.representativeFlags = ImmutableList(representativeFlags)
+            this.representativeFlags = List(representativeFlags)
         }
         return this.representativeFlags
     }

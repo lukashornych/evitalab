@@ -15,6 +15,9 @@ import AttributeSchemaList from '@/modules/schema-viewer/viewer/component/attrib
 import EntitySchemaList from '@/modules/schema-viewer/viewer/component/entity/EntitySchemaList.vue'
 import { List } from 'immutable'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { Value } from '@/modules/connection/model/Value'
+import { Immutable } from '@babel/types'
 
 const { t } = useI18n()
 
@@ -25,14 +28,27 @@ const props = defineProps<{
 
 const catalogId = ref<string>()
 const loaded = ref<boolean>(false)
+const loadedSchemas = ref<boolean>(false)
+const entitySchemas = ref<Value<Immutable.Map<string, EntitySchema>>>()
 
 const toaster: Toaster = useToaster()
 const schemaViewerService: SchemaViewerService = useSchemaViewerService()
 
 schemaViewerService
     .getCatalog(props.dataPointer, props.schema.name)
-    .then((x) => {(catalogId.value = x.catalogId.getIfSupported()); loaded.value = true})
+    .then((x) => {
+        catalogId.value = x.catalogId.getIfSupported()
+        loaded.value = true
+    })
     .catch((e) => toaster.error(e))
+
+props.schema
+    .entitySchemas()
+    .then((x) => {
+        entitySchemas.value = x
+        loadedSchemas.value = true
+    })
+    .catch()
 
 const baseProperties = ref<Property[]>([
     {
@@ -64,11 +80,13 @@ const baseProperties = ref<Property[]>([
                     :attributes="List(schema.attributes.getIfSupported()!.values())"
                 />
 
-                <EntitySchemaList
-                    v-if="schema.entitySchemas.isSupported() && schema.entitySchemas.getIfSupported()!.size > 0"
-                    :data-pointer="dataPointer"
-                    :entities="List(schema.entitySchemas.getIfSupported()!.values())"
-                />
+                <div v-if="loadedSchemas">
+                    <EntitySchemaList
+                        v-if="entitySchemas?.getIfSupported() && entitySchemas.getIfSupported()!.size > 0"
+                        :data-pointer="dataPointer"
+                        :entities="List(entitySchemas.getIfSupported()!.values())"
+                    />
+                </div>
             </template>
         </SchemaContainer>
     </div>

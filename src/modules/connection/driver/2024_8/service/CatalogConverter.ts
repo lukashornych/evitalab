@@ -5,6 +5,7 @@ import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { CatalogState } from '@/modules/connection/model/CatalogState'
 import { Value } from '@/modules/connection/model/Value'
 import { Converter } from '@/modules/connection/driver/2024_8/service/Converter'
+import { GrpcCatalogStatistics } from '@/gen/GrpcEvitaDataTypes_pb'
 
 /**
  * Converts driver's representation of catalog into evitaLab's representation of catalog
@@ -17,7 +18,7 @@ export class CatalogConverter implements Converter<DriverCatalog, Catalog> {
     convert(driverCatalog: DriverCatalog): Catalog {
         return new Catalog(
             Value.of(driverCatalog.catalogId),
-            Value.of(driverCatalog.version),
+            Value.of(driverCatalog.version as unknown as BigInt),
             driverCatalog.name,
             Value.of(new Map([
                 [NamingConvention.CamelCase, driverCatalog.nameVariants.camelCase],

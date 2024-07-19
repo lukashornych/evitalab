@@ -1,4 +1,4 @@
-import { List as ImmutableList, Map as ImmutableMap } from 'immutable'
+import { List, Map } from 'immutable'
 import { NamingConvention } from '../NamingConvetion'
 import { OrderBehaviour } from '@/modules/connection/model/schema/OrderBehaviour'
 import { OrderDirection } from '@/modules/connection/model/schema/OrderDirection'
@@ -16,7 +16,7 @@ export class SortableAttributeCompoundSchema extends AbstractSchema {
      * This is a mandatory value, it cannot be omitted.
      */
     readonly name: string
-    readonly nameVariants: Value<ImmutableMap<NamingConvention, string>>
+    readonly nameVariants: Value<Map<NamingConvention, string>>
     /**
      * Contains description of the model is optional but helps authors of the schema / client API to better explain the original purpose of the model to the consumers.
      */
@@ -28,9 +28,9 @@ export class SortableAttributeCompoundSchema extends AbstractSchema {
     /**
      * Collection of attribute elements that define the sortable compound. The order of the elements is important, as it defines the order of the sorting.
      */
-    readonly attributeElements: Value<ImmutableList<AttributeElement>>
+    readonly attributeElements: Value<List<AttributeElement>>
 
-    private readonly representativeAttributes: ImmutableList<string> = ImmutableList()
+    private readonly representativeAttributes: List<string> = List()
 
     constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
@@ -39,13 +39,13 @@ export class SortableAttributeCompoundSchema extends AbstractSchema {
                 attributeElements: Value<AttributeElement[]>) {
         super()
         this.name = name
-        this.nameVariants = nameVariants.map(it => ImmutableMap(it))
+        this.nameVariants = nameVariants
         this.description = description
         this.deprecationNotice = deprecationNotice
-        this.attributeElements = attributeElements.map(it => ImmutableList(it))
+        this.attributeElements = attributeElements.map(it => List(it))
     }
 
-    getRepresentativeFlags(): ImmutableList<string> {
+    getRepresentativeFlags(): List<string> {
         return this.representativeAttributes
     }
 }

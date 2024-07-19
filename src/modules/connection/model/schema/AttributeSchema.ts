@@ -1,5 +1,5 @@
 import { Schema } from '@/modules/connection/model/schema/Schema'
-import { List as ImmutableList, Map as ImmutableMap } from 'immutable'
+import { List, Map} from 'immutable'
 import { NamingConvention } from '../NamingConvetion'
 import { AttributeUniquenessType } from '@/modules/connection/model/schema/AttributeUniquenessType'
 import { Value } from '@/modules/connection/model/Value'
@@ -19,7 +19,7 @@ export class AttributeSchema extends AbstractSchema implements TypedSchema, Sort
      * This is a mandatory value, it cannot be omitted.
      */
     readonly name: string
-    readonly nameVariants: Value<ImmutableMap<NamingConvention, string>>
+    readonly nameVariants: Value<Map<NamingConvention, string>>
     /**
      * Contains description of the model is optional but helps authors of the schema / client API to better explain the original purpose of the model to the consumers.
      */
@@ -61,7 +61,7 @@ export class AttributeSchema extends AbstractSchema implements TypedSchema, Sort
      */
     readonly indexedDecimalPlaces: Value<number>
 
-    protected representativeFlags?: ImmutableList<string>
+    protected representativeFlags?: List<string>
 
     constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
@@ -77,7 +77,7 @@ export class AttributeSchema extends AbstractSchema implements TypedSchema, Sort
                 indexedDecimalPlaces: Value<number>) {
         super()
         this.name = name
-        this.nameVariants = nameVariants.map(it => ImmutableMap(it))
+        this.nameVariants = nameVariants
         this.description = description
         this.deprecationNotice = deprecationNotice
         this.type = type
@@ -90,7 +90,7 @@ export class AttributeSchema extends AbstractSchema implements TypedSchema, Sort
         this.indexedDecimalPlaces = indexedDecimalPlaces
     }
 
-    getRepresentativeFlags(): ImmutableList<string> {
+    getRepresentativeFlags(): List<string> {
         if (this.representativeFlags == undefined) {
             const representativeFlags: string[] = []
 
@@ -109,7 +109,7 @@ export class AttributeSchema extends AbstractSchema implements TypedSchema, Sort
             if (this.localized.getOrElse(false)) representativeFlags.push(AttributeSchemaFlag.Localized)
             if (this.nullable.getOrElse(false)) representativeFlags.push(AttributeSchemaFlag.Nullable)
 
-            this.representativeFlags = ImmutableList(representativeFlags)
+            this.representativeFlags = List(representativeFlags)
         }
         return this.representativeFlags
     }

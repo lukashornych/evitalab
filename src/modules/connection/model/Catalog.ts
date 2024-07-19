@@ -13,11 +13,11 @@ export class Catalog {
      * Returns unique catalog id that doesn't change with catalog schema changes - such as renaming.
      * The id is assigned to the catalog when it is created and never changes.
      */
-    readonly catalogId: Value<string>
+    readonly catalogId: Value<string> | undefined
     /**
      * Catalog header version that is incremented with each update. Version is not stored on the disk, it serves only to distinguish whether there is any change made in the header and whether it needs to be persisted on disk.
      */
-    readonly version: Value<Long>
+    readonly version: Value<BigInt>
     /**
      * Name of the catalog. Name must be unique across all catalogs inside same evitaDB instance.
      * This is a mandatory value, it cannot be omitted.
@@ -30,7 +30,7 @@ export class Catalog {
     /**
      * Set of all maintained entity collections - i.e. entity types.
      */
-    readonly entityTypes: Value<ImmutableList<string>>
+    readonly entityTypes: Value<ImmutableList<string>> | undefined
     /**
      * Whether this catalog is corrupted or can be freely used.
      */
@@ -38,25 +38,25 @@ export class Catalog {
     /**
      * Returns true if catalog supports transaction.
      */
-    readonly supportsTransaction: Value<boolean>
+    readonly supportsTransaction: Value<boolean> | undefined
     /**
      * Current catalog state
      */
     readonly catalogState: Value<CatalogState>
 
-    constructor(catalogId: Value<string>,
-                version: Value<Long>,
+    constructor(catalogId: Value<string> | undefined,
+                version: Value<BigInt>,
                 name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
-                entityTypes: Value<string[]>,
+                entityTypes: Value<string[]> | undefined,
                 corrupted: Value<boolean>,
-                supportsTransaction: Value<boolean>,
+                supportsTransaction: Value<boolean> | undefined,
                 catalogState: Value<CatalogState>) {
         this.catalogId = catalogId
         this.version = version
         this.name = name
-        this.nameVariants = nameVariants.map(it => ImmutableMap(it))
-        this.entityTypes = entityTypes.map(it => ImmutableList(it))
+        this.nameVariants = nameVariants.map(it => ImmutableMap(it));
+        this.entityTypes = entityTypes ? entityTypes.map(it => ImmutableList(it)) : undefined
         this.corrupted = corrupted
         this.supportsTransaction = supportsTransaction
         this.catalogState = catalogState

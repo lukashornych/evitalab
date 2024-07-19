@@ -171,7 +171,7 @@ export class ConnectionService {
 
     async getEntitySchema(connetion: Connection, catalogName: string, entityType: string): Promise<EntitySchema> {
         const catalogSchema: CatalogSchema = await this.getCatalogSchema(connetion, catalogName)
-        const entitySchema: EntitySchema | undefined = catalogSchema.entitySchemas
+        const entitySchema: EntitySchema | undefined = (await catalogSchema.entitySchemas())
             .getIfSupported()
             ?.get(entityType)
         if (entitySchema == undefined) {

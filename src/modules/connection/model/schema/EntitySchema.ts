@@ -1,5 +1,5 @@
 import { Schema } from '@/modules/connection/model/schema/Schema'
-import { List as ImmutableList, Map as ImmutableMap } from 'immutable'
+import { List, Map } from 'immutable'
 import { NamingConvention } from '../NamingConvetion'
 import { AssociatedDataSchema } from '@/modules/connection/model/schema/AssociatedDataSchema'
 import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
@@ -23,7 +23,7 @@ export class EntitySchema extends AbstractSchema {
      * This is a mandatory value, it cannot be omitted.
      */
     readonly name: string
-    readonly nameVariants: Value<ImmutableMap<NamingConvention, string>>
+    readonly nameVariants: Value<Map<NamingConvention, string>>
     /**
      * Contains description of the model is optional but helps authors of the schema / client API to better explain the original purpose of the model to the consumers.
      */
@@ -51,22 +51,22 @@ export class EntitySchema extends AbstractSchema {
     /**
      * Contains set of all `Locale` that could be used for localized `AttributeSchema` or `AssociatedDataSchema`. Enables using `entityLocaleEquals` filtering constraint in query.
      */
-    readonly locales: Value<ImmutableList<string>>
+    readonly locales: Value<List<string>>
     /**
      * Contains set of all `Currency` that could be used for `prices` in entities of this type.
      */
-    readonly currencies: Value<ImmutableList<string>>
+    readonly currencies: Value<List<string>>
     /**
      * Evolution mode allows to specify how strict is evitaDB when unknown information is presented to her for the first time. When no evolution mode is set, each violation of the `EntitySchema` is reported by an exception. This behaviour can be changed by this evolution mode however.
      */
-    readonly evolutionMode: Value<ImmutableList<EvolutionMode>>
+    readonly evolutionMode: Value<List<EvolutionMode>>
 
-    readonly attributes: Value<ImmutableMap<string, EntityAttributeSchema>>
-    readonly sortableAttributeCompounds: Value<ImmutableMap<string, SortableAttributeCompoundSchema>>
-    readonly associatedData: Value<ImmutableMap<string, AssociatedDataSchema>>
-    readonly references: Value<ImmutableMap<string, ReferenceSchema>>
+    readonly attributes: Value<Map<string, EntityAttributeSchema>>
+    readonly sortableAttributeCompounds: Value<Map<string, SortableAttributeCompoundSchema>>
+    readonly associatedData: Value<Map<string, AssociatedDataSchema>>
+    readonly references: Value<Map<string, ReferenceSchema>>
 
-    private representativeFlags?: ImmutableList<string>
+    private representativeFlags?: List<string>
 
     constructor(version: Value<number>,
                 name: string,
@@ -87,31 +87,31 @@ export class EntitySchema extends AbstractSchema {
         super()
         this.version = version
         this.name = name
-        this.nameVariants = nameVariants.map(it => ImmutableMap(it))
+        this.nameVariants = nameVariants
         this.description = description
         this.deprecationNotice = deprecationNotice
         this.withGeneratedPrimaryKey = withGeneratedPrimaryKey
         this.withHierarchy = withHierarchy
         this.withPrice = withPrice
         this.indexedPricePlaces = indexedPricePlaces
-        this.locales = locales.map(it => ImmutableList(it))
-        this.currencies = currencies.map(it => ImmutableList(it))
-        this.evolutionMode = evolutionMode.map(it => ImmutableList(it))
+        this.locales = locales.map(it => List(it))
+        this.currencies = currencies.map(it => List(it))
+        this.evolutionMode = evolutionMode.map(it => List(it))
         this.attributes = attributes.map(it =>
-            ImmutableMap(it.map(attribute => [attribute.name, attribute])))
+            Map(it.map(attribute => [attribute.name, attribute])))
         this.sortableAttributeCompounds = sortableAttributeCompounds.map(it =>
-            ImmutableMap(it.map(sac => [sac.name, sac])))
+            Map(it.map(sac => [sac.name, sac])))
         this.associatedData = associatedData.map(it =>
-            ImmutableMap(it.map(ad => [ad.name, ad])))
+            Map(it.map(ad => [ad.name, ad])))
         this.references = references.map(it =>
-            ImmutableMap(it.map(reference => [reference.name, reference])))
+            Map(it.map(reference => [reference.name, reference])))
     }
 
-    getRepresentativeFlags(): ImmutableList<string> {
+    getRepresentativeFlags(): List<string> {
         if (this.representativeFlags == undefined) {
             const representativeFlags: string[] = []
             if (this.withHierarchy.getOrElse(false)) representativeFlags.push(EntitySchemaFlag.Hierarchical)
-            this.representativeFlags = ImmutableList(representativeFlags)
+            this.representativeFlags = List(representativeFlags)
         }
         return this.representativeFlags
     }
