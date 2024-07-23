@@ -10,19 +10,19 @@ export class CatalogConverter
 {
     convert(catalog: GrpcCatalogStatistics): Catalog {
         return new Catalog(
-            undefined,
+            undefined, //TODO: Remove
             Value.of(catalog.catalogVersion),
             catalog.catalogName,
-            Value.of(new Map([
+            Value.of(new Map([ //TODO: Add NamingConvention
                 [NamingConvention.CamelCase, ''],
                 [NamingConvention.PascalCase, ''],
                 [NamingConvention.SnakeCase, ''],
                 [NamingConvention.UpperSnakeCase, ''],
                 [NamingConvention.KebabCase, '']
             ])),
-            undefined,
+            undefined, //TODO: Remove
             Value.of(catalog.corrupted),
-            undefined,
+            undefined, //TODO: Remove
             Value.of(this.convertCatalogState(catalog.catalogState))
         )
     }

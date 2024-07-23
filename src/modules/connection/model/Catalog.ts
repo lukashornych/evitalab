@@ -13,7 +13,7 @@ export class Catalog {
      * Returns unique catalog id that doesn't change with catalog schema changes - such as renaming.
      * The id is assigned to the catalog when it is created and never changes.
      */
-    readonly catalogId: Value<string> | undefined
+    readonly catalogId: Value<string> | undefined //TODO: Remove
     /**
      * Catalog header version that is incremented with each update. Version is not stored on the disk, it serves only to distinguish whether there is any change made in the header and whether it needs to be persisted on disk.
      */
@@ -30,7 +30,7 @@ export class Catalog {
     /**
      * Set of all maintained entity collections - i.e. entity types.
      */
-    readonly entityTypes: Value<ImmutableList<string>> | undefined
+    readonly entityTypes: Value<ImmutableList<string>> | undefined //TODO: Remove
     /**
      * Whether this catalog is corrupted or can be freely used.
      */
@@ -38,19 +38,19 @@ export class Catalog {
     /**
      * Returns true if catalog supports transaction.
      */
-    readonly supportsTransaction: Value<boolean> | undefined
+    readonly supportsTransaction: Value<boolean> | undefined //TODO: Remove
     /**
      * Current catalog state
      */
     readonly catalogState: Value<CatalogState>
 
-    constructor(catalogId: Value<string> | undefined,
+    constructor(catalogId: Value<string> | undefined, //TODO: Remove
                 version: Value<BigInt>,
                 name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
-                entityTypes: Value<string[]> | undefined,
+                entityTypes: Value<string[]> | undefined, //TODO: Remove
                 corrupted: Value<boolean>,
-                supportsTransaction: Value<boolean> | undefined,
+                supportsTransaction: Value<boolean> | undefined, //TODO: Remove
                 catalogState: Value<CatalogState>) {
         this.catalogId = catalogId
         this.version = version

@@ -177,17 +177,7 @@ export class EvitaDBDriver_2024_8
         const res = await client.createReadOnlySession({
             catalogName: catalogName,
         })
-        const entityResponse = await this.sessionClient.getEntity(
-            { entityType: 'Product', primaryKey: 63049, require: "attributeContentAll(),hierarchyContent(),associatedDataContentAll(),priceContentAll(),referenceContentAllWithAttributes(),dataInLocalesAll()" },
-            {
-                headers: { sessionId: res.sessionId, catalogName: catalogName }
-            }
-        )
-
-        if (entityResponse.entity) {
-            console.log(this.entityConverter.convert(entityResponse.entity))
-        }
-        //63049
+        
         for (const type of (
             await sessionClient.getAllEntityTypes(Empty, {
                 headers: {
