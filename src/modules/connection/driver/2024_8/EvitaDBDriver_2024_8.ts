@@ -3,6 +3,7 @@ import { Connection } from '@/modules/connection/model/Connection'
 import { HttpApiClient } from '@/modules/driver-support/service/HttpApiClient'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import { CatalogSchemaConverter as GrpcCatalogSchemaConverter } from '../grpc/service/CatalogSchemaConverter'
+import { CatalogConverter as GrpcCatalogConverter } from '../grpc/service/CatalogConverter'
 import {
     Catalog as DriverCatalog,
     CatalogSchema as DriverCatalogSchema,
@@ -35,6 +36,7 @@ import {
 import { EntitySchema } from '../../model/schema/EntitySchema'
 import { Value } from '../../model/Value'
 import { Empty } from '@bufbuild/protobuf'
+import { EntityConverter as GrpcEntityConverter } from '../grpc/service/EntityConverter'
 
 /**
  * evitaDB driver implementation for version >=2024.8.0
@@ -46,10 +48,14 @@ export class EvitaDBDriver_2024_8
     private readonly catalogConverter: CatalogConverter = new CatalogConverter()
     private readonly grpcCatalogSchemaConverter: GrpcCatalogSchemaConverter =
         new GrpcCatalogSchemaConverter()
+    private readonly grpcCatalogConverter: GrpcCatalogConverter =
+        new GrpcCatalogConverter()
     private readonly catalogSchemaConverter: CatalogSchemaConverter =
         new CatalogSchemaConverter()
     private readonly responseConverter: ResponseConverter =
         new ResponseConverter()
+    private readonly entityConverter: GrpcEntityConverter =
+        new GrpcEntityConverter()
     private readonly connectionUrl: string = 'https://LAPTOP-C4DH0B5J:5555'
 
     protected readonly transport = createConnectTransport({
@@ -82,6 +88,15 @@ export class EvitaDBDriver_2024_8
 
     async getCatalogs(connection: Connection): Promise<Catalog[]> {
         try {
+            const res = (await this.managmentClient.getCatalogStatistics(Empty))
+                .catalogStatistics
+            return res.map((x) => this.grpcCatalogConverter.convert(x))
+        } catch (e: any) {
+            throw this.handleCallError(e, connection)
+        }
+        //TODO: Remove
+        /*
+        try {
             const driverCatalogs: DriverCatalog[] = (await this.httpClient
                 .get(`${connection.labApiUrl}/data/catalogs`, {
                     headers: {
@@ -92,7 +107,7 @@ export class EvitaDBDriver_2024_8
             return driverCatalogs.map((it) => this.catalogConverter.convert(it))
         } catch (e: any) {
             throw this.handleCallError(e, connection)
-        }
+        }*/
     }
 
     async getCatalogSchema(
@@ -131,6 +146,7 @@ export class EvitaDBDriver_2024_8
                     }
                 )
             return result
+            //TODO: Remove
             /*
             const driverCatalogSchema: DriverCatalogSchema =
                 (await this.httpClient
@@ -157,10 +173,21 @@ export class EvitaDBDriver_2024_8
         client: PromiseClient<typeof EvitaService>,
         sessionClient: PromiseClient<typeof EvitaSessionService>
     ): Promise<Value<List<EntitySchema>>> {
-        const entities : EntitySchema[] = [];
-        const res = await client.createBinaryReadOnlySession({
+        const entities: EntitySchema[] = []
+        const res = await client.createReadOnlySession({
             catalogName: catalogName,
         })
+        const entityResponse = await this.sessionClient.getEntity(
+            { entityType: 'Product', primaryKey: 63049, require: "attributeContentAll(),hierarchyContent(),associatedDataContentAll(),priceContentAll(),referenceContentAllWithAttributes(),dataInLocalesAll()" },
+            {
+                headers: { sessionId: res.sessionId, catalogName: catalogName }
+            }
+        )
+
+        if (entityResponse.entity) {
+            console.log(this.entityConverter.convert(entityResponse.entity))
+        }
+        //63049
         for (const type of (
             await sessionClient.getAllEntityTypes(Empty, {
                 headers: {
@@ -181,10 +208,12 @@ export class EvitaDBDriver_2024_8
                 )
             ).entitySchema
             if (schema != null) {
-                entities.push(grpcCatalogSchemaConverter.convertEntitySchema(schema))
+                entities.push(
+                    grpcCatalogSchemaConverter.convertEntitySchema(schema)
+                )
             }
         }
-        return Value.of(List(entities));
+        return Value.of(List(entities))
     }
     async query(
         connection: Connection,

@@ -97,7 +97,7 @@ async function loadCatalogSchema(): Promise<void> {
     loading.value = false
 }
 
-loadCatalogSchema().then(x => console.log(entitySchemas.value));
+loadCatalogSchema().then();
 
 function handleAction(action: string): void {
     actions.get(action as CatalogActionType)?.execute()

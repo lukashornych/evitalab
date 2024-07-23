@@ -8,9 +8,9 @@ export class EntityReferenceWithParent
 
     readonly version: Value<number>;
 
-    readonly parent: Value<EntityReferenceWithParent>;
+    readonly parent: Value<EntityReferenceWithParent> | undefined;
 
-    constructor(entityType: Value<string>, primaryKey: Value<number>, version: Value<number>, parent: Value<EntityReferenceWithParent>){
+    constructor(entityType: Value<string>, primaryKey: Value<number>, version: Value<number>, parent: Value<EntityReferenceWithParent> | undefined){
         this.entityType = entityType;
         this.primaryKey = primaryKey;
         this.version = version;

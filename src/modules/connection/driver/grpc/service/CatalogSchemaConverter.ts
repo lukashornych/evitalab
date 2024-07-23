@@ -35,20 +35,20 @@ import { AssociatedDataSchema } from '@/modules/connection/model/schema/Associat
 
 export class CatalogSchemaConverter {
     convert(
-        driverModel: GrpcCatalogSchema,
+        catalogSchema: GrpcCatalogSchema,
         entitySchemaAccessor: (
             catalogName: string
         ) => Promise<Value<List<EntitySchema>>>
     ): CatalogSchema {
         return new CatalogSchema(
-            Value.of(driverModel.version),
-            driverModel.name,
+            Value.of(catalogSchema.version),
+            catalogSchema.name,
             Value.of(
                 Map([
                     [
                         NamingConvention.CamelCase,
                         this.protectUndefinedString(
-                            driverModel.nameVariant.find(
+                            catalogSchema.nameVariant.find(
                                 (x) => x.namingConvention === 0
                             )?.name
                         ),
@@ -56,7 +56,7 @@ export class CatalogSchemaConverter {
                     [
                         NamingConvention.PascalCase,
                         this.protectUndefinedString(
-                            driverModel.nameVariant.find(
+                            catalogSchema.nameVariant.find(
                                 (x) => x.namingConvention === 1
                             )?.name
                         ),
@@ -64,7 +64,7 @@ export class CatalogSchemaConverter {
                     [
                         NamingConvention.SnakeCase,
                         this.protectUndefinedString(
-                            driverModel.nameVariant.find(
+                            catalogSchema.nameVariant.find(
                                 (x) => x.namingConvention === 2
                             )?.name
                         ),
@@ -72,7 +72,7 @@ export class CatalogSchemaConverter {
                     [
                         NamingConvention.UpperSnakeCase,
                         this.protectUndefinedString(
-                            driverModel.nameVariant.find(
+                            catalogSchema.nameVariant.find(
                                 (x) => x.namingConvention === 3
                             )?.name
                         ),
@@ -80,16 +80,16 @@ export class CatalogSchemaConverter {
                     [
                         NamingConvention.KebabCase,
                         this.protectUndefinedString(
-                            driverModel.nameVariant.find(
+                            catalogSchema.nameVariant.find(
                                 (x) => x.namingConvention === 4
                             )?.name
                         ),
                     ],
                 ])
             ),
-            Value.of(driverModel.description || null),
+            Value.of(catalogSchema.description || null),
             Value.of(
-                this.convertGlobalAttributeSchemas(driverModel.attributes)
+                this.convertGlobalAttributeSchemas(catalogSchema.attributes)
             ),
             entitySchemaAccessor
         )
@@ -100,14 +100,14 @@ export class CatalogSchemaConverter {
         return name
     }
 
-    private convertGlobalAttributeSchemas(driverAttributeSchemas: {
+    private convertGlobalAttributeSchemas(attributeSchemas: {
         [key: string]: GrpcGlobalAttributeSchema
     }): GlobalAttributeSchema[] {
         const globalAttributeSchemas: GlobalAttributeSchema[] = []
 
-        for (const attributeSchema in driverAttributeSchemas) {
+        for (const attributeSchema in attributeSchemas) {
             const schema: GrpcGlobalAttributeSchema =
-                driverAttributeSchemas[attributeSchema]
+                attributeSchemas[attributeSchema]
             globalAttributeSchemas.push(
                 this.convertAttributeSchema(schema) as GlobalAttributeSchema
             )
@@ -116,19 +116,19 @@ export class CatalogSchemaConverter {
     }
 
     private convertAttributeSchema(
-        driverAttributeSchemaUnion: GrpcGlobalAttributeSchema
+        attributeSchemaUnion: GrpcGlobalAttributeSchema
     ): AttributeSchema {
         const globalAttribute =
-            'globalUniquenessType' in driverAttributeSchemaUnion
-        const entityAttribute = 'representative' in driverAttributeSchemaUnion
+            'globalUniquenessType' in attributeSchemaUnion
+        const entityAttribute = 'representative' in attributeSchemaUnion
 
-        const name: string = driverAttributeSchemaUnion.name
+        const name: string = attributeSchemaUnion.name
         const nameVariants: Value<Map<NamingConvention, string>> = Value.of(
             Map([
                 [
                     NamingConvention.CamelCase,
                     this.protectUndefinedString(
-                        driverAttributeSchemaUnion.nameVariant.find(
+                        attributeSchemaUnion.nameVariant.find(
                             (x) => x.namingConvention === 0
                         )?.name
                     ),
@@ -136,7 +136,7 @@ export class CatalogSchemaConverter {
                 [
                     NamingConvention.PascalCase,
                     this.protectUndefinedString(
-                        driverAttributeSchemaUnion.nameVariant.find(
+                        attributeSchemaUnion.nameVariant.find(
                             (x) => x.namingConvention === 1
                         )?.name
                     ),
@@ -144,7 +144,7 @@ export class CatalogSchemaConverter {
                 [
                     NamingConvention.SnakeCase,
                     this.protectUndefinedString(
-                        driverAttributeSchemaUnion.nameVariant.find(
+                        attributeSchemaUnion.nameVariant.find(
                             (x) => x.namingConvention === 2
                         )?.name
                     ),
@@ -152,7 +152,7 @@ export class CatalogSchemaConverter {
                 [
                     NamingConvention.UpperSnakeCase,
                     this.protectUndefinedString(
-                        driverAttributeSchemaUnion.nameVariant.find(
+                        attributeSchemaUnion.nameVariant.find(
                             (x) => x.namingConvention === 3
                         )?.name
                     ),
@@ -160,7 +160,7 @@ export class CatalogSchemaConverter {
                 [
                     NamingConvention.KebabCase,
                     this.protectUndefinedString(
-                        driverAttributeSchemaUnion.nameVariant.find(
+                        attributeSchemaUnion.nameVariant.find(
                             (x) => x.namingConvention === 4
                         )?.name
                     ),
@@ -169,51 +169,51 @@ export class CatalogSchemaConverter {
         )
 
         const description: Value<string | null> = Value.of(
-            driverAttributeSchemaUnion.description === undefined
+            attributeSchemaUnion.description === undefined
                 ? null
-                : driverAttributeSchemaUnion.description
+                : attributeSchemaUnion.description
         )
         const deprecationNotice: Value<string | null> = Value.of(
-            driverAttributeSchemaUnion.deprecationNotice === undefined
+            attributeSchemaUnion.deprecationNotice === undefined
                 ? null
-                : driverAttributeSchemaUnion.deprecationNotice
+                : attributeSchemaUnion.deprecationNotice
         )
         const type: Value<Scalar> = Value.of(
-            this.convertScalar(driverAttributeSchemaUnion.type)
+            this.convertScalar(attributeSchemaUnion.type)
         )
         const uniquenessType: Value<AttributeUniquenessType> = Value.of(
             this.convertAttributeUniquenessType(
-                driverAttributeSchemaUnion.unique
+                attributeSchemaUnion.unique
             )
         )
         const filterable: Value<boolean> = Value.of(
-            driverAttributeSchemaUnion.filterable
+            attributeSchemaUnion.filterable
         )
         const sortable: Value<boolean> = Value.of(
-            driverAttributeSchemaUnion.sortable
+            attributeSchemaUnion.sortable
         )
         const nullable: Value<boolean> = Value.of(
-            driverAttributeSchemaUnion.nullable
+            attributeSchemaUnion.nullable
         )
         const defaultValue: Value<any | any[] | null> = Value.of(
-            driverAttributeSchemaUnion.defaultValue || null
+            attributeSchemaUnion.defaultValue || null
         )
         const localized: Value<boolean> = Value.of(
-            driverAttributeSchemaUnion.localized
+            attributeSchemaUnion.localized
         )
         const indexedDecimalPlaces: Value<number> = Value.of(
-            driverAttributeSchemaUnion.indexedDecimalPlaces
+            attributeSchemaUnion.indexedDecimalPlaces
         )
 
         if (globalAttribute || entityAttribute) {
             const representative: Value<any> = Value.of(
-                driverAttributeSchemaUnion.representative
+                attributeSchemaUnion.representative
             )
             if (globalAttribute) {
                 const uniqueGloballyType: Value<GlobalAttributeUniquenessType> =
                     Value.of(
                         this.convertGlobalAttributeUniquenessType(
-                            driverAttributeSchemaUnion.uniqueGlobally
+                            attributeSchemaUnion.uniqueGlobally
                         )
                     )
                 return new GlobalAttributeSchema(
@@ -285,9 +285,9 @@ export class CatalogSchemaConverter {
     }
 
     private convertGlobalAttributeUniquenessType(
-        grpcGlobalAttributeUniquenessType: GrpcGlobalAttributeUniquenessType
+        globalAttributeUniquenessType: GrpcGlobalAttributeUniquenessType
     ): GlobalAttributeUniquenessType {
-        switch (grpcGlobalAttributeUniquenessType) {
+        switch (globalAttributeUniquenessType) {
             case GrpcGlobalAttributeUniquenessType.NOT_GLOBALLY_UNIQUE:
                 return GlobalAttributeUniquenessType.NotUnique
             case GrpcGlobalAttributeUniquenessType.UNIQUE_WITHIN_CATALOG:
@@ -296,21 +296,21 @@ export class CatalogSchemaConverter {
                 return GlobalAttributeUniquenessType.UniqueWithinCatalogLocale
             default:
                 throw new UnexpectedError(
-                    `Unsupported global attribute uniqueness type '${grpcGlobalAttributeUniquenessType}'.`
+                    `Unsupported global attribute uniqueness type '${globalAttributeUniquenessType}'.`
                 )
         }
     }
 
-    convertEntitySchema(driverEntitySchema: GrpcEntitySchema): EntitySchema {
+    convertEntitySchema(entitySchema: GrpcEntitySchema): EntitySchema {
         return new EntitySchema(
-            Value.of(driverEntitySchema.version),
-            driverEntitySchema.name,
+            Value.of(entitySchema.version),
+            entitySchema.name,
             Value.of(
                 Map([
                     [
                         NamingConvention.CamelCase,
                         this.protectUndefinedString(
-                            driverEntitySchema.nameVariant.find(
+                            entitySchema.nameVariant.find(
                                 (x) => x.namingConvention === 0
                             )?.name
                         ),
@@ -318,7 +318,7 @@ export class CatalogSchemaConverter {
                     [
                         NamingConvention.PascalCase,
                         this.protectUndefinedString(
-                            driverEntitySchema.nameVariant.find(
+                            entitySchema.nameVariant.find(
                                 (x) => x.namingConvention === 1
                             )?.name
                         ),
@@ -326,7 +326,7 @@ export class CatalogSchemaConverter {
                     [
                         NamingConvention.SnakeCase,
                         this.protectUndefinedString(
-                            driverEntitySchema.nameVariant.find(
+                            entitySchema.nameVariant.find(
                                 (x) => x.namingConvention === 2
                             )?.name
                         ),
@@ -334,7 +334,7 @@ export class CatalogSchemaConverter {
                     [
                         NamingConvention.UpperSnakeCase,
                         this.protectUndefinedString(
-                            driverEntitySchema.nameVariant.find(
+                            entitySchema.nameVariant.find(
                                 (x) => x.namingConvention === 3
                             )?.name
                         ),
@@ -342,156 +342,156 @@ export class CatalogSchemaConverter {
                     [
                         NamingConvention.KebabCase,
                         this.protectUndefinedString(
-                            driverEntitySchema.nameVariant.find(
+                            entitySchema.nameVariant.find(
                                 (x) => x.namingConvention === 4
                             )?.name
                         ),
                     ],
                 ])
             ),
-            Value.of(driverEntitySchema.description || null),
-            Value.of(driverEntitySchema.deprecationNotice || null),
-            Value.of(driverEntitySchema.withGeneratedPrimaryKey),
-            Value.of(driverEntitySchema.withHierarchy),
-            Value.of(driverEntitySchema.withPrice),
-            Value.of(driverEntitySchema.indexedPricePlaces),
-            Value.of(this.convertLocales(driverEntitySchema.locales)),
-            Value.of(this.convertCurrency(driverEntitySchema.currencies)),
+            Value.of(entitySchema.description || null),
+            Value.of(entitySchema.deprecationNotice || null),
+            Value.of(entitySchema.withGeneratedPrimaryKey),
+            Value.of(entitySchema.withHierarchy),
+            Value.of(entitySchema.withPrice),
+            Value.of(entitySchema.indexedPricePlaces),
+            Value.of(this.convertLocales(entitySchema.locales)),
+            Value.of(this.convertCurrency(entitySchema.currencies)),
             Value.of(
-                this.convertEvolutionMode(driverEntitySchema.evolutionMode)
+                this.convertEvolutionMode(entitySchema.evolutionMode)
             ),
             Value.of(
                 this.convertEntityAttributeSchemas(
-                    driverEntitySchema.attributes
+                    entitySchema.attributes
                 )
             ),
             Value.of(
                 this.convertSortableAttributeCompoundSchemas(
-                    driverEntitySchema.sortableAttributeCompounds
+                    entitySchema.sortableAttributeCompounds
                 )
             ),
             Value.of(
                 this.convertAssociatedDataSchemas(
-                    driverEntitySchema.associatedData
+                    entitySchema.associatedData
                 )
             ),
             Value.of(
-                this.convertReferenceSchemas(driverEntitySchema.references)
+                this.convertReferenceSchemas(entitySchema.references)
             )
         )
     }
 
-    private convertSortableAttributeCompoundSchema(driverSortableAttributeCompoundSchema: GrpcSortableAttributeCompoundSchema): SortableAttributeCompoundSchema {
+    private convertSortableAttributeCompoundSchema(sortableAttributeCompoundSchema: GrpcSortableAttributeCompoundSchema): SortableAttributeCompoundSchema {
         return new SortableAttributeCompoundSchema(
-            driverSortableAttributeCompoundSchema.name,
+            sortableAttributeCompoundSchema.name,
             Value.of(Map([
-                [NamingConvention.CamelCase, this.protectUndefinedString(driverSortableAttributeCompoundSchema.nameVariant.find(x => x.namingConvention === 0)?.name)],
-                [NamingConvention.PascalCase, this.protectUndefinedString(driverSortableAttributeCompoundSchema.nameVariant.find(x => x.namingConvention === 1)?.name)],
-                [NamingConvention.SnakeCase, this.protectUndefinedString(driverSortableAttributeCompoundSchema.nameVariant.find(x => x.namingConvention === 2)?.name)],
-                [NamingConvention.UpperSnakeCase, this.protectUndefinedString(driverSortableAttributeCompoundSchema.nameVariant.find(x => x.namingConvention === 3)?.name)],
-                [NamingConvention.KebabCase, this.protectUndefinedString(driverSortableAttributeCompoundSchema.nameVariant.find(x => x.namingConvention === 4)?.name)]
+                [NamingConvention.CamelCase, this.protectUndefinedString(sortableAttributeCompoundSchema.nameVariant.find(x => x.namingConvention === 0)?.name)],
+                [NamingConvention.PascalCase, this.protectUndefinedString(sortableAttributeCompoundSchema.nameVariant.find(x => x.namingConvention === 1)?.name)],
+                [NamingConvention.SnakeCase, this.protectUndefinedString(sortableAttributeCompoundSchema.nameVariant.find(x => x.namingConvention === 2)?.name)],
+                [NamingConvention.UpperSnakeCase, this.protectUndefinedString(sortableAttributeCompoundSchema.nameVariant.find(x => x.namingConvention === 3)?.name)],
+                [NamingConvention.KebabCase, this.protectUndefinedString(sortableAttributeCompoundSchema.nameVariant.find(x => x.namingConvention === 4)?.name)]
             ])),
-            Value.of(driverSortableAttributeCompoundSchema.description || null),
-            Value.of(driverSortableAttributeCompoundSchema.deprecationNotice || null),
-            Value.of(this.convertAttributeElements(driverSortableAttributeCompoundSchema.attributeElements))
+            Value.of(sortableAttributeCompoundSchema.description || null),
+            Value.of(sortableAttributeCompoundSchema.deprecationNotice || null),
+            Value.of(this.convertAttributeElements(sortableAttributeCompoundSchema.attributeElements))
         )
     }
 
-    private convertAttributeElements(driverAttributeElements: GrpcAttributeElement[]): AttributeElement[] {
-        return driverAttributeElements.map(it => this.convertAttributeElement(it))
+    private convertAttributeElements(attributeElements: GrpcAttributeElement[]): AttributeElement[] {
+        return attributeElements.map(it => this.convertAttributeElement(it))
     }
 
 
-    private convertAttributeElement(driverAttributeElement: GrpcAttributeElement): AttributeElement {
+    private convertAttributeElement(attributeElement: GrpcAttributeElement): AttributeElement {
         return new AttributeElement(
-            Value.of(driverAttributeElement.attributeName),
-            Value.of(this.convertOrderBehaviour(driverAttributeElement.behaviour)),
-            Value.of(this.convertOrderDirection(driverAttributeElement.direction))
+            Value.of(attributeElement.attributeName),
+            Value.of(this.convertOrderBehaviour(attributeElement.behaviour)),
+            Value.of(this.convertOrderDirection(attributeElement.direction))
         )
     }
 
-    private convertReferenceSchemas(driverReferenceSchemas: {[key: string]: GrpcReferenceSchema}): ReferenceSchema[] {
-        const referenceSchemas: ReferenceSchema[] = []
-        for (const referenceName in driverReferenceSchemas) {
-            const driverReferenceSchema: GrpcReferenceSchema = driverReferenceSchemas[referenceName]
-            referenceSchemas.push(this.convertReferenceSchema(driverReferenceSchema))
+    private convertReferenceSchemas(referenceSchemas: {[key: string]: GrpcReferenceSchema}): ReferenceSchema[] {
+        const newReferenceSchemas: ReferenceSchema[] = []
+        for (const referenceName in referenceSchemas) {
+            const driverReferenceSchema: GrpcReferenceSchema = referenceSchemas[referenceName]
+            newReferenceSchemas.push(this.convertReferenceSchema(driverReferenceSchema))
         }
-        return referenceSchemas
+        return newReferenceSchemas
     }
 
-    private convertEntityAttributeSchemas(driverEntityAttributeSchemas: {[key: string]: GrpcAttributeSchema}): EntityAttributeSchema[] {
+    private convertEntityAttributeSchemas(entityAttributeSchemas: {[key: string]: GrpcAttributeSchema}): EntityAttributeSchema[] {
         const entityAttributesSchemas: EntityAttributeSchema[] = []
-        for (const attributeName in driverEntityAttributeSchemas) {
-            const driverEntityAttributeSchema: GrpcAttributeSchema = driverEntityAttributeSchemas[attributeName]
+        for (const attributeName in entityAttributeSchemas) {
+            const driverEntityAttributeSchema: GrpcAttributeSchema = entityAttributeSchemas[attributeName]
             entityAttributesSchemas.push(this.convertAttributeSchema(driverEntityAttributeSchema) as EntityAttributeSchema)
         }
         return entityAttributesSchemas
     }
-    private convertReferenceSchema(driverReferenceSchema: GrpcReferenceSchema): ReferenceSchema {
+    private convertReferenceSchema(referenceSchema: GrpcReferenceSchema): ReferenceSchema {
         return new ReferenceSchema(
-            driverReferenceSchema.name,
+            referenceSchema.name,
             Value.of(Map([
-                [NamingConvention.CamelCase, this.protectUndefinedString(driverReferenceSchema.nameVariant.find(x => x.namingConvention === 0)?.name)],
-                [NamingConvention.PascalCase, this.protectUndefinedString(driverReferenceSchema.nameVariant.find(x => x.namingConvention === 1)?.name)],
-                [NamingConvention.SnakeCase, this.protectUndefinedString(driverReferenceSchema.nameVariant.find(x => x.namingConvention === 2)?.name)],
-                [NamingConvention.UpperSnakeCase, this.protectUndefinedString(driverReferenceSchema.nameVariant.find(x => x.namingConvention === 3)?.name)],
-                [NamingConvention.KebabCase, this.protectUndefinedString(driverReferenceSchema.nameVariant.find(x => x.namingConvention === 4)?.name)]
+                [NamingConvention.CamelCase, this.protectUndefinedString(referenceSchema.nameVariant.find(x => x.namingConvention === 0)?.name)],
+                [NamingConvention.PascalCase, this.protectUndefinedString(referenceSchema.nameVariant.find(x => x.namingConvention === 1)?.name)],
+                [NamingConvention.SnakeCase, this.protectUndefinedString(referenceSchema.nameVariant.find(x => x.namingConvention === 2)?.name)],
+                [NamingConvention.UpperSnakeCase, this.protectUndefinedString(referenceSchema.nameVariant.find(x => x.namingConvention === 3)?.name)],
+                [NamingConvention.KebabCase, this.protectUndefinedString(referenceSchema.nameVariant.find(x => x.namingConvention === 4)?.name)]
             ])),
-            Value.of(driverReferenceSchema.description || null),
-            Value.of(driverReferenceSchema.deprecationNotice || null),
-            Value.of(driverReferenceSchema.entityType),
-            Value.of(driverReferenceSchema.entityTypeRelatesToEntity),
+            Value.of(referenceSchema.description || null),
+            Value.of(referenceSchema.deprecationNotice || null),
+            Value.of(referenceSchema.entityType),
+            Value.of(referenceSchema.entityTypeRelatesToEntity),
             Value.of(Map([
-                [NamingConvention.CamelCase, this.protectUndefinedString(driverReferenceSchema.nameVariant.find(x => x.namingConvention === 0)?.name)],
-                [NamingConvention.PascalCase, this.protectUndefinedString(driverReferenceSchema.nameVariant.find(x => x.namingConvention === 1)?.name)],
-                [NamingConvention.SnakeCase, this.protectUndefinedString(driverReferenceSchema.nameVariant.find(x => x.namingConvention === 2)?.name)],
-                [NamingConvention.UpperSnakeCase, this.protectUndefinedString(driverReferenceSchema.nameVariant.find(x => x.namingConvention === 3)?.name)],
-                [NamingConvention.KebabCase, this.protectUndefinedString(driverReferenceSchema.nameVariant.find(x => x.namingConvention === 4)?.name)]
+                [NamingConvention.CamelCase, this.protectUndefinedString(referenceSchema.nameVariant.find(x => x.namingConvention === 0)?.name)],
+                [NamingConvention.PascalCase, this.protectUndefinedString(referenceSchema.nameVariant.find(x => x.namingConvention === 1)?.name)],
+                [NamingConvention.SnakeCase, this.protectUndefinedString(referenceSchema.nameVariant.find(x => x.namingConvention === 2)?.name)],
+                [NamingConvention.UpperSnakeCase, this.protectUndefinedString(referenceSchema.nameVariant.find(x => x.namingConvention === 3)?.name)],
+                [NamingConvention.KebabCase, this.protectUndefinedString(referenceSchema.nameVariant.find(x => x.namingConvention === 4)?.name)]
             ])),
             Value.of(null), //TODO: fix add value
             Value.of(null), //TODO: fix add value
             Value.of(null), //TODO: fix add value
-            Value.of(driverReferenceSchema.indexed),
-            Value.of(driverReferenceSchema.faceted),
-            Value.of(this.convertCardinality(driverReferenceSchema.cardinality)),
-            Value.of(this.convertAttributeSchemas(driverReferenceSchema.attributes)),
-            Value.of(this.convertSortableAttributeCompoundSchemas(driverReferenceSchema.sortableAttributeCompounds))
+            Value.of(referenceSchema.indexed),
+            Value.of(referenceSchema.faceted),
+            Value.of(this.convertCardinality(referenceSchema.cardinality)),
+            Value.of(this.convertAttributeSchemas(referenceSchema.attributes)),
+            Value.of(this.convertSortableAttributeCompoundSchemas(referenceSchema.sortableAttributeCompounds))
         )
     }
 
-    private convertAttributeSchemas(driverAttributeSchemas: {[key: string]: GrpcAttributeSchema}): AttributeSchema[] {
+    private convertAttributeSchemas(attributeSchemas: {[key: string]: GrpcAttributeSchema}): AttributeSchema[] {
         const attributesSchemas: AttributeSchema[] = []
-        for (const attributeName in driverAttributeSchemas) {
-            const driverAttributeSchema: GrpcAttributeSchema = driverAttributeSchemas[attributeName]
+        for (const attributeName in attributeSchemas) {
+            const driverAttributeSchema: GrpcAttributeSchema = attributeSchemas[attributeName]
             attributesSchemas.push(this.convertAttributeSchema(driverAttributeSchema) as AttributeSchema)
         }
         return attributesSchemas
     }
 
-    private convertAssociatedDataSchemas(driverAssociatedDataSchemas: {[key: string]: GrpcAssociatedDataSchema}): AssociatedDataSchema[] {
-        const associatedDataSchemas: AssociatedDataSchema[] = []
-        for (const associatedDataName in driverAssociatedDataSchemas) {
-            const driverAssociatedDataSchema: GrpcAssociatedDataSchema = driverAssociatedDataSchemas[associatedDataName]
-            associatedDataSchemas.push(this.convertAssociatedDataSchema(driverAssociatedDataSchema))
+    private convertAssociatedDataSchemas(associatedDataSchemas: {[key: string]: GrpcAssociatedDataSchema}): AssociatedDataSchema[] {
+        const newAssociatedDataSchemas: AssociatedDataSchema[] = []
+        for (const associatedDataName in associatedDataSchemas) {
+            const driverAssociatedDataSchema: GrpcAssociatedDataSchema = associatedDataSchemas[associatedDataName]
+            newAssociatedDataSchemas.push(this.convertAssociatedDataSchema(driverAssociatedDataSchema))
         }
-        return associatedDataSchemas
+        return newAssociatedDataSchemas
     }
 
-    private convertAssociatedDataSchema(driverAssociatedDataSchema: GrpcAssociatedDataSchema): AssociatedDataSchema {
+    private convertAssociatedDataSchema(associatedDataSchema: GrpcAssociatedDataSchema): AssociatedDataSchema {
         return new AssociatedDataSchema(
-            driverAssociatedDataSchema.name,
+            associatedDataSchema.name,
             Value.of(Map([
-                [NamingConvention.CamelCase, this.protectUndefinedString(driverAssociatedDataSchema.nameVariant.find(x => x.namingConvention === 0)?.name)],
-                [NamingConvention.PascalCase, this.protectUndefinedString(driverAssociatedDataSchema.nameVariant.find(x => x.namingConvention === 0)?.name)],
-                [NamingConvention.SnakeCase, this.protectUndefinedString(driverAssociatedDataSchema.nameVariant.find(x => x.namingConvention === 0)?.name)],
-                [NamingConvention.UpperSnakeCase, this.protectUndefinedString(driverAssociatedDataSchema.nameVariant.find(x => x.namingConvention === 0)?.name)],
-                [NamingConvention.KebabCase, this.protectUndefinedString(driverAssociatedDataSchema.nameVariant.find(x => x.namingConvention === 0)?.name)]
+                [NamingConvention.CamelCase, this.protectUndefinedString(associatedDataSchema.nameVariant.find(x => x.namingConvention === 0)?.name)],
+                [NamingConvention.PascalCase, this.protectUndefinedString(associatedDataSchema.nameVariant.find(x => x.namingConvention === 0)?.name)],
+                [NamingConvention.SnakeCase, this.protectUndefinedString(associatedDataSchema.nameVariant.find(x => x.namingConvention === 0)?.name)],
+                [NamingConvention.UpperSnakeCase, this.protectUndefinedString(associatedDataSchema.nameVariant.find(x => x.namingConvention === 0)?.name)],
+                [NamingConvention.KebabCase, this.protectUndefinedString(associatedDataSchema.nameVariant.find(x => x.namingConvention === 0)?.name)]
             ])),
-            Value.of(driverAssociatedDataSchema.description || null),
-            Value.of(driverAssociatedDataSchema.deprecationNotice || null),
-            Value.of(this.convertScalar(driverAssociatedDataSchema.type as unknown as GrpcEvitaDataType)),
-            Value.of(driverAssociatedDataSchema.nullable),
-            Value.of(driverAssociatedDataSchema.localized)
+            Value.of(associatedDataSchema.description || null),
+            Value.of(associatedDataSchema.deprecationNotice || null),
+            Value.of(this.convertScalar(associatedDataSchema.type as unknown as GrpcEvitaDataType)),
+            Value.of(associatedDataSchema.nullable),
+            Value.of(associatedDataSchema.localized)
         )
     }
 
@@ -503,10 +503,10 @@ export class CatalogSchemaConverter {
         return convertedLocales
     }
 
-    private convertSortableAttributeCompoundSchemas(driverSortableAttributeCompoundSchemas: { [key: string]: GrpcSortableAttributeCompoundSchema }): SortableAttributeCompoundSchema[] {
+    private convertSortableAttributeCompoundSchemas(sortableAttributeCompoundSchemas: { [key: string]: GrpcSortableAttributeCompoundSchema }): SortableAttributeCompoundSchema[] {
         const sortableAttributeSchemas: SortableAttributeCompoundSchema[] = []
-        for (const compoundName in driverSortableAttributeCompoundSchemas) {
-            const driverSortableAttributeCompoundSchema: GrpcSortableAttributeCompoundSchema = driverSortableAttributeCompoundSchemas[compoundName]
+        for (const compoundName in sortableAttributeCompoundSchemas) {
+            const driverSortableAttributeCompoundSchema: GrpcSortableAttributeCompoundSchema = sortableAttributeCompoundSchemas[compoundName]
             sortableAttributeSchemas.push(this.convertSortableAttributeCompoundSchema(driverSortableAttributeCompoundSchema))
         }
         return sortableAttributeSchemas
@@ -521,34 +521,34 @@ export class CatalogSchemaConverter {
     }
 
     private convertEvolutionMode(
-        grpcEvolutionModes: GrpcEvolutionMode[]
+        evolutionModes: GrpcEvolutionMode[]
     ): EvolutionMode[] {
-        const evolutionModes: EvolutionMode[] = []
-        for (const grpcEvolutionMode of grpcEvolutionModes) {
+        const newEvolutionModes: EvolutionMode[] = []
+        for (const grpcEvolutionMode of evolutionModes) {
             switch (grpcEvolutionMode) {
                 case GrpcEvolutionMode.ADAPT_PRIMARY_KEY_GENERATION:
-                    evolutionModes.push(EvolutionMode.AdaptPrimaryKeyGeneration)
+                    newEvolutionModes.push(EvolutionMode.AdaptPrimaryKeyGeneration)
                     break;
                 case GrpcEvolutionMode.ADDING_ATTRIBUTES:
-                    evolutionModes.push(EvolutionMode.AddingAttributes);
+                    newEvolutionModes.push(EvolutionMode.AddingAttributes);
                     break;
                 case GrpcEvolutionMode.ADDING_ASSOCIATED_DATA:
-                    evolutionModes.push(EvolutionMode.AddingAssociatedData);
+                    newEvolutionModes.push(EvolutionMode.AddingAssociatedData);
                     break;
                 case GrpcEvolutionMode.ADDING_REFERENCES:
-                    evolutionModes.push(EvolutionMode.AddingReferences);
+                    newEvolutionModes.push(EvolutionMode.AddingReferences);
                     break;
                 case GrpcEvolutionMode.ADDING_PRICES:
-                    evolutionModes.push(EvolutionMode.AddingPrices);
+                    newEvolutionModes.push(EvolutionMode.AddingPrices);
                     break;
                 case GrpcEvolutionMode.ADDING_LOCALES:
-                    evolutionModes.push(EvolutionMode.AddingLocales);
+                    newEvolutionModes.push(EvolutionMode.AddingLocales);
                     break;
                 case GrpcEvolutionMode.ADDING_CURRENCIES:
-                    evolutionModes.push(EvolutionMode.AddingCurrencies);
+                    newEvolutionModes.push(EvolutionMode.AddingCurrencies);
                     break;
                 case GrpcEvolutionMode.ADDING_HIERARCHY:
-                    evolutionModes.push(EvolutionMode.AddingHierarchy);
+                    newEvolutionModes.push(EvolutionMode.AddingHierarchy);
                     break;
                 default:
                     throw new UnexpectedError(
@@ -556,28 +556,28 @@ export class CatalogSchemaConverter {
                     )
             }
         }
-        return evolutionModes
+        return newEvolutionModes
     }
 
     private convertOrderBehaviour(
-        grpcOrderBehaviour: GrpcOrderBehaviour
+        orderBehaviour: GrpcOrderBehaviour
     ): OrderBehaviour {
-        switch (grpcOrderBehaviour) {
+        switch (orderBehaviour) {
             case GrpcOrderBehaviour.NULLS_FIRST:
                 return OrderBehaviour.NullsFirst
             case GrpcOrderBehaviour.NULLS_LAST:
                 return OrderBehaviour.NullsLast
             default:
                 throw new UnexpectedError(
-                    `Unsupported order behaviour '${grpcOrderBehaviour}'.`
+                    `Unsupported order behaviour '${orderBehaviour}'.`
                 )
         }
     }
 
     private convertCardinality(
-        driverCardinality: GrpcCardinality
+        cardinality: GrpcCardinality
     ): Cardinality {
-        switch (driverCardinality) {
+        switch (cardinality) {
             case GrpcCardinality.EXACTLY_ONE:
                 return Cardinality.ExactlyOne
             case GrpcCardinality.ONE_OR_MORE:
@@ -588,28 +588,28 @@ export class CatalogSchemaConverter {
                 return Cardinality.ZeroOrOne
             default:
                 throw new UnexpectedError(
-                    `Unsupported cardinality '${driverCardinality}'.`
+                    `Unsupported cardinality '${cardinality}'.`
                 )
         }
     }
 
     private convertOrderDirection(
-        driverOrderDirection: GrpcOrderDirection
+        orderDirection: GrpcOrderDirection
     ): OrderDirection {
-        switch (driverOrderDirection) {
+        switch (orderDirection) {
             case GrpcOrderDirection.ASC:
                 return OrderDirection.Desc
             case GrpcOrderDirection.DESC:
                 return OrderDirection.Desc
             default:
                 throw new UnexpectedError(
-                    `Unsupported order direction '${driverOrderDirection}'.`
+                    `Unsupported order direction '${orderDirection}'.`
                 )
         }
     }
 
-    private convertScalar(grpcScalar: GrpcEvitaDataType): Scalar {
-        switch (grpcScalar) {
+    private convertScalar(scalar: GrpcEvitaDataType): Scalar {
+        switch (scalar) {
             case GrpcEvitaDataType.BIG_DECIMAL:
                 return Scalar.BigDecimal
             case GrpcEvitaDataType.BIG_DECIMAL_NUMBER_RANGE:

@@ -8,11 +8,11 @@ import { Value } from "@/modules/connection/model/Value"
 
 export class CatalogConverter
 {
-    convert(driverCatalog: GrpcCatalogStatistics): Catalog {
+    convert(catalog: GrpcCatalogStatistics): Catalog {
         return new Catalog(
             undefined,
-            Value.of(driverCatalog.catalogVersion),
-            driverCatalog.catalogName,
+            Value.of(catalog.catalogVersion),
+            catalog.catalogName,
             Value.of(new Map([
                 [NamingConvention.CamelCase, ''],
                 [NamingConvention.PascalCase, ''],
@@ -21,17 +21,17 @@ export class CatalogConverter
                 [NamingConvention.KebabCase, '']
             ])),
             undefined,
-            Value.of(driverCatalog.corrupted),
+            Value.of(catalog.corrupted),
             undefined,
-            Value.of(this.convertCatalogState(driverCatalog.catalogState))
+            Value.of(this.convertCatalogState(catalog.catalogState))
         )
     }
 
-    private convertCatalogState(driverCatalogState: GrpcCatalogState): CatalogState {
-        switch (driverCatalogState) {
+    private convertCatalogState(catalogState: GrpcCatalogState): CatalogState {
+        switch (catalogState) {
             case GrpcCatalogState.WARMING_UP: return CatalogState.WarmingUp
             case GrpcCatalogState.ALIVE: return CatalogState.Alive
-            default: throw new UnexpectedError(`Unsupported catalog state '${driverCatalogState}'.`)
+            default: throw new UnexpectedError(`Unsupported catalog state '${catalogState}'.`)
         }
     }
 }
