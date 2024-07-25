@@ -1,7 +1,7 @@
 import {
     GrpcCatalogSchema,
     GrpcGlobalAttributeSchema,
-} from '@/gen/GrpcCatalogSchema_pb'
+} from '@/modules/connection/driver/grpc/gen/GrpcCatalogSchema_pb'
 import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
 import { Value } from '@/modules/connection/model/Value'
 import { NamingConvention } from '@/modules/connection/model/NamingConvetion'
@@ -19,7 +19,7 @@ import {
     GrpcNamingConvention,
     GrpcOrderBehaviour,
     GrpcOrderDirection,
-} from '@/gen/GrpcEnums_pb'
+} from '@/modules/connection/driver/grpc/gen/GrpcEnums_pb'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { GlobalAttributeUniquenessType } from '@/modules/connection/model/schema/GlobalAttributeUniquenessType'
 import { EntityAttributeSchema } from '@/modules/connection/model/schema/EntityAttributeSchema'
@@ -36,12 +36,12 @@ import {
     GrpcEntitySchema,
     GrpcReferenceSchema,
     GrpcSortableAttributeCompoundSchema,
-} from '@/gen/GrpcEntitySchema_pb'
+} from '@/modules/connection/driver/grpc/gen/GrpcEntitySchema_pb'
 import {
     GrpcCurrency,
     GrpcLocale,
     GrpcNameVariant,
-} from '@/gen/GrpcEvitaDataTypes_pb'
+} from '@/modules/connection/driver/grpc/gen/GrpcEvitaDataTypes_pb'
 import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
 import {
     AttributeElement,

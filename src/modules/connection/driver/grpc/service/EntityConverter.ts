@@ -1,15 +1,15 @@
-import { GrpcLocalizedAttribute } from '@/gen/GrpcAttribute_pb'
+import { GrpcLocalizedAttribute } from '@/modules/connection/driver/grpc/gen/GrpcAttribute_pb'
 import {
     GrpcEntityReference,
     GrpcEntityReferenceWithParent,
     GrpcReference,
     GrpcSealedEntity,
-} from '@/gen/GrpcEntity_pb'
+} from '@/modules/connection/driver/grpc/gen/GrpcEntity_pb'
 import {
     GrpcEvitaAssociatedDataValue,
     GrpcEvitaValue,
     GrpcLocale,
-} from '@/gen/GrpcEvitaDataTypes_pb'
+} from '@/modules/connection/driver/grpc/gen/GrpcEvitaDataTypes_pb'
 import { Entity } from '@/modules/connection/model/data/Entity'
 import { EntityReferenceWithParent } from '@/modules/connection/model/data/EntityReferenceWithParent'
 import { LocalizedAttribute } from '@/modules/connection/model/data/LocalizedAttribute'
@@ -18,12 +18,12 @@ import { Value } from '@/modules/connection/model/Value'
 import {
     GrpcCardinality,
     GrpcPriceInnerRecordHandling,
-} from '@/gen/GrpcEnums_pb'
+} from '@/modules/connection/driver/grpc/gen/GrpcEnums_pb'
 import { EvitaAssociatedDataValue } from '@/modules/connection/model/data/EvitaAssociatedDataValue'
-import { GrpcLocalizedAssociatedData } from '@/gen/GrpcAssociatedData_pb'
+import { GrpcLocalizedAssociatedData } from '@/modules/connection/driver/grpc/gen/GrpcAssociatedData_pb'
 import { LocalizedAssociatedData } from '@/modules/connection/model/data/LocalizedAssociatedData'
 import { Locale } from '@/modules/connection/model/data-type/Locale'
-import { GrpcPrice } from '@/gen/GrpcPrice_pb'
+import { GrpcPrice } from '@/modules/connection/driver/grpc/gen/GrpcPrice_pb'
 import { Price } from '@/modules/connection/model/data/Price'
 import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
 import { datetime as DateTimeUtil } from '@/utils/datetime'

@@ -1,8 +1,8 @@
-import { GrpcCatalogState } from '@/gen/GrpcEnums_pb'
+import { GrpcCatalogState } from '@/modules/connection/driver/grpc/gen/GrpcEnums_pb'
 import {
     GrpcCatalogStatistics,
     GrpcEntityCollectionStatistics,
-} from '@/gen/GrpcEvitaDataTypes_pb'
+} from '@/modules/connection/driver/grpc/gen/GrpcEvitaDataTypes_pb'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import { CatalogState } from '@/modules/connection/model/CatalogState'

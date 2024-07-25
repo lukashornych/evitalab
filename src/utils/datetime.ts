@@ -1,4 +1,4 @@
-import { GrpcDateTimeRange } from "@/gen/GrpcEvitaDataTypes_pb"
+import { GrpcDateTimeRange } from "@/modules/connection/driver/grpc/gen/GrpcEvitaDataTypes_pb"
 import { DateTimeRange } from "@/modules/connection/model/data-type/DateTimeRange"
 import { OffsetDateTime } from "@/modules/connection/model/data-type/OffsetDateTime"
 

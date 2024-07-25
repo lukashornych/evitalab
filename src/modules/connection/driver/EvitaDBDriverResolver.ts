@@ -8,6 +8,7 @@ import { InjectionKey } from 'vue'
 import { mandatoryInject } from '@/utils/reactivity'
 import { EvitaLabConfig } from '@/modules/config/EvitaLabConfig'
 import { EvitaDBServerProbe, useEvitaDBServerProbe } from '@/modules/connection/service/EvitaDBServerProbe'
+import { EvitaDBDriverGrpc } from './grpc/EvitaDBDriverGrpc'
 
 export const evitaDBDriverResolverInjectionKey: InjectionKey<EvitaDBDriverResolver> = Symbol('evitaDBDriverResolver')
 
@@ -25,7 +26,7 @@ export class EvitaDBDriverResolver {
 
     constructor(evitaLabConfig: EvitaLabConfig, evitaDBServerProbe: EvitaDBServerProbe) {
         this.driverIndex = [
-            new EvitaDBDriver_2024_8(evitaLabConfig)
+            new EvitaDBDriverGrpc()
         ]
         this.evitaDBServerProbe = evitaDBServerProbe
     }

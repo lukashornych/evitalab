@@ -1,4 +1,4 @@
-import { GrpcDataChunk, GrpcPaginatedList, GrpcQueryResponse, GrpcStripList } from "@/gen/GrpcEvitaSessionAPI_pb";
+import { GrpcDataChunk, GrpcPaginatedList, GrpcQueryResponse, GrpcStripList } from "@/modules/connection/driver/grpc/gen/GrpcEvitaSessionAPI_pb";
 import { EntityConverter } from "./EntityConverter";
 import { Response } from "@/modules/connection/model/data/Response";
 import { Value } from "@/modules/connection/model/Value";
