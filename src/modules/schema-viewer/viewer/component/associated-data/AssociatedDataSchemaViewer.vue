@@ -5,7 +5,7 @@ import { AssociatedDataSchema } from '@/modules/connection/model/schema/Associat
 import { Property } from '@/modules/base/model/properties-table/Property'
 import { PropertyValue } from '@/modules/base/model/properties-table/PropertyValue'
 import { KeywordValue } from '@/modules/base/model/properties-table/KeywordValue'
-import { Scalar } from '@/modules/connection/driver/2024_8/model/model'
+import { Scalar } from '@/modules/connection/model/data-type/Scalar'
 import SchemaContainer from '@/modules/schema-viewer/viewer/component/SchemaContainer.vue'
 import NameVariants from '@/modules/schema-viewer/viewer/component/NameVariants.vue'
 
