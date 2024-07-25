@@ -1997,56 +1997,63 @@ export class GrpcCatalogStatistics extends Message<GrpcCatalogStatistics> {
   /**
    * name of the catalog
    *
-   * @generated from field: string catalogName = 1;
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcUuid catalogId = 1;
+   */
+  catalogId?: GrpcUuid;
+
+  /**
+   * name of the catalog
+   *
+   * @generated from field: string catalogName = 2;
    */
   catalogName = "";
 
   /**
    * true if the catalog is corrupted (other data will be not available)
    *
-   * @generated from field: bool corrupted = 2;
+   * @generated from field: bool corrupted = 3;
    */
   corrupted = false;
 
   /**
    * current state of the catalog, null for corrupted catalog
    *
-   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcCatalogState catalogState = 3;
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcCatalogState catalogState = 4;
    */
   catalogState = GrpcCatalogState.WARMING_UP;
 
   /**
    * version of the catalog, -1 for corrupted catalog
    *
-   * @generated from field: int64 catalogVersion = 4;
+   * @generated from field: int64 catalogVersion = 5;
    */
   catalogVersion = protoInt64.zero;
 
   /**
    * total number of records in the catalog, -1 for corrupted catalog
    *
-   * @generated from field: int64 totalRecords = 5;
+   * @generated from field: int64 totalRecords = 6;
    */
   totalRecords = protoInt64.zero;
 
   /**
    * total number of indexes in the catalog, -1 for corrupted catalog
    *
-   * @generated from field: int64 indexCount = 6;
+   * @generated from field: int64 indexCount = 7;
    */
   indexCount = protoInt64.zero;
 
   /**
    * total size of the catalog on disk in bytes
    *
-   * @generated from field: int64 sizeOnDiskInBytes = 7;
+   * @generated from field: int64 sizeOnDiskInBytes = 8;
    */
   sizeOnDiskInBytes = protoInt64.zero;
 
   /**
    * statistics for each entity collection in the catalog, empty array for corrupted catalog
    *
-   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcEntityCollectionStatistics entityCollectionStatistics = 8;
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcEntityCollectionStatistics entityCollectionStatistics = 9;
    */
   entityCollectionStatistics: GrpcEntityCollectionStatistics[] = [];
 
@@ -2058,14 +2065,15 @@ export class GrpcCatalogStatistics extends Message<GrpcCatalogStatistics> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "io.evitadb.externalApi.grpc.generated.GrpcCatalogStatistics";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "catalogName", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "corrupted", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 3, name: "catalogState", kind: "enum", T: proto3.getEnumType(GrpcCatalogState) },
-    { no: 4, name: "catalogVersion", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
-    { no: 5, name: "totalRecords", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
-    { no: 6, name: "indexCount", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
-    { no: 7, name: "sizeOnDiskInBytes", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
-    { no: 8, name: "entityCollectionStatistics", kind: "message", T: GrpcEntityCollectionStatistics, repeated: true },
+    { no: 1, name: "catalogId", kind: "message", T: GrpcUuid },
+    { no: 2, name: "catalogName", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "corrupted", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 4, name: "catalogState", kind: "enum", T: proto3.getEnumType(GrpcCatalogState) },
+    { no: 5, name: "catalogVersion", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 6, name: "totalRecords", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 7, name: "indexCount", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 8, name: "sizeOnDiskInBytes", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 9, name: "entityCollectionStatistics", kind: "message", T: GrpcEntityCollectionStatistics, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcCatalogStatistics {

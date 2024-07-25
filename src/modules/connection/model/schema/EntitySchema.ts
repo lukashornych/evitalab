@@ -8,6 +8,7 @@ import { EntityAttributeSchema } from '@/modules/connection/model/schema/EntityA
 import { Value } from '@/modules/connection/model/Value'
 import { EvolutionMode } from '@/modules/connection/model/schema/EvolutionMode'
 import { AbstractSchema } from '@/modules/connection/model/schema/AbstractSchema'
+import { Currency } from '../data/Currency'
 
 /**
  * evitaLab's representation of a single evitaDB entity schema independent of specific evitaDB version
@@ -55,7 +56,7 @@ export class EntitySchema extends AbstractSchema {
     /**
      * Contains set of all `Currency` that could be used for `prices` in entities of this type.
      */
-    readonly currencies: Value<List<string>>
+    readonly currencies: Value<List<Currency>>
     /**
      * Evolution mode allows to specify how strict is evitaDB when unknown information is presented to her for the first time. When no evolution mode is set, each violation of the `EntitySchema` is reported by an exception. This behaviour can be changed by this evolution mode however.
      */
@@ -78,7 +79,7 @@ export class EntitySchema extends AbstractSchema {
                 withPrice: Value<boolean>,
                 indexedPricePlaces: Value<number>,
                 locales: Value<string[]>,
-                currencies: Value<string[]>,
+                currencies: Value<Currency[]>,
                 evolutionMode: Value<EvolutionMode[]>,
                 attributes: Value<EntityAttributeSchema[]>,
                 sortableAttributeCompounds: Value<SortableAttributeCompoundSchema[]>,

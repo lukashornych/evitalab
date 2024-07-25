@@ -1,9 +1,7 @@
-import { Value } from "../Value";
-
 export class Currency {
-    code: Value<string>
+    code: string
 
-    constructor(code: Value<string>){
+    constructor(code: string){
         this.code = code;
     }
 }

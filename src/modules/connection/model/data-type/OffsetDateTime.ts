@@ -1,5 +1,6 @@
 import { Timestamp } from '@bufbuild/protobuf'
 
+//TODO add doc
 export class OffsetDateTime {
     readonly timestamp: Timestamp
     readonly offset: string

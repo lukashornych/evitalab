@@ -14,7 +14,7 @@ import { GrpcQueryPhase } from "./GrpcEnums_pb.js";
  * in the returned data set and which are rare. Bucket count will never exceed requested bucket count but there
  * may be less of them if there is no enough data for computation. Bucket thresholds are specified heuristically so tha
  * there are as few "empty buckets" as possible.
- *
+ * 
  * - buckets are defined by their lower bounds (inclusive)
  * - the upper bound is the lower bound of the next bucket
  *
@@ -558,7 +558,7 @@ export class GrpcQueryTelemetry extends Message<GrpcQueryTelemetry> {
 export class GrpcExtraResults extends Message<GrpcExtraResults> {
   /**
    * Returns computed histograms for specific attributes based on filter constraints.
-   *
+   * 
    * A histogram is an approximate representation of the distribution of numerical data. For detailed description please
    * see [WikiPedia](https://en.wikipedia.org/wiki/Histogram).
    * Histogram can be computed only for numeric based properties. It visualises which property values are more common
@@ -566,7 +566,7 @@ export class GrpcExtraResults extends Message<GrpcExtraResults> {
    * `requestedCount` but there
    * may be less of them if there is no enough data for computation. Bucket thresholds are specified heuristically so that
    * there are as few "empty buckets" as possible.
-   *
+   * 
    * - buckets are defined by their lower bounds (inclusive)
    * - the upper bound is the lower bound of the next bucket
    *
@@ -576,7 +576,7 @@ export class GrpcExtraResults extends Message<GrpcExtraResults> {
 
   /**
    * Returns computed histogram for prices satisfactory to filter constraints.
-   *
+   * 
    * A histogram is an approximate representation of the distribution of numerical data. For detailed description please
    * see [WikiPedia](https://en.wikipedia.org/wiki/Histogram).
    * Histogram can be computed only for numeric based properties. It visualises which property values are more common
@@ -584,7 +584,7 @@ export class GrpcExtraResults extends Message<GrpcExtraResults> {
    * `requestedCount` but there
    * may be less of them if there is no enough data for computation. Bucket thresholds are specified heuristically so that
    * there are as few "empty buckets" as possible.
-   *
+   * 
    * - buckets are defined by their lower bounds (inclusive)
    * - the upper bound is the lower bound of the next bucket
    *

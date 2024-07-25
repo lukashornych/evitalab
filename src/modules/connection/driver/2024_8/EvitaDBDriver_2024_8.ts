@@ -41,6 +41,7 @@ import { EntityConverter as GrpcEntityConverter } from '../grpc/service/EntityCo
 /**
  * evitaDB driver implementation for version >=2024.8.0
  */
+//TODO: Not implemented
 export class EvitaDBDriver_2024_8
     extends HttpApiClient
     implements EvitaDBDriver
@@ -167,7 +168,7 @@ export class EvitaDBDriver_2024_8
         }
     }
 
-    async loadEntitySchemas(
+    private async loadEntitySchemas(
         catalogName: string,
         grpcCatalogSchemaConverter: GrpcCatalogSchemaConverter,
         client: PromiseClient<typeof EvitaService>,
@@ -177,26 +178,26 @@ export class EvitaDBDriver_2024_8
         const res = await client.createReadOnlySession({
             catalogName: catalogName,
         })
-        
-        for (const type of (
-            await sessionClient.getAllEntityTypes(Empty, {
-                headers: {
-                    sessionId: res.sessionId,
-                    catalogName: catalogName,
-                },
-            })
-        ).entityTypes) {
-            const schema = (
-                await sessionClient.getEntitySchema(
-                    { nameVariants: true, entityType: type },
-                    {
-                        headers: {
-                            sessionId: res.sessionId,
-                            catalogName: catalogName,
-                        },
-                    }
-                )
-            ).entitySchema
+
+        const entityTypesResult = await sessionClient.getAllEntityTypes(Empty, {
+            headers: {
+                sessionId: res.sessionId,
+                catalogName: catalogName,
+            },
+        })
+
+        const entityTypes = entityTypesResult.entityTypes
+        for (const type of entityTypes) {
+            const entitySchemaResult = await sessionClient.getEntitySchema(
+                { nameVariants: true, entityType: type },
+                {
+                    headers: {
+                        sessionId: res.sessionId,
+                        catalogName: catalogName,
+                    },
+                }
+            )
+            const schema = entitySchemaResult.entitySchema
             if (schema != null) {
                 entities.push(
                     grpcCatalogSchemaConverter.convertEntitySchema(schema)

@@ -42,6 +42,7 @@ import { Cardinality } from '@/modules/connection/model/schema/Cardinality'
 import { Converter } from '@/modules/connection/driver/2024_8/service/Converter'
 import { Scalar } from '@/modules/connection/model/data-type/Scalar'
 import { List, Map } from 'immutable'
+import { Currency } from '@/modules/connection/model/data/Currency'
 
 /**
  * Converts driver's representation of catalog schema into evitaLab's representation of catalog schema
@@ -111,13 +112,21 @@ export class CatalogSchemaConverter implements Converter<DriverCatalogSchema, Ca
             Value.of(driverEntitySchema.withPrice),
             Value.of(driverEntitySchema.indexedPricePlaces),
             Value.of(driverEntitySchema.locales),
-            Value.of(driverEntitySchema.currencies),
+            Value.of(this.convertCurrencies(driverEntitySchema.currencies)),
             Value.of(this.convertEvolutionModes(driverEntitySchema.evolutionMode)),
             Value.of(this.convertEntityAttributeSchemas(driverEntitySchema.attributes)),
             Value.of(this.convertSortableAttributeCompoundSchemas(driverEntitySchema.sortableAttributeCompounds)),
             Value.of(this.convertAssociatedDataSchemas(driverEntitySchema.associatedData)),
             Value.of(this.convertReferenceSchemas(driverEntitySchema.references))
         )
+    }
+
+    private convertCurrencies(currencies: string[]):Currency[]{
+        const newCurrencies : Currency[] = []
+        for(const currency of currencies){
+            newCurrencies.push(new Currency(currency));
+        }
+        return newCurrencies;
     }
 
     private convertEntityAttributeSchemas(driverEntityAttributeSchemas: DriverAttributeSchemas): EntityAttributeSchema[] {

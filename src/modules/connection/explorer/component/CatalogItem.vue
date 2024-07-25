@@ -41,8 +41,7 @@ import {
     provideCatalogSchema,
     useConnection,
 } from '@/modules/connection/explorer/component/dependecies'
-import { Map } from 'immutable'
-import { Value } from '@bufbuild/protobuf'
+import { Map } from 'immutable' 
 
 const connectionService: ConnectionService = useConnectionService()
 const workspaceService: WorkspaceService = useWorkspaceService()
@@ -96,8 +95,6 @@ async function loadCatalogSchema(): Promise<void> {
     }
     loading.value = false
 }
-
-loadCatalogSchema().then();
 
 function handleAction(action: string): void {
     actions.get(action as CatalogActionType)?.execute()

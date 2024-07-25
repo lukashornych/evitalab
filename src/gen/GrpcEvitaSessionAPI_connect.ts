@@ -10,7 +10,7 @@ import { Empty, MethodKind } from "@bufbuild/protobuf";
  * This service contains RPCs that could be called by gRPC clients on evitaDB's catalog by usage of a before created session.
  * By specifying its UUID and the name of a catalog to which it corresponds to it's possible to execute methods that in
  * evitaDB's implementation a called on an instance of EvitaSessionContract.
- *
+ * 
  * Main purpose of this service is to provide a way to manipulate with stored entity collections and their schemas. That
  * includes their creating, updating and deleting. Same operations could be done with entities, which in addition could
  * be fetched by specifying a complex queries.

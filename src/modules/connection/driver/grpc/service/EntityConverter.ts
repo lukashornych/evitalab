@@ -6,7 +6,6 @@ import {
     GrpcSealedEntity,
 } from '@/gen/GrpcEntity_pb'
 import {
-    GrpcDateTimeRange,
     GrpcEvitaAssociatedDataValue,
     GrpcEvitaValue,
     GrpcLocale,
@@ -27,14 +26,13 @@ import { Locale } from '@/modules/connection/model/data-type/Locale'
 import { GrpcPrice } from '@/gen/GrpcPrice_pb'
 import { Price } from '@/modules/connection/model/data/Price'
 import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
-import { DateTimeRange } from '@/modules/connection/model/data-type/DateTimeRange'
-import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateTime'
+import { datetime as DateTimeUtil } from '@/utils/datetime'
 import { PriceInnerRecordHandling } from '@/modules/connection/model/data-type/PriceInnerRecordHandling'
 import { EntityReference } from '@/modules/connection/model/data/EntityReference'
-import { SealedEntity } from '@/modules/connection/model/data/SealedEntity'
-import { EntityReferenceValue } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityReferenceValue'
 import { Cardinality } from '@/modules/connection/model/schema/Cardinality'
+import Immutable from 'immutable'
 
+//TODO: Add documentation
 export class EntityConverter {
     convert(entity: GrpcSealedEntity): Entity {
         return new Entity(
@@ -67,7 +65,30 @@ export class EntityConverter {
                 )
             ),
             Value.of(this.convertLocale(entity.locales)),
-            Value.of(this.convertPrice(entity.prices))
+            Value.of(this.convertPrice(entity.prices)),
+            Value.of(
+                entity.priceForSale
+                    ? this.convertPriceForSale(entity.priceForSale)
+                    : undefined
+            )
+        )
+    }
+
+    private convertPriceForSale(price: GrpcPrice): Price {
+        return new Price(
+            Value.of(price.priceId),
+            Value.of(price.priceList),
+            Value.of(price.innerRecordId),
+            Value.of(price.priceWithoutTax?.valueString as BigDecimal),
+            Value.of(price.taxRate?.valueString as BigDecimal),
+            Value.of(price.priceWithTax?.valueString as BigDecimal),
+            Value.of(
+                price.validity
+                    ? DateTimeUtil.convertToDateTimeRange(price.validity)
+                    : undefined
+            ),
+            Value.of(price.sellable),
+            Value.of(price.version)
         )
     }
 
@@ -78,59 +99,74 @@ export class EntityConverter {
             Value.of(parentReference.entityType),
             Value.of(parentReference.primaryKey),
             Value.of(parentReference.version),
-            parentReference.parent
-                ? Value.of(this.convertParentReference(parentReference.parent))
-                : undefined
+            Value.of(
+                parentReference.parent
+                    ? this.convertParentReference(parentReference.parent)
+                    : undefined
+            )
         )
     }
 
     private convertGlobalAttributes(grpcGlobalAttribtes: {
         [key: string]: GrpcEvitaValue
-    }): object[] {
-        const newGlobalAttributes: object[] = []
-        for (const globalAttribute in grpcGlobalAttribtes) {
-            const attr = grpcGlobalAttribtes[globalAttribute]
-            newGlobalAttributes.push(attr.value.value as object)
+    }): Immutable.Map<string, object> {
+        const newGlobalAttributes: Map<string, object> = new Map<
+            string,
+            object
+        >()
+        for (const locale in grpcGlobalAttribtes) {
+            const attr = grpcGlobalAttribtes[locale]
+            newGlobalAttributes.set(locale, attr.value.value as object)
         }
-        return newGlobalAttributes
+        return Immutable.Map(newGlobalAttributes)
     }
 
     private convertLocalizedAttributes(localizedAttribtes: {
         [key: string]: GrpcLocalizedAttribute
-    }): LocalizedAttribute[] {
-        const newlocalizedAttributes: LocalizedAttribute[] = []
-        for (const localizedAttribute in localizedAttribtes) {
-            const attr = localizedAttribtes[localizedAttribute]
-            newlocalizedAttributes.push(
+    }): Immutable.Map<string, LocalizedAttribute> {
+        const newlocalizedAttributes: Map<string, LocalizedAttribute> = new Map<
+            string,
+            LocalizedAttribute
+        >()
+        for (const locale in localizedAttribtes) {
+            const attr = localizedAttribtes[locale]
+            newlocalizedAttributes.set(
+                locale,
                 new LocalizedAttribute(
                     Value.of(this.convertGlobalAttributes(attr.attributes))
                 )
             )
         }
-        return newlocalizedAttributes
+        return Immutable.Map(newlocalizedAttributes)
     }
 
-    private convertReferences(references: GrpcReference[]): Reference[] {
+    private convertReferences(
+        references: GrpcReference[]
+    ): Immutable.List<Reference> {
         const newReferences: Reference[] = []
         for (const reference of references) {
             newReferences.push(
                 new Reference(
                     Value.of(reference.referenceName),
                     Value.of(reference.version),
-                    Value.of(
-                        reference.referencedEntityReference
-                            ? this.convertReference(
-                                  reference.referencedEntityReference
-                              )
-                            : undefined
-                    ),
-                    Value.of(
-                        reference.referencedEntity ? this.convertReferencedEntity(reference.referencedEntity) : undefined
-                    ),
+                    reference.referencedEntityReference
+                        ? this.convertReference(
+                              reference.referencedEntityReference
+                          )
+                        : undefined,
+                    reference.referencedEntity
+                        ? this.convertReferencedEntity(
+                              reference.referencedEntity
+                          )
+                        : undefined,
                     Value.of(
                         this.convertCardinality(reference.referenceCardinality)
                     ),
-                    reference.groupReferenceType.value ? this.convertGroupReference(reference.groupReferenceType.value) : undefined,
+                    reference.groupReferenceType.value
+                        ? this.convertGroupReference(
+                              reference.groupReferenceType.value
+                          )
+                        : undefined,
                     Value.of(
                         this.convertGlobalAttributes(reference.globalAttributes)
                     ),
@@ -142,14 +178,16 @@ export class EntityConverter {
                 )
             )
         }
-        return newReferences
+        return Immutable.List(newReferences)
     }
 
     private convertGroupReference(
         groupReference: GrpcEntityReference | GrpcSealedEntity | undefined
-    ): EntityReference | SealedEntity {
+    ): EntityReference | Entity {
         if (groupReference instanceof GrpcSealedEntity) {
-            return this.convertReferencedEntity(groupReference as GrpcSealedEntity)
+            return this.convertReferencedEntity(
+                groupReference as GrpcSealedEntity
+            )
         } else {
             return this.convertReference(groupReference as GrpcEntityReference)
         }
@@ -170,7 +208,9 @@ export class EntityConverter {
         }
     }
 
-    private convertReferencedEntity(referencedEntity: GrpcSealedEntity): Entity {
+    private convertReferencedEntity(
+        referencedEntity: GrpcSealedEntity
+    ): Entity {
         return new Entity(
             Value.of(referencedEntity.entityType),
             Value.of(referencedEntity.primaryKey),
@@ -179,7 +219,9 @@ export class EntityConverter {
             Value.of(referencedEntity.parent),
             Value.of(
                 referencedEntity.parentReference
-                    ? this.convertParentReference(referencedEntity.parentReference)
+                    ? this.convertParentReference(
+                          referencedEntity.parentReference
+                      )
                     : undefined
             ),
             Value.of(
@@ -207,7 +249,12 @@ export class EntityConverter {
                 )
             ),
             Value.of(this.convertLocale(referencedEntity.locales)),
-            Value.of(this.convertPrice(referencedEntity.prices))
+            Value.of(this.convertPrice(referencedEntity.prices)),
+            Value.of(
+                referencedEntity.priceForSale
+                    ? this.convertPriceForSale(referencedEntity.priceForSale)
+                    : undefined
+            )
         )
     }
 
@@ -216,66 +263,72 @@ export class EntityConverter {
     ): PriceInnerRecordHandling {
         switch (price) {
             case GrpcPriceInnerRecordHandling.LOWEST_PRICE:
-                return PriceInnerRecordHandling.LOWEST_PRICE
+                return PriceInnerRecordHandling.LowestPrice
             case GrpcPriceInnerRecordHandling.NONE:
-                return PriceInnerRecordHandling.NONE
+                return PriceInnerRecordHandling.None
             case GrpcPriceInnerRecordHandling.SUM:
-                return PriceInnerRecordHandling.SUM
+                return PriceInnerRecordHandling.Sum
             case GrpcPriceInnerRecordHandling.UNKNOWN:
-                return PriceInnerRecordHandling.UNKNOWN
+                return PriceInnerRecordHandling.Unknown
         }
     }
 
     private convertEvitaAssociatedDataValue(associatedData: {
         [key: string]: GrpcEvitaAssociatedDataValue
-    }): EvitaAssociatedDataValue[] {
-        const evitaAssociatedValues: EvitaAssociatedDataValue[] = []
+    }): Immutable.Map<string, EvitaAssociatedDataValue> {
+        const evitaAssociatedValues: Map<string, EvitaAssociatedDataValue> =
+            new Map<string, EvitaAssociatedDataValue>()
         for (const associatedValueName in associatedData) {
             const associatedValue = associatedData[associatedValueName]
-            evitaAssociatedValues.push(
+            evitaAssociatedValues.set(
+                associatedValueName,
                 new EvitaAssociatedDataValue(
                     associatedValue.value,
                     associatedValue.version
                 )
             )
         }
-        return evitaAssociatedValues
+        return Immutable.Map(evitaAssociatedValues)
     }
 
     private convertLocalizedAssociatedData(localizedAssociatedData: {
         [key: string]: GrpcLocalizedAssociatedData
-    }): LocalizedAssociatedData[] {
-        const newLocalizedAssociatedData: LocalizedAssociatedData[] = []
+    }): Immutable.Map<string, LocalizedAssociatedData> {
+        const newLocalizedAssociatedData: Map<string, LocalizedAssociatedData> =
+            new Map<string, LocalizedAssociatedData>()
         for (const localizedAssociatedName in localizedAssociatedData) {
             const localizedAssocaitedValue =
                 localizedAssociatedData[localizedAssociatedName]
-            const evitaAssociatedValues: EvitaAssociatedDataValue[] = []
+            const evitaAssociatedValues: Map<string, EvitaAssociatedDataValue> =
+                new Map<string, EvitaAssociatedDataValue>()
             for (const dataName in localizedAssocaitedValue.associatedData) {
                 const associatedData =
                     localizedAssocaitedValue.associatedData[dataName]
-                evitaAssociatedValues.push(
+                evitaAssociatedValues.set(
+                    dataName,
                     new EvitaAssociatedDataValue(
                         associatedData.value.value as object,
                         associatedData.version
                     )
                 )
             }
-            newLocalizedAssociatedData.push(
-                new LocalizedAssociatedData(evitaAssociatedValues)
+            newLocalizedAssociatedData.set(
+                localizedAssociatedName,
+                new LocalizedAssociatedData(Immutable.Map(evitaAssociatedValues))
             )
         }
-        return newLocalizedAssociatedData
+        return Immutable.Map(newLocalizedAssociatedData)
     }
 
-    private convertLocale(locales: GrpcLocale[]): Locale[] {
+    private convertLocale(locales: GrpcLocale[]): Immutable.List<Locale> {
         const newLocales: Locale[] = []
         for (const locale of locales) {
             newLocales.push(new Locale(locale.languageTag))
         }
-        return newLocales
+        return Immutable.List(newLocales)
     }
 
-    private convertPrice(prices: GrpcPrice[]): Price[] {
+    private convertPrice(prices: GrpcPrice[]): Immutable.List<Price> {
         const newPrices: Price[] = []
         for (const price of prices) {
             newPrices.push(
@@ -288,7 +341,9 @@ export class EntityConverter {
                     Value.of(price.priceWithTax?.valueString as BigDecimal),
                     Value.of(
                         price.validity
-                            ? this.convertToDateTimeRange(price.validity)
+                            ? DateTimeUtil.convertToDateTimeRange(
+                                  price.validity
+                              )
                             : undefined
                     ),
                     Value.of(price.sellable),
@@ -296,37 +351,7 @@ export class EntityConverter {
                 )
             )
         }
-        return newPrices
-    }
-
-    private convertToDateTimeRange(
-        dateTimeRange: GrpcDateTimeRange
-    ): DateTimeRange {
-        const defaultZoneOffset: string = 'UTC'
-        const fromSet = !!dateTimeRange.from
-        const toSet = !!dateTimeRange.to
-        const fromTimestamp = dateTimeRange.from?.timestamp?.seconds ?? 0
-        const toTimestamp = dateTimeRange.to?.timestamp?.seconds ?? 0
-
-        const from = OffsetDateTime.ofInstant(
-            fromTimestamp as bigint,
-            fromSet
-                ? dateTimeRange.from?.offset ?? defaultZoneOffset
-                : defaultZoneOffset
-        )
-        const to = OffsetDateTime.ofInstant(
-            toTimestamp as bigint,
-            toSet
-                ? dateTimeRange.to?.offset ?? defaultZoneOffset
-                : defaultZoneOffset
-        )
-
-        if (!fromSet && toSet) {
-            return DateTimeRange.until(to)
-        } else if (fromSet && !toSet) {
-            return DateTimeRange.since(from)
-        }
-        return DateTimeRange.between(from, to)
+        return Immutable.List(newPrices)
     }
 
     private convertReference(
