@@ -1,8 +1,4 @@
 import { List } from 'immutable'
-import { createPromiseClient, PromiseClient } from '@connectrpc/connect'
-import { EvitaService } from './gen/GrpcEvitaAPI_connect'
-import { EvitaManagementService } from './gen/GrpcEvitaManagementAPI_connect'
-import { EvitaSessionService } from './gen/GrpcEvitaSessionAPI_connect'
 import { createConnectTransport } from '@connectrpc/connect-web'
 import { EvitaDBDriver } from '../EvitaDBDriver'
 import { Catalog } from '../../model/Catalog'
@@ -21,7 +17,9 @@ import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { TimeoutError } from '../../exception/TimeoutError'
 import { EvitaDBInstanceNetworkError } from '@/modules/driver-support/exception/EvitaDBInstanceNetworkError'
 import { LabError } from '@/modules/base/exception/LabError'
+import { ClientsHelper, EvitaClient, SessionClient } from './helpers/ClientsHelper'
 
+//TODO: Add docs
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
     private readonly grpcCatalogSchemaConverter: GrpcCatalogSchemaConverter =
         new GrpcCatalogSchemaConverter()
@@ -35,34 +33,20 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         baseUrl: this.connectionUrl,
     })
 
-    protected readonly client = createPromiseClient(
-        EvitaService,
-        this.transport
-    )
-
-    protected readonly managmentClient = createPromiseClient(
-        EvitaManagementService,
-        this.transport
-    )
-
-    protected readonly sessionClient = createPromiseClient(
-        EvitaSessionService,
-        this.transport
-    )
     async getCatalogSchema(
         connection: Connection,
         catalogName: string
     ): Promise<CatalogSchema> {
         try {
-            const res = await this.client.createReadOnlySession({
+            const res = await ClientsHelper.getEvitaClient(connection, this.transport).createReadOnlySession({
                 catalogName: catalogName,
             })
             const schemaRes: GrpcCatalogSchemaResponse =
-                await this.sessionClient.getCatalogSchema(
+                await ClientsHelper.getSessionClient(connection, this.transport).getCatalogSchema(
                     { nameVariants: true },
                     {
                         headers: {
-                            sessionId: res.sessionId
+                            sessionId: res.sessionId,
                         },
                     }
                 )
@@ -78,8 +62,8 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                         return await this.loadEntitySchemas(
                             catalogName,
                             this.grpcCatalogSchemaConverter,
-                            this.client,
-                            this.sessionClient
+                            ClientsHelper.getEvitaClient(connection, this.transport),
+                            ClientsHelper.getSessionClient(connection, this.transport)
                         )
                     }
                 )
@@ -91,8 +75,8 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
     private async loadEntitySchemas(
         catalogName: string,
         grpcCatalogSchemaConverter: GrpcCatalogSchemaConverter,
-        client: PromiseClient<typeof EvitaService>,
-        sessionClient: PromiseClient<typeof EvitaSessionService>
+        client: EvitaClient,
+        sessionClient: SessionClient
     ): Promise<Value<List<EntitySchema>>> {
         const entities: EntitySchema[] = []
         const res = await client.createReadOnlySession({
@@ -101,7 +85,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
 
         const entityTypesResult = await sessionClient.getAllEntityTypes(Empty, {
             headers: {
-                sessionId: res.sessionId
+                sessionId: res.sessionId,
             },
         })
 
@@ -111,7 +95,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                 { nameVariants: true, entityType: type },
                 {
                     headers: {
-                        sessionId: res.sessionId
+                        sessionId: res.sessionId,
                     },
                 }
             )
@@ -130,10 +114,10 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         query: string
     ): Promise<Response> {
         try {
-            const session = await this.client.createReadOnlySession({
+            const session = await ClientsHelper.getEvitaClient(connection, this.transport).createReadOnlySession({
                 catalogName,
             })
-            const queryRespose = await this.sessionClient.query(
+            const queryRespose = await ClientsHelper.getSessionClient(connection, this.transport).query(
                 {
                     query,
                 },
@@ -150,7 +134,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
     }
     async getCatalogs(connection: Connection): Promise<Catalog[]> {
         try {
-            const res = (await this.managmentClient.getCatalogStatistics(Empty))
+            const res = (await ClientsHelper.getManagmentClient(connection, this.transport).getCatalogStatistics(Empty))
                 .catalogStatistics
             return res.map((x) => this.grpcCatalogConverter.convert(x))
         } catch (e: any) {

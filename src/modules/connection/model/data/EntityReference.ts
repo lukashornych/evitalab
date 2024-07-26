@@ -1,5 +1,6 @@
 import { Value } from "../Value";
 
+//TODO: Add documentation
 export class EntityReference {
     readonly entityType: Value<string>
     readonly primaryKey: Value<number>

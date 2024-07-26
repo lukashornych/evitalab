@@ -70,10 +70,6 @@ export class Entity {
         this.references = references
         this.priceForSale = priceForSale
     }
-
-    getRepresentativeFlags(): List<string> {
-        throw new Error('Method not implemented.')
-    }
 }
 
 //TODO: Remove

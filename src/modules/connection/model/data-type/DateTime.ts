@@ -1,2 +1,4 @@
 // todo docs
-export type DateTime = string
+export type DateTime = {
+    readonly isoDate: string
+}

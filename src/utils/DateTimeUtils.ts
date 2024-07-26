@@ -2,6 +2,8 @@ import { GrpcDateTimeRange } from "@/modules/connection/driver/grpc/gen/GrpcEvit
 import { DateTimeRange } from "@/modules/connection/model/data-type/DateTimeRange"
 import { OffsetDateTime } from "@/modules/connection/model/data-type/OffsetDateTime"
 
+
+//TODO: Add doc
 export class datetime {
     static convertToDateTimeRange(
         dateTimeRange: GrpcDateTimeRange

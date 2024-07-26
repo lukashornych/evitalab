@@ -49,6 +49,9 @@ import {
 } from '@/modules/connection/model/schema/SortableAttributeCompoundSchema'
 import { AssociatedDataSchema } from '@/modules/connection/model/schema/AssociatedDataSchema'
 import { Currency } from '@/modules/connection/model/data/Currency'
+import { Locale } from '@/modules/connection/model/data-type/Locale'
+import { ScalarUtil } from '../utils/ScalarUtil'
+import { MapUtil } from '../utils/MapUtil'
 
 //TODO: Add documentation
 export class CatalogSchemaConverter {
@@ -62,43 +65,7 @@ export class CatalogSchemaConverter {
             Value.of(catalogSchema.version),
             catalogSchema.name,
             Value.of(
-                Map([
-                    [
-                        NamingConvention.CamelCase,
-                        this.convertNamingConvention(
-                            catalogSchema.nameVariant,
-                            GrpcNamingConvention.CAMEL_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.PascalCase,
-                        this.convertNamingConvention(
-                            catalogSchema.nameVariant,
-                            GrpcNamingConvention.PASCAL_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.SnakeCase,
-                        this.convertNamingConvention(
-                            catalogSchema.nameVariant,
-                            GrpcNamingConvention.SNAKE_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.UpperSnakeCase,
-                        this.convertNamingConvention(
-                            catalogSchema.nameVariant,
-                            GrpcNamingConvention.UPPER_SNAKE_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.KebabCase,
-                        this.convertNamingConvention(
-                            catalogSchema.nameVariant,
-                            GrpcNamingConvention.KEBAB_CASE
-                        ),
-                    ],
-                ])
+                MapUtil.getNamingMap(catalogSchema.nameVariant)
             ),
             Value.of(catalogSchema.description || null),
             Value.of(
@@ -143,47 +110,11 @@ export class CatalogSchemaConverter {
             return new AttributeSchema(
                 attribute.name,
                 Value.of(
-                    Map([
-                        [
-                            NamingConvention.CamelCase,
-                            this.convertNamingConvention(
-                                attribute.nameVariant,
-                                GrpcNamingConvention.CAMEL_CASE
-                            ),
-                        ],
-                        [
-                            NamingConvention.PascalCase,
-                            this.convertNamingConvention(
-                                attribute.nameVariant,
-                                GrpcNamingConvention.PASCAL_CASE
-                            ),
-                        ],
-                        [
-                            NamingConvention.SnakeCase,
-                            this.convertNamingConvention(
-                                attribute.nameVariant,
-                                GrpcNamingConvention.SNAKE_CASE
-                            ),
-                        ],
-                        [
-                            NamingConvention.UpperSnakeCase,
-                            this.convertNamingConvention(
-                                attribute.nameVariant,
-                                GrpcNamingConvention.UPPER_SNAKE_CASE
-                            ),
-                        ],
-                        [
-                            NamingConvention.KebabCase,
-                            this.convertNamingConvention(
-                                attribute.nameVariant,
-                                GrpcNamingConvention.KEBAB_CASE
-                            ),
-                        ],
-                    ])
+                    MapUtil.getNamingMap(attribute.nameVariant)
                 ),
                 Value.of(attribute.description ?? null),
                 Value.of(attribute.deprecationNotice ?? null),
-                Value.of(this.convertScalar(attribute.type)),
+                Value.of(ScalarUtil.convertScalar(attribute.type)),
                 Value.of(this.convertAttributeUniquenessType(attribute.unique)),
                 Value.of(attribute.filterable),
                 Value.of(attribute.sortable),
@@ -196,47 +127,11 @@ export class CatalogSchemaConverter {
             return new EntityAttributeSchema(
                 attribute.name,
                 Value.of(
-                    Map([
-                        [
-                            NamingConvention.CamelCase,
-                            this.convertNamingConvention(
-                                attribute.nameVariant,
-                                GrpcNamingConvention.CAMEL_CASE
-                            ),
-                        ],
-                        [
-                            NamingConvention.PascalCase,
-                            this.convertNamingConvention(
-                                attribute.nameVariant,
-                                GrpcNamingConvention.PASCAL_CASE
-                            ),
-                        ],
-                        [
-                            NamingConvention.SnakeCase,
-                            this.convertNamingConvention(
-                                attribute.nameVariant,
-                                GrpcNamingConvention.SNAKE_CASE
-                            ),
-                        ],
-                        [
-                            NamingConvention.UpperSnakeCase,
-                            this.convertNamingConvention(
-                                attribute.nameVariant,
-                                GrpcNamingConvention.UPPER_SNAKE_CASE
-                            ),
-                        ],
-                        [
-                            NamingConvention.KebabCase,
-                            this.convertNamingConvention(
-                                attribute.nameVariant,
-                                GrpcNamingConvention.KEBAB_CASE
-                            ),
-                        ],
-                    ])
+                    MapUtil.getNamingMap(attribute.nameVariant)
                 ),
                 Value.of(attribute.description ?? null),
                 Value.of(attribute.deprecationNotice ?? null),
-                Value.of(this.convertScalar(attribute.type)),
+                Value.of(ScalarUtil.convertScalar(attribute.type)),
                 Value.of(this.convertAttributeUniquenessType(attribute.unique)),
                 Value.of(attribute.filterable),
                 Value.of(attribute.sortable),
@@ -254,48 +149,9 @@ export class CatalogSchemaConverter {
     private convertGlobalAttributeSchema(
         globalAttributeSchema: GrpcGlobalAttributeSchema
     ): AttributeSchema {
-        const globalAttribute = 'globalUniquenessType' in globalAttributeSchema
-        const entityAttribute = 'representative' in globalAttributeSchema
-
         const name: string = globalAttributeSchema.name
         const nameVariants: Value<Map<NamingConvention, string>> = Value.of(
-            Map([
-                [
-                    NamingConvention.CamelCase,
-                    this.convertNamingConvention(
-                        globalAttributeSchema.nameVariant,
-                        GrpcNamingConvention.CAMEL_CASE
-                    ),
-                ],
-                [
-                    NamingConvention.PascalCase,
-                    this.convertNamingConvention(
-                        globalAttributeSchema.nameVariant,
-                        GrpcNamingConvention.PASCAL_CASE
-                    ),
-                ],
-                [
-                    NamingConvention.SnakeCase,
-                    this.convertNamingConvention(
-                        globalAttributeSchema.nameVariant,
-                        GrpcNamingConvention.SNAKE_CASE
-                    ),
-                ],
-                [
-                    NamingConvention.UpperSnakeCase,
-                    this.convertNamingConvention(
-                        globalAttributeSchema.nameVariant,
-                        GrpcNamingConvention.UPPER_SNAKE_CASE
-                    ),
-                ],
-                [
-                    NamingConvention.KebabCase,
-                    this.convertNamingConvention(
-                        globalAttributeSchema.nameVariant,
-                        GrpcNamingConvention.KEBAB_CASE
-                    ),
-                ],
-            ])
+            MapUtil.getNamingMap(globalAttributeSchema.nameVariant)
         )
 
         const description: Value<string | null> = Value.of(
@@ -307,7 +163,7 @@ export class CatalogSchemaConverter {
                 : globalAttributeSchema.deprecationNotice
         )
         const type: Value<Scalar> = Value.of(
-            this.convertScalar(globalAttributeSchema.type)
+            ScalarUtil.convertScalar(globalAttributeSchema.type)
         )
         const uniquenessType: Value<AttributeUniquenessType> = Value.of(
             this.convertAttributeUniquenessType(globalAttributeSchema.unique)
@@ -331,66 +187,31 @@ export class CatalogSchemaConverter {
             globalAttributeSchema.indexedDecimalPlaces
         )
 
-        if (globalAttribute || entityAttribute) {
-            const representative: Value<any> = Value.of(
-                globalAttributeSchema.representative
-            )
-            if (globalAttribute) {
-                const uniqueGloballyType: Value<GlobalAttributeUniquenessType> =
-                    Value.of(
-                        this.convertGlobalAttributeUniquenessType(
-                            globalAttributeSchema.uniqueGlobally
-                        )
-                    )
-                return new GlobalAttributeSchema(
-                    name,
-                    nameVariants,
-                    description,
-                    deprecationNotice,
-                    type,
-                    uniquenessType,
-                    filterable,
-                    sortable,
-                    nullable,
-                    defaultValue,
-                    localized,
-                    indexedDecimalPlaces,
-                    representative,
-                    uniqueGloballyType
+        const representative: Value<any> = Value.of(
+            globalAttributeSchema.representative
+        )
+        const uniqueGloballyType: Value<GlobalAttributeUniquenessType> =
+            Value.of(
+                this.convertGlobalAttributeUniquenessType(
+                    globalAttributeSchema.uniqueGlobally
                 )
-            } else {
-                return new EntityAttributeSchema(
-                    name,
-                    nameVariants,
-                    description,
-                    deprecationNotice,
-                    type,
-                    uniquenessType,
-                    filterable,
-                    sortable,
-                    nullable,
-                    defaultValue,
-                    localized,
-                    indexedDecimalPlaces,
-                    representative
-                )
-            }
-        } else {
-            return new AttributeSchema(
-                name,
-                nameVariants,
-                description,
-                deprecationNotice,
-                type,
-                uniquenessType,
-                filterable,
-                sortable,
-                nullable,
-                defaultValue,
-                localized,
-                indexedDecimalPlaces
             )
-        }
+        return new GlobalAttributeSchema(
+            name,
+            nameVariants,
+            description,
+            deprecationNotice,
+            type,
+            uniquenessType,
+            filterable,
+            sortable,
+            nullable,
+            defaultValue,
+            localized,
+            indexedDecimalPlaces,
+            representative,
+            uniqueGloballyType
+        )
     }
 
     private convertAttributeUniquenessType(
@@ -432,43 +253,7 @@ export class CatalogSchemaConverter {
             Value.of(entitySchema.version),
             entitySchema.name,
             Value.of(
-                Map([
-                    [
-                        NamingConvention.CamelCase,
-                        this.convertNamingConvention(
-                            entitySchema.nameVariant,
-                            GrpcNamingConvention.CAMEL_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.PascalCase,
-                        this.convertNamingConvention(
-                            entitySchema.nameVariant,
-                            GrpcNamingConvention.PASCAL_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.SnakeCase,
-                        this.convertNamingConvention(
-                            entitySchema.nameVariant,
-                            GrpcNamingConvention.SNAKE_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.UpperSnakeCase,
-                        this.convertNamingConvention(
-                            entitySchema.nameVariant,
-                            GrpcNamingConvention.UPPER_SNAKE_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.KebabCase,
-                        this.convertNamingConvention(
-                            entitySchema.nameVariant,
-                            GrpcNamingConvention.KEBAB_CASE
-                        ),
-                    ],
-                ])
+                MapUtil.getNamingMap(entitySchema.nameVariant)
             ),
             Value.of(entitySchema.description || null),
             Value.of(entitySchema.deprecationNotice || null),
@@ -500,43 +285,7 @@ export class CatalogSchemaConverter {
         return new SortableAttributeCompoundSchema(
             sortableAttributeCompoundSchema.name,
             Value.of(
-                Map([
-                    [
-                        NamingConvention.CamelCase,
-                        this.convertNamingConvention(
-                            sortableAttributeCompoundSchema.nameVariant,
-                            GrpcNamingConvention.CAMEL_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.PascalCase,
-                        this.convertNamingConvention(
-                            sortableAttributeCompoundSchema.nameVariant,
-                            GrpcNamingConvention.PASCAL_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.SnakeCase,
-                        this.convertNamingConvention(
-                            sortableAttributeCompoundSchema.nameVariant,
-                            GrpcNamingConvention.SNAKE_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.UpperSnakeCase,
-                        this.convertNamingConvention(
-                            sortableAttributeCompoundSchema.nameVariant,
-                            GrpcNamingConvention.UPPER_SNAKE_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.KebabCase,
-                        this.convertNamingConvention(
-                            sortableAttributeCompoundSchema.nameVariant,
-                            GrpcNamingConvention.KEBAB_CASE
-                        ),
-                    ],
-                ])
+                MapUtil.getNamingMap(sortableAttributeCompoundSchema.nameVariant)
             ),
             Value.of(sortableAttributeCompoundSchema.description || null),
             Value.of(sortableAttributeCompoundSchema.deprecationNotice || null),
@@ -599,86 +348,14 @@ export class CatalogSchemaConverter {
         return new ReferenceSchema(
             referenceSchema.name,
             Value.of(
-                Map([
-                    [
-                        NamingConvention.CamelCase,
-                        this.convertNamingConvention(
-                            referenceSchema.nameVariant,
-                            GrpcNamingConvention.CAMEL_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.PascalCase,
-                        this.convertNamingConvention(
-                            referenceSchema.nameVariant,
-                            GrpcNamingConvention.PASCAL_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.SnakeCase,
-                        this.convertNamingConvention(
-                            referenceSchema.nameVariant,
-                            GrpcNamingConvention.SNAKE_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.UpperSnakeCase,
-                        this.convertNamingConvention(
-                            referenceSchema.nameVariant,
-                            GrpcNamingConvention.UPPER_SNAKE_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.KebabCase,
-                        this.convertNamingConvention(
-                            referenceSchema.nameVariant,
-                            GrpcNamingConvention.KEBAB_CASE
-                        ),
-                    ],
-                ])
+                MapUtil.getNamingMap(referenceSchema.nameVariant)
             ),
             Value.of(referenceSchema.description || null),
             Value.of(referenceSchema.deprecationNotice || null),
             Value.of(referenceSchema.entityType),
             Value.of(referenceSchema.entityTypeRelatesToEntity),
             Value.of(
-                Map([
-                    [
-                        NamingConvention.CamelCase,
-                        this.convertNamingConvention(
-                            referenceSchema.nameVariant,
-                            GrpcNamingConvention.CAMEL_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.PascalCase,
-                        this.convertNamingConvention(
-                            referenceSchema.nameVariant,
-                            GrpcNamingConvention.PASCAL_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.SnakeCase,
-                        this.convertNamingConvention(
-                            referenceSchema.nameVariant,
-                            GrpcNamingConvention.SNAKE_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.UpperSnakeCase,
-                        this.convertNamingConvention(
-                            referenceSchema.nameVariant,
-                            GrpcNamingConvention.UPPER_SNAKE_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.KebabCase,
-                        this.convertNamingConvention(
-                            referenceSchema.nameVariant,
-                            GrpcNamingConvention.KEBAB_CASE
-                        ),
-                    ],
-                ])
+                MapUtil.getNamingMap(referenceSchema.nameVariant)
             ),
             Value.of(null), //TODO: fix add value
             Value.of(null), //TODO: fix add value
@@ -729,48 +406,12 @@ export class CatalogSchemaConverter {
         return new AssociatedDataSchema(
             associatedDataSchema.name,
             Value.of(
-                Map([
-                    [
-                        NamingConvention.CamelCase,
-                        this.convertNamingConvention(
-                            associatedDataSchema.nameVariant,
-                            GrpcNamingConvention.CAMEL_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.PascalCase,
-                        this.convertNamingConvention(
-                            associatedDataSchema.nameVariant,
-                            GrpcNamingConvention.PASCAL_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.SnakeCase,
-                        this.convertNamingConvention(
-                            associatedDataSchema.nameVariant,
-                            GrpcNamingConvention.SNAKE_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.UpperSnakeCase,
-                        this.convertNamingConvention(
-                            associatedDataSchema.nameVariant,
-                            GrpcNamingConvention.UPPER_SNAKE_CASE
-                        ),
-                    ],
-                    [
-                        NamingConvention.KebabCase,
-                        this.convertNamingConvention(
-                            associatedDataSchema.nameVariant,
-                            GrpcNamingConvention.KEBAB_CASE
-                        ),
-                    ],
-                ])
+                MapUtil.getNamingMap(associatedDataSchema.nameVariant)
             ),
             Value.of(associatedDataSchema.description || null),
             Value.of(associatedDataSchema.deprecationNotice || null),
             Value.of(
-                this.convertScalar(
+                ScalarUtil.convertScalar(
                     associatedDataSchema.type as unknown as GrpcEvitaDataType
                 )
             ),
@@ -779,10 +420,10 @@ export class CatalogSchemaConverter {
         )
     }
 
-    private convertLocales(locales: GrpcLocale[]): string[] {
-        const convertedLocales: string[] = []
+    private convertLocales(locales: GrpcLocale[]): Locale[] {
+        const convertedLocales: Locale[] = []
         for (const locale of locales) {
-            convertedLocales.push(locale.languageTag)
+            convertedLocales.push(new Locale(locale.languageTag))
         }
         return convertedLocales
     }
@@ -896,97 +537,6 @@ export class CatalogSchemaConverter {
                 throw new UnexpectedError(
                     `Unsupported order direction '${orderDirection}'.`
                 )
-        }
-    }
-
-    private convertScalar(scalar: GrpcEvitaDataType): Scalar {
-        switch (scalar) {
-            case GrpcEvitaDataType.BIG_DECIMAL:
-                return Scalar.BigDecimal
-            case GrpcEvitaDataType.BIG_DECIMAL_NUMBER_RANGE:
-                return Scalar.BigDecimalNumberRange
-            case GrpcEvitaDataType.BOOLEAN:
-                return Scalar.Boolean
-            case GrpcEvitaDataType.BYTE:
-                return Scalar.Byte
-            case GrpcEvitaDataType.BIG_DECIMAL_ARRAY:
-                return Scalar.BigDecimalArray
-            case GrpcEvitaDataType.BOOLEAN_ARRAY:
-                return Scalar.BooleanArray
-            case GrpcEvitaDataType.BIG_DECIMAL_NUMBER_RANGE_ARRAY:
-                return Scalar.BigDecimalNumberRangeArray
-            case GrpcEvitaDataType.BYTE_ARRAY:
-                return Scalar.ByteArray
-            case GrpcEvitaDataType.BYTE_NUMBER_RANGE:
-                return Scalar.BigDecimalNumberRange
-            case GrpcEvitaDataType.BYTE_NUMBER_RANGE_ARRAY:
-                return Scalar.ByteNumberRangeArray
-            case GrpcEvitaDataType.CHARACTER:
-                return Scalar.Character
-            case GrpcEvitaDataType.CHARACTER_ARRAY:
-                return Scalar.CharacterArray
-            case GrpcEvitaDataType.CURRENCY:
-                return Scalar.Currency
-            case GrpcEvitaDataType.CURRENCY_ARRAY:
-                return Scalar.Currency
-            case GrpcEvitaDataType.DATE_TIME_RANGE:
-                return Scalar.DateTimeRange
-            case GrpcEvitaDataType.DATE_TIME_RANGE_ARRAY:
-                return Scalar.DateTimeRangeArray
-            case GrpcEvitaDataType.INTEGER:
-                return Scalar.Integer
-            case GrpcEvitaDataType.INTEGER_ARRAY:
-                return Scalar.IntegerArray
-            case GrpcEvitaDataType.INTEGER_NUMBER_RANGE:
-                return Scalar.IntegerNumberRange
-            case GrpcEvitaDataType.INTEGER_NUMBER_RANGE_ARRAY:
-                return Scalar.IntegerNumberRangeArray
-            case GrpcEvitaDataType.LOCALE:
-                return Scalar.Locale
-            case GrpcEvitaDataType.LOCALE_ARRAY:
-                return Scalar.LocaleArray
-            case GrpcEvitaDataType.LOCAL_DATE:
-                return Scalar.LocalDate
-            case GrpcEvitaDataType.LOCAL_DATE_ARRAY:
-                return Scalar.LocalDateArray
-            case GrpcEvitaDataType.LOCAL_DATE_TIME:
-                return Scalar.LocalDateTime
-            case GrpcEvitaDataType.LOCAL_DATE_TIME_ARRAY:
-                return Scalar.LocalDateTimeArray
-            case GrpcEvitaDataType.LOCAL_TIME:
-                return Scalar.LocalTime
-            case GrpcEvitaDataType.LOCAL_TIME_ARRAY:
-                return Scalar.LocalTimeArray
-            case GrpcEvitaDataType.LONG:
-                return Scalar.Long
-            case GrpcEvitaDataType.LONG_ARRAY:
-                return Scalar.LongArray
-            case GrpcEvitaDataType.LONG_NUMBER_RANGE:
-                return Scalar.LongNumberRange
-            case GrpcEvitaDataType.LONG_NUMBER_RANGE_ARRAY:
-                return Scalar.LongNumberRangeArray
-            case GrpcEvitaDataType.OFFSET_DATE_TIME:
-                return Scalar.OffsetDateTime
-            case GrpcEvitaDataType.OFFSET_DATE_TIME_ARRAY:
-                return Scalar.OffsetDateTimeArray
-            case GrpcEvitaDataType.PREDECESSOR:
-                return Scalar.Predecessor
-            case GrpcEvitaDataType.SHORT:
-                return Scalar.Short
-            case GrpcEvitaDataType.SHORT_ARRAY:
-                return Scalar.ShortArray
-            case GrpcEvitaDataType.SHORT_NUMBER_RANGE:
-                return Scalar.ShortNumberRange
-            case GrpcEvitaDataType.SHORT_NUMBER_RANGE_ARRAY:
-                return Scalar.ShortNumberRangeArray
-            case GrpcEvitaDataType.STRING:
-                return Scalar.String
-            case GrpcEvitaDataType.STRING_ARRAY:
-                return Scalar.StringArray
-            case GrpcEvitaDataType.UUID:
-                return Scalar.UUID
-            case GrpcEvitaDataType.UUID_ARRAY:
-                return Scalar.UUIDArray
         }
     }
 }

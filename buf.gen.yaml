@@ -4,7 +4,7 @@ version: v2
 plugins:
   # This will invoke protoc-gen-es and write output to src/gen
   - local: protoc-gen-es
-    out: src/gen
+    out: src/modules/connection/driver/grpc/gen
     opt: target=ts
   # This will invoke protoc-gen-connect-es
   - local: protoc-gen-connect-es

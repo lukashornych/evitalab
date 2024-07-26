@@ -5,6 +5,7 @@ import { Entity } from './Entity'
 import { Cardinality } from '../schema/Cardinality'
 import { Map } from 'immutable'
 
+//TODO: Add documentation
 export class Reference {
     readonly referenceName: Value<string>
     readonly version: Value<number>

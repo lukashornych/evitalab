@@ -2,6 +2,7 @@ import { BigDecimal } from "../data-type/BigDecimal";
 import { DateTimeRange } from "../data-type/DateTimeRange";
 import { Value } from "../Value";
 
+//TODO: Add documentation
 export class Price {
     readonly priceId: Value<number>
     readonly priceList: Value<string>

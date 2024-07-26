@@ -9,6 +9,7 @@ import { Value } from '@/modules/connection/model/Value'
 import { EvolutionMode } from '@/modules/connection/model/schema/EvolutionMode'
 import { AbstractSchema } from '@/modules/connection/model/schema/AbstractSchema'
 import { Currency } from '../data/Currency'
+import { Locale } from '../data-type/Locale'
 
 /**
  * evitaLab's representation of a single evitaDB entity schema independent of specific evitaDB version
@@ -52,7 +53,7 @@ export class EntitySchema extends AbstractSchema {
     /**
      * Contains set of all `Locale` that could be used for localized `AttributeSchema` or `AssociatedDataSchema`. Enables using `entityLocaleEquals` filtering constraint in query.
      */
-    readonly locales: Value<List<string>>
+    readonly locales: Value<List<Locale>>
     /**
      * Contains set of all `Currency` that could be used for `prices` in entities of this type.
      */
@@ -78,7 +79,7 @@ export class EntitySchema extends AbstractSchema {
                 withHierarchy: Value<boolean>,
                 withPrice: Value<boolean>,
                 indexedPricePlaces: Value<number>,
-                locales: Value<string[]>,
+                locales: Value<Locale[]>,
                 currencies: Value<Currency[]>,
                 evolutionMode: Value<EvolutionMode[]>,
                 attributes: Value<EntityAttributeSchema[]>,

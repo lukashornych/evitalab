@@ -1,3 +1,4 @@
+//TODO: Add documentation
 export class Currency {
     code: string
 

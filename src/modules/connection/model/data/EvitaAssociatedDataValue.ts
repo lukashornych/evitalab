@@ -1,3 +1,4 @@
+//TOOD: Add documentation
 export class EvitaAssociatedDataValue {
     readonly value: object
     readonly version?: number | undefined;
