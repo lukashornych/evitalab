@@ -268,7 +268,7 @@
               "unreachable": "System API URL is not reachable."
             }
           },
-          "labApiUrl": {
+          "grpcUrl": {
             "label": "evitaLab API URL",
             "validations": {
               "required": "evitaLab API URL is required.",

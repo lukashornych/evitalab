@@ -75,17 +75,6 @@ export class CatalogSchemaConverter {
         )
     }
 
-    private convertNamingConvention(
-        namingConvention: GrpcNameVariant[],
-        targetConvention: GrpcNamingConvention
-    ): string {
-        return (
-            namingConvention.find(
-                (x) => x.namingConvention === targetConvention
-            )?.name ?? ''
-        )
-    }
-
     private convertGlobalAttributeSchemas(attributeSchemas: {
         [key: string]: GrpcGlobalAttributeSchema
     }): GlobalAttributeSchema[] {
@@ -106,16 +95,19 @@ export class CatalogSchemaConverter {
     private convertAttributeSchema(
         attribute: GrpcAttributeSchema
     ): AttributeSchema {
+        const scalar = ScalarUtil.convertScalar(attribute.type);
+        const nameVariants = MapUtil.getNamingMap(attribute.nameVariant)
+        const unique = this.convertAttributeUniquenessType(attribute.unique)
         if (attribute.schemaType === GrpcAttributeSchemaType.ENTITY) {
             return new AttributeSchema(
                 attribute.name,
                 Value.of(
-                    MapUtil.getNamingMap(attribute.nameVariant)
+                    nameVariants
                 ),
                 Value.of(attribute.description ?? null),
                 Value.of(attribute.deprecationNotice ?? null),
-                Value.of(ScalarUtil.convertScalar(attribute.type)),
-                Value.of(this.convertAttributeUniquenessType(attribute.unique)),
+                Value.of(scalar),
+                Value.of(unique),
                 Value.of(attribute.filterable),
                 Value.of(attribute.sortable),
                 Value.of(attribute.nullable),
@@ -126,13 +118,12 @@ export class CatalogSchemaConverter {
         } else if (attribute.schemaType === GrpcAttributeSchemaType.REFERENCE) {
             return new EntityAttributeSchema(
                 attribute.name,
-                Value.of(
-                    MapUtil.getNamingMap(attribute.nameVariant)
+                Value.of(nameVariants
                 ),
                 Value.of(attribute.description ?? null),
                 Value.of(attribute.deprecationNotice ?? null),
-                Value.of(ScalarUtil.convertScalar(attribute.type)),
-                Value.of(this.convertAttributeUniquenessType(attribute.unique)),
+                Value.of(scalar),
+                Value.of(unique),
                 Value.of(attribute.filterable),
                 Value.of(attribute.sortable),
                 Value.of(attribute.nullable),
@@ -335,7 +326,7 @@ export class CatalogSchemaConverter {
             const driverEntityAttributeSchema: GrpcAttributeSchema =
                 entityAttributeSchemas[attributeName]
             entityAttributesSchemas.push(
-                this.convertGlobalAttributeSchema(
+                this.convertAttributeSchema(
                     driverEntityAttributeSchema
                 ) as EntityAttributeSchema
             )

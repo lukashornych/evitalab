@@ -1,5 +1,4 @@
 import { List } from 'immutable'
-import { createConnectTransport } from '@connectrpc/connect-web'
 import { EvitaDBDriver } from '../EvitaDBDriver'
 import { Catalog } from '../../model/Catalog'
 import { Connection } from '../../model/Connection'
@@ -18,8 +17,9 @@ import { TimeoutError } from '../../exception/TimeoutError'
 import { EvitaDBInstanceNetworkError } from '@/modules/driver-support/exception/EvitaDBInstanceNetworkError'
 import { LabError } from '@/modules/base/exception/LabError'
 import { ClientsHelper, EvitaClient, SessionClient } from './helpers/ClientsHelper'
+import { TransportHelper } from './helpers/TransportHelper'
 
-//TODO: Add docs
+//TODO: Add docs and add header 'X-EvitaDB-ClientID': this.getClientIdHeaderValue()
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
     private readonly grpcCatalogSchemaConverter: GrpcCatalogSchemaConverter =
         new GrpcCatalogSchemaConverter()
@@ -27,22 +27,17 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         new GrpcCatalogConverter()
     private readonly responseConverter: ResponseConverter =
         new ResponseConverter()
-    private readonly connectionUrl: string = 'https://LAPTOP-C4DH0B5J:5555'
-
-    protected readonly transport = createConnectTransport({
-        baseUrl: this.connectionUrl,
-    })
 
     async getCatalogSchema(
         connection: Connection,
         catalogName: string
     ): Promise<CatalogSchema> {
         try {
-            const res = await ClientsHelper.getEvitaClient(connection, this.transport).createReadOnlySession({
+            const res = await ClientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)).createReadOnlySession({
                 catalogName: catalogName,
             })
             const schemaRes: GrpcCatalogSchemaResponse =
-                await ClientsHelper.getSessionClient(connection, this.transport).getCatalogSchema(
+                await ClientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).getCatalogSchema(
                     { nameVariants: true },
                     {
                         headers: {
@@ -62,8 +57,8 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                         return await this.loadEntitySchemas(
                             catalogName,
                             this.grpcCatalogSchemaConverter,
-                            ClientsHelper.getEvitaClient(connection, this.transport),
-                            ClientsHelper.getSessionClient(connection, this.transport)
+                            ClientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)),
+                            ClientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection))
                         )
                     }
                 )
@@ -114,10 +109,10 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         query: string
     ): Promise<Response> {
         try {
-            const session = await ClientsHelper.getEvitaClient(connection, this.transport).createReadOnlySession({
+            const session = await ClientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)).createReadOnlySession({
                 catalogName,
             })
-            const queryRespose = await ClientsHelper.getSessionClient(connection, this.transport).query(
+            const queryRespose = await ClientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).query(
                 {
                     query,
                 },
@@ -134,7 +129,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
     }
     async getCatalogs(connection: Connection): Promise<Catalog[]> {
         try {
-            const res = (await ClientsHelper.getManagmentClient(connection, this.transport).getCatalogStatistics(Empty))
+            const res = (await ClientsHelper.getManagmentClient(connection, TransportHelper.getTransport(connection)).getCatalogStatistics(Empty))
                 .catalogStatistics
             return res.map((x) => this.grpcCatalogConverter.convert(x))
         } catch (e: any) {
