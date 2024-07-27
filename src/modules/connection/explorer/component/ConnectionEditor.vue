@@ -156,10 +156,11 @@ async function testSystemApiConnection(): Promise<boolean> {
 
 async function testLabApiConnection(): Promise<boolean> {
     try {
-        console.log(modifiedConnection.value.grpcUrl);
         const emptyObj = {};
-        const response: any = await ky.post(modifiedConnection.value.grpcUrl + '/io.evitadb.externalApi.grpc.generated.EvitaManagementService/ServerStatus', {json: emptyObj }).json();
-        return response.liveness || false
+        const response: Response = await ky.post(modifiedConnection.value.grpcUrl + '/io.evitadb.externalApi.grpc.generated.EvitaManagementService/ServerStatus', {json: emptyObj, headers: {
+            'content-type': 'application/json; charset=utf-8'
+        } });
+        return response.ok|| false
     } catch (e) {
         return false
     }

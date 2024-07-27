@@ -62,7 +62,6 @@ import { Date as LocalDate } from '@/modules/connection/model/data-type/Date'
 import { Time as LocalTime } from '@/modules/connection/model/data-type/Time'
 import { Range } from '@/modules/connection/model/data-type/Range'
 import { Uuid } from '@/modules/connection/model/data-type/Uuid'
-import { Long } from '@/modules/connection/model/data-type/Long'
 import { Currency } from '@/modules/connection/model/data/Currency'
 import { Predecessor } from '@/modules/connection/model/data-type/Predecessor'
 import { EvitaValue } from '@/modules/connection/model/data/EvitaValue'
@@ -278,9 +277,9 @@ export class EntityConverter {
                     throw new Error(
                         'LongRangeNumber has undefined prop from or to'
                     )
-                const range: Range<Long> = [
-                    decimalRange.from.toString() as Long,
-                    decimalRange.to.toString() as Long,
+                const range: Range<bigint> = [
+                    decimalRange.from,
+                    decimalRange.to,
                 ]
                 return range
             }
@@ -473,11 +472,11 @@ export class EntityConverter {
             case GrpcEvitaDataType.LONG_NUMBER_RANGE_ARRAY: {
                 const grpcLongNumberRangeArray: GrpcLongNumberRangeArray =
                     value as GrpcLongNumberRangeArray
-                const longNumberRangeArray: Range<Long>[] = []
+                const longNumberRangeArray: Range<bigint>[] = []
                 for (const grpcLongRange of grpcLongNumberRangeArray.value) {
                     longNumberRangeArray.push([
-                        grpcLongRange.from?.toString(),
-                        grpcLongRange.to?.toString(),
+                        grpcLongRange.from,
+                        grpcLongRange.to,
                     ])
                 }
                 return Immutable.List(longNumberRangeArray)

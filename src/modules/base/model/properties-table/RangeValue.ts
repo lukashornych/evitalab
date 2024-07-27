@@ -1,18 +1,24 @@
 import { DateTime } from '@/modules/connection/model/data-type/DateTime'
 import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
-import { Long } from '@/modules/connection/model/data-type/Long'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 
 /**
  * Actual specific value of a property representing a range of values (e.g., date range, number range)
  */
 export class RangeValue {
-    readonly offsetDateTimeFormatter = new Intl.DateTimeFormat([], { dateStyle: 'medium', timeStyle: 'long' })
+    readonly offsetDateTimeFormatter = new Intl.DateTimeFormat([], {
+        dateStyle: 'medium',
+        timeStyle: 'long',
+    })
 
-    readonly range?: (DateTime | BigDecimal | Long | number | undefined)[]
+    readonly range?: (DateTime | BigDecimal | bigint | number | undefined)[]
     private serializedRange?: string[]
 
-    constructor(range: (DateTime | BigDecimal | Long | number | undefined)[] | undefined) {
+    constructor(
+        range:
+            | (DateTime | BigDecimal | bigint | number | undefined)[]
+            | undefined
+    ) {
         if (range != undefined && range.length != 2) {
             throw new UnexpectedError('Range must have two items.')
         }
@@ -24,7 +30,10 @@ export class RangeValue {
             if (this.range == undefined) {
                 this.serializedRange = ['∞', '∞']
             } else {
-                this.serializedRange = [this.formatPart(this.range[0]), this.formatPart(this.range[1])]
+                this.serializedRange = [
+                    this.formatPart(this.range[0]),
+                    this.formatPart(this.range[1]),
+                ]
             }
         }
         return this.serializedRange
@@ -34,18 +43,27 @@ export class RangeValue {
         if (this.range == undefined) {
             return '∞ - ∞'
         }
-        return `${this.formatPart(this.range[0])} - ${this.formatPart(this.range[1])}`
+        return `${this.formatPart(this.range[0])} - ${this.formatPart(
+            this.range[1]
+        )}`
     }
 
-    private formatPart(part: DateTime | BigDecimal | Long | number | undefined): string {
+    private formatPart(
+        part: DateTime | BigDecimal | bigint | number | undefined
+    ): string {
         if (part == undefined) {
             return '∞'
         }
-        if (typeof part == 'number') {
+        if (typeof part == 'number' || typeof part == 'bigint') {
             return part.toString()
         }
         try {
-            return this.offsetDateTimeFormatter.format(new Date(part))
+            if (part instanceof DateTime) {
+                return this.offsetDateTimeFormatter.format(
+                    new Date(part.isoDate)
+                )
+            }
+            throw new Error("Unaccepted type")
         } catch (e) {
             // not date time but long or BigDecimal
             return part.toString()

@@ -1,4 +1,7 @@
 // todo docs
-export type DateTime = {
+export class DateTime {
     readonly isoDate: string
+    constructor(isoDate: string) {
+        this.isoDate = isoDate
+    }
 }

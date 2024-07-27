@@ -42,7 +42,7 @@ import {
     useConnection,
 } from '@/modules/connection/explorer/component/dependecies'
 import { Map } from 'immutable' 
-
+//TODO: add dialog options
 const connectionService: ConnectionService = useConnectionService()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory =

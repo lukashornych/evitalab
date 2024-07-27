@@ -1,4 +1,8 @@
 //TODO: Add docs
-export type Uuid = {
+export class Uuid {
     readonly code: string
+
+    constructor(code: string){
+        this.code = code
+    }
 }

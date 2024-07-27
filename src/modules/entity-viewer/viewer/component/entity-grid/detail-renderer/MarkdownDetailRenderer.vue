@@ -11,7 +11,6 @@ import { Scalar } from '@/modules/connection/model/data-type/Scalar'
 import { ExtraEntityObjectType } from '@/modules/entity-viewer/viewer/model/ExtraEntityObjectType'
 import { DateTime } from '@/modules/connection/model/data-type/DateTime'
 import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
-import { Long } from '@/modules/connection/model/data-type/Long'
 import { Range } from '@/modules/connection/model/data-type/Range'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { NativeValue } from '@/modules/entity-viewer/viewer/model/entity-property-value/NativeValue'
@@ -91,7 +90,7 @@ const formattedValue = computed<string>(() => {
                     props.value,
                     '📅 ',
                     (end: any): string => {
-                        let year: number = parseInt((end as DateTime).split("-")[0])
+                        let year: number = parseInt((end as DateTime).isoDate.split("-")[0])
                         if (year < -9999 || year > 9999) {
                             // apparently, if the year has more than 4 digits, it must be prefixed with a plus or minus sign
                             return '∞'
@@ -133,7 +132,7 @@ const formattedValue = computed<string>(() => {
     }
 })
 
-function prettyPrintRangeValue(rawRange: any, prefix: string, endPrettyPrinter: (end: DateTime | BigDecimal | Long | number) => string): string {
+function prettyPrintRangeValue(rawRange: any, prefix: string, endPrettyPrinter: (end: DateTime | BigDecimal | bigint | number) => string): string {
     let from: any
     let to: any
 
@@ -157,7 +156,7 @@ function prettyPrintRangeValue(rawRange: any, prefix: string, endPrettyPrinter: 
         throw new UnexpectedError(`Invalid DateTimeRange value.`)
     }
 
-    const formatEnd = (end: DateTime | BigDecimal | Long | number): string => {
+    const formatEnd = (end: DateTime | BigDecimal | bigint | number): string => {
         if (end == undefined || (typeof end === 'string' && end.trim().length === 0)) {
             return '∞'
         }

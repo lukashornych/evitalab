@@ -16,7 +16,6 @@ import {
     GrpcEvitaDataType,
     GrpcEvolutionMode,
     GrpcGlobalAttributeUniquenessType,
-    GrpcNamingConvention,
     GrpcOrderBehaviour,
     GrpcOrderDirection,
 } from '@/modules/connection/driver/grpc/gen/GrpcEnums_pb'
@@ -96,8 +95,8 @@ export class CatalogSchemaConverter {
         attribute: GrpcAttributeSchema
     ): AttributeSchema {
         const scalar = ScalarUtil.convertScalar(attribute.type);
-        const nameVariants = MapUtil.getNamingMap(attribute.nameVariant)
-        const unique = this.convertAttributeUniquenessType(attribute.unique)
+        const nameVariants = MapUtil.getNamingMap(attribute.nameVariant);
+        const uniquenessType = this.convertAttributeUniquenessType(attribute.unique);
         if (attribute.schemaType === GrpcAttributeSchemaType.ENTITY) {
             return new AttributeSchema(
                 attribute.name,
@@ -107,7 +106,7 @@ export class CatalogSchemaConverter {
                 Value.of(attribute.description ?? null),
                 Value.of(attribute.deprecationNotice ?? null),
                 Value.of(scalar),
-                Value.of(unique),
+                Value.of(uniquenessType),
                 Value.of(attribute.filterable),
                 Value.of(attribute.sortable),
                 Value.of(attribute.nullable),
@@ -118,12 +117,13 @@ export class CatalogSchemaConverter {
         } else if (attribute.schemaType === GrpcAttributeSchemaType.REFERENCE) {
             return new EntityAttributeSchema(
                 attribute.name,
-                Value.of(nameVariants
+                Value.of(
+                    nameVariants
                 ),
                 Value.of(attribute.description ?? null),
                 Value.of(attribute.deprecationNotice ?? null),
                 Value.of(scalar),
-                Value.of(unique),
+                Value.of(uniquenessType),
                 Value.of(attribute.filterable),
                 Value.of(attribute.sortable),
                 Value.of(attribute.nullable),
@@ -326,7 +326,7 @@ export class CatalogSchemaConverter {
             const driverEntityAttributeSchema: GrpcAttributeSchema =
                 entityAttributeSchemas[attributeName]
             entityAttributesSchemas.push(
-                this.convertAttributeSchema(
+                this.convertGlobalAttributeSchema(
                     driverEntityAttributeSchema
                 ) as EntityAttributeSchema
             )

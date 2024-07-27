@@ -1,4 +1,8 @@
 //TODO: Add docs
-export type Date = {
+export class Date {
     readonly isoDate: string;
+
+    constructor(isoDate: string){
+        this.isoDate = isoDate
+    }
 }
