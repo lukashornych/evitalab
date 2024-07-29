@@ -43,7 +43,7 @@ function initialize() {
         pipeline = connectionService.getEntitySchema(
             props.catalogPointer.connection,
             props.catalogPointer.catalogName,
-            props.referenceSchema.referencedEntityType.getIfSupported()! as string
+            props.referenceSchema.entityType.getIfSupported()! as string
         )
             .then((entitySchema: EntitySchema) => {
                 return Array.from(entitySchema.attributes.getIfSupported()!.values()!)

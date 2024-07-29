@@ -1,4 +1,4 @@
-import { DateTime } from '@/modules/connection/model/data-type/DateTime'
+import { LocalDateTime } from '@/modules/connection/model/data-type/LocalDateTime'
 import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 
@@ -11,12 +11,12 @@ export class RangeValue {
         timeStyle: 'long',
     })
 
-    readonly range?: (DateTime | BigDecimal | bigint | number | undefined)[]
+    readonly range?: (LocalDateTime | BigDecimal | bigint | number | undefined)[]
     private serializedRange?: string[]
 
     constructor(
         range:
-            | (DateTime | BigDecimal | bigint | number | undefined)[]
+            | (LocalDateTime | BigDecimal | bigint | number | undefined)[]
             | undefined
     ) {
         if (range != undefined && range.length != 2) {
@@ -49,7 +49,7 @@ export class RangeValue {
     }
 
     private formatPart(
-        part: DateTime | BigDecimal | bigint | number | undefined
+        part: LocalDateTime | BigDecimal | bigint | number | undefined
     ): string {
         if (part == undefined) {
             return '∞'
@@ -58,7 +58,7 @@ export class RangeValue {
             return part.toString()
         }
         try {
-            if (part instanceof DateTime) {
+            if (part instanceof LocalDateTime) {
                 return this.offsetDateTimeFormatter.format(
                     new Date(part.isoDate)
                 )

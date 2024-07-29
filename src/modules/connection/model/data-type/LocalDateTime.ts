@@ -1,5 +1,5 @@
 // todo docs
-export class DateTime {
+export class LocalDateTime {
     readonly isoDate: string
     constructor(isoDate: string) {
         this.isoDate = isoDate

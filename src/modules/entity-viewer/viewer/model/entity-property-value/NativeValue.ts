@@ -1,6 +1,6 @@
 import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
 import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
-import { DateTime } from '@/modules/connection/model/data-type/DateTime'
+import { LocalDateTime } from '@/modules/connection/model/data-type/LocalDateTime'
 import { Range } from '@/modules/connection/model/data-type/Range'
 
 /**
@@ -8,14 +8,14 @@ import { Range } from '@/modules/connection/model/data-type/Range'
  * must be wrapped in a separate {@link NativeValue} instance.
  */
 export class NativeValue extends EntityPropertyValue {
-    readonly delegate: string | DateTime | BigDecimal | bigint | number | object | boolean | undefined | Range<any>
+    readonly delegate: string | LocalDateTime | BigDecimal | bigint | number | object | boolean | undefined | Range<any>
 
-    constructor(delegate: string | DateTime | BigDecimal | bigint | number | object | boolean | undefined | Range<any>) {
+    constructor(delegate: string | LocalDateTime | BigDecimal | bigint | number | object | boolean | undefined | Range<any>) {
         super()
         this.delegate = delegate
     }
 
-    value(): string | DateTime | BigDecimal | bigint | number | object | boolean | undefined | Range<any> {
+    value(): string | LocalDateTime | BigDecimal | bigint | number | object | boolean | undefined | Range<any> {
         return this.delegate
     }
 

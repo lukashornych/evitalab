@@ -33,14 +33,14 @@ if (props.schema.referencedEntityTypeManaged.getOrElse(false)) {
     properties.push({
         name: t('schemaViewer.reference.label.referencedEntity'),
         value: new PropertyValue(
-            new KeywordValue(props.schema.referencedEntityType.getIfSupported()!),
+            new KeywordValue(props.schema.entityType.getIfSupported()!),
             undefined,
             item => {
                 workspaceService.createTab(schemaViewerTabFactory.createNew(
                     props.dataPointer.connection,
                     new EntitySchemaPointer(
                         props.dataPointer.schemaPointer.catalogName,
-                        props.schema.referencedEntityType.getIfSupported()!
+                        props.schema.entityType.getIfSupported()!
                     )
                 ))
             }
@@ -49,7 +49,7 @@ if (props.schema.referencedEntityTypeManaged.getOrElse(false)) {
 } else {
     properties.push({
         name: t('schemaViewer.reference.label.referencedEntity'),
-        value: new PropertyValue(new KeywordValue(props.schema.referencedEntityType.getIfSupported()!))
+        value: new PropertyValue(new KeywordValue(props.schema.entityType.getIfSupported()!))
     })
 }
 properties.push({ name: t('schemaViewer.reference.label.referencedEntityManaged'), value: new PropertyValue(props.schema.referencedEntityTypeManaged.getOrElse(false)) })

@@ -1,5 +1,6 @@
 import { Value } from './Value'
 
+//TODO: Add documentation
 export class EntityCollectionStatistics {
     readonly entityType: Value<string>
 

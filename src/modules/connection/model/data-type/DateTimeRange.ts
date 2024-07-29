@@ -1,5 +1,6 @@
 import { OffsetDateTime } from './OffsetDateTime'
 
+//TODO: Add documentation
 export class DateTimeRange {
     readonly from?: OffsetDateTime
     readonly to?: OffsetDateTime

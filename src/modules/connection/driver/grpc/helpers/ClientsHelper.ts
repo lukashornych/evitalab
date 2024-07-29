@@ -15,8 +15,8 @@ export type ManagmentClient = PromiseClient<typeof EvitaManagementService>
 
 //TODO: Add docs
 export class ClientsHelper {
-    private static evitaClients: Map<ConnectionId, EvitaClient> = new Map<ConnectionId, EvitaClient>();
-    public static getEvitaClient(connection: Connection, transport: Transport): EvitaClient {
+    private evitaClients: Map<ConnectionId, EvitaClient> = new Map<ConnectionId, EvitaClient>();
+    public getEvitaClient(connection: Connection, transport: Transport): EvitaClient {
         let evitaClient : EvitaClient | undefined = this.evitaClients.get(connection.id);
         if (!evitaClient) {
             evitaClient = createPromiseClient(EvitaService, transport)
@@ -26,8 +26,8 @@ export class ClientsHelper {
         return evitaClient;
     }
 
-    private static managmentClients?: Map<ConnectionId, ManagmentClient> = new Map<ConnectionId, ManagmentClient>
-    public static getManagmentClient(connection: Connection, transport: Transport): ManagmentClient {
+    private managmentClients?: Map<ConnectionId, ManagmentClient> = new Map<ConnectionId, ManagmentClient>
+    public getManagmentClient(connection: Connection, transport: Transport): ManagmentClient {
         let managmentClient : ManagmentClient | undefined = this.managmentClients?.get(connection.id); 
         if (!managmentClient) {
             managmentClient = createPromiseClient(
@@ -38,8 +38,8 @@ export class ClientsHelper {
         return managmentClient
     }
 
-    private static sessionClients?: Map<ConnectionId, SessionClient> = new Map<ConnectionId, SessionClient>
-    public static getSessionClient(connection: Connection, transport: Transport): SessionClient {
+    private sessionClients?: Map<ConnectionId, SessionClient> = new Map<ConnectionId, SessionClient>
+    public getSessionClient(connection: Connection, transport: Transport): SessionClient {
         let sessionClient : SessionClient | undefined = this.sessionClients?.get(connection.id);  
         if (!sessionClient) {
             sessionClient = createPromiseClient(

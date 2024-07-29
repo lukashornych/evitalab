@@ -1,5 +1,5 @@
 //TODO: Add docs
-export class Date {
+export class LocalDate {
     readonly isoDate: string;
 
     constructor(isoDate: string){

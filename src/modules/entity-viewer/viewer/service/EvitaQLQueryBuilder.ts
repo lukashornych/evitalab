@@ -242,7 +242,7 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
                     await this.connectionService.getEntitySchema(
                         dataPointer.connection,
                         dataPointer.catalogName,
-                        referenceSchema.referencedEntityType.getIfSupported()!
+                        referenceSchema.entityType.getIfSupported()!
                     ),
                     dataLocale
                 )

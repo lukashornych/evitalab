@@ -49,23 +49,23 @@ import { Locale } from '@/modules/connection/model/data-type/Locale'
 import { GrpcPrice } from '@/modules/connection/driver/grpc/gen/GrpcPrice_pb'
 import { Price } from '@/modules/connection/model/data/Price'
 import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
-import { datetime as DateTimeUtil } from '@/utils/DateTimeUtils'
+import { DateTimeUtil as DateTimeUtil } from '@/modules/connection/driver/grpc/utils/DateTimeUtil'
 import { PriceInnerRecordHandling } from '@/modules/connection/model/data-type/PriceInnerRecordHandling'
 import { EntityReference } from '@/modules/connection/model/data/EntityReference'
 import { Cardinality } from '@/modules/connection/model/schema/Cardinality'
 import Immutable from 'immutable'
-import { Timestamp, Type } from '@bufbuild/protobuf'
 import { DateTimeRange } from '@/modules/connection/model/data-type/DateTimeRange'
 import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateTime'
 import { DateTime } from 'luxon'
-import { Date as LocalDate } from '@/modules/connection/model/data-type/Date'
-import { Time as LocalTime } from '@/modules/connection/model/data-type/Time'
+import { LocalDate } from '@/modules/connection/model/data-type/LocalDate'
+import { LocalTime } from '@/modules/connection/model/data-type/LocalTime'
 import { Range } from '@/modules/connection/model/data-type/Range'
 import { Uuid } from '@/modules/connection/model/data-type/Uuid'
 import { Currency } from '@/modules/connection/model/data/Currency'
 import { Predecessor } from '@/modules/connection/model/data-type/Predecessor'
 import { EvitaValue } from '@/modules/connection/model/data/EvitaValue'
-import { ScalarUtil } from '../utils/ScalarUtil'
+import { ScalarConverter } from './ScalarConverter'
+import { LocalDateTime } from '@/modules/connection/model/data-type/LocalDateTime'
 
 //TODO: Add documentation
 export class EntityConverter {
@@ -114,9 +114,9 @@ export class EntityConverter {
             Value.of(price.priceId),
             Value.of(price.priceList),
             Value.of(price.innerRecordId),
-            Value.of(price.priceWithoutTax?.valueString as BigDecimal),
-            Value.of(price.taxRate?.valueString as BigDecimal),
-            Value.of(price.priceWithTax?.valueString as BigDecimal),
+            Value.of(new BigDecimal(price.priceWithoutTax?.valueString)),
+            Value.of(new BigDecimal(price.taxRate?.valueString)),
+            Value.of(new BigDecimal(price.priceWithTax?.valueString)),
             Value.of(
                 price.validity
                     ? DateTimeUtil.convertToDateTimeRange(price.validity)
@@ -151,8 +151,14 @@ export class EntityConverter {
         >()
         for (const locale in grpcGlobalAttribtes) {
             const attr = grpcGlobalAttribtes[locale]
-            if(attr.value.value){
-                newGlobalAttributes.set(locale, new EvitaValue(this.convertAttributeValue(attr.type, attr.value.value), ScalarUtil.convertScalar(attr.type)))
+            if (attr.value.value) {
+                newGlobalAttributes.set(
+                    locale,
+                    new EvitaValue(
+                        this.convertAttributeValue(attr.type, attr.value.value),
+                        ScalarConverter.convertScalar(attr.type)
+                    )
+                )
             }
         }
         return Immutable.Map(newGlobalAttributes)
@@ -189,7 +195,7 @@ export class EntityConverter {
             | GrpcCurrencyArray
             | GrpcUuidArray
             | GrpcOffsetDateTime
-    ): object {
+    ): any {
         switch (type) {
             case GrpcEvitaDataType.STRING:
             case GrpcEvitaDataType.BYTE:
@@ -198,53 +204,39 @@ export class EntityConverter {
             case GrpcEvitaDataType.LONG:
             case GrpcEvitaDataType.BOOLEAN:
             case GrpcEvitaDataType.CHARACTER:
-            case GrpcEvitaDataType.BIG_DECIMAL:
-                return value as unknown as object
-            case GrpcEvitaDataType.LOCAL_DATE_TIME:
+                return value
+            case GrpcEvitaDataType.BIG_DECIMAL: {
+                const grpcValue: GrpcBigDecimal = value as GrpcBigDecimal
+                return new BigDecimal(grpcValue.valueString)
+            }
+            case GrpcEvitaDataType.LOCAL_DATE_TIME: {
+                const offsetDateTime: GrpcOffsetDateTime =
+                    value as GrpcOffsetDateTime
+                return this.convertDateTime(offsetDateTime)
+            }
             case GrpcEvitaDataType.OFFSET_DATE_TIME: {
                 const offsetDateTime: GrpcOffsetDateTime =
                     value as GrpcOffsetDateTime
-                if (!offsetDateTime.timestamp) {
-                    throw new Error('Missing prop timestamp')
-                }
-                return new OffsetDateTime(
-                    offsetDateTime.timestamp,
-                    offsetDateTime.offset
-                ) as object
+                return this.convertOffsetDateTime(offsetDateTime)
             }
             case GrpcEvitaDataType.LOCAL_DATE: {
                 const offsetDateTime: GrpcOffsetDateTime =
                     value as GrpcOffsetDateTime
-                if (!offsetDateTime.timestamp) {
-                    throw new Error('Missing prop timestamp')
-                }
-                const localDate: LocalDate = {
-                    isoDate: DateTime.fromSeconds(
-                        Number(offsetDateTime.timestamp.seconds)
-                    ).toISODate(),
-                }
-                return localDate as object
+                return this.convertDate(offsetDateTime)
             }
             case GrpcEvitaDataType.LOCAL_TIME: {
                 const grpcTime: GrpcOffsetDateTime = value as GrpcOffsetDateTime
-                if (!grpcTime.timestamp) {
-                    throw new Error('Missing prop timestamp')
-                }
-                const localTime: LocalTime = {
-                    isoTime: DateTime.fromSeconds(
-                        Number(grpcTime.timestamp.seconds)
-                    ).toISOTime(),
-                }
-                return localTime
+                return this.convertTime(grpcTime)
             }
             case GrpcEvitaDataType.DATE_TIME_RANGE: {
                 const datetimeRange: GrpcDateTimeRange =
                     value as GrpcDateTimeRange
                 if (
-                    !datetimeRange.from ||
-                    !datetimeRange.to ||
-                    !datetimeRange.from.timestamp ||
-                    !datetimeRange.to.timestamp
+                    this.checkDateTimeValidity(
+                        datetimeRange.from,
+                        datetimeRange.to,
+                        false
+                    )
                 )
                     throw new Error(
                         'DateTimeRange has undefined prop from or to'
@@ -252,11 +244,11 @@ export class EntityConverter {
                 else
                     return new DateTimeRange(
                         new OffsetDateTime(
-                            datetimeRange.from.timestamp,
-                            datetimeRange.from.offset
+                            datetimeRange.from?.timestamp,
+                            datetimeRange.from?.offset
                         ),
                         new OffsetDateTime(
-                            datetimeRange.to.timestamp,
+                            datetimeRange.to?.timestamp,
                             datetimeRange.to?.offset
                         )
                     )
@@ -265,30 +257,32 @@ export class EntityConverter {
                 const decimalRange: GrpcBigDecimalNumberRange =
                     value as GrpcBigDecimalNumberRange
                 const range: Range<BigDecimal> = [
-                    decimalRange.from?.valueString as BigDecimal,
-                    decimalRange.to?.valueString as BigDecimal,
+                    new BigDecimal(decimalRange.from?.valueString),
+                    new BigDecimal(decimalRange.to?.valueString),
                 ]
                 return range
             }
             case GrpcEvitaDataType.LONG_NUMBER_RANGE: {
-                const decimalRange: GrpcLongNumberRange =
+                const longRange: GrpcLongNumberRange =
                     value as GrpcLongNumberRange
-                if (!decimalRange.from || !decimalRange.to)
+                if (this.checkNumberRangeValidity(longRange.from, longRange.to))
                     throw new Error(
-                        'LongRangeNumber has undefined prop from or to'
+                        'LongRangeNumber has undefined prop from and to'
                     )
-                const range: Range<bigint> = [
-                    decimalRange.from,
-                    decimalRange.to,
-                ]
+                const range: Range<bigint> = [longRange.from, longRange.to]
                 return range
             }
             case GrpcEvitaDataType.INTEGER_NUMBER_RANGE: {
                 const integerRange: GrpcIntegerNumberRange =
                     value as GrpcIntegerNumberRange
-                if (!integerRange.from || !integerRange.to)
+                if (
+                    this.checkNumberRangeValidity(
+                        integerRange.from,
+                        integerRange.to
+                    )
+                )
                     throw new Error(
-                        'IntegerRangeNumber has undefined prop from or to'
+                        'IntegerRangeNumber has undefined prop from and to'
                     )
                 const range: Range<number> = [
                     integerRange.from,
@@ -299,9 +293,14 @@ export class EntityConverter {
             case GrpcEvitaDataType.SHORT_NUMBER_RANGE: {
                 const shortRange: GrpcIntegerNumberRange =
                     value as GrpcIntegerNumberRange
-                if (!shortRange.from || !shortRange.to)
+                if (
+                    this.checkNumberRangeValidity(
+                        shortRange.from,
+                        shortRange.to
+                    )
+                )
                     throw new Error(
-                        'ShortRangeNumber has undefined prop from or to'
+                        'ShortRangeNumber has undefined prop from and to'
                     )
                 const range: Range<number> = [shortRange.from, shortRange.to]
                 return range
@@ -309,9 +308,9 @@ export class EntityConverter {
             case GrpcEvitaDataType.BYTE_NUMBER_RANGE: {
                 const byteRange: GrpcIntegerNumberRange =
                     value as GrpcIntegerNumberRange
-                if (!byteRange.from || !byteRange.to)
+                if (this.checkNumberRangeValidity(byteRange.from, byteRange.to))
                     throw new Error(
-                        'ByteRangeNumber has undefined prop from or to'
+                        'ByteRangeNumber has undefined prop from and to'
                     )
                 const range: Range<number> = [byteRange.from, byteRange.to]
                 return range
@@ -329,7 +328,7 @@ export class EntityConverter {
                 const uuid: Uuid = {
                     code: grpcUuid.toJsonString(),
                 }
-                return uuid as object
+                return uuid
             }
             case GrpcEvitaDataType.PREDECESSOR: {
                 const grpcPredecessor: GrpcPredecessor =
@@ -379,39 +378,36 @@ export class EntityConverter {
                     value as GrpcBigDecimalArray
                 const newBigDecimalArray: BigDecimal[] = []
                 for (const grpcDecimal of grpcDecimalArray.value) {
-                    newBigDecimalArray.push(grpcDecimal.valueString)
+                    newBigDecimalArray.push(
+                        new BigDecimal(grpcDecimal.valueString)
+                    )
                 }
                 return Immutable.List(newBigDecimalArray)
             }
-            case GrpcEvitaDataType.OFFSET_DATE_TIME_ARRAY:
+            case GrpcEvitaDataType.OFFSET_DATE_TIME_ARRAY: {
+                const grpcDateTimeArray: GrpcOffsetDateTimeArray =
+                    value as GrpcOffsetDateTimeArray
+                const offsetDateTimeArray: LocalDateTime[] = []
+                for (const grpcDateTime of grpcDateTimeArray.value) {
+                    offsetDateTimeArray.push(this.convertDateTime(grpcDateTime))
+                }
+                return Immutable.List(offsetDateTimeArray)
+            }
             case GrpcEvitaDataType.LOCAL_DATE_TIME_ARRAY: {
                 const grpcDateTimeArray: GrpcOffsetDateTimeArray =
                     value as GrpcOffsetDateTimeArray
-                const offsetDateTimeArray: OffsetDateTime[] = []
+                const localeDateTimeArray: LocalDateTime[] = []
                 for (const grpcDateTime of grpcDateTimeArray.value) {
-                    if (grpcDateTime.timestamp) {
-                        offsetDateTimeArray.push(
-                            new OffsetDateTime(
-                                grpcDateTime.timestamp,
-                                grpcDateTime.offset
-                            )
-                        )
-                    }
+                    localeDateTimeArray.push(this.convertDateTime(grpcDateTime))
                 }
-                return Immutable.List(offsetDateTimeArray)
+                return Immutable.List(localeDateTimeArray)
             }
             case GrpcEvitaDataType.LOCAL_DATE_ARRAY: {
                 const grpcLocalDateArray: GrpcOffsetDateTimeArray =
                     value as GrpcOffsetDateTimeArray
                 const localDateArray: LocalDate[] = []
                 for (const localDate of grpcLocalDateArray.value) {
-                    if (localDate.timestamp) {
-                        localDateArray.push({
-                            isoDate: DateTime.fromSeconds(
-                                Number(localDate.timestamp.seconds)
-                            ).toISODate(),
-                        })
-                    }
+                    localDateArray.push(this.convertDate(localDate))
                 }
                 return Immutable.List(localDateArray)
             }
@@ -420,13 +416,7 @@ export class EntityConverter {
                     value as GrpcOffsetDateTimeArray
                 const localTimeArray: LocalTime[] = []
                 for (const localTime of grpcLocalTimeArray.value) {
-                    if (localTime.timestamp) {
-                        localTimeArray.push({
-                            isoTime: DateTime.fromSeconds(
-                                Number(localTime.timestamp.seconds)
-                            ).toISODate(),
-                        })
-                    }
+                    localTimeArray.push(this.convertTime(localTime))
                 }
                 return Immutable.List(localTimeArray)
             }
@@ -436,19 +426,20 @@ export class EntityConverter {
                 const dateTimeRange: DateTimeRange[] = []
                 for (const grpcDateTimeRange of grpcDateTimeRangeArray.value) {
                     if (
-                        grpcDateTimeRange.from &&
-                        grpcDateTimeRange.from.timestamp &&
-                        grpcDateTimeRange.to &&
-                        grpcDateTimeRange.to.timestamp
+                        this.checkDateTimeValidity(
+                            grpcDateTimeRange.from,
+                            grpcDateTimeRange.to,
+                            false
+                        )
                     ) {
                         dateTimeRange.push(
                             new DateTimeRange(
                                 new OffsetDateTime(
-                                    grpcDateTimeRange.from.timestamp,
-                                    grpcDateTimeRange.from.offset
+                                    grpcDateTimeRange.from?.timestamp,
+                                    grpcDateTimeRange.from?.offset
                                 ),
                                 new OffsetDateTime(
-                                    grpcDateTimeRange.to.timestamp,
+                                    grpcDateTimeRange.to?.timestamp,
                                     grpcDateTimeRange.to?.offset
                                 )
                             )
@@ -463,8 +454,8 @@ export class EntityConverter {
                 const bigDecimalRange: Range<BigDecimal>[] = []
                 for (const grpcBigDecimalRange of grpcBigDecimalNumberRangeArray.value) {
                     bigDecimalRange.push([
-                        grpcBigDecimalRange.from?.valueString as BigDecimal,
-                        grpcBigDecimalRange.to?.valueString as BigDecimal,
+                        new BigDecimal(grpcBigDecimalRange.from?.valueString),
+                        new BigDecimal(grpcBigDecimalRange.to?.valueString),
                     ])
                 }
                 return Immutable.List(bigDecimalRange)
@@ -548,6 +539,67 @@ export class EntityConverter {
         }
     }
 
+    private convertDate(offsetDateTime: OffsetDateTime): LocalDate {
+        if (!offsetDateTime.timestamp) {
+            throw new Error('Missing prop timestamp')
+        }
+        const localDate: LocalDate = {
+            isoDate: DateTime.fromSeconds(
+                Number(offsetDateTime.timestamp.seconds)
+            ).toISODate(),
+        }
+        return localDate
+    }
+
+    private convertDateTime(offsetDateTime: GrpcOffsetDateTime): LocalDateTime {
+        if (!offsetDateTime.timestamp) {
+            throw new Error('Missing prop timestamp')
+        }
+        return new LocalDateTime(
+            DateTime.fromSeconds(
+                Number(offsetDateTime.timestamp.seconds)
+            ).toISO()
+        )
+    }
+
+    private checkDateTimeValidity(
+        from: GrpcOffsetDateTime | undefined,
+        to: GrpcOffsetDateTime | undefined,
+        hasOffset: boolean
+    ): boolean {
+        if (!from && !to) return false
+        else if (from && to && !from.timestamp && !to.timestamp) return false
+        else if (
+            hasOffset &&
+            ((from && from.timestamp && !from.offset) ||
+                (to && to.timestamp && !to.offset))
+        )
+            return false
+        else return true
+    }
+
+    private convertOffsetDateTime(
+        offsetDateTime: GrpcOffsetDateTime
+    ): OffsetDateTime {
+        if (!offsetDateTime.timestamp) {
+            throw new Error('Missing prop timestamp')
+        }
+        return new OffsetDateTime(
+            offsetDateTime.timestamp,
+            offsetDateTime.offset
+        )
+    }
+    private checkNumberRangeValidity(
+        from: number | bigint | undefined,
+        to: number | bigint | undefined
+    ): boolean {
+        if (!from && !to) {
+            return false
+        } else {
+            return true
+        }
+    }
+
     private convertLocalizedAttributes(localizedAttribtes: {
         [key: string]: GrpcLocalizedAttribute
     }): Immutable.Map<string, LocalizedAttribute> {
@@ -565,6 +617,18 @@ export class EntityConverter {
             )
         }
         return Immutable.Map(newlocalizedAttributes)
+    }
+
+    private convertTime(grpcTime: GrpcOffsetDateTime): LocalTime {
+        if (!grpcTime.timestamp) {
+            throw new Error('Missing prop timestamp')
+        }
+        const localTime: LocalTime = {
+            isoTime: DateTime.fromSeconds(
+                Number(grpcTime.timestamp.seconds)
+            ).toISOTime(),
+        }
+        return localTime
     }
 
     private convertReferences(
@@ -711,9 +775,11 @@ export class EntityConverter {
                     Value.of(price.priceId),
                     Value.of(price.priceList),
                     Value.of(price.innerRecordId),
-                    Value.of(price.priceWithoutTax?.valueString as BigDecimal),
-                    Value.of(price.taxRate?.valueString as BigDecimal),
-                    Value.of(price.priceWithTax?.valueString as BigDecimal),
+                    Value.of(
+                        new BigDecimal(price.priceWithoutTax?.valueString)
+                    ),
+                    Value.of(new BigDecimal(price.taxRate?.valueString)),
+                    Value.of(new BigDecimal(price.priceWithTax?.valueString)),
                     Value.of(
                         price.validity
                             ? DateTimeUtil.convertToDateTimeRange(

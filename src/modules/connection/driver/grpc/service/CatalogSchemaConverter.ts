@@ -49,8 +49,9 @@ import {
 import { AssociatedDataSchema } from '@/modules/connection/model/schema/AssociatedDataSchema'
 import { Currency } from '@/modules/connection/model/data/Currency'
 import { Locale } from '@/modules/connection/model/data-type/Locale'
-import { ScalarUtil } from '../utils/ScalarUtil'
+import { ScalarConverter } from './ScalarConverter'
 import { MapUtil } from '../utils/MapUtil'
+import { ref } from 'vue'
 
 //TODO: Add documentation
 export class CatalogSchemaConverter {
@@ -94,7 +95,7 @@ export class CatalogSchemaConverter {
     private convertAttributeSchema(
         attribute: GrpcAttributeSchema
     ): AttributeSchema {
-        const scalar = ScalarUtil.convertScalar(attribute.type);
+        const scalar = ScalarConverter.convertScalar(attribute.type);
         const nameVariants = MapUtil.getNamingMap(attribute.nameVariant);
         const uniquenessType = this.convertAttributeUniquenessType(attribute.unique);
         if (attribute.schemaType === GrpcAttributeSchemaType.ENTITY) {
@@ -154,7 +155,7 @@ export class CatalogSchemaConverter {
                 : globalAttributeSchema.deprecationNotice
         )
         const type: Value<Scalar> = Value.of(
-            ScalarUtil.convertScalar(globalAttributeSchema.type)
+            ScalarConverter.convertScalar(globalAttributeSchema.type)
         )
         const uniquenessType: Value<AttributeUniquenessType> = Value.of(
             this.convertAttributeUniquenessType(globalAttributeSchema.unique)
@@ -341,16 +342,16 @@ export class CatalogSchemaConverter {
             Value.of(
                 MapUtil.getNamingMap(referenceSchema.nameVariant)
             ),
-            Value.of(referenceSchema.description || null),
-            Value.of(referenceSchema.deprecationNotice || null),
+            Value.of(referenceSchema.description || undefined),
+            Value.of(referenceSchema.deprecationNotice || undefined),
             Value.of(referenceSchema.entityType),
-            Value.of(referenceSchema.entityTypeRelatesToEntity),
+            Value.of(referenceSchema.referencedEntityTypeManaged),
             Value.of(
-                MapUtil.getNamingMap(referenceSchema.nameVariant)
+                MapUtil.getNamingMap(referenceSchema.entityTypeNameVariant)
             ),
-            Value.of(null), //TODO: fix add value
-            Value.of(null), //TODO: fix add value
-            Value.of(null), //TODO: fix add value
+            Value.of(referenceSchema.groupType),
+            Value.of(referenceSchema.referencedGroupTypeManaged),
+            Value.of(MapUtil.getNamingMap(referenceSchema.groupTypeNameVariant)),
             Value.of(referenceSchema.indexed),
             Value.of(referenceSchema.faceted),
             Value.of(this.convertCardinality(referenceSchema.cardinality)),
@@ -402,7 +403,7 @@ export class CatalogSchemaConverter {
             Value.of(associatedDataSchema.description || null),
             Value.of(associatedDataSchema.deprecationNotice || null),
             Value.of(
-                ScalarUtil.convertScalar(
+                ScalarConverter.convertScalar(
                     associatedDataSchema.type as unknown as GrpcEvitaDataType
                 )
             ),

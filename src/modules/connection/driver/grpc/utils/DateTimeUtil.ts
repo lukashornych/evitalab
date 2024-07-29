@@ -4,7 +4,7 @@ import { OffsetDateTime } from "@/modules/connection/model/data-type/OffsetDateT
 
 
 //TODO: Add doc
-export class datetime {
+export class DateTimeUtil {
     static convertToDateTimeRange(
         dateTimeRange: GrpcDateTimeRange
     ): DateTimeRange {

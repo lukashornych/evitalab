@@ -27,17 +27,19 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         new GrpcCatalogConverter()
     private readonly responseConverter: ResponseConverter =
         new ResponseConverter()
+    private readonly clientsHelper: ClientsHelper =
+     new ClientsHelper();
 
     async getCatalogSchema(
         connection: Connection,
         catalogName: string
     ): Promise<CatalogSchema> {
         try {
-            const res = await ClientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)).createReadOnlySession({
+            const res = await this.clientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)).createReadOnlySession({
                 catalogName: catalogName,
             })
             const schemaRes: GrpcCatalogSchemaResponse =
-                await ClientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).getCatalogSchema(
+                await this.clientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).getCatalogSchema(
                     { nameVariants: true },
                     {
                         headers: {
@@ -57,8 +59,8 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                         return await this.loadEntitySchemas(
                             catalogName,
                             this.grpcCatalogSchemaConverter,
-                            ClientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)),
-                            ClientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection))
+                            this.clientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)),
+                            this.clientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection))
                         )
                     }
                 )
@@ -109,10 +111,10 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         query: string
     ): Promise<Response> {
         try {
-            const session = await ClientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)).createReadOnlySession({
+            const session = await this.clientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)).createReadOnlySession({
                 catalogName,
             })
-            const queryRespose = await ClientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).query(
+            const queryRespose = await this.clientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).query(
                 {
                     query,
                 },
@@ -129,7 +131,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
     }
     async getCatalogs(connection: Connection): Promise<Catalog[]> {
         try {
-            const res = (await ClientsHelper.getManagmentClient(connection, TransportHelper.getTransport(connection)).getCatalogStatistics(Empty))
+            const res = (await this.clientsHelper.getManagmentClient(connection, TransportHelper.getTransport(connection)).getCatalogStatistics(Empty))
                 .catalogStatistics
             return res.map((x) => this.grpcCatalogConverter.convert(x))
         } catch (e: any) {

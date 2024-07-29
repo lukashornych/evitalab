@@ -21,16 +21,16 @@ export class ReferenceSchema extends AbstractSchema {
     /**
      * Contains description of the model is optional but helps authors of the schema / client API to better explain the original purpose of the model to the consumers.
      */
-    readonly description: Value<string | null>
+    readonly description: Value<string | undefined>
     /**
      * Deprecation notice contains information about planned removal of this entity from the model / client API. This allows to plan and evolve the schema allowing clients to adapt early to planned breaking changes.  If notice is `null`, this schema is considered not deprecated.
      */
-    readonly deprecationNotice: Value<string | null>
+    readonly deprecationNotice: Value<string | undefined>
 
     /**
      * Reference to `Entity.type` of the referenced entity. Might be also any `String` that identifies type some external resource not maintained by Evita.
      */
-    readonly referencedEntityType: Value<string>
+    readonly entityType: Value<string>
     /**
      * Contains `true` if `entityType` refers to any existing entity that is maintained by Evita.
      */
@@ -40,12 +40,12 @@ export class ReferenceSchema extends AbstractSchema {
     /**
      * Reference to `Entity.type` of the referenced entity. Might be also `String` that identifies type some external resource not maintained by Evita.
      */
-    readonly referencedGroupType: Value<string | null>
+    readonly referencedGroupType: Value<string | undefined>
     /**
      * Contains `true` if `groupType` refers to any existing entity that is maintained by Evita.
      */
-    readonly referencedGroupTypeManaged: Value<boolean | null>
-    readonly groupTypeNameVariants: Value<Map<NamingConvention, string> | null>
+    readonly referencedGroupTypeManaged: Value<boolean | undefined>
+    readonly groupTypeNameVariants: Value<Map<NamingConvention, string> | undefined>
 
     /**
      * Contains `true` if the index for this reference should be created and maintained allowing to filter by `reference_{reference name}_having` filtering constraints. Index is also required when reference is `faceted`.  Do not mark reference as faceted unless you know that you'll need to filter/sort entities by this reference. Each indexed reference occupies (memory/disk) space in the form of index. When reference is not indexed, the entity cannot be looked up by reference attributes or relation existence itself, but the data can be fetched.
@@ -70,14 +70,14 @@ export class ReferenceSchema extends AbstractSchema {
 
     constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
-                description: Value<string | null>,
-                deprecationNotice: Value<string | null>,
-                referencedEntityType: Value<string>,
+                description: Value<string | undefined>,
+                deprecationNotice: Value<string | undefined>,
+                entityType: Value<string>,
                 referencedEntityTypeManaged: Value<boolean>,
                 entityTypeNameVariants: Value<Map<NamingConvention, string>>,
-                referencedGroupType: Value<string | null>,
-                referencedGroupTypeManaged: Value<boolean | null>,
-                groupTypeNameVariants: Value<Map<NamingConvention, string> | null>,
+                referencedGroupType: Value<string | undefined>,
+                referencedGroupTypeManaged: Value<boolean | undefined>,
+                groupTypeNameVariants: Value<Map<NamingConvention, string> | undefined>,
                 indexed: Value<boolean>,
                 faceted: Value<boolean>,
                 cardinality: Value<Cardinality>,
@@ -88,14 +88,14 @@ export class ReferenceSchema extends AbstractSchema {
         this.nameVariants = nameVariants
         this.description = description
         this.deprecationNotice = deprecationNotice
-        this.referencedEntityType = referencedEntityType
+        this.entityType = entityType
         this.referencedEntityTypeManaged = referencedEntityTypeManaged
         this.entityTypeNameVariants = entityTypeNameVariants.map(it => Map(it))
         this.referencedGroupType = referencedGroupType
         this.referencedGroupTypeManaged = referencedGroupTypeManaged
         this.groupTypeNameVariants = groupTypeNameVariants.map(it => {
             if (it == null) {
-                return null
+                return undefined
             }
             return Map(it)
         })

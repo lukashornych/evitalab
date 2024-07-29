@@ -1,5 +1,5 @@
 // todo docs
-import { DateTime } from '@/modules/connection/model/data-type/DateTime'
+import { LocalDateTime } from '@/modules/connection/model/data-type/LocalDateTime'
 import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
 
-export type Range<T extends DateTime | BigDecimal | bigint | number> = [T | undefined, T | undefined]
+export type Range<T extends LocalDateTime | BigDecimal | bigint | number> = [T | undefined, T | undefined]

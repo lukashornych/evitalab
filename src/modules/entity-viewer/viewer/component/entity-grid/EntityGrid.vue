@@ -119,7 +119,7 @@ function handlePropertyClicked(relativeEntityIndex: number, propertyKey: string,
         workspaceService.createTab(entityViewerTabFactory.createNew(
             tabProps.params.dataPointer.connection,
             tabProps.params.dataPointer.catalogName,
-            (propertyDescriptor.schema as ReferenceSchema).referencedEntityType.getIfSupported()!,
+            (propertyDescriptor.schema as ReferenceSchema).entityType.getIfSupported()!,
             new EntityViewerTabData(
                 queryLanguage.value,
                 entityViewerService.buildReferencedEntityFilterBy(

@@ -33,40 +33,12 @@ export class ResponseConverter {
                 Value.of(grpcRecordPage.isSinglePage),
                 Value.of(grpcRecordPage.isEmpty),
                 Value.of(page.pageSize),
-                Value.of(page.pageNumber),
-                Value.of(this.getLastPageItemNumber(page.pageNumber, page.pageSize, grpcRecordPage.totalRecordCount)),
-                Value.of(this.getFirstPageItemNumber(page.pageNumber, page.pageSize, grpcRecordPage.totalRecordCount)),
-                Value.of(this.getLastPageNumber(grpcRecordPage.totalRecordCount, page.pageSize))
+                Value.of(page.pageNumber)
             )
         } else if(grpcRecordPage.chunk.case === 'stripList'){
             return PaginatedList.empty();
         } else {
             return PaginatedList.empty()
         }
-    }
-
-    private getLastPageNumber(totalRecordCount: number, pageSize: number) :number {
-		return Math.ceil(totalRecordCount / pageSize);
-	}
-
-    private isRequestedResultBehindLimit(pageNumber: number, pageSize: number, totalRecordCount: number): boolean {
-        return ((pageNumber - 1) * pageSize) + 1 > totalRecordCount;
-    }
-
-    private getFirstItemNumberForPage(pageNumber: number, pageSize: number): number {
-        const firstRecord = (pageNumber - 1) * pageSize;
-        return Math.max(firstRecord, 0);
-    }
-
-    private getFirstPageItemNumber(pageNumber: number, pageSize: number, totalRecordCount: number): number {
-        if (this.isRequestedResultBehindLimit(pageNumber, pageSize, totalRecordCount)) {
-            return 0;
-        }
-        return this.getFirstItemNumberForPage(pageNumber, pageSize);
-    }
-
-    getLastPageItemNumber(pageNumber: number, pageSize: number, totalRecordCount: number): number {
-        const result = (pageNumber * pageSize) - 1;
-        return Math.min(result, totalRecordCount);
     }
 }

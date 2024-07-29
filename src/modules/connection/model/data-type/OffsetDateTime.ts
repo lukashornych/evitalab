@@ -2,10 +2,10 @@ import { Timestamp } from '@bufbuild/protobuf'
 
 //TODO add doc
 export class OffsetDateTime {
-    readonly timestamp: Timestamp
-    readonly offset: string
+    readonly timestamp?: Timestamp
+    readonly offset?: string
 
-    constructor(timestamp: Timestamp, offset: string) {
+    constructor(timestamp?: Timestamp, offset?: string) {
         this.timestamp = timestamp
         this.offset = offset
     }

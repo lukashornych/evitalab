@@ -1,4 +1,4 @@
-export class Time {
+export class LocalTime {
     readonly isoTime : string
 
     constructor(isoTime: string){

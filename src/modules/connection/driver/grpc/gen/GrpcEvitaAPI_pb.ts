@@ -145,13 +145,6 @@ export class GrpcEvitaSessionResponse extends Message<GrpcEvitaSessionResponse> 
  */
 export class GrpcEvitaSessionTerminationRequest extends Message<GrpcEvitaSessionTerminationRequest> {
   /**
-   * Name of the catalog for which the session is to be terminated.
-   *
-   * @generated from field: string catalogName = 1;
-   */
-  catalogName = "";
-
-  /**
    * UUID of the session to be terminated.
    *
    * @generated from field: string sessionId = 2;
@@ -166,7 +159,6 @@ export class GrpcEvitaSessionTerminationRequest extends Message<GrpcEvitaSession
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "io.evitadb.externalApi.grpc.generated.GrpcEvitaSessionTerminationRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "catalogName", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "sessionId", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 

@@ -2,7 +2,7 @@ import { Scalar } from "@/modules/connection/model/data-type/Scalar"
 import { GrpcEvitaDataType } from "../gen/GrpcEnums_pb"
 
 //TODO: Add docs
-export class ScalarUtil{
+export class ScalarConverter{
     public static convertScalar(scalar: GrpcEvitaDataType): Scalar {
         switch (scalar) {
             case GrpcEvitaDataType.BIG_DECIMAL:

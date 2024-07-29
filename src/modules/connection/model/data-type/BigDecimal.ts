@@ -1,2 +1,8 @@
 //TODO: Add documentation
-export type BigDecimal = string
+export class BigDecimal {
+    readonly value: string | undefined
+
+    constructor(value: string | undefined){
+        this.value = value
+    }
+}

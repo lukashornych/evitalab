@@ -269,11 +269,11 @@
             }
           },
           "grpcUrl": {
-            "label": "Evita grpc URL",
+            "label": "gRPC API URL",
             "validations": {
-              "required": "Evita grpc URL is required.",
-              "invalidUrl": "Evita grpc URL is not a valid URL.",
-              "unreachable": "Evita grpc URL is not reachable."
+              "required": "gRPC API URL is required.",
+              "invalidUrl": "gRPC API URL is not a valid URL.",
+              "unreachable": "gRPC API URL is not reachable."
             }
           },
           "graphQLApiUrl": {

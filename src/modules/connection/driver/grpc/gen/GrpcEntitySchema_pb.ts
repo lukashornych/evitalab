@@ -614,8 +614,10 @@ export class GrpcReferenceSchema extends Message<GrpcReferenceSchema> {
 
   /**
    * Contains `true` if `entityType` refers to any existing entity that is maintained by Evita.
+   * DEPRECATED!!! use referencedEntityTypeManaged instead
    *
-   * @generated from field: bool entityTypeRelatesToEntity = 6;
+   * @generated from field: bool entityTypeRelatesToEntity = 6 [deprecated = true];
+   * @deprecated
    */
   entityTypeRelatesToEntity = false;
 
@@ -629,8 +631,10 @@ export class GrpcReferenceSchema extends Message<GrpcReferenceSchema> {
 
   /**
    * Contains `true` if `groupType` refers to any existing entity that is maintained by Evita.
+   * DEPRECATED!!! use referencedGroupTypeManaged instead
    *
-   * @generated from field: bool groupTypeRelatesToEntity = 8;
+   * @generated from field: bool groupTypeRelatesToEntity = 8 [deprecated = true];
+   * @deprecated
    */
   groupTypeRelatesToEntity = false;
 
@@ -692,6 +696,34 @@ export class GrpcReferenceSchema extends Message<GrpcReferenceSchema> {
    */
   nameVariant: GrpcNameVariant[] = [];
 
+  /**
+   * Contains referenced entity name converted to different naming conventions (only for non-managed entities).
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcNameVariant entityTypeNameVariant = 14;
+   */
+  entityTypeNameVariant: GrpcNameVariant[] = [];
+
+  /**
+   * Contains referenced group name converted to different naming conventions (only for non-managed entities).
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcNameVariant groupTypeNameVariant = 15;
+   */
+  groupTypeNameVariant: GrpcNameVariant[] = [];
+
+  /**
+   * Contains `true` if `entityType` refers to any existing entity that is maintained by Evita.
+   *
+   * @generated from field: bool referencedEntityTypeManaged = 16;
+   */
+  referencedEntityTypeManaged = false;
+
+  /**
+   * Contains `true` if `groupType` refers to any existing entity that is maintained by Evita.
+   *
+   * @generated from field: bool referencedGroupTypeManaged = 17;
+   */
+  referencedGroupTypeManaged = false;
+
   constructor(data?: PartialMessage<GrpcReferenceSchema>) {
     super();
     proto3.util.initPartial(data, this);
@@ -713,6 +745,10 @@ export class GrpcReferenceSchema extends Message<GrpcReferenceSchema> {
     { no: 11, name: "attributes", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: GrpcAttributeSchema} },
     { no: 12, name: "sortableAttributeCompounds", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: GrpcSortableAttributeCompoundSchema} },
     { no: 13, name: "nameVariant", kind: "message", T: GrpcNameVariant, repeated: true },
+    { no: 14, name: "entityTypeNameVariant", kind: "message", T: GrpcNameVariant, repeated: true },
+    { no: 15, name: "groupTypeNameVariant", kind: "message", T: GrpcNameVariant, repeated: true },
+    { no: 16, name: "referencedEntityTypeManaged", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 17, name: "referencedGroupTypeManaged", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcReferenceSchema {
