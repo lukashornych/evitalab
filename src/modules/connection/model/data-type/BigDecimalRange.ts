@@ -1,8 +1,9 @@
 import { BigDecimal } from "./BigDecimal";
-import { PerttyPrintable } from "./PrettyPrintable";
+import { PrettyPrintable } from "./PrettyPrintable";
 import { Range } from "./Range";
 
-export class BigDecimalRange extends Range<BigDecimal> implements PerttyPrintable{
+//TODO: Add documentation
+export class BigDecimalRange extends Range<BigDecimal> implements PrettyPrintable{
     constructor(from: BigDecimal, to: BigDecimal){
         super(from, to)
     }

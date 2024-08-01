@@ -84,13 +84,12 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
             EntityPropertyKey.entity(StaticEntityProperties.Locales),
             this.wrapRawValueIntoNativeValue(newLocales),
         ])
+
         flattenedProperties.push([
             EntityPropertyKey.entity(
                 StaticEntityProperties.PriceInnerRecordHandling
             ),
-            this.wrapRawValueIntoNativeValue(
-                Object(entity.priceInnerRecordHandling.getOrThrow())
-            ),
+            new NativeValue(entity.priceInnerRecordHandling.getOrThrow()),
         ])
 
         flattenedProperties.push(...this.flattenAttributes(entity))
@@ -121,7 +120,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
                 attribute,
             ] of localizedRepresentativeAttributes) {
                 representativeAttributes.push(
-                    this.wrapRawValueIntoNativeValue(attribute)
+                    this.wrapRawValueIntoNativeValue(attribute) //todo
                 )
             }
         }
@@ -181,7 +180,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
             ] of globalAssociatedData) {
                 flattenedAssociatedData.push([
                     EntityPropertyKey.associatedData(associatedDataName),
-                    this.wrapRawValueIntoNativeValue(associatedData),
+                    new NativeValue(associatedData),
                 ])
             }
         }
@@ -200,7 +199,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
                             EntityPropertyKey.associatedData(
                                 associatedDataName
                             ),
-                            this.wrapRawValueIntoNativeValue(associatedData),
+                            new NativeValue(associatedData),
                         ])
                     }
                 }
@@ -252,7 +251,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
                 new EntityPrices(newPriceForSale, entityPrices),
             ]
         } else {
-            [
+            return [
                 EntityPropertyKey.prices(),
                 new EntityPrices(undefined, entityPrices),
             ]
@@ -263,21 +262,19 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
         const flattenedReferences: WritableEntityProperty[] = []
 
         const references = entity.references.getOrThrow()
-        for (const referenceName of references) {
-            const referencesOfName = referenceName
-            const refName = referenceName.referenceName.getIfSupported()
-            if (referencesOfName == undefined) {
+        for (const reference of references) {
+            const refName = reference.referenceName.getIfSupported()
+            if (reference == undefined) {
                 continue
             }
-            if (referencesOfName instanceof Array) {
+            if (reference instanceof Array) {
                 const representativeValues: EntityReferenceValue[] =
-                    referencesOfName.map((referenceOfName) =>
+                    reference.map((referenceOfName) =>
                         this.resolveReferenceRepresentativeValue(
                             referenceOfName
                         )
                     )
-                const refNameVlaue =
-                    referenceName.referenceName.getIfSupported()
+                const refNameVlaue = reference.referenceName.getIfSupported()
                 if (refNameVlaue)
                     flattenedReferences.push([
                         EntityPropertyKey.references(refNameVlaue),
@@ -287,7 +284,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
                 const mergedReferenceAttributesByName: Map<
                     string,
                     EntityReferenceValue[]
-                > = referencesOfName
+                > = reference
                     .map((referenceOfName) =>
                         this.flattenAttributesForSingleReference(
                             referenceOfName
@@ -320,26 +317,26 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
                 )
             } else {
                 const representativeValue: EntityReferenceValue =
-                    this.resolveReferenceRepresentativeValue(referencesOfName)
+                    this.resolveReferenceRepresentativeValue(reference)
                 flattenedReferences.push([
                     EntityPropertyKey.references(
-                        referenceName.referenceName.getOrThrow()
+                        reference.referenceName.getOrThrow()
                     ),
                     representativeValue,
                 ])
 
-                this.flattenAttributesForSingleReference(
-                    referencesOfName
-                ).forEach(([attributeName, attributeValue]) => {
-                    if (refName)
-                        flattenedReferences.push([
-                            EntityPropertyKey.referenceAttributes(
-                                refName,
-                                attributeName
-                            ),
-                            attributeValue,
-                        ])
-                })
+                this.flattenAttributesForSingleReference(reference).forEach(
+                    ([attributeName, attributeValue]) => {
+                        if (refName)
+                            flattenedReferences.push([
+                                EntityPropertyKey.referenceAttributes(
+                                    refName,
+                                    attributeName
+                                ),
+                                attributeValue,
+                            ])
+                    }
+                )
             }
         }
 
@@ -359,23 +356,29 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
         const globalRepresentativeAttributes = reference.referencedEntity
             ?.getIfSupported()
             ?.globalAttributes.getIfSupported()
-        for (const attributeName in globalRepresentativeAttributes) {
-            representativeAttributes.push(
-                this.wrapRawValueIntoNativeValue(
-                    globalRepresentativeAttributes.get(attributeName)
+        if (globalRepresentativeAttributes) {
+            for (const [
+                attributeName,
+                attribute,
+            ] of globalRepresentativeAttributes) {
+                representativeAttributes.push(
+                    this.wrapRawValueIntoNativeValue(attribute)
                 )
-            )
+            }
         }
 
         const localizedRepresentativeAttributes = reference.referencedEntity
             ?.getIfSupported()
             ?.localizedAttributes.getIfSupported()
-        for (const attributeName in localizedRepresentativeAttributes) {
-            representativeAttributes.push(
-                this.wrapRawValueIntoNativeValue(
-                    localizedRepresentativeAttributes.get(attributeName)
+        if (localizedRepresentativeAttributes) {
+            for (const [
+                attributeName,
+                attribute,
+            ] of localizedRepresentativeAttributes) {
+                representativeAttributes.push(
+                    this.wrapRawValueIntoNativeValue(attribute)
                 )
-            )
+            }
         }
 
         return new EntityReferenceValue(
@@ -392,20 +395,20 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
         const flattenedAttributes: [string, EntityReferenceValue][] = []
 
         const globalAttributes = reference.globalAttributes.getIfSupported()
-        for (const attributeName in globalAttributes) {
-            const wrappedValue: NativeValue | NativeValue[] =
-                this.wrapRawValueIntoNativeValue(
-                    globalAttributes.get(attributeName)
-                )
-            flattenedAttributes.push([
-                attributeName,
-                new EntityReferenceValue(
-                    referencedPrimaryKey ?? 0,
-                    wrappedValue instanceof Array
-                        ? wrappedValue
-                        : [wrappedValue]
-                ),
-            ])
+        if (globalAttributes) {
+            for (const [attributeName, attribute] of globalAttributes) {
+                const wrappedValue: NativeValue | NativeValue[] =
+                    this.wrapRawValueIntoNativeValue(attribute)
+                flattenedAttributes.push([
+                    attributeName,
+                    new EntityReferenceValue(
+                        referencedPrimaryKey ?? 0,
+                        wrappedValue instanceof Array
+                            ? wrappedValue
+                            : [wrappedValue]
+                    ),
+                ])
+            }
         }
         const localizedAttributes =
             reference.localizedAttributes.getIfSupported()

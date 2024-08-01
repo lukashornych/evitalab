@@ -1,9 +1,9 @@
 import { Timestamp } from '@bufbuild/protobuf'
 import { DateTime } from 'luxon'
-import { PerttyPrintable } from './PrettyPrintable'
+import { PrettyPrintable } from './PrettyPrintable'
 
 //TODO add doc
-export class OffsetDateTime implements PerttyPrintable {
+export class OffsetDateTime implements PrettyPrintable {
     readonly timestamp?: Timestamp
     readonly offset?: string
 

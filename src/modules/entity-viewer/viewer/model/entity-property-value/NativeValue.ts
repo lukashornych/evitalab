@@ -9,7 +9,7 @@ import { LocalDate } from '@/modules/connection/model/data-type/LocalDate'
 import { LocalTime } from '@/modules/connection/model/data-type/LocalTime'
 import { Predecessor } from '@/modules/connection/model/data-type/Predecessor'
 import { DateTimeRange } from '@/modules/connection/model/data-type/DateTimeRange'
-import { PerttyPrintable } from '@/modules/connection/model/data-type/PrettyPrintable'
+import { PrettyPrintable } from '@/modules/connection/model/data-type/PrettyPrintable'
 
 /**
  * Represents a single entity property value that is a scalar (native to JavaScript). Cannot be an array, each array item
@@ -50,9 +50,9 @@ export class NativeValue extends EntityPropertyValue {
         if(typeof this.delegate === 'bigint' || typeof this.delegate === 'boolean' || typeof this.delegate === 'number' || typeof this.delegate === 'string' || typeof this.delegate === 'symbol' || typeof this.delegate === 'undefined')
             return this.delegate?.toString() ?? ''
         if (this.isPrettyPrintable(this.delegate)) {
-            return (this.delegate as PerttyPrintable).getPrettyPrintableString()
+            return (this.delegate as PrettyPrintable).getPrettyPrintableString()
         } else {
-            return this.delegate?.toString() ?? ''
+            return this.toPreviewString()
         }
     }
 
@@ -80,7 +80,7 @@ export class NativeValue extends EntityPropertyValue {
         }
     }
 
-    isPrettyPrintable(obj: any): obj is PerttyPrintable {
+    isPrettyPrintable(obj: any): obj is PrettyPrintable {
         return 'getPrettyPrintableString' in obj
     }
 }

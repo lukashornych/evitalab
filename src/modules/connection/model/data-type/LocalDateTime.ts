@@ -1,7 +1,7 @@
-import { PerttyPrintable } from "./PrettyPrintable"
+import { PrettyPrintable } from "./PrettyPrintable"
 
 // todo docs
-export class LocalDateTime implements PerttyPrintable {
+export class LocalDateTime implements PrettyPrintable {
     readonly isoDate: string
     constructor(isoDate: string) {
         this.isoDate = isoDate

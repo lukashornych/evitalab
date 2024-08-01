@@ -1,9 +1,9 @@
 //TODO: Add documentation
 import { OffsetDateTime } from "./OffsetDateTime"
-import { PerttyPrintable } from "./PrettyPrintable"
+import { PrettyPrintable } from "./PrettyPrintable"
 import { Range } from "./Range"
 
-export class DateTimeRange extends Range<OffsetDateTime> implements PerttyPrintable {
+export class DateTimeRange extends Range<OffsetDateTime> implements PrettyPrintable {
 
     constructor(from?: OffsetDateTime, to?: OffsetDateTime) {
         super(from, to)

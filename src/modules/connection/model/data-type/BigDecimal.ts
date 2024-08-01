@@ -5,4 +5,8 @@ export class BigDecimal {
     constructor(value: string | undefined){
         this.value = value
     }
+
+    toString():string{
+        return this.value ?? ''
+    }
 }

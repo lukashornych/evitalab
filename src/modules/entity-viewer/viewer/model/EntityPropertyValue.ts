@@ -31,4 +31,5 @@ export abstract class EntityPropertyValue {
     toPrettyPrintString(context?: EntityPropertyValuePreviewStringContext): string {
         return this.toPreviewString();
     }
+    
 }

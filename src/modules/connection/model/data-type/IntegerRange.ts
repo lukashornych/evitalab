@@ -1,7 +1,8 @@
-import { PerttyPrintable } from "./PrettyPrintable";
+import { PrettyPrintable } from "./PrettyPrintable";
 import { Range } from "./Range";
 
-export class IntegerRange extends Range<number> implements PerttyPrintable {
+//TODO: Add documentation
+export class IntegerRange extends Range<number> implements PrettyPrintable {
     constructor(from?: number, to?: number){
         super(from, to);
     }

@@ -1,3 +1,4 @@
-export interface PerttyPrintable {
+//TODO: Documentation
+export interface PrettyPrintable {
     getPrettyPrintableString():string;
 }

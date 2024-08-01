@@ -1,6 +1,7 @@
-import { PerttyPrintable } from "./PrettyPrintable"
+import { PrettyPrintable } from "./PrettyPrintable"
 
-export class LocalTime implements PerttyPrintable {
+//TODO: Add documentation
+export class LocalTime implements PrettyPrintable {
     readonly isoTime : string
 
     constructor(isoTime: string){
