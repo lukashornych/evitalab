@@ -36,7 +36,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
     ): Promise<CatalogSchema> {
         try {
             const res = await this.clientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)).createReadOnlySession({
-                catalogName: catalogName,
+                catalogName
             })
             const schemaRes: GrpcCatalogSchemaResponse =
                 await this.clientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).getCatalogSchema(
@@ -77,7 +77,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
     ): Promise<Value<List<EntitySchema>>> {
         const entities: EntitySchema[] = []
         const res = await client.createReadOnlySession({
-            catalogName: catalogName,
+            catalogName
         })
 
         const entityTypesResult = await sessionClient.getAllEntityTypes(Empty, {
@@ -114,7 +114,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
             const session = await this.clientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)).createReadOnlySession({
                 catalogName,
             })
-            const queryRespose = await this.clientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).query(
+            const queryRespose = await this.clientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).queryUnsafe(
                 {
                     query,
                 },

@@ -9,7 +9,6 @@ import { LocalizedAttribute } from './LocalizedAttribute'
 import { Price } from './Price'
 import { PriceInnerRecordHandling } from '../data-type/PriceInnerRecordHandling'
 import { Reference } from './Reference'
-import { EvitaAssociatedDataValue } from './EvitaAssociatedDataValue'
 import { LocalizedAssociatedData } from './LocalizedAssociatedData'
 import { Locale } from '../data-type/Locale'
 import { Map, List } from 'immutable'
@@ -33,7 +32,7 @@ export class Entity {
     readonly priceForSale: Value<Price | undefined>
     readonly priceInnerRecordHandling: Value<PriceInnerRecordHandling>
     readonly references: Value<List<Reference>>
-    readonly globalAssociatedData: Value<Map<string, EvitaAssociatedDataValue>>
+    readonly globalAssociatedData: Value<Map<string, any>>
     readonly localizedAssociatedData: Value<Map<string, LocalizedAssociatedData>>
     readonly locales: Value<List<Locale>>
 
@@ -48,7 +47,7 @@ export class Entity {
         localizedAttribtes: Value<Map<string, LocalizedAttribute>>,
         references: Value<List<Reference>>,
         priceInnerRecordHandling: Value<PriceInnerRecordHandling>,
-        globalAssociatedData: Value<Map<string, EvitaAssociatedDataValue>>,
+        globalAssociatedData: Value<Map<string, any>>,
         localizedAssociatedData: Value<Map<string, LocalizedAssociatedData>>,
         locales: Value<List<Locale>>,
         prices: Value<List<Price>>,

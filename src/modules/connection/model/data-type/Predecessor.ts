@@ -7,4 +7,8 @@ export class Predecessor {
         this.head = head
         this.predecessorId = predecessorId
     }
+
+    toString():string{
+        return String(this.predecessorId)
+    }
 }

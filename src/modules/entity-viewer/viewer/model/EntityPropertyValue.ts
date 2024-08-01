@@ -26,4 +26,9 @@ export abstract class EntityPropertyValue {
      * that can be used to influence the output.
      */
     abstract toPreviewString(context?: EntityPropertyValuePreviewStringContext): string
+
+    /** Add documentation */
+    toPrettyPrintString(context?: EntityPropertyValuePreviewStringContext): string {
+        return this.toPreviewString();
+    }
 }

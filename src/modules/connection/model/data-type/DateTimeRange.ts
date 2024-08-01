@@ -1,13 +1,20 @@
-import { OffsetDateTime } from './OffsetDateTime'
-
 //TODO: Add documentation
-export class DateTimeRange {
-    readonly from?: OffsetDateTime
-    readonly to?: OffsetDateTime
+import { OffsetDateTime } from "./OffsetDateTime"
+import { PerttyPrintable } from "./PrettyPrintable"
+import { Range } from "./Range"
+
+export class DateTimeRange extends Range<OffsetDateTime> implements PerttyPrintable {
 
     constructor(from?: OffsetDateTime, to?: OffsetDateTime) {
-        this.from = from
-        this.to = to
+        super(from, to)
+    }
+
+    getPrettyPrintableString(): string {
+        const offsetDateTimeFormatter = new Intl.DateTimeFormat([], {
+            dateStyle: 'medium',
+            timeStyle: 'long',
+        })
+        return `[${offsetDateTimeFormatter.format(this.from?.timestamp?.toDate()) ?? '∞'},${offsetDateTimeFormatter.format(this.to?.timestamp?.toDate()) ?? '∞'}]`
     }
 
     static until(to: OffsetDateTime): DateTimeRange {
@@ -20,5 +27,9 @@ export class DateTimeRange {
 
     static between(from: OffsetDateTime, to: OffsetDateTime): DateTimeRange {
         return new DateTimeRange(from, to)
+    }
+
+    override toString():string{
+        return `[${this.from ?? '∞'},${this.to ?? '∞'}]`
     }
 }

@@ -26,7 +26,6 @@ export class EvitaQLQueryBuilder implements QueryBuilder {
 
         this.entityBodyProperties.add(StaticEntityProperties.ParentPrimaryKey)
         this.entityBodyProperties.add(StaticEntityProperties.Locales)
-        this.entityBodyProperties.add(StaticEntityProperties.AllLocales)
         this.entityBodyProperties.add(StaticEntityProperties.PriceInnerRecordHandling)
     }
 

@@ -40,6 +40,7 @@ import { EntityPropertyDescriptor } from '@/modules/entity-viewer/viewer/model/E
 import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
 import { EvitaDBDriverResolver } from '@/modules/connection/driver/EvitaDBDriverResolver'
 import { mandatoryInject } from '@/utils/reactivity'
+import { Locale } from '@/modules/connection/model/data-type/Locale'
 
 export const entityViewerServiceInjectionKey: InjectionKey<EntityViewerService> = Symbol('entityViewerService')
 
@@ -231,7 +232,7 @@ export class EntityViewerService {
     /**
      * Returns a list of locales in which data are stored in given collection.
      */
-    async getDataLocales(dataPointer: EntityViewerDataPointer): Promise<ImmutableList<string>> {
+    async getDataLocales(dataPointer: EntityViewerDataPointer): Promise<ImmutableList<Locale>> {
         const entitySchema: EntitySchema = await this.connectionService.getEntitySchema(
             dataPointer.connection,
             dataPointer.catalogName,
@@ -285,15 +286,6 @@ export class EntityViewerService {
                 EntityPropertyKey.entity(StaticEntityProperties.Locales),
                 'Locales',
                 'Locales',
-                undefined,
-                undefined,
-                ImmutableList()
-            ))
-            descriptors.push(new EntityPropertyDescriptor(
-                EntityPropertyType.Entity,
-                EntityPropertyKey.entity(StaticEntityProperties.AllLocales),
-                'All locales',
-                'All locales',
                 undefined,
                 undefined,
                 ImmutableList()

@@ -4,31 +4,33 @@ import {
     EntityPropertyValuePreviewStringContext
 } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPropertyValuePreviewStringContext'
 import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
+import { DateTimeRange } from '@/modules/connection/model/data-type/DateTimeRange'
+import { Currency } from '@/modules/connection/model/data/Currency'
 
 /**
  * Represents a single entity price.
  */
 // todo lho this should be probably in driver too and the computePrice logic aswell
 export class EntityPrice extends EntityPropertyValue {
-    readonly priceId: number
-    readonly priceList: string
-    readonly currency: string
-    readonly innerRecordId?: number
-    readonly sellable: boolean
-    readonly validity?: [BigDecimal | undefined, BigDecimal | undefined]
-    readonly priceWithoutTax: BigDecimal
+    readonly priceId: number | undefined
+    readonly priceList: string | undefined
+    readonly currency: Currency
+    readonly innerRecordId?: number | undefined
+    readonly sellable: boolean | undefined
+    readonly validity?: DateTimeRange | undefined
+    readonly priceWithoutTax: BigDecimal | undefined
     readonly priceWithTax: BigDecimal
-    readonly taxRate: BigDecimal
+    readonly taxRate: BigDecimal | undefined
 
-    constructor(priceId: number,
-                priceList: string,
-                currency: string,
+    constructor(priceId: number | undefined,
+                priceList: string | undefined,
+                currency: Currency,
                 innerRecordId: number | undefined,
-                sellable: boolean,
-                validity: [BigDecimal | undefined, BigDecimal | undefined] | undefined,
-                priceWithoutTax: BigDecimal,
+                sellable: boolean | undefined,
+                validity: DateTimeRange | undefined,
+                priceWithoutTax: BigDecimal | undefined,
                 priceWithTax: BigDecimal,
-                taxRate: BigDecimal) {
+                taxRate: BigDecimal | undefined) {
         super()
         this.priceId = priceId
         this.priceList = priceList
@@ -64,10 +66,10 @@ export class EntityPrice extends EntityPropertyValue {
     toPreviewString(context: EntityPropertyValuePreviewStringContext): string {
         const priceFormatter = new Intl.NumberFormat(
             navigator.language,
-            { style: 'currency', currency: this.currency, maximumFractionDigits: 2 }
+            { style: 'currency', currency: this.currency.code, maximumFractionDigits: 2 }
         )
         const actualPriceType: QueryPriceMode = context?.priceType != undefined ? context.priceType : QueryPriceMode.WithTax
-        const price: BigDecimal = actualPriceType === QueryPriceMode.WithTax ? this.priceWithTax : this.priceWithoutTax
-        return priceFormatter.format(parseFloat(price))
+        const price: BigDecimal | undefined = actualPriceType === QueryPriceMode.WithTax ? this.priceWithTax : this.priceWithoutTax
+        return priceFormatter.format(parseFloat(price?.value ?? '0'))
     }
 }

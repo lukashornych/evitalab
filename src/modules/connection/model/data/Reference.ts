@@ -9,9 +9,9 @@ import { Map } from 'immutable'
 export class Reference {
     readonly referenceName: Value<string>
     readonly version: Value<number>
-    readonly referencedEntityReference?: EntityReference | undefined
-    readonly referencedEntity: Entity | undefined
-    readonly groupReferenceType: | EntityReference | Entity | undefined
+    readonly referencedEntityReference: Value<EntityReference | undefined>
+    readonly referencedEntity: Value<Entity | undefined>
+    readonly groupReferenceType: Value<EntityReference | Entity | undefined>
     readonly globalAttributes: Value<Map<string, object>>
     readonly localizedAttributes: Value<Map<string, LocalizedAttribute>>
     readonly referenceCardinality: Value<Cardinality>
@@ -19,10 +19,10 @@ export class Reference {
     constructor(
         referenceName: Value<string>,
         version: Value<number>,
-        referencedEntityReference: EntityReference| undefined,
-        referencedEntity: Entity| undefined,
+        referencedEntityReference: Value<EntityReference | undefined>,
+        referencedEntity: Value<Entity | undefined>,
         referenceCardinality: Value<Cardinality>,
-        groupReferenceType: EntityReference | Entity | undefined,
+        groupReferenceType: Value<EntityReference | Entity | undefined>,
         globalAttributes: Value<Map<string, object>>,
         localizedAttributes: Value<Map<string, LocalizedAttribute>>
     ) {
@@ -34,5 +34,31 @@ export class Reference {
         this.globalAttributes = globalAttributes
         this.localizedAttributes = localizedAttributes
         this.referenceCardinality = referenceCardinality
+    }
+
+    getReferencedPrimaryKey(): number {
+        const referencedEntity = this.referencedEntity.getIfSupported()
+        const referencedEntityReference =
+            this.referencedEntityReference.getIfSupported()
+        if (referencedEntity) {
+            return referencedEntity.primaryKey.getOrThrow()
+        } else if (referencedEntityReference) {
+            return referencedEntityReference.primaryKey.getOrThrow()
+        } else {
+            throw new Error('Both references are null or undefined')
+        }
+    }
+
+    getReferencedType(): string {
+        const referencedEntity = this.referencedEntity.getIfSupported()
+        const referencedEntityReference =
+            this.referencedEntityReference.getIfSupported()
+        if(referencedEntity){
+            return referencedEntity.entityType.getOrThrow();
+        } else if(referencedEntityReference){
+            return referencedEntityReference.entityType.getOrThrow()
+        } else {
+            throw new Error('Both references are null or undefined')
+        }
     }
 }

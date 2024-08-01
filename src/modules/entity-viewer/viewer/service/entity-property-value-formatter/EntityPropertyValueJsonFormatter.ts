@@ -19,8 +19,14 @@ export class EntityPropertyValueJsonFormatter implements EntityPropertyValueForm
     private parseValueIntoJson(value: any): any {
         if (value instanceof Object) {
             return value
+        } else if(typeof value === 'string') {
+            try {
+                return JSON.parse(value)
+            } catch(e: any){
+                return JSON.parse(`"${value}"`)
+            }
         } else {
-            return JSON.parse(typeof value === 'string' ? `"${value}"` : value.toString())
+            return JSON.parse(value.toString())
         }
     }
 }

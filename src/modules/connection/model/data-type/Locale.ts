@@ -5,4 +5,8 @@ export class Locale {
     constructor(languageTag: string){
         this.languageTag = languageTag;
     }
+
+    toString():string{
+        return this.languageTag;
+    }
 }

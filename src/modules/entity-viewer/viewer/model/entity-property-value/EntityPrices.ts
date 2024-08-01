@@ -39,9 +39,8 @@ export class EntityPrices extends EntityPropertyValue {
                 navigator.language,
                 { style: 'currency', currency: this.priceForSale.currency, maximumFractionDigits: 2 }
             )
-            const actualPriceType: QueryPriceMode = context?.priceType != undefined ? context.priceType : QueryPriceMode.WithTax
-            const price: BigDecimal = actualPriceType === QueryPriceMode.WithTax ? this.priceForSale.priceWithTax : this.priceForSale.priceWithoutTax
-            const formattedPrice: string = priceFormatter.format(parseFloat(price))
+            const price: BigDecimal = this.priceForSale.priceWithTax
+            const formattedPrice: string = priceFormatter.format(parseFloat(price.value!))
 
             previewString += `${formattedPrice} with `
         }

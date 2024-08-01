@@ -129,7 +129,7 @@ onBeforeMount(() => {
 
     entityViewerService.getDataLocales(props.params.dataPointer)
         .then(dl => {
-            dataLocales = dl
+            dataLocales = dl.map(x => x.languageTag)
             return entityViewerService.getEntityPropertyDescriptors(props.params.dataPointer)
         })
         .then(ep => {
