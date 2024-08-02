@@ -1,5 +1,5 @@
 import { Scalar } from "@/modules/connection/model/data-type/Scalar"
-import { GrpcEvitaDataType } from "../gen/GrpcEnums_pb"
+import { GrpcEvitaAssociatedDataDataType_GrpcEvitaDataType, GrpcEvitaDataType } from '../gen/GrpcEnums_pb'
 
 //TODO: Add docs
 export class ScalarConverter{
@@ -92,5 +92,11 @@ export class ScalarConverter{
             case GrpcEvitaDataType.UUID_ARRAY:
                 return Scalar.UUIDArray
         }
+    }
+    public static convertAssociatedDataScalar(scalar: GrpcEvitaAssociatedDataDataType_GrpcEvitaDataType): Scalar {
+        if (scalar == GrpcEvitaAssociatedDataDataType_GrpcEvitaDataType.COMPLEX_DATA_OBJECT) {
+            return Scalar.ComplexDataObject
+        }
+        return this.convertScalar(scalar as unknown as GrpcEvitaDataType);
     }
 }

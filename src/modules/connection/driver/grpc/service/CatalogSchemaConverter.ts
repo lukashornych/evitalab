@@ -1,6 +1,6 @@
 import {
     GrpcCatalogSchema,
-    GrpcGlobalAttributeSchema,
+    GrpcGlobalAttributeSchema
 } from '@/modules/connection/driver/grpc/gen/GrpcCatalogSchema_pb'
 import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
 import { Value } from '@/modules/connection/model/Value'
@@ -12,12 +12,12 @@ import { AttributeSchema } from '@/modules/connection/model/schema/AttributeSche
 import {
     GrpcAttributeSchemaType,
     GrpcAttributeUniquenessType,
-    GrpcCardinality,
+    GrpcCardinality, GrpcEvitaAssociatedDataDataType, GrpcEvitaAssociatedDataDataType_GrpcEvitaDataType,
     GrpcEvitaDataType,
     GrpcEvolutionMode,
     GrpcGlobalAttributeUniquenessType,
     GrpcOrderBehaviour,
-    GrpcOrderDirection,
+    GrpcOrderDirection
 } from '@/modules/connection/driver/grpc/gen/GrpcEnums_pb'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { GlobalAttributeUniquenessType } from '@/modules/connection/model/schema/GlobalAttributeUniquenessType'
@@ -34,17 +34,17 @@ import {
     GrpcAttributeSchema,
     GrpcEntitySchema,
     GrpcReferenceSchema,
-    GrpcSortableAttributeCompoundSchema,
+    GrpcSortableAttributeCompoundSchema
 } from '@/modules/connection/driver/grpc/gen/GrpcEntitySchema_pb'
 import {
     GrpcCurrency,
     GrpcLocale,
-    GrpcNameVariant,
+    GrpcNameVariant
 } from '@/modules/connection/driver/grpc/gen/GrpcEvitaDataTypes_pb'
 import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
 import {
     AttributeElement,
-    SortableAttributeCompoundSchema,
+    SortableAttributeCompoundSchema
 } from '@/modules/connection/model/schema/SortableAttributeCompoundSchema'
 import { AssociatedDataSchema } from '@/modules/connection/model/schema/AssociatedDataSchema'
 import { Currency } from '@/modules/connection/model/data/Currency'
@@ -95,9 +95,9 @@ export class CatalogSchemaConverter {
     private convertAttributeSchema(
         attribute: GrpcAttributeSchema
     ): AttributeSchema {
-        const scalar = ScalarConverter.convertScalar(attribute.type);
-        const nameVariants = MapUtil.getNamingMap(attribute.nameVariant);
-        const uniquenessType = this.convertAttributeUniquenessType(attribute.unique);
+        const scalar = ScalarConverter.convertScalar(attribute.type)
+        const nameVariants = MapUtil.getNamingMap(attribute.nameVariant)
+        const uniquenessType = this.convertAttributeUniquenessType(attribute.unique)
         if (attribute.schemaType === GrpcAttributeSchemaType.ENTITY) {
             return new AttributeSchema(
                 attribute.name,
@@ -334,6 +334,7 @@ export class CatalogSchemaConverter {
         }
         return entityAttributesSchemas
     }
+
     private convertReferenceSchema(
         referenceSchema: GrpcReferenceSchema
     ): ReferenceSchema {
@@ -403,9 +404,7 @@ export class CatalogSchemaConverter {
             Value.of(associatedDataSchema.description || null),
             Value.of(associatedDataSchema.deprecationNotice || null),
             Value.of(
-                ScalarConverter.convertScalar(
-                    associatedDataSchema.type as unknown as GrpcEvitaDataType
-                )
+                ScalarConverter.convertAssociatedDataScalar(associatedDataSchema.type)
             ),
             Value.of(associatedDataSchema.nullable),
             Value.of(associatedDataSchema.localized)

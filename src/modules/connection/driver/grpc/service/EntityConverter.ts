@@ -623,15 +623,15 @@ export class EntityConverter {
         return Immutable.List(uuidArray)
     }
 
-    private convertDate(offsetDateTime: OffsetDateTime): LocalDate {
+    private convertDate(offsetDateTime: GrpcOffsetDateTime): LocalDate {
         if (!offsetDateTime.timestamp) {
             throw new Error('Missing prop timestamp')
         }
-        const localDate: LocalDate = {
-            isoDate: DateTime.fromSeconds(
+        const localDate: LocalDate = new LocalDate(
+            DateTime.fromSeconds(
                 Number(offsetDateTime.timestamp.seconds)
             ).toISODate(),
-        }
+        )
         return localDate
     }
 
@@ -707,11 +707,11 @@ export class EntityConverter {
         if (!grpcTime.timestamp) {
             throw new Error('Missing prop timestamp')
         }
-        const localTime: LocalTime = {
-            isoTime: DateTime.fromSeconds(
+        const localTime: LocalTime = new LocalTime(
+            DateTime.fromSeconds(
                 Number(grpcTime.timestamp.seconds)
             ).toISOTime(),
-        }
+        )
         return localTime
     }
 

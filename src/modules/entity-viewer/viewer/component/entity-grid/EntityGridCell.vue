@@ -66,7 +66,7 @@ function toPrintablePropertyValue(value: EntityPropertyValue | EntityPropertyVal
         }
         return `[${value.map(it => toPrintablePropertyValue(it)).join(', ')}]`
     } else if (value instanceof EntityPropertyValue) {
-        const previewString = value.toPreviewString({ priceType: priceType?.value })
+        const previewString = value.toPrettyPrintString({ priceType: priceType?.value })
         if (previewString == undefined) {
             return ''
         }

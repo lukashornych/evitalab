@@ -18,6 +18,7 @@ import { Price } from '@/modules/connection/model/data/Price'
 import { Reference } from '@/modules/connection/model/data/Reference'
 import { Locale } from '@/modules/connection/model/data-type/Locale'
 import { EntityPrices } from '../model/entity-property-value/EntityPrices'
+import { GroupByUtil, Grouped } from '@/utils/GroupByUtil'
 
 /**
  * Query executor for EvitaQL language.
@@ -261,86 +262,70 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
     private flattenReferences(entity: Entity): WritableEntityProperty[] {
         const flattenedReferences: WritableEntityProperty[] = []
 
-        const references = entity.references.getOrThrow()
-        for (const reference of references) {
-            const refName = reference.referenceName.getIfSupported()
-            if (reference == undefined) {
-                continue
+        const references = entity.references.getOrThrow();
+        const grouped: Grouped<Reference> = GroupByUtil.groupBy(references.toArray(), 'referenceName');
+        
+        for (const referenceName in grouped) { // podle reference name
+          if (Object.prototype.hasOwnProperty.call(grouped, referenceName)) {
+            const referenceGroup = grouped[referenceName];
+            const refName = referenceGroup[0].referenceName.getIfSupported();
+        
+            if (!referenceGroup) {
+              continue;
             }
-            if (reference instanceof Array) {
-                const representativeValues: EntityReferenceValue[] =
-                    reference.map((referenceOfName) =>
-                        this.resolveReferenceRepresentativeValue(
-                            referenceOfName
-                        )
-                    )
-                const refNameVlaue = reference.referenceName.getIfSupported()
-                if (refNameVlaue)
-                    flattenedReferences.push([
-                        EntityPropertyKey.references(refNameVlaue),
-                        representativeValues,
-                    ])
-
-                const mergedReferenceAttributesByName: Map<
-                    string,
-                    EntityReferenceValue[]
-                > = reference
-                    .map((referenceOfName) =>
-                        this.flattenAttributesForSingleReference(
-                            referenceOfName
-                        )
-                    )
-                    .reduce((accumulator, referenceAttributes) => {
-                        referenceAttributes.forEach(
-                            ([attributeName, attributeValue]) => {
-                                let attributes = accumulator.get(attributeName)
-                                if (attributes == undefined) {
-                                    attributes = []
-                                    accumulator.set(attributeName, attributes)
-                                }
-                                attributes.push(attributeValue)
-                            }
-                        )
-                        return accumulator
-                    }, new Map<string, EntityReferenceValue[]>())
-                mergedReferenceAttributesByName.forEach(
-                    (attributeValues, attributeName) => {
-                        if (refName)
-                            flattenedReferences.push([
-                                EntityPropertyKey.referenceAttributes(
-                                    refName,
-                                    attributeName
-                                ),
-                                attributeValues,
-                            ])
-                    }
-                )
-            } else {
-                const representativeValue: EntityReferenceValue =
-                    this.resolveReferenceRepresentativeValue(reference)
+        
+            if (referenceGroup instanceof Array) {
+              const representativeValues: EntityReferenceValue[] = referenceGroup.map((referenceOfName) =>
+                this.resolveReferenceRepresentativeValue(referenceOfName)
+              );
+        
+              const refNameValue = referenceGroup[0].referenceName.getIfSupported();
+              if (refNameValue)
                 flattenedReferences.push([
-                    EntityPropertyKey.references(
-                        reference.referenceName.getOrThrow()
-                    ),
-                    representativeValue,
-                ])
-
-                this.flattenAttributesForSingleReference(reference).forEach(
-                    ([attributeName, attributeValue]) => {
-                        if (refName)
-                            flattenedReferences.push([
-                                EntityPropertyKey.referenceAttributes(
-                                    refName,
-                                    attributeName
-                                ),
-                                attributeValue,
-                            ])
+                  EntityPropertyKey.references(refNameValue),
+                  representativeValues,
+                ]);
+        
+              const mergedReferenceAttributesByName: Map<string, EntityReferenceValue[]> = referenceGroup
+                .map((referenceOfName) => this.flattenAttributesForSingleReference(referenceOfName))
+                .reduce((accumulator, referenceAttributes) => {
+                  referenceAttributes.forEach(([attributeName, attributeValue]) => {
+                    let attributes = accumulator.get(attributeName);
+                    if (!attributes) {
+                      attributes = [];
+                      accumulator.set(attributeName, attributes);
                     }
-                )
+                    attributes.push(attributeValue);
+                  });
+                  return accumulator;
+                }, new Map<string, EntityReferenceValue[]>());
+        
+              mergedReferenceAttributesByName.forEach((attributeValues, attributeName) => {
+                if (refName)
+                  flattenedReferences.push([
+                    EntityPropertyKey.referenceAttributes(refName, attributeName),
+                    attributeValues,
+                  ]);
+              });
+            } else {
+              const representativeValue: EntityReferenceValue = this.resolveReferenceRepresentativeValue(referenceGroup);
+              flattenedReferences.push([
+                EntityPropertyKey.references(referenceName),
+                representativeValue,
+              ]);
+        
+              this.flattenAttributesForSingleReference(referenceGroup).forEach(([attributeName, attributeValue]) => {
+                if (refName)
+                  flattenedReferences.push([
+                    EntityPropertyKey.referenceAttributes(refName, attributeName),
+                    attributeValue,
+                  ]);
+              });
             }
+          }
         }
-
-        return flattenedReferences
+        
+        return flattenedReferences;
     }
 
     private resolveReferenceRepresentativeValue(
@@ -438,4 +423,5 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
         }
         return flattenedAttributes
     }
+    
 }
