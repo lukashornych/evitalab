@@ -5,4 +5,8 @@ export class Currency {
     constructor(code: string){
         this.code = code;
     }
+
+    toString():string{
+        return this.code;
+    }
 }

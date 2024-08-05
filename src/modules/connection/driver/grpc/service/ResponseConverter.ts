@@ -9,9 +9,10 @@ import { PaginatedList } from "@/modules/connection/model/data/PaginatedList";
 export class ResponseConverter {
     private readonly entityConverter: EntityConverter = new EntityConverter();
 
-    convert(grpcResponse: GrpcQueryResponse) : Response {
+    convert(grpcResponse: GrpcQueryResponse, result: string) : Response {
         return new Response(
-            Value.of(this.convertDataChunk(grpcResponse.recordPage))
+            Value.of(this.convertDataChunk(grpcResponse.recordPage)),
+            result
         )
     }
 

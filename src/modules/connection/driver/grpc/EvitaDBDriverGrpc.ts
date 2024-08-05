@@ -124,7 +124,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                     },
                 }
             )
-            return this.responseConverter.convert(queryRespose)
+            return this.responseConverter.convert(queryRespose, queryRespose.toJsonString())
         } catch (e: any) {
             throw this.handleCallError(e, connection)
         }

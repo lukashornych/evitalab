@@ -107,7 +107,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
         const representativeAttributes: (NativeValue | NativeValue[])[] = []
         const globalAttributes = entity.globalAttributes.getIfSupported()
         if (globalAttributes) {
-            for (const [attributeName, attribute] of globalAttributes) {
+            for (const [_, attribute] of globalAttributes) {
                 representativeAttributes.push(
                     this.wrapRawValueIntoNativeValue(attribute)
                 )
@@ -117,7 +117,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
             entity.localizedAttributes.getIfSupported()
         if (localizedRepresentativeAttributes) {
             for (const [
-                attributeName,
+                _,
                 attribute,
             ] of localizedRepresentativeAttributes) {
                 representativeAttributes.push(
@@ -155,7 +155,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
                 const attributesInLocale = locale.attributes.getIfSupported()
                 if (attributesInLocale) {
                     for (const [
-                        attributeName,
+                        _,
                         attribute,
                     ] of attributesInLocale) {
                         flattenedAttributes.push([
@@ -188,9 +188,9 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
         const localizedAssociatedData =
             entity.localizedAssociatedData.getIfSupported()
         if (localizedAssociatedData) {
-            for (const [localeName, locale] of localizedAssociatedData) {
+            for (const [_, localeAssociatedData] of localizedAssociatedData) {
                 // this expects that we support only one locale
-                const associatedDataInLocale = locale.associatedData
+                const associatedDataInLocale = localeAssociatedData.associatedData
                 if (associatedDataInLocale) {
                     for (const [
                         associatedDataName,
@@ -343,7 +343,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
             ?.globalAttributes.getIfSupported()
         if (globalRepresentativeAttributes) {
             for (const [
-                attributeName,
+                _,
                 attribute,
             ] of globalRepresentativeAttributes) {
                 representativeAttributes.push(
@@ -357,7 +357,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
             ?.localizedAttributes.getIfSupported()
         if (localizedRepresentativeAttributes) {
             for (const [
-                attributeName,
+                _,
                 attribute,
             ] of localizedRepresentativeAttributes) {
                 representativeAttributes.push(
@@ -398,9 +398,9 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
         const localizedAttributes =
             reference.localizedAttributes.getIfSupported()
         if (localizedAttributes) {
-            for (const [key, locale] of localizedAttributes) {
+            for (const [_, localizedAttribute] of localizedAttributes) {
                 // this expects that we support only one locale
-                const attributesInLocale = locale.attributes.getIfSupported()
+                const attributesInLocale = localizedAttribute.attributes.getIfSupported()
                 if (attributesInLocale) {
                     for (const [
                         attributeName,

@@ -5,8 +5,14 @@ import {
 /**
  * Named hierarchy DTO ready for visualisation
  */
-export type VisualisedNamedHierarchy = {
-    count?: number
-    trees: VisualisedHierarchyTreeNode[]
-    requestedNode?: VisualisedHierarchyTreeNode
+export class VisualisedNamedHierarchy {
+    readonly count?: number
+    readonly trees: VisualisedHierarchyTreeNode[]
+    readonly requestedNode?: VisualisedHierarchyTreeNode
+
+    constructor( trees: VisualisedHierarchyTreeNode[], count?: number, requestedNode?: VisualisedHierarchyTreeNode){
+        this.count = count
+        this.trees = trees
+        this.requestedNode = requestedNode
+    }
 }

@@ -1,4 +1,4 @@
-import { BigDecimal } from '@/modules/connection/driver/2024_8/model/model'
+import { BigDecimal } from "@/modules/connection/model/data-type/BigDecimal"
 
 /**
  * Single histogram bucket DTO ready for visualisation.

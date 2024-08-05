@@ -3,6 +3,8 @@ import { EvitaQLConsoleDataPointer } from '@/modules/evitaql-console/console/mod
 import { InjectionKey } from 'vue'
 import { EvitaDBDriverResolver } from '@/modules/connection/driver/EvitaDBDriverResolver'
 import { mandatoryInject } from '@/utils/reactivity'
+import { Result } from '@/modules/console/result-visualiser/model/Result'
+import { Response } from '@/modules/connection/model/data/Response'
 
 export const evitaQLConsoleServiceInjectionKey: InjectionKey<EvitaQLConsoleService> = Symbol('evitaQLConsoleService')
 
@@ -20,10 +22,10 @@ export class EvitaQLConsoleService {
      * Executes user GraphQL query against a given evitaDB server and catalog.
      */
     // todo lho variables
-    async executeEvitaQLQuery(dataPointer: EvitaQLConsoleDataPointer, query: string, variables?: object): Promise<string> {
+    async executeEvitaQLQuery(dataPointer: EvitaQLConsoleDataPointer, query: string, variables?: object): Promise<Result> {
         const evitaDBDriver: EvitaDBDriver = await this.evitaDBDriverResolver.resolveDriver(dataPointer.connection)
 
-        let result: any
+        let result: Response
         try {
            result = await evitaDBDriver.query(dataPointer.connection, dataPointer.catalogName, query)
         } catch (e: any) {
@@ -33,7 +35,7 @@ export class EvitaQLConsoleService {
                 throw e
             }
         }
-        return JSON.stringify(result, null, 2)
+        return new Result(result, result.result)
     }
 }
 

@@ -7,8 +7,10 @@ import { Value } from '@/modules/connection/model/Value'
 export class Response {
 
     readonly recordPage: Value<DataChunk>
+    readonly result: string
 
-    constructor(recordPage: Value<DataChunk>) {
+    constructor(recordPage: Value<DataChunk>, result: string) {
         this.recordPage = recordPage
+        this.result = result
     }
 }
