@@ -1,5 +1,4 @@
 import { List, Map} from 'immutable'
-import { Schema } from '@/modules/connection/model/schema/Schema'
 import { NamingConvention } from '../NamingConvetion'
 import { Value } from '@/modules/connection/model/Value'
 import { Scalar } from '@/modules/connection/model/data-type/Scalar'
@@ -43,7 +42,7 @@ export class AssociatedDataSchema extends AbstractSchema implements TypedSchema,
      */
     readonly localized: Value<boolean>
 
-    private representativeFlags?: List<string>
+    protected representativeFlags?: List<string>
 
     constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,

@@ -5,7 +5,7 @@ import {
 import { ConnectionService } from '@/modules/connection/service/ConnectionService'
 import {
     EvitaQLFacetSummaryVisualiserService
-} from '@/modules/evitaql-console/console/result-visualiser/service/EvitaQLFacetSummaryVisualiser.service'
+} from './EvitaQLFacetSummaryVisualiserService'
 import {
     EvitaQLHierarchyVisualiserService
 } from '@/modules/evitaql-console/console/result-visualiser/service/EvitaQLHierarchyVisualiserService'

@@ -3,7 +3,6 @@ import { EntityPrice } from '@/modules/entity-viewer/viewer/model/entity-propert
 import {
     EntityPropertyValuePreviewStringContext
 } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPropertyValuePreviewStringContext'
-import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
 import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
 
 /**

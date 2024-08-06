@@ -211,12 +211,12 @@ function prettyPrintRangeValue(
     prefix: string
 ): string {
     if (rawRange instanceof EntityPropertyValue) {
-        return prefix + '`' + rawRange.toPreviewString() + '`'
+        return prefix + '`' + rawRange.toPrettyPrintString() + '`'
     } else {
         return (
             prefix +
             '`' +
-            rawRange.map((x) => x.toPreviewString()).join(',') +
+            rawRange.map((x) => x.toPrettyPrintString()).join(',') +
             '`'
         )
     }
