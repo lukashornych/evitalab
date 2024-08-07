@@ -97,7 +97,6 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
         flattenedProperties.push(...this.flattenAssociatedData(entity))
         flattenedProperties.push(this.flattenPrices(entity))
         flattenedProperties.push(...this.flattenReferences(entity))
-        console.log(this.createFlatEntity(flattenedProperties))
         return this.createFlatEntity(flattenedProperties)
     }
 

@@ -38,8 +38,7 @@ import {
 } from '@/modules/connection/driver/grpc/gen/GrpcEntitySchema_pb'
 import {
     GrpcCurrency,
-    GrpcLocale,
-    GrpcNameVariant
+    GrpcLocale
 } from '@/modules/connection/driver/grpc/gen/GrpcEvitaDataTypes_pb'
 import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
 import {
@@ -51,10 +50,16 @@ import { Currency } from '@/modules/connection/model/data/Currency'
 import { Locale } from '@/modules/connection/model/data-type/Locale'
 import { ScalarConverter } from './ScalarConverter'
 import { MapUtil } from '../utils/MapUtil'
-import { ref } from 'vue'
+import { EvitaValueConvert } from './EvitaValueConverter'
 
 //TODO: Add documentation
 export class CatalogSchemaConverter {
+    private readonly evitaValueConverter:EvitaValueConvert
+
+    constructor(evitaValueConverter: EvitaValueConvert){
+        this.evitaValueConverter = evitaValueConverter
+    }
+
     convert(
         catalogSchema: GrpcCatalogSchema,
         entitySchemaAccessor: (
@@ -111,7 +116,7 @@ export class CatalogSchemaConverter {
                 Value.of(attribute.filterable),
                 Value.of(attribute.sortable),
                 Value.of(attribute.nullable),
-                Value.of(attribute.defaultValue),
+                Value.of(this.evitaValueConverter.convertEvitaValue(attribute.defaultValue)),
                 Value.of(attribute.localized),
                 Value.of(attribute.indexedDecimalPlaces)
             )
@@ -128,7 +133,7 @@ export class CatalogSchemaConverter {
                 Value.of(attribute.filterable),
                 Value.of(attribute.sortable),
                 Value.of(attribute.nullable),
-                Value.of(attribute.defaultValue),
+                Value.of(this.evitaValueConverter.convertEvitaValue(attribute.defaultValue)),
                 Value.of(attribute.localized),
                 Value.of(attribute.indexedDecimalPlaces),
                 Value.of(attribute.representative)
@@ -169,8 +174,9 @@ export class CatalogSchemaConverter {
         const nullable: Value<boolean> = Value.of(
             globalAttributeSchema.nullable
         )
+
         const defaultValue: Value<any | any[] | null> = Value.of(
-            globalAttributeSchema.defaultValue || null
+            this.evitaValueConverter.convertEvitaValue(globalAttributeSchema.defaultValue)
         )
         const localized: Value<boolean> = Value.of(
             globalAttributeSchema.localized

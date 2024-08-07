@@ -41,7 +41,7 @@ import {
     provideCatalogSchema,
     useConnection,
 } from '@/modules/connection/explorer/component/dependecies'
-import { Map } from 'immutable' 
+import { Map as ImmutableMap } from 'immutable'
 //TODO: add dialog options
 const connectionService: ConnectionService = useConnectionService()
 const workspaceService: WorkspaceService = useWorkspaceService()
@@ -59,7 +59,7 @@ const props = defineProps<{
 }>()
 
 const connection: Connection = useConnection()
-const actions: Map<
+const actions: ImmutableMap<
     CatalogActionType,
     MenuAction<CatalogActionType>
 > = createActions()
@@ -100,11 +100,11 @@ function handleAction(action: string): void {
     actions.get(action as CatalogActionType)?.execute()
 }
 
-function createActions(): Map<
+function createActions(): ImmutableMap<
     CatalogActionType,
     MenuAction<CatalogActionType>
 > {
-    const actions: Map<CatalogActionType, MenuAction<CatalogActionType>> = Map()
+    const actions: Map<CatalogActionType, MenuAction<CatalogActionType>> = new Map()
     // todo lho consider moving these static actions directly into HTML code
     actions.set(
         CatalogActionType.OpenEvitaQLConsole,
@@ -161,7 +161,7 @@ function createActions(): Map<
             )
         )
     )
-    return actions
+    return ImmutableMap(actions)
 }
 
 function createMenuAction(

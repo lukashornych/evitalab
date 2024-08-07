@@ -24,6 +24,12 @@ import { LevelInfo } from '@/modules/connection/model/data/LevelInfo'
 import { LevelInfos } from '@/modules/connection/model/data/LevelInfos'
 
 export class ExtraResultConverter {
+    private readonly entityConverter: EntityConverter
+
+    constructor(entityConverter: EntityConverter){
+        this.entityConverter = entityConverter
+    }
+
     convert(entity: GrpcExtraResults | undefined): ExtraResults | undefined {
         if(!entity)
             return undefined
@@ -76,7 +82,6 @@ export class ExtraResultConverter {
     convertFacetGroupStatistics(
         facetGroupStatistics: GrpcFacetGroupStatistics[]
     ): Immutable.List<FacetGroupStatistics> {
-        const entityConverter: EntityConverter = new EntityConverter()
         const newFacetGroupStatistics: FacetGroupStatistics[] = []
         for (const facetGroupStatistic of facetGroupStatistics) {
             newFacetGroupStatistics.push(
@@ -95,7 +100,7 @@ export class ExtraResultConverter {
                     ),
                     Value.of(
                         facetGroupStatistic.groupEntity
-                            ? entityConverter.convert(
+                            ? this.entityConverter.convert(
                                   facetGroupStatistic.groupEntity
                               )
                             : undefined
@@ -109,7 +114,6 @@ export class ExtraResultConverter {
     convertFacetStatistics(
         facetStatistics: GrpcFacetStatistics[]
     ): Immutable.List<FacetStatistics> {
-        const entityConverter: EntityConverter = new EntityConverter()
         const newFacetStatistics: FacetStatistics[] = []
         for (const facetStatistic of facetStatistics) {
             newFacetStatistics.push(
@@ -119,7 +123,7 @@ export class ExtraResultConverter {
                     Value.of(facetStatistic.hasSense),
                     Value.of(
                         facetStatistic.facetEntity
-                            ? entityConverter.convert(
+                            ? this.entityConverter.convert(
                                   facetStatistic.facetEntity
                               )
                             : undefined
@@ -204,7 +208,6 @@ export class ExtraResultConverter {
     }
 
     convertLevelInfos(levelInfos: GrpcLevelInfos): LevelInfos {
-        const entityConverter: EntityConverter = new EntityConverter()
         const newLevelInfos: LevelInfo[] = []
         for (const levelInfo of levelInfos.levelInfos) {
             newLevelInfos.push(
@@ -215,7 +218,7 @@ export class ExtraResultConverter {
                     Value.of(levelInfo.queriedEntityCount),
                     Value.of(
                         levelInfo.entity
-                            ? entityConverter.convert(levelInfo.entity)
+                            ? this.entityConverter.convert(levelInfo.entity)
                             : undefined
                     ),
                     Value.of(
@@ -228,7 +231,6 @@ export class ExtraResultConverter {
     }
 
     convertLevelInfo(levelInfo: GrpcLevelInfo[]): Immutable.List<LevelInfo> {
-        const entityConverter: EntityConverter = new EntityConverter()
         const levelInfos: LevelInfo[] = []
         for (const info of levelInfo) {
             levelInfos.push(
@@ -239,7 +241,7 @@ export class ExtraResultConverter {
                     Value.of(info.queriedEntityCount),
                     Value.of(
                         info.entity
-                            ? entityConverter.convert(info.entity)
+                            ? this.entityConverter.convert(info.entity)
                             : undefined
                     ),
                     Value.of(this.convertEntityReference(info.entityReference))

@@ -5,8 +5,8 @@ import { Connection } from '../../model/Connection'
 import { Response } from '../../model/data/Response'
 import { CatalogSchema } from '../../model/schema/CatalogSchema'
 import { Empty } from '@bufbuild/protobuf'
-import { CatalogSchemaConverter as GrpcCatalogSchemaConverter } from '../grpc/service/CatalogSchemaConverter'
-import { CatalogConverter as GrpcCatalogConverter } from '../grpc/service/CatalogConverter'
+import { CatalogSchemaConverter } from '../grpc/service/CatalogSchemaConverter'
+import { CatalogConverter } from '../grpc/service/CatalogConverter'
 import { ResponseConverter } from './service/ResponseConverter'
 import { Value } from '../../model/Value'
 import { EntitySchema } from '../../model/schema/EntitySchema'
@@ -16,37 +16,61 @@ import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { TimeoutError } from '../../exception/TimeoutError'
 import { EvitaDBInstanceNetworkError } from '@/modules/driver-support/exception/EvitaDBInstanceNetworkError'
 import { LabError } from '@/modules/base/exception/LabError'
-import { ClientsHelper, EvitaClient, SessionClient } from './helpers/ClientsHelper'
+import {
+    ClientsHelper,
+    EvitaClient,
+    SessionClient,
+} from './helpers/ClientsHelper'
 import { TransportHelper } from './helpers/TransportHelper'
+import { EntityConverter } from './service/EntityConverter'
+import { EvitaValueConvert } from './service/EvitaValueConverter'
+import { ExtraResultConverter } from './service/ExtraResultConverter'
 
 //TODO: Add docs and add header 'X-EvitaDB-ClientID': this.getClientIdHeaderValue()
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
-    private readonly grpcCatalogSchemaConverter: GrpcCatalogSchemaConverter =
-        new GrpcCatalogSchemaConverter()
-    private readonly grpcCatalogConverter: GrpcCatalogConverter =
-        new GrpcCatalogConverter()
+    private readonly evitaValueConverter: EvitaValueConvert =
+        new EvitaValueConvert()
+    private readonly entityConverter: EntityConverter = new EntityConverter(
+        this.evitaValueConverter
+    )
+    private readonly extraResultConverter: ExtraResultConverter =
+        new ExtraResultConverter(this.entityConverter)
+    private readonly grpcCatalogSchemaConverter: CatalogSchemaConverter =
+        new CatalogSchemaConverter(this.evitaValueConverter)
+    private readonly grpcCatalogConverter: CatalogConverter =
+        new CatalogConverter()
     private readonly responseConverter: ResponseConverter =
-        new ResponseConverter()
-    private readonly clientsHelper: ClientsHelper =
-     new ClientsHelper();
+        new ResponseConverter(this.entityConverter, this.extraResultConverter)
+
+    private readonly clientsHelper: ClientsHelper = new ClientsHelper()
 
     async getCatalogSchema(
         connection: Connection,
         catalogName: string
     ): Promise<CatalogSchema> {
         try {
-            const res = await this.clientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)).createReadOnlySession({
-                catalogName
-            })
-            const schemaRes: GrpcCatalogSchemaResponse =
-                await this.clientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).getCatalogSchema(
-                    { nameVariants: true },
-                    {
-                        headers: {
-                            sessionId: res.sessionId,
-                        },
-                    }
+            const res = await this.clientsHelper
+                .getEvitaClient(
+                    connection,
+                    TransportHelper.getTransport(connection)
                 )
+                .createReadOnlySession({
+                    catalogName,
+                })
+            const schemaRes: GrpcCatalogSchemaResponse =
+                await this.clientsHelper
+                    .getSessionClient(
+                        connection,
+                        TransportHelper.getTransport(connection)
+                    )
+                    .getCatalogSchema(
+                        { nameVariants: true },
+                        {
+                            headers: {
+                                sessionId: res.sessionId,
+                            },
+                        }
+                    )
             if (schemaRes.catalogSchema == null) {
                 throw this.handleCallError('catalog name is null', connection)
             }
@@ -59,8 +83,14 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                         return await this.loadEntitySchemas(
                             catalogName,
                             this.grpcCatalogSchemaConverter,
-                            this.clientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)),
-                            this.clientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection))
+                            this.clientsHelper.getEvitaClient(
+                                connection,
+                                TransportHelper.getTransport(connection)
+                            ),
+                            this.clientsHelper.getSessionClient(
+                                connection,
+                                TransportHelper.getTransport(connection)
+                            )
                         )
                     }
                 )
@@ -71,13 +101,13 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
     }
     private async loadEntitySchemas(
         catalogName: string,
-        grpcCatalogSchemaConverter: GrpcCatalogSchemaConverter,
+        grpcCatalogSchemaConverter: CatalogSchemaConverter,
         client: EvitaClient,
         sessionClient: SessionClient
     ): Promise<Value<List<EntitySchema>>> {
         const entities: EntitySchema[] = []
         const res = await client.createReadOnlySession({
-            catalogName
+            catalogName,
         })
 
         const entityTypesResult = await sessionClient.getAllEntityTypes(Empty, {
@@ -111,28 +141,47 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         query: string
     ): Promise<Response> {
         try {
-            const session = await this.clientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)).createReadOnlySession({
-                catalogName,
-            })
-            const queryRespose = await this.clientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).queryUnsafe(
-                {
-                    query,
-                },
-                {
-                    headers: {
-                        sessionId: session.sessionId,
+            const session = await this.clientsHelper
+                .getEvitaClient(
+                    connection,
+                    TransportHelper.getTransport(connection)
+                )
+                .createReadOnlySession({
+                    catalogName,
+                })
+            const queryRespose = await this.clientsHelper
+                .getSessionClient(
+                    connection,
+                    TransportHelper.getTransport(connection)
+                )
+                .queryUnsafe(
+                    {
+                        query,
                     },
-                }
+                    {
+                        headers: {
+                            sessionId: session.sessionId,
+                        },
+                    }
+                )
+            return this.responseConverter.convert(
+                queryRespose,
+                queryRespose.toJsonString()
             )
-            return this.responseConverter.convert(queryRespose, queryRespose.toJsonString())
         } catch (e: any) {
             throw this.handleCallError(e, connection)
         }
     }
     async getCatalogs(connection: Connection): Promise<Catalog[]> {
         try {
-            const res = (await this.clientsHelper.getManagmentClient(connection, TransportHelper.getTransport(connection)).getCatalogStatistics(Empty))
-                .catalogStatistics
+            const res = (
+                await this.clientsHelper
+                    .getManagmentClient(
+                        connection,
+                        TransportHelper.getTransport(connection)
+                    )
+                    .getCatalogStatistics(Empty)
+            ).catalogStatistics
             return res.map((x) => this.grpcCatalogConverter.convert(x))
         } catch (e: any) {
             throw this.handleCallError(e, connection)

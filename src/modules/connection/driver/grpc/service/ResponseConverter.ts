@@ -8,8 +8,13 @@ import { ExtraResultConverter } from "./ExtraResultConverter";
 
 //TOOD: Implement and add documentation
 export class ResponseConverter {
-    private readonly entityConverter: EntityConverter = new EntityConverter();
-    private readonly extraResultConverter: ExtraResultConverter = new ExtraResultConverter();
+    private readonly entityConverter: EntityConverter;
+    private readonly extraResultConverter: ExtraResultConverter;
+
+    constructor(entityConverter: EntityConverter, extraResultConverter: ExtraResultConverter){
+        this.entityConverter = entityConverter
+        this.extraResultConverter = extraResultConverter
+    }
 
     convert(grpcResponse: GrpcQueryResponse, result: string) : Response {
         return new Response(
