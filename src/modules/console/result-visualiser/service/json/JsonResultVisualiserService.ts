@@ -49,7 +49,7 @@ export abstract class JsonResultVisualiserService extends ResultVisualiserServic
         return visualiserTypes
     }
 
-    findResultForVisualiser(queryResult: Result, visualiserType: string): Result | undefined {
+    findResultForVisualiser(queryResult: Result, visualiserType: VisualiserTypeType): Result | undefined {
         switch (visualiserType) {
             case VisualiserTypeType.FacetSummary:
                 return queryResult?.['extraResults']?.['facetSummary']

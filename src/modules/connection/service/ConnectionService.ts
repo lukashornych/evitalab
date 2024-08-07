@@ -69,10 +69,10 @@ export class ConnectionService {
                 'localhost',
                 'Localhost (dev)',
                 true,
-                'http://localhost:5555/system',
-                'https://localhost:5555/lab/api',
-                'https://localhost:5555/gql',
-                'https://localhost:5555/rest'
+                'http://127.0.0.1:5555/system',
+                'https://127.0.0.1:5555/',
+                'https://127.0.0.1:5555/gql',
+                'https://127.0.0.1:5555/rest'
             ))
         }
 
