@@ -89,4 +89,8 @@ export class Value<T> {
             throw new UnexpectedError("Value is not supported");
         }
     }
+
+    toString(): string {
+        return String(this.actualValue)
+    }
 }

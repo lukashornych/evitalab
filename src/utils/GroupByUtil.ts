@@ -3,7 +3,7 @@ export class GroupByUtil {
         return array.reduce((acc, obj) => {
             const property = obj[key]
             const groupKey =
-                property !== undefined ? String(property) : 'undefined'
+                property != undefined ? property.toString() : 'undefined'
             if (!acc[groupKey]) {
                 acc[groupKey] = []
             }

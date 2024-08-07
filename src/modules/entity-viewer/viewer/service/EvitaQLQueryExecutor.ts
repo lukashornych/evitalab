@@ -265,7 +265,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
         const references = entity.references.getOrThrow();
         const grouped: Grouped<Reference> = GroupByUtil.groupBy(references.toArray(), 'referenceName');
 
-        for (const referenceName in grouped) { // podle reference name
+        for (const referenceName in grouped) { // by reference name
           if (Object.prototype.hasOwnProperty.call(grouped, referenceName)) {
             const referenceGroup = grouped[referenceName];
             const refName = referenceGroup[0].referenceName.getIfSupported();
