@@ -20,5 +20,7 @@ export abstract class Range<T> {
         else return true
     }
 
+    abstract getRangeValues():[T|undefined, T|undefined]
+
     abstract toString():string;
 }

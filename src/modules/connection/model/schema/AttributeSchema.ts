@@ -1,4 +1,3 @@
-import { Schema } from '@/modules/connection/model/schema/Schema'
 import { List, Map} from 'immutable'
 import { NamingConvention } from '../NamingConvetion'
 import { AttributeUniquenessType } from '@/modules/connection/model/schema/AttributeUniquenessType'

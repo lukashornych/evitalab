@@ -4,15 +4,18 @@ import { Response } from "@/modules/connection/model/data/Response";
 import { Value } from "@/modules/connection/model/Value";
 import { DataChunk } from "@/modules/connection/model/data/DataChunk";
 import { PaginatedList } from "@/modules/connection/model/data/PaginatedList";
+import { ExtraResultConverter } from "./ExtraResultConverter";
 
 //TOOD: Implement and add documentation
 export class ResponseConverter {
     private readonly entityConverter: EntityConverter = new EntityConverter();
+    private readonly extraResultConverter: ExtraResultConverter = new ExtraResultConverter();
 
     convert(grpcResponse: GrpcQueryResponse, result: string) : Response {
         return new Response(
             Value.of(this.convertDataChunk(grpcResponse.recordPage)),
-            result
+            result,
+            Value.of(this.extraResultConverter.convert(grpcResponse.extraResults))
         )
     }
 

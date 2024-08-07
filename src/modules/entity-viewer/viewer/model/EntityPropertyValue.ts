@@ -29,7 +29,6 @@ export abstract class EntityPropertyValue {
 
     /** Add documentation */
     toPrettyPrintString(context?: EntityPropertyValuePreviewStringContext): string {
-        return this.toPreviewString();
+        return this.toPreviewString(context);
     }
-    
 }

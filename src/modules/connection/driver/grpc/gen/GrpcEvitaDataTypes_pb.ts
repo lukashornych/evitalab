@@ -5,7 +5,7 @@
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Int32Value, Int64Value, Message, proto3, protoInt64, StringValue, Timestamp } from "@bufbuild/protobuf";
-import { GrpcAttributeSpecialValue, GrpcCatalogState, GrpcEmptyHierarchicalEntityBehaviour, GrpcEvitaDataType, GrpcFacetStatisticsDepth, GrpcNamingConvention, GrpcOrderDirection, GrpcPriceContentMode, GrpcQueryPriceMode, GrpcStatisticsBase, GrpcStatisticsType, GrpcHistogramBehavior } from "./GrpcEnums_pb.js";
+import { GrpcAttributeSpecialValue, GrpcCatalogState, GrpcEmptyHierarchicalEntityBehaviour, GrpcEvitaAssociatedDataDataType_GrpcEvitaDataType, GrpcEvitaDataType, GrpcFacetStatisticsDepth, GrpcNamingConvention, GrpcOrderDirection, GrpcPriceContentMode, GrpcQueryPriceMode, GrpcStatisticsBase, GrpcStatisticsType, GrpcHistogramBehavior } from "./GrpcEnums_pb.js";
 
 /**
  * Representation of IntegerNumberRange structures with optional from and to values.
@@ -1724,6 +1724,13 @@ export class GrpcEvitaAssociatedDataValue extends Message<GrpcEvitaAssociatedDat
   } | { case: undefined; value?: undefined } = { case: undefined };
 
   /**
+   * The type of the stored value.
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcEvitaAssociatedDataDataType.GrpcEvitaDataType type = 100;
+   */
+  type = GrpcEvitaAssociatedDataDataType_GrpcEvitaDataType.STRING;
+
+  /**
    * Contains version of this value and gets increased with any entity type update. Allows to execute
    * 			optimistic locking i.e. avoiding parallel modifications.
    *
@@ -1741,6 +1748,7 @@ export class GrpcEvitaAssociatedDataValue extends Message<GrpcEvitaAssociatedDat
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "primitiveValue", kind: "message", T: GrpcEvitaValue, oneof: "value" },
     { no: 2, name: "jsonValue", kind: "scalar", T: 9 /* ScalarType.STRING */, oneof: "value" },
+    { no: 100, name: "type", kind: "enum", T: proto3.getEnumType(GrpcEvitaAssociatedDataDataType_GrpcEvitaDataType) },
     { no: 3, name: "version", kind: "message", T: Int32Value },
   ]);
 

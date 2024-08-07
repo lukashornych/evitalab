@@ -97,7 +97,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
         flattenedProperties.push(...this.flattenAssociatedData(entity))
         flattenedProperties.push(this.flattenPrices(entity))
         flattenedProperties.push(...this.flattenReferences(entity))
-
+        console.log(this.createFlatEntity(flattenedProperties))
         return this.createFlatEntity(flattenedProperties)
     }
 
@@ -149,17 +149,17 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
             }
         }
         const localizedAttributes = entity.localizedAttributes.getIfSupported()
-        if (localizedAttributes) {
-            for (const [key, locale] of localizedAttributes) {
+        if (localizedAttributes && localizedAttributes.size) {
+            for (const [_, localizedAttribute] of localizedAttributes) {
                 // this expects that we support only one locale
-                const attributesInLocale = locale.attributes.getIfSupported()
+                const attributesInLocale = localizedAttribute.attributes.getIfSupported()
                 if (attributesInLocale) {
                     for (const [
-                        _,
+                        attributeName,
                         attribute,
                     ] of attributesInLocale) {
                         flattenedAttributes.push([
-                            EntityPropertyKey.attributes(key),
+                            EntityPropertyKey.attributes(attributeName),
                             this.wrapRawValueIntoNativeValue(attribute),
                         ])
                     }
@@ -181,7 +181,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
             ] of globalAssociatedData) {
                 flattenedAssociatedData.push([
                     EntityPropertyKey.associatedData(associatedDataName),
-                    new NativeValue(associatedData),
+                    this.wrapRawValueIntoNativeValue(associatedData),
                 ])
             }
         }
@@ -200,7 +200,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
                             EntityPropertyKey.associatedData(
                                 associatedDataName
                             ),
-                            new NativeValue(associatedData),
+                            this.wrapRawValueIntoNativeValue(associatedData),
                         ])
                     }
                 }
@@ -228,9 +228,9 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
                         price.innerRecordId.getIfSupported(),
                         price.sellable.getIfSupported(),
                         price.validity.getIfSupported(),
-                        price.priceWithoutTax.getIfSupported(),
+                        price.priceWithoutTax.getOrThrow(),
                         price.priceWithTax.getOrThrow(),
-                        price.taxRate.getIfSupported()
+                        price.taxRate.getOrThrow()
                     )
                 )
             }
@@ -243,9 +243,9 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
                 priceForSale?.innerRecordId.getIfSupported(),
                 priceForSale?.sellable.getIfSupported(),
                 priceForSale?.validity.getIfSupported(),
-                priceForSale?.priceWithoutTax.getIfSupported(),
+                priceForSale?.priceWithoutTax.getOrThrow(),
                 priceForSale?.priceWithTax.getOrThrow(),
-                priceForSale?.taxRate.getIfSupported()
+                priceForSale?.taxRate.getOrThrow()
             )
             return [
                 EntityPropertyKey.prices(),
@@ -264,28 +264,28 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
 
         const references = entity.references.getOrThrow();
         const grouped: Grouped<Reference> = GroupByUtil.groupBy(references.toArray(), 'referenceName');
-        
+
         for (const referenceName in grouped) { // podle reference name
           if (Object.prototype.hasOwnProperty.call(grouped, referenceName)) {
             const referenceGroup = grouped[referenceName];
             const refName = referenceGroup[0].referenceName.getIfSupported();
-        
+
             if (!referenceGroup) {
               continue;
             }
-        
+
             if (referenceGroup instanceof Array) {
               const representativeValues: EntityReferenceValue[] = referenceGroup.map((referenceOfName) =>
                 this.resolveReferenceRepresentativeValue(referenceOfName)
               );
-        
+
               const refNameValue = referenceGroup[0].referenceName.getIfSupported();
               if (refNameValue)
                 flattenedReferences.push([
                   EntityPropertyKey.references(refNameValue),
                   representativeValues,
                 ]);
-        
+
               const mergedReferenceAttributesByName: Map<string, EntityReferenceValue[]> = referenceGroup
                 .map((referenceOfName) => this.flattenAttributesForSingleReference(referenceOfName))
                 .reduce((accumulator, referenceAttributes) => {
@@ -299,7 +299,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
                   });
                   return accumulator;
                 }, new Map<string, EntityReferenceValue[]>());
-        
+
               mergedReferenceAttributesByName.forEach((attributeValues, attributeName) => {
                 if (refName)
                   flattenedReferences.push([
@@ -313,7 +313,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
                 EntityPropertyKey.references(referenceName),
                 representativeValue,
               ]);
-        
+
               this.flattenAttributesForSingleReference(referenceGroup).forEach(([attributeName, attributeValue]) => {
                 if (refName)
                   flattenedReferences.push([
@@ -324,7 +324,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
             }
           }
         }
-        
+
         return flattenedReferences;
     }
 
@@ -423,5 +423,5 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
         }
         return flattenedAttributes
     }
-    
+
 }

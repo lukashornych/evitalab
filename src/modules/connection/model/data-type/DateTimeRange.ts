@@ -29,6 +29,10 @@ export class DateTimeRange extends Range<OffsetDateTime> implements PrettyPrinta
         return new DateTimeRange(from, to)
     }
 
+    getRangeValues():[OffsetDateTime | undefined, OffsetDateTime | undefined]{
+        return [this.from, this.to]
+    }
+
     override toString():string{
         return `[${this.from ?? '∞'},${this.to ?? '∞'}]`
     }

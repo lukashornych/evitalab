@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { GrpcBackupCatalogRequest, GrpcBackupCatalogResponse, GrpcCatalogSchemaResponse, GrpcCatalogStateResponse, GrpcCloseRequest, GrpcCloseResponse, GrpcDefineEntitySchemaRequest, GrpcDefineEntitySchemaResponse, GrpcDeleteCollectionRequest, GrpcDeleteCollectionResponse, GrpcDeleteEntitiesRequest, GrpcDeleteEntitiesResponse, GrpcDeleteEntityAndItsHierarchyResponse, GrpcDeleteEntityRequest, GrpcDeleteEntityResponse, GrpcEntityCollectionSizeRequest, GrpcEntityCollectionSizeResponse, GrpcEntityRequest, GrpcEntityResponse, GrpcEntitySchemaRequest, GrpcEntitySchemaResponse, GrpcEntityTypesResponse, GrpcGetCatalogSchemaRequest, GrpcGoLiveAndCloseResponse, GrpcQueryListResponse, GrpcQueryOneResponse, GrpcQueryRequest, GrpcQueryResponse, GrpcQueryUnsafeRequest, GrpcRenameCollectionRequest, GrpcRenameCollectionResponse, GrpcReplaceCollectionRequest, GrpcReplaceCollectionResponse, GrpcTransactionResponse, GrpcUpdateAndFetchCatalogSchemaResponse, GrpcUpdateAndFetchEntitySchemaResponse, GrpcUpdateCatalogSchemaRequest, GrpcUpdateCatalogSchemaResponse, GrpcUpdateEntitySchemaRequest, GrpcUpdateEntitySchemaResponse, GrpcUpsertEntityRequest, GrpcUpsertEntityResponse } from "./GrpcEvitaSessionAPI_pb.js";
+import { GetMutationsHistoryPageRequest, GetMutationsHistoryPageResponse, GetMutationsHistoryRequest, GetMutationsHistoryResponse, GrpcBackupCatalogRequest, GrpcBackupCatalogResponse, GrpcCatalogSchemaResponse, GrpcCatalogStateResponse, GrpcCatalogVersionAtRequest, GrpcCatalogVersionAtResponse, GrpcCloseRequest, GrpcCloseResponse, GrpcDefineEntitySchemaRequest, GrpcDefineEntitySchemaResponse, GrpcDeleteCollectionRequest, GrpcDeleteCollectionResponse, GrpcDeleteEntitiesRequest, GrpcDeleteEntitiesResponse, GrpcDeleteEntityAndItsHierarchyResponse, GrpcDeleteEntityRequest, GrpcDeleteEntityResponse, GrpcEntityCollectionSizeRequest, GrpcEntityCollectionSizeResponse, GrpcEntityRequest, GrpcEntityResponse, GrpcEntitySchemaRequest, GrpcEntitySchemaResponse, GrpcEntityTypesResponse, GrpcGetCatalogSchemaRequest, GrpcGoLiveAndCloseResponse, GrpcQueryListResponse, GrpcQueryOneResponse, GrpcQueryRequest, GrpcQueryResponse, GrpcQueryUnsafeRequest, GrpcRenameCollectionRequest, GrpcRenameCollectionResponse, GrpcReplaceCollectionRequest, GrpcReplaceCollectionResponse, GrpcTransactionResponse, GrpcUpdateAndFetchCatalogSchemaResponse, GrpcUpdateAndFetchEntitySchemaResponse, GrpcUpdateCatalogSchemaRequest, GrpcUpdateCatalogSchemaResponse, GrpcUpdateEntitySchemaRequest, GrpcUpdateEntitySchemaResponse, GrpcUpsertEntityRequest, GrpcUpsertEntityResponse } from "./GrpcEvitaSessionAPI_pb.js";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -41,6 +41,39 @@ export const EvitaSessionService = {
       I: Empty,
       O: GrpcCatalogStateResponse,
       kind: MethodKind.Unary,
+    },
+    /**
+     * Procedure that returns the version of the catalog at a specific moment in time.
+     *
+     * @generated from rpc io.evitadb.externalApi.grpc.generated.EvitaSessionService.GetCatalogVersionAt
+     */
+    getCatalogVersionAt: {
+      name: "GetCatalogVersionAt",
+      I: GrpcCatalogVersionAtRequest,
+      O: GrpcCatalogVersionAtResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Procedure that returns requested page of past mutations in reversed order that match the request criteria.
+     *
+     * @generated from rpc io.evitadb.externalApi.grpc.generated.EvitaSessionService.GetMutationsHistoryPage
+     */
+    getMutationsHistoryPage: {
+      name: "GetMutationsHistoryPage",
+      I: GetMutationsHistoryPageRequest,
+      O: GetMutationsHistoryPageResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Procedure that returns stream of all past mutations in reversed order that match the request criteria.
+     *
+     * @generated from rpc io.evitadb.externalApi.grpc.generated.EvitaSessionService.GetMutationsHistory
+     */
+    getMutationsHistory: {
+      name: "GetMutationsHistory",
+      I: GetMutationsHistoryRequest,
+      O: GetMutationsHistoryResponse,
+      kind: MethodKind.ServerStreaming,
     },
     /**
      * Procedure that returns the schema of a specific entity type.

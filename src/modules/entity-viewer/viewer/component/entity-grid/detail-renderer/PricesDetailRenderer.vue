@@ -116,16 +116,14 @@ const filterData = computed<FilterData>(() => {
     const innerRecordIds: number[] = []
 
     for (const price of prices.value.prices) {
-        if (price.priceId) {
+        if (price.priceId && !priceIds.includes(price.priceId)) {
             priceIds.push(price.priceId)
         }
-        if (price.priceList) {
+        if (price.priceList && !priceLists.includes(price.priceList)) {
             priceLists.push(price.priceList)
         }
-        if (price.currency) {
-            if (!currencies.includes(price.currency.code)) {
-                currencies.push(price.currency.code)
-            }
+        if (price.currency && !currencies.includes(price.currency.code)) {
+            currencies.push(price.currency.code)
         }
         if (
             price.innerRecordId != undefined &&

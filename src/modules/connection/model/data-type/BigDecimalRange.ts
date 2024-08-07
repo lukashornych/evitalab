@@ -7,8 +7,13 @@ export class BigDecimalRange extends Range<BigDecimal> implements PrettyPrintabl
     constructor(from: BigDecimal, to: BigDecimal){
         super(from, to)
     }
+
     getPrettyPrintableString(): string {
         return this.toString()
+    }
+
+    getRangeValues():[BigDecimal | undefined, BigDecimal | undefined]{
+        return [this.from, this.to]
     }
 
     override toString(): string {
