@@ -7,4 +7,12 @@ export class LocalizedAttribute {
     constructor(attributtes: Value<Map<string, object>>){
         this.attributes = attributtes;
     }
+
+    toString():string{
+        const resultStrings: string[] = []
+        for(const [_, value] of this.attributes.getOrThrow()){
+            resultStrings.push(String(value));
+        }
+        return resultStrings.join(' ')
+    }
 }

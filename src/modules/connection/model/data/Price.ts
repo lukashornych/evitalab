@@ -1,4 +1,3 @@
-import { List } from "immutable";
 import { BigDecimal } from "../data-type/BigDecimal";
 import { DateTimeRange } from "../data-type/DateTimeRange";
 import { Value } from "../Value";
@@ -9,7 +8,7 @@ export class Price {
     readonly priceId: Value<number>
     readonly priceList: Value<string>
     readonly innerRecordId: Value<number | undefined>;
-    readonly priceWithoutTax: Value<BigDecimal | undefined>
+    readonly priceWithoutTax: Value<BigDecimal>
     readonly taxRate: Value<BigDecimal>
     readonly priceWithTax: Value<BigDecimal>
     readonly validity: Value<DateTimeRange | undefined>
@@ -17,7 +16,7 @@ export class Price {
     readonly version: Value<number>
     readonly currency: Value<Currency>
 
-    constructor(priceId: Value<number>, priceList: Value<string>, innerRecordId: Value<number | undefined>, priceWithoutTax: Value<BigDecimal | undefined>, taxRate: Value<BigDecimal>, priceWithTax: Value<BigDecimal>, validity: Value<DateTimeRange  | undefined>, sellable: Value<boolean>, version: Value<number>, currency: Value<Currency>){
+    constructor(priceId: Value<number>, priceList: Value<string>, innerRecordId: Value<number | undefined>, priceWithoutTax: Value<BigDecimal>, taxRate: Value<BigDecimal>, priceWithTax: Value<BigDecimal>, validity: Value<DateTimeRange  | undefined>, sellable: Value<boolean>, version: Value<number>, currency: Value<Currency>){
         this.priceId = priceId;
         this.priceList = priceList;
         this.innerRecordId = innerRecordId;

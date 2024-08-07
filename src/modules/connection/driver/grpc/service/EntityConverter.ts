@@ -39,6 +39,7 @@ import { Reference } from '@/modules/connection/model/data/Reference'
 import { Value } from '@/modules/connection/model/Value'
 import {
     GrpcCardinality,
+    GrpcEvitaAssociatedDataDataType_GrpcEvitaDataType,
     GrpcEvitaDataType,
     GrpcPriceInnerRecordHandling,
 } from '@/modules/connection/driver/grpc/gen/GrpcEnums_pb'
@@ -155,194 +156,11 @@ export class EntityConverter {
             if (attr.value.value) {
                 newGlobalAttributes.set(
                     attributeName,
-                    this.convertAttributeValue(attr.type, attr.value.value)
+                    this.convertEvitaValue(attr)
                 )
             }
         }
         return Immutable.Map(newGlobalAttributes)
-    }
-
-    private convertAttributeValue(
-        type: GrpcEvitaDataType,
-        value:
-            | string
-            | number
-            | bigint
-            | boolean
-            | GrpcBigDecimal
-            | GrpcDateTimeRange
-            | GrpcIntegerNumberRange
-            | GrpcLongNumberRange
-            | GrpcBigDecimalNumberRange
-            | GrpcOffsetDateTime
-            | GrpcLocale
-            | GrpcCurrency
-            | GrpcUuid
-            | GrpcPredecessor
-            | GrpcStringArray
-            | GrpcIntegerArray
-            | GrpcLongArray
-            | GrpcBooleanArray
-            | GrpcBigDecimalArray
-            | GrpcDateTimeRangeArray
-            | GrpcIntegerNumberRangeArray
-            | GrpcLongNumberRangeArray
-            | GrpcBigDecimalNumberRangeArray
-            | GrpcOffsetDateTimeArray
-            | GrpcLocaleArray
-            | GrpcCurrencyArray
-            | GrpcUuidArray
-            | GrpcOffsetDateTime
-    ): any {
-        switch (type) {
-            case GrpcEvitaDataType.STRING:
-            case GrpcEvitaDataType.BYTE:
-            case GrpcEvitaDataType.SHORT:
-            case GrpcEvitaDataType.INTEGER:
-            case GrpcEvitaDataType.LONG:
-            case GrpcEvitaDataType.BOOLEAN:
-            case GrpcEvitaDataType.CHARACTER:
-                return value
-
-            case GrpcEvitaDataType.BIG_DECIMAL:
-                return this.handleBigDecimal(value as GrpcBigDecimal)
-
-            case GrpcEvitaDataType.LOCAL_DATE_TIME:
-                return this.handleLocalDateTime(value as GrpcOffsetDateTime)
-
-            case GrpcEvitaDataType.OFFSET_DATE_TIME:
-                return this.handleOffsetDateTime(value as GrpcOffsetDateTime)
-
-            case GrpcEvitaDataType.LOCAL_DATE:
-                return this.handleLocalDate(value as GrpcOffsetDateTime)
-
-            case GrpcEvitaDataType.LOCAL_TIME:
-                return this.handleLocalTime(value as GrpcOffsetDateTime)
-
-            case GrpcEvitaDataType.DATE_TIME_RANGE:
-                return this.handleDateTimeRange(value as GrpcDateTimeRange)
-
-            case GrpcEvitaDataType.BIG_DECIMAL_NUMBER_RANGE:
-                return this.handleBigDecimalNumberRange(
-                    value as GrpcBigDecimalNumberRange
-                )
-
-            case GrpcEvitaDataType.LONG_NUMBER_RANGE:
-                return this.handleLongNumberRange(value as GrpcLongNumberRange)
-
-            case GrpcEvitaDataType.INTEGER_NUMBER_RANGE:
-                return this.handleIntegerNumberRange(
-                    value as GrpcIntegerNumberRange
-                )
-
-            case GrpcEvitaDataType.SHORT_NUMBER_RANGE:
-                return this.handleShortNumberRange(
-                    value as GrpcIntegerNumberRange
-                )
-
-            case GrpcEvitaDataType.BYTE_NUMBER_RANGE:
-                return this.handleByteNumberRange(
-                    value as GrpcIntegerNumberRange
-                )
-
-            case GrpcEvitaDataType.LOCALE:
-                return this.handleLocale(value as GrpcLocale)
-
-            case GrpcEvitaDataType.CURRENCY:
-                return this.handleCurrency(value as GrpcCurrency)
-
-            case GrpcEvitaDataType.UUID:
-                return this.handleUUID(value as GrpcUuid)
-
-            case GrpcEvitaDataType.PREDECESSOR:
-                return this.handlePredecessor(value as GrpcPredecessor)
-
-            case GrpcEvitaDataType.STRING_ARRAY:
-                return this.handleStringArray(value as GrpcStringArray)
-
-            case GrpcEvitaDataType.BYTE_ARRAY:
-                return this.handleIntegerArray(value as GrpcIntegerArray)
-
-            case GrpcEvitaDataType.SHORT_ARRAY:
-                return this.handleIntegerArray(value as GrpcIntegerArray)
-
-            case GrpcEvitaDataType.INTEGER_ARRAY:
-                return this.handleIntegerArray(value as GrpcIntegerArray)
-
-            case GrpcEvitaDataType.LONG_ARRAY:
-                return this.handleLongArray(value as GrpcLongArray)
-
-            case GrpcEvitaDataType.BOOLEAN_ARRAY:
-                return this.handleBooleanArray(value as GrpcBooleanArray)
-
-            case GrpcEvitaDataType.CHARACTER_ARRAY:
-                return this.handleIntegerArray(value as GrpcIntegerArray)
-
-            case GrpcEvitaDataType.BIG_DECIMAL_ARRAY:
-                return this.handleBigDecimalArray(value as GrpcBigDecimalArray)
-
-            case GrpcEvitaDataType.OFFSET_DATE_TIME_ARRAY:
-                return this.handleOffsetDateTimeArray(
-                    value as GrpcOffsetDateTimeArray
-                )
-
-            case GrpcEvitaDataType.LOCAL_DATE_TIME_ARRAY:
-                return this.handleLocalDateTimeArray(
-                    value as GrpcOffsetDateTimeArray
-                )
-
-            case GrpcEvitaDataType.LOCAL_DATE_ARRAY:
-                return this.handleLocalDateArray(
-                    value as GrpcOffsetDateTimeArray
-                )
-
-            case GrpcEvitaDataType.LOCAL_TIME_ARRAY:
-                return this.handleLocalTimeArray(
-                    value as GrpcOffsetDateTimeArray
-                )
-
-            case GrpcEvitaDataType.DATE_TIME_RANGE_ARRAY:
-                return this.handleDateTimeRangeArray(
-                    value as GrpcDateTimeRangeArray
-                )
-
-            case GrpcEvitaDataType.BIG_DECIMAL_NUMBER_RANGE_ARRAY:
-                return this.handleBigDecimalNumberRangeArray(
-                    value as GrpcBigDecimalNumberRangeArray
-                )
-
-            case GrpcEvitaDataType.LONG_NUMBER_RANGE_ARRAY:
-                return this.handleLongNumberRangeArray(
-                    value as GrpcLongNumberRangeArray
-                )
-
-            case GrpcEvitaDataType.INTEGER_NUMBER_RANGE_ARRAY:
-                return this.handleIntegerNumberRangeArray(
-                    value as GrpcIntegerNumberRangeArray
-                )
-
-            case GrpcEvitaDataType.SHORT_NUMBER_RANGE_ARRAY:
-                return this.handleShortNumberRangeArray(
-                    value as GrpcIntegerNumberRangeArray
-                )
-
-            case GrpcEvitaDataType.BYTE_NUMBER_RANGE_ARRAY:
-                return this.handleByteNumberRangeArray(
-                    value as GrpcIntegerNumberRangeArray
-                )
-
-            case GrpcEvitaDataType.LOCALE_ARRAY:
-                return this.handleLocaleArray(value as GrpcLocaleArray)
-
-            case GrpcEvitaDataType.CURRENCY_ARRAY:
-                return this.handleCurrencyArray(value as GrpcCurrencyArray)
-
-            case GrpcEvitaDataType.UUID_ARRAY:
-                return this.handleUUIDArray(value as GrpcUuidArray)
-
-            default:
-                throw new Error('Not accepted type')
-        }
     }
 
     private handleBigDecimal(value: GrpcBigDecimal): BigDecimal {
@@ -380,7 +198,7 @@ export class EntityConverter {
     ): Range<BigDecimal> {
         return new BigDecimalRange(
             new BigDecimal(value.from?.valueString),
-            new BigDecimal(value.to?.valueString),
+            new BigDecimal(value.to?.valueString)
         )
     }
 
@@ -553,7 +371,9 @@ export class EntityConverter {
     ): Immutable.List<Range<bigint>> {
         const longNumberRangeArray: Range<bigint>[] = []
         for (const grpcLongRange of value.value) {
-            longNumberRangeArray.push(new BigintRange(grpcLongRange.from, grpcLongRange.to))
+            longNumberRangeArray.push(
+                new BigintRange(grpcLongRange.from, grpcLongRange.to)
+            )
         }
         return Immutable.List(longNumberRangeArray)
     }
@@ -630,7 +450,7 @@ export class EntityConverter {
         const localDate: LocalDate = new LocalDate(
             DateTime.fromSeconds(
                 Number(offsetDateTime.timestamp.seconds)
-            ).toISODate(),
+            ).toISODate()
         )
         return localDate
     }
@@ -684,23 +504,24 @@ export class EntityConverter {
         }
     }
 
-    private convertLocalizedAttributes(localizedAttribtes: {
+    private convertLocalizedAttributes(localizedAttributes: {
         [key: string]: GrpcLocalizedAttribute
     }): Immutable.Map<string, LocalizedAttribute> {
-        const newlocalizedAttributes: Map<string, LocalizedAttribute> = new Map<
+        const newLocalizedAttributes: Map<string, LocalizedAttribute> = new Map<
             string,
             LocalizedAttribute
         >()
-        for (const locale in localizedAttribtes) {
-            const attr = localizedAttribtes[locale]
-            newlocalizedAttributes.set(
+        for (const locale in localizedAttributes) {
+            const attr = localizedAttributes[locale]
+            const convertedAttributes = this.convertGlobalAttributes(
+                attr.attributes
+            )
+            newLocalizedAttributes.set(
                 locale,
-                new LocalizedAttribute(
-                    Value.of(this.convertGlobalAttributes(attr.attributes))
-                )
+                new LocalizedAttribute(Value.of(convertedAttributes))
             )
         }
-        return Immutable.Map(newlocalizedAttributes)
+        return Immutable.Map(newLocalizedAttributes)
     }
 
     private convertTime(grpcTime: GrpcOffsetDateTime): LocalTime {
@@ -708,9 +529,7 @@ export class EntityConverter {
             throw new Error('Missing prop timestamp')
         }
         const localTime: LocalTime = new LocalTime(
-            DateTime.fromSeconds(
-                Number(grpcTime.timestamp.seconds)
-            ).toISOTime(),
+            DateTime.fromSeconds(Number(grpcTime.timestamp.seconds)).toISOTime()
         )
         return localTime
     }
@@ -808,10 +627,23 @@ export class EntityConverter {
             const associatedValue = associatedData[associatedValueName]
             evitaAssociatedValues.set(
                 associatedValueName,
-                this.convertEvitaValue(associatedValue.value.value)
+                this.convertAssociatedDataValue(associatedValue)
             )
         }
         return Immutable.Map(evitaAssociatedValues)
+    }
+
+    private convertAssociatedDataValue(
+        value: GrpcEvitaAssociatedDataValue
+    ): object {
+        if (
+            value.type ===
+            GrpcEvitaAssociatedDataDataType_GrpcEvitaDataType.COMPLEX_DATA_OBJECT
+        ) {
+            return JSON.parse(value.value.value as string)
+        } else {
+            return this.convertEvitaValue(value.value.value)
+        }
     }
 
     private convertLocalizedAssociatedData(localizedAssociatedData: {
@@ -831,7 +663,7 @@ export class EntityConverter {
                     localizedAssocaitedValue.associatedData[dataName]
                 evitaAssociatedValues.set(
                     dataName,
-                    this.convertEvitaValue(associatedData.value.value)
+                    this.convertAssociatedDataValue(associatedData)
                 )
             }
             newLocalizedAssociatedData.set(

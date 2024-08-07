@@ -75,7 +75,7 @@ function getPropertyDescriptor(key: string): EntityPropertyDescriptor | undefine
 }
 
 function handlePropertyClicked(relativeEntityIndex: number, propertyKey: string, value: EntityPropertyValue | EntityPropertyValue[]): void {
-    if (value.valueOf() == undefined) {
+    if (value == undefined || (value instanceof EntityPropertyValue && value.value() == undefined)) {
         return
     }
     const propertyDescriptor: EntityPropertyDescriptor | undefined = getPropertyDescriptor(propertyKey)

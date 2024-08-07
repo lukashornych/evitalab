@@ -4,14 +4,15 @@
 // @ts-nocheck
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
-import { Int32Value, Message, proto3, protoInt64 } from "@bufbuild/protobuf";
+import { Int32Value, Int64Value, Message, proto3, protoInt64 } from "@bufbuild/protobuf";
 import { GrpcAttributeSpecialValue, GrpcCatalogState, GrpcCommitBehavior, GrpcEmptyHierarchicalEntityBehaviour, GrpcFacetStatisticsDepth, GrpcManagedReferencesBehaviour, GrpcOrderDirection, GrpcPriceContentMode, GrpcQueryPriceMode, GrpcStatisticsBase, GrpcStatisticsType, GrpcHistogramBehavior } from "./GrpcEnums_pb.js";
+import { GrpcAttributeSpecialValueArray, GrpcBigDecimal, GrpcBigDecimalArray, GrpcBigDecimalNumberRange, GrpcBigDecimalNumberRangeArray, GrpcBooleanArray, GrpcCurrency, GrpcCurrencyArray, GrpcDateTimeRange, GrpcDateTimeRangeArray, GrpcEmptyHierarchicalEntityBehaviourArray, GrpcFacetStatisticsDepthArray, GrpcIntegerArray, GrpcIntegerNumberRange, GrpcIntegerNumberRangeArray, GrpcLocale, GrpcLocaleArray, GrpcLongArray, GrpcLongNumberRange, GrpcLongNumberRangeArray, GrpcOffsetDateTime, GrpcOffsetDateTimeArray, GrpcOrderDirectionArray, GrpcPriceContentModeArray, GrpcQueryPriceModeArray, GrpcStatisticsBaseArray, GrpcStatisticsTypeArray, GrpcStringArray, GrpcTaskStatus, GrpcUuid, GrpcHistogramBehaviorTypeArray } from "./GrpcEvitaDataTypes_pb.js";
+import { GrpcCaptureContent, GrpcCaptureCriteria, GrpcChangeCatalogCapture } from "./GrpcChangeCapture_pb.js";
 import { GrpcCatalogSchema } from "./GrpcCatalogSchema_pb.js";
 import { GrpcEntitySchema } from "./GrpcEntitySchema_pb.js";
 import { GrpcLocalCatalogSchemaMutation } from "./GrpcCatalogSchemaMutation_pb.js";
 import { GrpcModifyEntitySchemaMutation } from "./GrpcCatalogSchemaMutations_pb.js";
 import { GrpcBinaryEntity, GrpcEntityReference, GrpcSealedEntity } from "./GrpcEntity_pb.js";
-import { GrpcAttributeSpecialValueArray, GrpcBigDecimal, GrpcBigDecimalArray, GrpcBigDecimalNumberRange, GrpcBigDecimalNumberRangeArray, GrpcBooleanArray, GrpcCurrency, GrpcCurrencyArray, GrpcDateTimeRange, GrpcDateTimeRangeArray, GrpcEmptyHierarchicalEntityBehaviourArray, GrpcFacetStatisticsDepthArray, GrpcIntegerArray, GrpcIntegerNumberRange, GrpcIntegerNumberRangeArray, GrpcLocale, GrpcLocaleArray, GrpcLongArray, GrpcLongNumberRange, GrpcLongNumberRangeArray, GrpcOffsetDateTime, GrpcOffsetDateTimeArray, GrpcOrderDirectionArray, GrpcPriceContentModeArray, GrpcQueryPriceModeArray, GrpcStatisticsBaseArray, GrpcStatisticsTypeArray, GrpcStringArray, GrpcTaskStatus, GrpcUuid, GrpcHistogramBehaviorTypeArray } from "./GrpcEvitaDataTypes_pb.js";
 import { GrpcExtraResults } from "./GrpcExtraResults_pb.js";
 import { GrpcEntityMutation } from "./GrpcEntityMutation_pb.js";
 
@@ -53,6 +54,324 @@ export class GrpcCatalogStateResponse extends Message<GrpcCatalogStateResponse> 
 
   static equals(a: GrpcCatalogStateResponse | PlainMessage<GrpcCatalogStateResponse> | undefined, b: GrpcCatalogStateResponse | PlainMessage<GrpcCatalogStateResponse> | undefined): boolean {
     return proto3.util.equals(GrpcCatalogStateResponse, a, b);
+  }
+}
+
+/**
+ * Request to GrpcCatalogVersionAt request.
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GrpcCatalogVersionAtRequest
+ */
+export class GrpcCatalogVersionAtRequest extends Message<GrpcCatalogVersionAtRequest> {
+  /**
+   * Chosen moment in time for which the version of the catalog should be returned.
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcOffsetDateTime theMoment = 1;
+   */
+  theMoment?: GrpcOffsetDateTime;
+
+  constructor(data?: PartialMessage<GrpcCatalogVersionAtRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "io.evitadb.externalApi.grpc.generated.GrpcCatalogVersionAtRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "theMoment", kind: "message", T: GrpcOffsetDateTime },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcCatalogVersionAtRequest {
+    return new GrpcCatalogVersionAtRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GrpcCatalogVersionAtRequest {
+    return new GrpcCatalogVersionAtRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GrpcCatalogVersionAtRequest {
+    return new GrpcCatalogVersionAtRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GrpcCatalogVersionAtRequest | PlainMessage<GrpcCatalogVersionAtRequest> | undefined, b: GrpcCatalogVersionAtRequest | PlainMessage<GrpcCatalogVersionAtRequest> | undefined): boolean {
+    return proto3.util.equals(GrpcCatalogVersionAtRequest, a, b);
+  }
+}
+
+/**
+ * Response to GrpcCatalogVersionAt request.
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GrpcCatalogVersionAtResponse
+ */
+export class GrpcCatalogVersionAtResponse extends Message<GrpcCatalogVersionAtResponse> {
+  /**
+   * The version of the catalog at the specified moment in time.
+   *
+   * @generated from field: int64 version = 1;
+   */
+  version = protoInt64.zero;
+
+  /**
+   * Exact moment when this version was stored (introduced).
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcOffsetDateTime introducedAt = 2;
+   */
+  introducedAt?: GrpcOffsetDateTime;
+
+  constructor(data?: PartialMessage<GrpcCatalogVersionAtResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "io.evitadb.externalApi.grpc.generated.GrpcCatalogVersionAtResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "version", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 2, name: "introducedAt", kind: "message", T: GrpcOffsetDateTime },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcCatalogVersionAtResponse {
+    return new GrpcCatalogVersionAtResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GrpcCatalogVersionAtResponse {
+    return new GrpcCatalogVersionAtResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GrpcCatalogVersionAtResponse {
+    return new GrpcCatalogVersionAtResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GrpcCatalogVersionAtResponse | PlainMessage<GrpcCatalogVersionAtResponse> | undefined, b: GrpcCatalogVersionAtResponse | PlainMessage<GrpcCatalogVersionAtResponse> | undefined): boolean {
+    return proto3.util.equals(GrpcCatalogVersionAtResponse, a, b);
+  }
+}
+
+/**
+ * Request to GetMutationsHistoryPage request.
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GetMutationsHistoryPageRequest
+ */
+export class GetMutationsHistoryPageRequest extends Message<GetMutationsHistoryPageRequest> {
+  /**
+   * The page number starting with 1
+   *
+   * @generated from field: int32 page = 1;
+   */
+  page = 0;
+
+  /**
+   * The size of the page to return
+   *
+   * @generated from field: int32 pageSize = 2;
+   */
+  pageSize = 0;
+
+  /**
+   * Starting point for the search (catalog version)
+   *
+   * @generated from field: int64 sinceVersion = 3;
+   */
+  sinceVersion = protoInt64.zero;
+
+  /**
+   * Starting point for the search (index of the mutation within catalog version)
+   *
+   * @generated from field: int32 sinceIndex = 4;
+   */
+  sinceIndex = 0;
+
+  /**
+   * The criteria of the capture, allows to define constraints on the returned mutations
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcCaptureCriteria criteria = 5;
+   */
+  criteria: GrpcCaptureCriteria[] = [];
+
+  /**
+   * The scope of the returned data - either header of the mutation, or the whole mutation
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcCaptureContent content = 6;
+   */
+  content = GrpcCaptureContent.HEADER;
+
+  constructor(data?: PartialMessage<GetMutationsHistoryPageRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "io.evitadb.externalApi.grpc.generated.GetMutationsHistoryPageRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "page", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 2, name: "pageSize", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 3, name: "sinceVersion", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 4, name: "sinceIndex", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 5, name: "criteria", kind: "message", T: GrpcCaptureCriteria, repeated: true },
+    { no: 6, name: "content", kind: "enum", T: proto3.getEnumType(GrpcCaptureContent) },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetMutationsHistoryPageRequest {
+    return new GetMutationsHistoryPageRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetMutationsHistoryPageRequest {
+    return new GetMutationsHistoryPageRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetMutationsHistoryPageRequest {
+    return new GetMutationsHistoryPageRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetMutationsHistoryPageRequest | PlainMessage<GetMutationsHistoryPageRequest> | undefined, b: GetMutationsHistoryPageRequest | PlainMessage<GetMutationsHistoryPageRequest> | undefined): boolean {
+    return proto3.util.equals(GetMutationsHistoryPageRequest, a, b);
+  }
+}
+
+/**
+ * Response to GetMutationsHistoryPage request.
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GetMutationsHistoryPageResponse
+ */
+export class GetMutationsHistoryPageResponse extends Message<GetMutationsHistoryPageResponse> {
+  /**
+   * The list of mutations that match the criteria
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcChangeCatalogCapture changeCapture = 1;
+   */
+  changeCapture: GrpcChangeCatalogCapture[] = [];
+
+  constructor(data?: PartialMessage<GetMutationsHistoryPageResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "io.evitadb.externalApi.grpc.generated.GetMutationsHistoryPageResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "changeCapture", kind: "message", T: GrpcChangeCatalogCapture, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetMutationsHistoryPageResponse {
+    return new GetMutationsHistoryPageResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetMutationsHistoryPageResponse {
+    return new GetMutationsHistoryPageResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetMutationsHistoryPageResponse {
+    return new GetMutationsHistoryPageResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetMutationsHistoryPageResponse | PlainMessage<GetMutationsHistoryPageResponse> | undefined, b: GetMutationsHistoryPageResponse | PlainMessage<GetMutationsHistoryPageResponse> | undefined): boolean {
+    return proto3.util.equals(GetMutationsHistoryPageResponse, a, b);
+  }
+}
+
+/**
+ * Request to GetMutationsHistoryPage request.
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GetMutationsHistoryRequest
+ */
+export class GetMutationsHistoryRequest extends Message<GetMutationsHistoryRequest> {
+  /**
+   * Starting point for the search (catalog version)
+   *
+   * @generated from field: google.protobuf.Int64Value sinceVersion = 1;
+   */
+  sinceVersion?: bigint;
+
+  /**
+   * Starting point for the search (index of the mutation within catalog version)
+   *
+   * @generated from field: google.protobuf.Int32Value sinceIndex = 2;
+   */
+  sinceIndex?: number;
+
+  /**
+   * The criteria of the capture, allows to define constraints on the returned mutations
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcCaptureCriteria criteria = 3;
+   */
+  criteria: GrpcCaptureCriteria[] = [];
+
+  /**
+   * The scope of the returned data - either header of the mutation, or the whole mutation
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcCaptureContent content = 4;
+   */
+  content = GrpcCaptureContent.HEADER;
+
+  constructor(data?: PartialMessage<GetMutationsHistoryRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "io.evitadb.externalApi.grpc.generated.GetMutationsHistoryRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "sinceVersion", kind: "message", T: Int64Value },
+    { no: 2, name: "sinceIndex", kind: "message", T: Int32Value },
+    { no: 3, name: "criteria", kind: "message", T: GrpcCaptureCriteria, repeated: true },
+    { no: 4, name: "content", kind: "enum", T: proto3.getEnumType(GrpcCaptureContent) },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetMutationsHistoryRequest {
+    return new GetMutationsHistoryRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetMutationsHistoryRequest {
+    return new GetMutationsHistoryRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetMutationsHistoryRequest {
+    return new GetMutationsHistoryRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetMutationsHistoryRequest | PlainMessage<GetMutationsHistoryRequest> | undefined, b: GetMutationsHistoryRequest | PlainMessage<GetMutationsHistoryRequest> | undefined): boolean {
+    return proto3.util.equals(GetMutationsHistoryRequest, a, b);
+  }
+}
+
+/**
+ * Response to GetMutationsHistory request.
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GetMutationsHistoryResponse
+ */
+export class GetMutationsHistoryResponse extends Message<GetMutationsHistoryResponse> {
+  /**
+   * The list of mutations that match the criteria
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcChangeCatalogCapture changeCapture = 1;
+   */
+  changeCapture: GrpcChangeCatalogCapture[] = [];
+
+  constructor(data?: PartialMessage<GetMutationsHistoryResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "io.evitadb.externalApi.grpc.generated.GetMutationsHistoryResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "changeCapture", kind: "message", T: GrpcChangeCatalogCapture, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetMutationsHistoryResponse {
+    return new GetMutationsHistoryResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetMutationsHistoryResponse {
+    return new GetMutationsHistoryResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetMutationsHistoryResponse {
+    return new GetMutationsHistoryResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetMutationsHistoryResponse | PlainMessage<GetMutationsHistoryResponse> | undefined, b: GetMutationsHistoryResponse | PlainMessage<GetMutationsHistoryResponse> | undefined): boolean {
+    return proto3.util.equals(GetMutationsHistoryResponse, a, b);
   }
 }
 

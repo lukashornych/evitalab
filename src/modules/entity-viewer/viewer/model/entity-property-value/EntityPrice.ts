@@ -13,24 +13,24 @@ import { Currency } from '@/modules/connection/model/data/Currency'
 // todo lho this should be probably in driver too and the computePrice logic aswell
 export class EntityPrice extends EntityPropertyValue {
     readonly priceId: number | undefined
-    readonly priceList: string | undefined
+    readonly priceList: string
     readonly currency: Currency
     readonly innerRecordId?: number | undefined
     readonly sellable: boolean | undefined
     readonly validity?: DateTimeRange | undefined
-    readonly priceWithoutTax: BigDecimal | undefined
+    readonly priceWithoutTax: BigDecimal
     readonly priceWithTax: BigDecimal
-    readonly taxRate: BigDecimal | undefined
+    readonly taxRate: BigDecimal
 
     constructor(priceId: number | undefined,
-                priceList: string | undefined,
+                priceList: string,
                 currency: Currency,
                 innerRecordId: number | undefined,
                 sellable: boolean | undefined,
                 validity: DateTimeRange | undefined,
-                priceWithoutTax: BigDecimal | undefined,
+                priceWithoutTax: BigDecimal,
                 priceWithTax: BigDecimal,
-                taxRate: BigDecimal | undefined) {
+                taxRate: BigDecimal) {
         super()
         this.priceId = priceId
         this.priceList = priceList
