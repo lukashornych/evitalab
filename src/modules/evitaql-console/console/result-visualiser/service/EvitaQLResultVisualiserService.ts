@@ -121,9 +121,9 @@ export class EvitaQLResultVisualiserService extends ResultVisualiserService {
             this.collectionConstraintPattern.exec(inputQuery)?.[1]
         if (entityType == undefined) {
             // generic query, no specific collection for all returned entities (each entity may be from a different collection)
-            return [this.genericEntityType.toLowerCase()]
+            return [this.genericEntityType]
         } else {
-            return [entityType.toLowerCase()]
+            return [entityType]
         }
     }
 

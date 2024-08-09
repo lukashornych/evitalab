@@ -5,15 +5,24 @@
 
 import { computed, ComputedRef, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
-import { ConnectionService, useConnectionService } from '@/modules/connection/service/ConnectionService'
+import {
+    useWorkspaceService,
+    WorkspaceService,
+} from '@/modules/workspace/service/WorkspaceService'
+import {
+    ConnectionService,
+    useConnectionService,
+} from '@/modules/connection/service/ConnectionService'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
 import { Connection } from '@/modules/connection/model/Connection'
-import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
+import {
+    EvitaLabConfig,
+    useEvitaLabConfig,
+} from '@/modules/config/EvitaLabConfig'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import {
     GraphQLConsoleTabFactory,
-    useGraphQLConsoleTabFactory
+    useGraphQLConsoleTabFactory,
 } from '@/modules/graphql-console/console/workspace/service/GraphQLConsoleTabFactory'
 import { GraphQLInstanceType } from '@/modules/graphql-console/console/model/GraphQLInstanceType'
 import { ConnectionActionType } from '@/modules/connection/explorer/model/ConnectionActionType'
@@ -23,11 +32,18 @@ import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
 import CatalogItem from '@/modules/connection/explorer/component/CatalogItem.vue'
 import RemoveConnectionDialog from '@/modules/connection/explorer/component/RemoveConnectionDialog.vue'
 import VTreeViewEmptyItem from '@/modules/base/component/VTreeViewEmptyItem.vue'
+import {
+    ServerStatusTabFactory,
+    useDetailViewerTabFactory,
+} from '@/modules/server-actions/server-status/service/ServerStatusTabFactory'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const connectionService: ConnectionService = useConnectionService()
-const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = useGraphQLConsoleTabFactory()
+const graphQLConsoleTabFactory: GraphQLConsoleTabFactory =
+    useGraphQLConsoleTabFactory()
+const detailViewerTabfactory: ServerStatusTabFactory =
+    useDetailViewerTabFactory()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
@@ -36,8 +52,12 @@ const props = defineProps<{
 }>()
 provideConnection(props.connection)
 
-const actions: ComputedRef<Map<ConnectionActionType, MenuAction<ConnectionActionType>>> = computed(() => createActions())
-const actionList: ComputedRef<MenuAction<ConnectionActionType>[]> = computed(() => Array.from(actions.value.values()))
+const actions: ComputedRef<
+    Map<ConnectionActionType, MenuAction<ConnectionActionType>>
+> = computed(() => createActions())
+const actionList: ComputedRef<MenuAction<ConnectionActionType>[]> = computed(
+    () => Array.from(actions.value.values())
+)
 
 const removeConnectionDialogOpen = ref<boolean>(false)
 const catalogs = ref<Catalog[]>()
@@ -62,20 +82,35 @@ function handleAction(action: string): void {
 }
 
 // todo lho these should be some kind of factories
-function createActions(): Map<ConnectionActionType, MenuAction<ConnectionActionType>> {
-    const actions: Map<ConnectionActionType, MenuAction<ConnectionActionType>> = new Map()
+function createActions(): Map<
+    ConnectionActionType,
+    MenuAction<ConnectionActionType>
+> {
+    const actions: Map<
+        ConnectionActionType,
+        MenuAction<ConnectionActionType>
+    > = new Map()
     actions.set(
         ConnectionActionType.OpenGraphQLSystemAPIConsole,
         createMenuAction(
             ConnectionActionType.OpenGraphQLSystemAPIConsole,
             'mdi-graphql',
-            () => workspaceService.createTab(
-                graphQLConsoleTabFactory.createNew(
-                    props.connection,
-                    'system', // todo lho: this is not needed
-                    GraphQLInstanceType.System
+            () =>
+                workspaceService.createTab(
+                    graphQLConsoleTabFactory.createNew(
+                        props.connection,
+                        'system', // todo lho: this is not needed
+                        GraphQLInstanceType.System
+                    )
                 )
-            )
+        )
+    )
+    actions.set(
+        ConnectionActionType.Detail,
+        createMenuAction(
+            ConnectionActionType.Detail,
+            'mdi-database-outline',
+            () => workspaceService.createTab(detailViewerTabfactory.createNew(props.connection))
         )
     )
     if (!evitaLabConfig.readOnly && !props.connection.preconfigured) {
@@ -94,14 +129,18 @@ function createActions(): Map<ConnectionActionType, MenuAction<ConnectionActionT
             ConnectionActionType.Remove,
             createMenuAction(
                 ConnectionActionType.Remove,
-                'mdi-delete',
-                () => removeConnectionDialogOpen.value = true
+                'mdi-delete-outline',
+                () => (removeConnectionDialogOpen.value = true)
             )
         )
     }
     return actions
 }
-function createMenuAction(actionType: ConnectionActionType, prependIcon: string, execute: () => void): MenuAction<ConnectionActionType> {
+function createMenuAction(
+    actionType: ConnectionActionType,
+    prependIcon: string,
+    execute: () => void
+): MenuAction<ConnectionActionType> {
     return new MenuAction(
         actionType,
         t(`explorer.connection.actions.${actionType}`),
@@ -112,9 +151,7 @@ function createMenuAction(actionType: ConnectionActionType, prependIcon: string,
 </script>
 
 <template>
-    <VListGroup
-        :value="connection.name"
-    >
+    <VListGroup :value="connection.name">
         <template #activator="{ isOpen, props }">
             <VTreeViewItem
                 v-bind="props"
@@ -134,9 +171,7 @@ function createMenuAction(actionType: ConnectionActionType, prependIcon: string,
             </VTreeViewItem>
         </template>
 
-        <div
-            v-if="catalogs !== undefined"
-        >
+        <div v-if="catalogs !== undefined">
             <template v-if="catalogs.length > 0">
                 <CatalogItem
                     v-for="catalog in catalogs"
@@ -156,6 +191,4 @@ function createMenuAction(actionType: ConnectionActionType, prependIcon: string,
     </VListGroup>
 </template>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>

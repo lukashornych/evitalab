@@ -8,6 +8,7 @@ import { Result } from '@/modules/console/result-visualiser/model/Result'
 import { Value } from '@/modules/connection/model/Value'
 import { FacetGroupStatistics } from '@/modules/connection/model/data/FacetGroupStatistics'
 import { Entity } from '@/modules/connection/model/data/Entity'
+import { FacetStatistics } from '@/modules/connection/model/data/FacetStatistics'
 
 /**
  * {@link FacetSummaryVisualiserService} for EvitaQL query language.
@@ -79,7 +80,7 @@ export class EvitaQLFacetSummaryVisualiserService
         facetStatisticsResult: Result,
         facetRepresentativeAttributes: string[]
     ): VisualisedFacetStatistics {
-        //TODO
+        const facetStatistics: FacetStatistics = facetStatisticsResult as FacetStatistics
         return new VisualisedFacetStatistics()
     }
 }

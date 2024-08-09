@@ -3,12 +3,15 @@ import { Connection } from '@/modules/connection/model/Connection'
 import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
 import { Response } from '@/modules/connection/model/data/Response'
 import { List } from 'immutable'
+import { ServerStatus } from '../model/data/ServerStatus'
 
 /**
  * evitaDB version-agnostic driver to access data from connected evitaDB server
  */
 export interface EvitaDBDriver {
 
+    //TODO: Add doc
+    getServerDetails(connection: Connection): Promise<ServerStatus>
     /**
      * Which versions of evitaDB server this driver supports. Can be any string supported by https://www.npmjs.com/package/semver.
      * Comparison is done using the `.satisfies(...)` method

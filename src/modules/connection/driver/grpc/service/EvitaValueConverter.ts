@@ -1,27 +1,52 @@
-import { BigDecimal } from "@/modules/connection/model/data-type/BigDecimal"
-import { BigDecimalRange } from "@/modules/connection/model/data-type/BigDecimalRange"
-import { BigintRange } from "@/modules/connection/model/data-type/BigintRange"
-import { DateTimeRange } from "@/modules/connection/model/data-type/DateTimeRange"
-import { IntegerRange } from "@/modules/connection/model/data-type/IntegerRange"
-import { LocalDate } from "@/modules/connection/model/data-type/LocalDate"
-import { LocalDateTime } from "@/modules/connection/model/data-type/LocalDateTime"
-import { Locale } from "@/modules/connection/model/data-type/Locale"
-import { LocalTime } from "@/modules/connection/model/data-type/LocalTime"
-import { OffsetDateTime } from "@/modules/connection/model/data-type/OffsetDateTime"
-import { Predecessor } from "@/modules/connection/model/data-type/Predecessor"
-import { Uuid } from "@/modules/connection/model/data-type/Uuid"
-import { Currency } from "@/modules/connection/model/data/Currency"
-import Immutable from "immutable"
-import { GrpcBigDecimal, GrpcOffsetDateTime, GrpcDateTimeRange, GrpcBigDecimalNumberRange, GrpcLongNumberRange, GrpcIntegerNumberRange, GrpcLocale, GrpcCurrency, GrpcUuid, GrpcPredecessor, GrpcStringArray, GrpcIntegerArray, GrpcLongArray, GrpcBooleanArray, GrpcBigDecimalArray, GrpcOffsetDateTimeArray, GrpcDateTimeRangeArray, GrpcBigDecimalNumberRangeArray, GrpcLongNumberRangeArray, GrpcIntegerNumberRangeArray, GrpcLocaleArray, GrpcCurrencyArray, GrpcUuidArray, GrpcEvitaValue } from "../gen/GrpcEvitaDataTypes_pb"
-import { DateTime } from "luxon"
-import { Range } from "@/modules/connection/model/data-type/Range"
-import { GrpcEvitaDataType } from "../gen/GrpcEnums_pb"
+import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
+import { BigDecimalRange } from '@/modules/connection/model/data-type/BigDecimalRange'
+import { BigintRange } from '@/modules/connection/model/data-type/BigintRange'
+import { DateTimeRange } from '@/modules/connection/model/data-type/DateTimeRange'
+import { IntegerRange } from '@/modules/connection/model/data-type/IntegerRange'
+import { LocalDate } from '@/modules/connection/model/data-type/LocalDate'
+import { LocalDateTime } from '@/modules/connection/model/data-type/LocalDateTime'
+import { Locale } from '@/modules/connection/model/data-type/Locale'
+import { LocalTime } from '@/modules/connection/model/data-type/LocalTime'
+import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateTime'
+import { Predecessor } from '@/modules/connection/model/data-type/Predecessor'
+import { Uuid } from '@/modules/connection/model/data-type/Uuid'
+import { Currency } from '@/modules/connection/model/data/Currency'
+import Immutable from 'immutable'
+import {
+    GrpcBigDecimal,
+    GrpcOffsetDateTime,
+    GrpcDateTimeRange,
+    GrpcBigDecimalNumberRange,
+    GrpcLongNumberRange,
+    GrpcIntegerNumberRange,
+    GrpcLocale,
+    GrpcCurrency,
+    GrpcUuid,
+    GrpcPredecessor,
+    GrpcStringArray,
+    GrpcIntegerArray,
+    GrpcLongArray,
+    GrpcBooleanArray,
+    GrpcBigDecimalArray,
+    GrpcOffsetDateTimeArray,
+    GrpcDateTimeRangeArray,
+    GrpcBigDecimalNumberRangeArray,
+    GrpcLongNumberRangeArray,
+    GrpcIntegerNumberRangeArray,
+    GrpcLocaleArray,
+    GrpcCurrencyArray,
+    GrpcUuidArray,
+    GrpcEvitaValue,
+} from '../gen/GrpcEvitaDataTypes_pb'
+import { DateTime } from 'luxon'
+import { Range } from '@/modules/connection/model/data-type/Range'
+import { GrpcEvitaDataType } from '../gen/GrpcEnums_pb'
 
 export class EvitaValueConvert {
     convertEvitaValue(value: string | GrpcEvitaValue | undefined): any {
         if (typeof value === 'string') {
             return value
-        } else if(value == undefined) {
+        } else if (value == undefined) {
             return undefined
         } else {
             const val = value as GrpcEvitaValue
@@ -29,13 +54,14 @@ export class EvitaValueConvert {
             switch (val.type) {
                 case GrpcEvitaDataType.BYTE:
                 case GrpcEvitaDataType.BOOLEAN:
-                case GrpcEvitaDataType.BIG_DECIMAL:
                 case GrpcEvitaDataType.INTEGER:
                 case GrpcEvitaDataType.LONG:
                 case GrpcEvitaDataType.STRING:
                 case GrpcEvitaDataType.SHORT:
                 case GrpcEvitaDataType.CHARACTER:
                     return objectValue as object
+                case GrpcEvitaDataType.BIG_DECIMAL:
+                    return this.handleBigDecimal(objectValue as GrpcBigDecimal)
                 case GrpcEvitaDataType.BIG_DECIMAL_ARRAY:
                     return this.handleBigDecimalArray(
                         objectValue as GrpcBigDecimalArray
@@ -143,7 +169,7 @@ export class EvitaValueConvert {
                         objectValue as GrpcOffsetDateTimeArray
                     )
                 case GrpcEvitaDataType.LOCAL_DATE_TIME:
-                    return this.handleLocalTime(
+                    return this.handleLocalDateTime(
                         objectValue as GrpcOffsetDateTime
                     )
                 case GrpcEvitaDataType.LOCAL_DATE_TIME_ARRAY:
@@ -513,7 +539,6 @@ export class EvitaValueConvert {
             return true
         }
     }
-
 
     private convertTime(grpcTime: GrpcOffsetDateTime): LocalTime {
         if (!grpcTime.timestamp) {

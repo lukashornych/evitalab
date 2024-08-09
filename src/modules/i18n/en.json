@@ -247,7 +247,8 @@
         "openGraphQLSystemApiConsole":  "Open GraphQL System API console",
         "add": "Add connection",
         "edit": "Edit connection",
-        "remove": "Remove connection"
+        "remove": "Remove connection",
+        "detail": "Status"
       },
       "editor": {
         "addTitle": "Add connection",

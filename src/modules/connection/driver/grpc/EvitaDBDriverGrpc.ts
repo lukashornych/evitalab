@@ -25,6 +25,8 @@ import { TransportHelper } from './helpers/TransportHelper'
 import { EntityConverter } from './service/EntityConverter'
 import { EvitaValueConvert } from './service/EvitaValueConverter'
 import { ExtraResultConverter } from './service/ExtraResultConverter'
+import { ServerStatus } from '../../model/data/ServerStatus'
+import { ServerStatusConverter } from './service/ServerStatusConverter'
 
 //TODO: Add docs and add header 'X-EvitaDB-ClientID': this.getClientIdHeaderValue()
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
@@ -41,6 +43,8 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         new CatalogConverter()
     private readonly responseConverter: ResponseConverter =
         new ResponseConverter(this.entityConverter, this.extraResultConverter)
+    private readonly serverStatusConverter: ServerStatusConverter =
+        new ServerStatusConverter()
 
     private readonly clientsHelper: ClientsHelper = new ClientsHelper()
 
@@ -190,6 +194,16 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
 
     getSupportedVersions(): List<string> {
         return List(['all'])
+    }
+
+    async getServerDetails(connection: Connection): Promise<ServerStatus> {
+        const grpcServerStatus = await this.clientsHelper
+            .getManagmentClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .serverStatus(Empty)
+        return this.serverStatusConverter.convert(grpcServerStatus)
     }
 
     private handleCallError(e: any, connection?: Connection): LabError {
