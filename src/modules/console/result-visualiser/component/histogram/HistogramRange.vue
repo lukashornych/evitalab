@@ -18,7 +18,7 @@ const props = defineProps<{
     histogram: VisualisedHistogram
 }>()
 
-type RangeInfo = {
+class RangeInfo {
     readonly min: number
     readonly max: number
     readonly requestedRange: [number, number]
@@ -28,52 +28,59 @@ type RangeInfo = {
      * If not the reason is not empty, the range is simulated and reason displayed.
      */
     readonly simulatedReason?: string
+
+    constructor(min: number, max: number, requestedRange: [number, number], simulatedReason?: string) {
+        this.min = min
+        this.max = max
+        this.requestedRange = requestedRange
+        this.simulatedReason = simulatedReason
+    }
 }
 
 const rangeInfo = computed<RangeInfo>(() => {
-    const sampleBucket: VisualisedHistogramBucket = props.histogram.buckets[0] // there is always at least one bucket
+    const sampleBucket: VisualisedHistogramBucket = props.histogram.buckets.get(0)! // there is always at least one bucket
     if (sampleBucket.requested == undefined) {
         // we don't know the requested range, there is nothing to display
         const missingRequiredProperties: string[] = []
         if (sampleBucket.requested == undefined) {
             missingRequiredProperties.push('requested')
         }
-        return {
-            min: 0,
-            max: 10,
-            requestedRange: [5, 5],
-            simulatedReason: t('resultVisualizer.histogram.placeholder.missingPropertiesForSimulatedRange', { properties: missingRequiredProperties.map(it => '`' + it + '`').join(", ") })
-        }
+        return new RangeInfo(
+            0,
+            10,
+            [5, 5],
+            t('resultVisualizer.histogram.placeholder.missingPropertiesForSimulatedRange', { properties: missingRequiredProperties.map(it => '`' + it + '`').join(", ") })
+        )
     } else {
         if (props.histogram.min != undefined &&
             props.histogram.max != undefined &&
             sampleBucket.threshold != undefined) {
             // we have all properties to compute actual range with proper thresholds
-            const min = parseFloat(props.histogram.min)
-            const max = parseFloat(props.histogram.max)
+            const min = props.histogram.min.toFloat()
+            const max = props.histogram.max.toFloat()
             const middle = (min + max) / 2
 
             // const step = roundStep((max - min) / props.histogram.buckets.length, getRequiredDecimalPlaces(props.histogram.buckets))
-            const leftRequestedThreshold: BigDecimal | undefined = props.histogram.buckets.find((bucket) => bucket.requested)?.threshold
+            const leftRequestedThreshold: BigDecimal | undefined = props.histogram.buckets.find((bucket) => bucket.requested ?? false)?.threshold
             let rightRequestedThreshold: number | undefined = undefined
             if (leftRequestedThreshold != undefined) {
                 // there must be last requested bucket if there is first requested bucket, even if it's the same bucket
-                const rightRequestedIndex = props.histogram.buckets.findLastIndex((bucket) => bucket.requested)!
-                if (rightRequestedIndex < props.histogram.buckets.length - 1) {
-                    rightRequestedThreshold = parseFloat(props.histogram.buckets[rightRequestedIndex + 1].threshold!)
+                const rightRequestedIndex = props.histogram.buckets.findLastIndex((bucket) => bucket.requested ?? false)!
+                if (rightRequestedIndex < props.histogram.buckets.size - 1) {
+                    rightRequestedThreshold = props.histogram.buckets.get(rightRequestedIndex + 1)!.threshold.toFloat()
                 } else {
                     rightRequestedThreshold = max
                 }
             }
 
-            return {
+            return new RangeInfo(
                 min,
                 max,
-                requestedRange: [
-                    leftRequestedThreshold != undefined ? parseFloat(leftRequestedThreshold) : middle,
+                [
+                    leftRequestedThreshold != undefined ? leftRequestedThreshold.toFloat() : middle,
                     rightRequestedThreshold != undefined ? rightRequestedThreshold : middle
                 ]
-            }
+            )
         } else {
             // we are missing some properties, but we can only simulate the range by indexes of buckets
             const missingPropertiesForActualValues: string[] = []
@@ -88,28 +95,28 @@ const rangeInfo = computed<RangeInfo>(() => {
             }
 
             const min = 0
-            const max = props.histogram.buckets.length
+            const max = props.histogram.buckets.size
             const middle = (min + max) / 2
 
-            let leftRequestedIndex: number | undefined = props.histogram.buckets.findIndex((bucket) => bucket.requested)
+            let leftRequestedIndex: number | undefined = props.histogram.buckets.findIndex((bucket) => bucket.requested ?? false)
             if (leftRequestedIndex == -1) {
                 leftRequestedIndex = undefined
             }
             let rightRequestedIndex: number | undefined = undefined
             if (leftRequestedIndex != undefined) {
                 // there must be last requested bucket if there is first requested bucket, even if it's the same bucket
-                rightRequestedIndex = props.histogram.buckets.findLastIndex((bucket) => bucket.requested)! + 1
+                rightRequestedIndex = props.histogram.buckets.findLastIndex((bucket) => bucket.requested ?? false)! + 1
             }
 
-            return {
+            return new RangeInfo(
                 min,
                 max,
-                requestedRange: [
+                [
                     leftRequestedIndex != undefined ? leftRequestedIndex : middle,
                     rightRequestedIndex != undefined ? rightRequestedIndex : middle
                 ],
-                simulatedReason: t('resultVisualizer.histogram.placeholder.missingPropertiesForActualRange', { properties: missingPropertiesForActualValues.map(it => '`' + it + '`').join(', ') })
-            }
+                t('resultVisualizer.histogram.placeholder.missingPropertiesForActualRange', { properties: missingPropertiesForActualValues.map(it => '`' + it + '`').join(', ') })
+            )
         }
     }
 })

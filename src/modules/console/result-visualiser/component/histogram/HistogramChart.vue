@@ -18,21 +18,21 @@ const props = defineProps<{
 }>()
 
 const canChartBeRendered = computed(() => {
-    const sampleBucket = props.histogram.buckets[0]
-    return sampleBucket.occurrences != undefined
+    const sampleBucket = props.histogram.buckets.get(0)
+    return sampleBucket?.occurrences != undefined
 })
 const missingRequiredProperties = computed(() => {
     const missingRequiredProperties: string[] = []
-    const sampleBucket = props.histogram.buckets[0]
-    if (sampleBucket.occurrences == undefined) {
+    const sampleBucket = props.histogram.buckets.get(0)
+    if (sampleBucket?.occurrences == undefined) {
         missingRequiredProperties.push('occurrences')
     }
     return missingRequiredProperties
 })
 const missingOptionalProperties = computed(() => {
     const missingProperties: string[] = []
-    const sampleBucket = props.histogram.buckets[0]
-    if (sampleBucket.requested == undefined) {
+    const sampleBucket = props.histogram.buckets.get(0)
+    if (sampleBucket?.requested == undefined) {
         missingProperties.push('requested')
     }
     return missingProperties
@@ -53,8 +53,8 @@ const chartSeries = computed(() => {
     const requestedBuckets: any[] = []
     const fillerBuckets: any[] = [] // this is basically hack to allow showing bucket tooltips even for empty buckets where there is no area to hover over (the `intersect` option on tooltip options doesn't work as expected)
 
-    for (let i = 0; i < props.histogram.buckets.length; i++) {
-        const bucket: VisualisedHistogramBucket | undefined = props.histogram.buckets[i]
+    for (let i = 0; i < props.histogram.buckets.size; i++) {
+        const bucket: VisualisedHistogramBucket | undefined = props.histogram.buckets.get(i)
         const requested: boolean = bucket?.requested || false
         const occurrences: number = bucket?.occurrences || 0
 
@@ -116,7 +116,7 @@ const chartOptions = {
     tooltip: {
         theme: 'dark',
         custom: ({ dataPointIndex }: { dataPointIndex: number }) => {
-            const bucket: VisualisedHistogramBucket = props.histogram.buckets[dataPointIndex]
+            const bucket: VisualisedHistogramBucket = props.histogram.buckets.get(0)!
             return `
                 <div class="histogram-tooltip">
                     <header>

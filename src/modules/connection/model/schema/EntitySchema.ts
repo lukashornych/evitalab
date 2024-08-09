@@ -63,6 +63,7 @@ export class EntitySchema extends AbstractSchema {
      */
     readonly evolutionMode: Value<List<EvolutionMode>>
 
+    // todo lho maybe add getter methods that will throw exception when particular item doesnt exist under specified name
     readonly attributes: Value<Map<string, EntityAttributeSchema>>
     readonly sortableAttributeCompounds: Value<Map<string, SortableAttributeCompoundSchema>>
     readonly associatedData: Value<Map<string, AssociatedDataSchema>>

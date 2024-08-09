@@ -60,7 +60,7 @@ export abstract class JsonFacetSummaryVisualiserService<VS extends JsonResultVis
             groupRepresentativeAttributes
         )
 
-        return { primaryKey, title, count }
+        return new VisualisedFacetGroupStatistics(primaryKey, title, count)
     }
 
     findFacetStatisticsResults(groupStatisticsResult: Result): Result[] {
@@ -92,6 +92,6 @@ export abstract class JsonFacetSummaryVisualiserService<VS extends JsonResultVis
         const impactMatchCount: number | undefined = impactResult?.['matchCount']
         const count: number | undefined = facetStatisticsResult['count']
 
-        return { requested, primaryKey, title, numberOfEntities, impactDifference, impactMatchCount, count }
+        return new VisualisedFacetStatistics(requested, primaryKey, title, numberOfEntities, impactDifference, impactMatchCount, count)
     }
 }

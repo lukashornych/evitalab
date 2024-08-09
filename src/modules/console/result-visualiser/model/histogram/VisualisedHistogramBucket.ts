@@ -1,4 +1,5 @@
 import { BigDecimal } from "@/modules/connection/model/data-type/BigDecimal"
+import { HistogramBucket } from '@/modules/connection/model/data/HistogramBucket'
 
 /**
  * Single histogram bucket DTO ready for visualisation.
@@ -16,7 +17,19 @@ export class VisualisedHistogramBucket {
         this.requested = requested
     }
 
+    static fromInternal(internal: HistogramBucket): VisualisedHistogramBucket {
+        return new VisualisedHistogramBucket(
+            internal.threshold.getOrThrow(),
+            internal.occurrences.getOrThrow(),
+            internal.requested.getOrThrow(),
+        )
+    }
+
     static fromJson(json: any): VisualisedHistogramBucket {
-        return new VisualisedHistogramBucket(json.threshold, json.occurrences, json.requested)
+        return new VisualisedHistogramBucket(
+            json.threshold ? new BigDecimal(json.threshold) : undefined,
+            json.occurrences,
+            json.requested
+        )
     }
 }

@@ -8,6 +8,9 @@ import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSche
 import { Entity } from '@/modules/connection/model/data/Entity'
 import { Value } from '@/modules/connection/model/Value'
 import { Hierarchy } from '@/modules/connection/model/data/Hierarchy'
+import { LevelInfo } from '@/modules/connection/model/data/LevelInfo'
+import Immutable, { List, Map } from 'immutable'
+import { no } from 'vuetify/locale'
 
 /**
  * {@link HierarchyVisualiserService} for EvitaQL query language.
@@ -21,51 +24,40 @@ export class EvitaQLHierarchyVisualiserService
         this.visualizerService = visualiserService
     }
     findNamedHierarchiesByReferencesResults(
-        hierarchyResult: Result,
+        hierarchyResult: Immutable.Map<string, Hierarchy>,
         entitySchema: EntitySchema
     ): [ReferenceSchema | undefined, Result][] {
-        const hierarchyDataValue: Value<
-            Immutable.Map<string, Hierarchy> | undefined
-        > = hierarchyResult as Value<
-            Immutable.Map<string, Hierarchy> | undefined
-        >
-        const hierarchyData = hierarchyDataValue.getIfSupported()
         const newHierarchy: [ReferenceSchema | undefined, Result][] = []
-        if (hierarchyData) {
-            const references = entitySchema.references.getIfSupported()
-            if (references) {
-                for (const [hierarchyName, hierarchy] of hierarchyData) {
-                    newHierarchy.push([
-                        references.get(hierarchyName),
-                        hierarchy,
-                    ])
-                }
+        const references: Immutable.Map<string, ReferenceSchema> | undefined = entitySchema.references.getIfSupported()
+        if (references != undefined) {
+            for (const [hierarchyName, hierarchy] of hierarchyResult) {
+                newHierarchy.push([
+                    references.get(hierarchyName),
+                    hierarchy.hierarchy.getOrThrow(),
+                ])
             }
         }
         return newHierarchy
     }
 
     resolveNamedHierarchy(
-        namedHierarchyResult: Result[],
+        namedHierarchyResult: List<LevelInfo>,
         entityRepresentativeAttributes: string[]
     ): VisualisedNamedHierarchy {
         const trees: VisualisedHierarchyTreeNode[] = []
-        const nodeCountHolder: HierarchyTreeNodeCountHolder = { count: 0 }
-        const requestedNodeHolder: RequestedHierarchyTreeNodeHolder = {
-            requestedNode: undefined,
-        }
+        const nodeCountHolder: HierarchyTreeNodeCountHolder = new HierarchyTreeNodeCountHolder()
+        const requestedNodeHolder: RequestedHierarchyTreeNodeHolder = new RequestedHierarchyTreeNodeHolder();
 
-        for (const treeResult of namedHierarchyResult) {
-            const tree: VisualisedHierarchyTreeNode =
-                this.resolveHierarchyTreeNode(
-                    treeResult,
-                    1,
-                    nodeCountHolder,
-                    requestedNodeHolder,
-                    entityRepresentativeAttributes
-                )
+        namedHierarchyResult.forEach((levelInfo: LevelInfo) => {
+            const tree: VisualisedHierarchyTreeNode = this.resolveHierarchyTreeNode(
+                levelInfo,
+                1,
+                nodeCountHolder,
+                requestedNodeHolder,
+                entityRepresentativeAttributes
+            )
             trees.push(tree)
-        }
+        })
 
         return {
             count: nodeCountHolder.count,
@@ -75,7 +67,7 @@ export class EvitaQLHierarchyVisualiserService
     }
 
     private resolveHierarchyTreeNode(
-        nodeResult: Result,
+        nodeResult: LevelInfo,
         level: number,
         nodeCountHolder: HierarchyTreeNodeCountHolder,
         requestedNodeHolder: RequestedHierarchyTreeNodeHolder,
@@ -83,27 +75,28 @@ export class EvitaQLHierarchyVisualiserService
     ): VisualisedHierarchyTreeNode {
         nodeCountHolder.count++
 
-        const entity: Entity = nodeResult.value as Entity
-
-        const primaryKey: number | undefined =
-            entity.primaryKey.getIfSupported()
+        // todo lho rewrite entity access
+        const primaryKey: number | undefined = nodeResult.entity.getOrThrow() != undefined
+            ? nodeResult.entity.getOrThrow()!.primaryKey.getOrThrow()
+            : nodeResult.entityReference.getOrThrow()!.primaryKey.getOrThrow()
         // only root nodes should display parents, we know parents in nested nodes from the direct parent in the tree
-        const parentPrimaryKey: number | undefined =
-            level === 1 ? entity.parent.getIfSupported() : undefined
+        let parentPrimaryKey: number | undefined = undefined
+        if (level === 1 && nodeResult.entity.getOrElse(undefined) != undefined) {
+            parentPrimaryKey = nodeResult.entity.getOrThrow()!.parent.getOrThrow()
+        }
         const title: string | undefined =
             this.visualizerService.resolveRepresentativeTitleForEntityResult(
-                entity,
+                nodeResult.entity.getOrElse(undefined),
                 entityRepresentativeAttributes
             )
-        const requested: boolean | undefined = nodeResult['requested']
-        const childrenCount: number | undefined = nodeResult['childrenCount']
-        const queriedEntityCount: number | undefined =
-            nodeResult['queriedEntityCount']
+        const requested: boolean | undefined = nodeResult.requested.getOrElse(false)
+        const childrenCount: number | undefined = nodeResult.childrenCount.getOrElse(0)
+        const queriedEntityCount: number | undefined = nodeResult.queriedEntityCount.getOrElse(0)
 
         const children: VisualisedHierarchyTreeNode[] = []
-        const childResults: Result[] | undefined = nodeResult['children']
-        if (childResults && childResults.length > 0) {
-            for (const childResult of childResults) {
+        const childResults: List<LevelInfo> | undefined = nodeResult.children.getOrElse(List())
+        if (childResults != undefined && childResults.size > 0) {
+            childResults.forEach((childResult: LevelInfo) => {
                 const childNode: VisualisedHierarchyTreeNode =
                     this.resolveHierarchyTreeNode(
                         childResult,
@@ -113,7 +106,7 @@ export class EvitaQLHierarchyVisualiserService
                         entityRepresentativeAttributes
                     )
                 children.push(childNode)
-            }
+            })
         }
 
         const node: VisualisedHierarchyTreeNode =
@@ -134,10 +127,18 @@ export class EvitaQLHierarchyVisualiserService
     }
 }
 
-type HierarchyTreeNodeCountHolder = {
+class HierarchyTreeNodeCountHolder {
     count: number
+
+    constructor() {
+        this.count = 0
+    }
 }
 
-type RequestedHierarchyTreeNodeHolder = {
+class RequestedHierarchyTreeNodeHolder {
     requestedNode: VisualisedHierarchyTreeNode | undefined
+
+    constructor() {
+        this.requestedNode = undefined
+    }
 }

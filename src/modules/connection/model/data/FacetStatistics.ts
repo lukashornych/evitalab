@@ -9,7 +9,7 @@ export class FacetStatistics {
     readonly requested: Value<boolean>
     readonly count: Value<number>
     readonly impact: Value<number | undefined>
-    readonly matchCount?: Value<number | undefined>
+    readonly matchCount: Value<number | undefined>
     readonly hasSense: Value<boolean>
 
     constructor(requested: Value<boolean>, count: Value<number>, hasSense: Value<boolean>, facetEntity: Value<Entity | undefined>, impact: Value<number | undefined>, matchCount: Value<number | undefined>, facetEntityReference: Value<EntityReference | undefined>){

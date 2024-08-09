@@ -87,9 +87,10 @@ export class EntityConverter {
             Value.of(price.priceId),
             Value.of(price.priceList),
             Value.of(price.innerRecordId),
-            Value.of(new BigDecimal(price.priceWithoutTax?.valueString)),
-            Value.of(new BigDecimal(price.taxRate?.valueString)),
-            Value.of(new BigDecimal(price.priceWithTax?.valueString)),
+            // todo lho add exception if this is missing
+            Value.of(new BigDecimal(price.priceWithoutTax!.valueString)),
+            Value.of(new BigDecimal(price.taxRate!.valueString)),
+            Value.of(new BigDecimal(price.priceWithTax!.valueString)),
             Value.of(
                 price.validity
                     ? DateTimeUtil.convertToDateTimeRange(price.validity)
@@ -313,11 +314,10 @@ export class EntityConverter {
                     Value.of(price.priceId),
                     Value.of(price.priceList),
                     Value.of(price.innerRecordId),
-                    Value.of(
-                        new BigDecimal(price.priceWithoutTax?.valueString)
-                    ),
-                    Value.of(new BigDecimal(price.taxRate?.valueString)),
-                    Value.of(new BigDecimal(price.priceWithTax?.valueString)),
+                    // todo lho add exception if this is missing
+                    Value.of(new BigDecimal(price.priceWithoutTax!.valueString)),
+                    Value.of(new BigDecimal(price.taxRate!.valueString)),
+                    Value.of(new BigDecimal(price.priceWithTax!.valueString)),
                     Value.of(
                         price.validity
                             ? DateTimeUtil.convertToDateTimeRange(

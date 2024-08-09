@@ -43,7 +43,7 @@ const props = defineProps<{
         <span>
             <span class="text-disabled">&gt;</span>&nbsp;
             <template v-if="histogram.max != undefined">
-                {{ histogram.max }}
+                {{ histogram.max.toFloat() }}
             </template>
             <span v-else>
                 {{ t('resultVisualizer.histogram.placeholder.unknown') }}

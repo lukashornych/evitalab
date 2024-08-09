@@ -65,11 +65,11 @@ initialize()
 <template>
     <VList v-if="initialized" density="compact">
         <NamedHierarchyVisualiser
-            v-for="(namedHierarchyResult, name) in namedHierarchiesResult"
+            v-for="name in namedHierarchiesResult.keys()"
             :key="name"
             :visualiser-service="visualiserService"
             :name="name as string"
-            :named-hierarchy-result="namedHierarchyResult as Result[]"
+            :named-hierarchy-result="namedHierarchiesResult.get(name) as Result"
             :entity-representative-attributes="entityRepresentativeAttributes"
         />
     </VList>

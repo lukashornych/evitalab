@@ -9,11 +9,12 @@ export class Response {
 
     readonly recordPage: Value<DataChunk>
     readonly extraResults: Value<ExtraResults | undefined>
-    readonly result: string
 
-    constructor(recordPage: Value<DataChunk>, result: string, extraResults: Value<ExtraResults | undefined>) {
+    readonly rawResponse: string
+
+    constructor(recordPage: Value<DataChunk>, extraResults: Value<ExtraResults | undefined>, rawResponse: string) {
         this.recordPage = recordPage
-        this.result = result
+        this.rawResponse = rawResponse
         this.extraResults = extraResults
     }
 }
