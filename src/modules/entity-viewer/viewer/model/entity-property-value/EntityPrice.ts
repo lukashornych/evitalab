@@ -4,28 +4,30 @@ import {
     EntityPropertyValuePreviewStringContext
 } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPropertyValuePreviewStringContext'
 import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
+import { DateTimeRange } from '@/modules/connection/model/data-type/DateTimeRange'
+import { Currency } from '@/modules/connection/model/data/Currency'
 
 /**
  * Represents a single entity price.
  */
 // todo lho this should be probably in driver too and the computePrice logic aswell
 export class EntityPrice extends EntityPropertyValue {
-    readonly priceId: number
+    readonly priceId: number | undefined
     readonly priceList: string
-    readonly currency: string
-    readonly innerRecordId?: number
-    readonly sellable: boolean
-    readonly validity?: [BigDecimal | undefined, BigDecimal | undefined]
+    readonly currency: Currency
+    readonly innerRecordId?: number | undefined
+    readonly sellable: boolean | undefined
+    readonly validity?: DateTimeRange | undefined
     readonly priceWithoutTax: BigDecimal
     readonly priceWithTax: BigDecimal
     readonly taxRate: BigDecimal
 
-    constructor(priceId: number,
+    constructor(priceId: number | undefined,
                 priceList: string,
-                currency: string,
+                currency: Currency,
                 innerRecordId: number | undefined,
-                sellable: boolean,
-                validity: [BigDecimal | undefined, BigDecimal | undefined] | undefined,
+                sellable: boolean | undefined,
+                validity: DateTimeRange | undefined,
                 priceWithoutTax: BigDecimal,
                 priceWithTax: BigDecimal,
                 taxRate: BigDecimal) {
@@ -64,10 +66,10 @@ export class EntityPrice extends EntityPropertyValue {
     toPreviewString(context: EntityPropertyValuePreviewStringContext): string {
         const priceFormatter = new Intl.NumberFormat(
             navigator.language,
-            { style: 'currency', currency: this.currency, maximumFractionDigits: 2 }
+            { style: 'currency', currency: this.currency.code, maximumFractionDigits: 2 }
         )
         const actualPriceType: QueryPriceMode = context?.priceType != undefined ? context.priceType : QueryPriceMode.WithTax
-        const price: BigDecimal = actualPriceType === QueryPriceMode.WithTax ? this.priceWithTax : this.priceWithoutTax
-        return priceFormatter.format(parseFloat(price))
+        const price: BigDecimal | undefined = actualPriceType === QueryPriceMode.WithTax ? this.priceWithTax : this.priceWithoutTax
+        return priceFormatter.format(parseFloat(price?.value ?? '0'))
     }
 }

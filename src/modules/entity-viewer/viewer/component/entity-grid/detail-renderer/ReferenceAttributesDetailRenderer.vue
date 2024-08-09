@@ -81,7 +81,7 @@ function openReference(primaryKey: number): void {
     workspaceService.createTab(entityViewerTabFactory.createNew(
         gridProps.params.dataPointer.connection,
         gridProps.params.dataPointer.catalogName,
-        parentReferenceSchema.value.referencedEntityType.getIfSupported()!,
+        parentReferenceSchema.value.entityType.getIfSupported()!,
         new EntityViewerTabData(
             queryLanguage.value,
             entityViewerService.buildReferencedEntityFilterBy(queryLanguage.value as QueryLanguage, [primaryKey]),

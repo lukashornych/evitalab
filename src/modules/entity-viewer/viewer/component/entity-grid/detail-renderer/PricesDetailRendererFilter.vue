@@ -82,7 +82,7 @@ const emit = defineEmits<{
                 :model-value="selectedInnerRecordIds"
                 :disabled="filterData.innerRecordIds.length === 0"
                 prepend-inner-icon="mdi-format-list-group"
-                :label="t('entityGrid.grid.priceRenderer.filter.label.priceList')"
+                :label="t('entityGrid.grid.priceRenderer.filter.label.innerRecordIds')"
                 :items="filterData.innerRecordIds"
                 class="price-renderer-all-prices-filter__select"
                 clearable

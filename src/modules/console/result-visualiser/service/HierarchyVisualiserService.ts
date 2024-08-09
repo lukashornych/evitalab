@@ -15,5 +15,5 @@ export interface HierarchyVisualiserService {
     /**
      * Resolves visualisable named hierarchy from the named hierarchy result.
      */
-    resolveNamedHierarchy(namedHierarchyResult: Result[], entityRepresentativeAttributes: string[]): VisualisedNamedHierarchy
+    resolveNamedHierarchy(namedHierarchyResult: Result, entityRepresentativeAttributes: string[]): VisualisedNamedHierarchy
 }

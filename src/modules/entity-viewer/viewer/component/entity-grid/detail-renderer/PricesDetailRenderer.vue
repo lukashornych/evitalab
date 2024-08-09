@@ -6,7 +6,10 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { QueryLanguage } from '@/modules/entity-viewer/viewer/model/QueryLanguage'
-import { EntityViewerService, useEntityViewerService } from '@/modules/entity-viewer/viewer/service/EntityViewerService'
+import {
+    EntityViewerService,
+    useEntityViewerService,
+} from '@/modules/entity-viewer/viewer/service/EntityViewerService'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
 import { EntityPropertyValue } from '@/modules/entity-viewer/viewer/model/EntityPropertyValue'
 import { PriceInnerRecordHandling } from '@/modules/entity-viewer/viewer/model/PriceInnerRecordHandling'
@@ -20,36 +23,43 @@ import { EntityPrice } from '@/modules/entity-viewer/viewer/model/entity-propert
 import { NativeValue } from '@/modules/entity-viewer/viewer/model/entity-property-value/NativeValue'
 import VPropertiesTable from '@/modules/base/component/VPropertiesTable.vue'
 import VMarkdown from '@/modules/base/component/VMarkdown.vue'
-import PricesDetailRendererPrice
-    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/PricesDetailRendererPrice.vue'
-import PricesDetailRendererFilter
-    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/PricesDetailRendererFilter.vue'
-import PricesDetailRendererPriceItem
-    from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/PricesDetailRendererPriceItem.vue'
+import PricesDetailRendererPrice from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/PricesDetailRendererPrice.vue'
+import PricesDetailRendererFilter from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/PricesDetailRendererFilter.vue'
+import PricesDetailRendererPriceItem from '@/modules/entity-viewer/viewer/component/entity-grid/detail-renderer/PricesDetailRendererPriceItem.vue'
 import VExpansionPanelLazyIterator from '@/modules/base/component/VExpansionPanelLazyIterator.vue'
 import {
     useQueryFilter,
     useQueryLanguage,
     useSelectedEntity,
-    useTabProps
+    useTabProps,
 } from '@/modules/entity-viewer/viewer/component/dependencies'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 
 const priceInPriceListsConstraintPattern = new Map<QueryLanguage, RegExp>([
-    [QueryLanguage.EvitaQL, /priceInPriceLists\(\s*((?:['"][A-Za-z0-9_.\-~]*['"])(?:\s*,\s*(?:['"][A-Za-z0-9_.\-~]*['"]))*)/],
-    [QueryLanguage.GraphQL, /priceInPriceLists\s*:\s*("[A-Za-z0-9_.\-~]+"|(?:[\s*"[A-Za-z0-9_.\-~]+)"(?:\s*,\s*"[A-Za-z0-9_.\-~]+")*\s*\])/]
+    [
+        QueryLanguage.EvitaQL,
+        /priceInPriceLists\(\s*((?:['"][A-Za-z0-9_.\-~]*['"])(?:\s*,\s*(?:['"][A-Za-z0-9_.\-~]*['"]))*)/,
+    ],
+    [
+        QueryLanguage.GraphQL,
+        /priceInPriceLists\s*:\s*("[A-Za-z0-9_.\-~]+"|(?:[\s*"[A-Za-z0-9_.\-~]+)"(?:\s*,\s*"[A-Za-z0-9_.\-~]+")*\s*\])/,
+    ],
 ])
 const constraintPriceListsPattern = new Map<QueryLanguage, RegExp>([
     [QueryLanguage.EvitaQL, /['"]([A-Za-z0-9_.\-~]*)['"]/g],
-    [QueryLanguage.GraphQL, /"([A-Za-z0-9_.\-~]+)"/g]
+    [QueryLanguage.GraphQL, /"([A-Za-z0-9_.\-~]+)"/g],
 ])
 const priceInCurrencyConstraintPattern = new Map<QueryLanguage, RegExp>([
-    [QueryLanguage.EvitaQL, /priceInCurrency\(\s*['"]([A-Za-z0-9_.\-~]*)['"]\s*\)/],
-    [QueryLanguage.GraphQL, /priceInCurrency\s*:\s*([A-Z_]+)/]
+    [
+        QueryLanguage.EvitaQL,
+        /priceInCurrency\(\s*['"]([A-Za-z0-9_.\-~]*)['"]\s*\)/,
+    ],
+    [QueryLanguage.GraphQL, /priceInCurrency\s*:\s*([A-Z_]+)/],
 ])
 type FilterData = {
-    priceIds: number[],
-    priceLists: string[],
-    currencies: string[],
+    priceIds: number[]
+    priceLists: string[]
+    currencies: string[]
     innerRecordIds: number[]
 }
 
@@ -57,29 +67,44 @@ const entityViewerService: EntityViewerService = useEntityViewerService()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
-const props = withDefaults(defineProps<{
-    value: EntityPropertyValue | EntityPropertyValue[],
-    fillSpace?: boolean
-}>(), {
-    fillSpace: true
-})
+const props = withDefaults(
+    defineProps<{
+        value: EntityPropertyValue | EntityPropertyValue[]
+        fillSpace?: boolean
+    }>(),
+    {
+        fillSpace: true,
+    }
+)
 const tabProps = useTabProps()
 const queryLanguage = useQueryLanguage()
 const queryFilter = useQueryFilter()
 const selectedEntity = useSelectedEntity()
 
 const priceInnerRecordHandling = computed<PriceInnerRecordHandling>(() => {
-    return (selectedEntity[EntityPropertyKey.entity(StaticEntityProperties.PriceInnerRecordHandling).toString()] as EntityPropertyValue)?.value() ?? PriceInnerRecordHandling.Unknown
+    return (
+        (
+            selectedEntity[
+                EntityPropertyKey.entity(
+                    StaticEntityProperties.PriceInnerRecordHandling
+                ).toString()
+            ] as EntityPropertyValue
+        )?.value() ?? PriceInnerRecordHandling.Unknown
+    )
 })
 const entityPricingProperties = computed<Property[]>(() => [
     {
         name: t('entityGrid.grid.priceRenderer.label.priceInnerRecordHandling'),
-        value: new PropertyValue(new KeywordValue(priceInnerRecordHandling.value))
-    }
+        value: new PropertyValue(
+            new KeywordValue(priceInnerRecordHandling.value)
+        ),
+    },
 ])
 const prices = computed<EntityPrices>(() => {
     if (!(props.value instanceof EntityPrices)) {
-        toaster.error(t('entityGrid.grid.priceRenderer.notification.invalidPricesObject'))
+        toaster.error(
+            t('entityGrid.grid.priceRenderer.notification.invalidPricesObject')
+        )
         return new EntityPrices(undefined, [])
     }
     return props.value as EntityPrices
@@ -91,16 +116,19 @@ const filterData = computed<FilterData>(() => {
     const innerRecordIds: number[] = []
 
     for (const price of prices.value.prices) {
-        if (!priceIds.includes(price.priceId)) {
+        if (price.priceId && !priceIds.includes(price.priceId)) {
             priceIds.push(price.priceId)
         }
-        if (!priceLists.includes(price.priceList)) {
+        if (price.priceList && !priceLists.includes(price.priceList)) {
             priceLists.push(price.priceList)
         }
-        if (!currencies.includes(price.currency)) {
-            currencies.push(price.currency)
+        if (price.currency && !currencies.includes(price.currency.code)) {
+            currencies.push(price.currency.code)
         }
-        if (price.innerRecordId != undefined && !innerRecordIds.includes(price.innerRecordId)) {
+        if (
+            price.innerRecordId != undefined &&
+            !innerRecordIds.includes(price.innerRecordId)
+        ) {
             innerRecordIds.push(price.innerRecordId)
         }
     }
@@ -109,7 +137,7 @@ const filterData = computed<FilterData>(() => {
         priceIds,
         priceLists,
         currencies,
-        innerRecordIds
+        innerRecordIds,
     }
 })
 
@@ -121,41 +149,69 @@ const selectedInnerRecordIds = ref<number[]>([])
 const computedPriceForSale = ref<EntityPrice | undefined>()
 watch([selectedPriceLists, selectedCurrencies], async () => {
     computedPriceForSale.value = undefined
-    if (selectedPriceLists.value.length > 0 && selectedCurrencies.value.length === 1) {
-        computedPriceForSale.value = await entityViewerService.computePriceForSale(
-            tabProps.params.dataPointer,
-            queryLanguage.value!,
-            (selectedEntity[EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey).toString()] as NativeValue).value() as number,
-            selectedPriceLists.value,
-            selectedCurrencies.value[0]
-        )
+    if (
+        selectedPriceLists.value.length > 0 &&
+        selectedCurrencies.value.length === 1
+    ) {
+        computedPriceForSale.value =
+            await entityViewerService.computePriceForSale(
+                tabProps.params.dataPointer,
+                queryLanguage.value!,
+                (
+                    selectedEntity[
+                        EntityPropertyKey.entity(
+                            StaticEntityProperties.PrimaryKey
+                        ).toString()
+                    ] as NativeValue
+                ).value() as number,
+                selectedPriceLists.value,
+                selectedCurrencies.value[0]
+            )
     }
 })
 
 const filteredAllPrices = computed<EntityPrice[]>(() => {
     // note: originally we wanted to do server call here for filtering, but it seems to be really fast in browser (tested on hundreds of prices)
-    let filteredPrices: EntityPrice[] = prices.value.prices
-        .filter((price) => {
-            if (selectedPriceIds.value.length > 0 && !selectedPriceIds.value?.includes(price.priceId)) {
+    let filteredPrices: EntityPrice[] = prices.value.prices.filter((price) => {
+        if (price.priceId && price.priceList && price.currency) {
+            if (
+                selectedPriceIds.value.length > 0 &&
+                !selectedPriceIds.value?.includes(price.priceId)
+            ) {
                 return false
             }
-            if (selectedPriceLists.value.length > 0 && !selectedPriceLists.value?.includes(price.priceList)) {
+            if (
+                selectedPriceLists.value.length > 0 &&
+                !selectedPriceLists.value?.includes(price.priceList)
+            ) {
                 return false
             }
-            if (selectedCurrencies.value.length > 0 && !selectedCurrencies.value?.includes(price.currency)) {
+            if (
+                selectedCurrencies.value.length > 0 &&
+                !selectedCurrencies.value?.includes(price.currency.code)
+            ) {
                 return false
             }
-            if (selectedInnerRecordIds.value.length > 0 && (price.innerRecordId == undefined || !selectedInnerRecordIds.value?.includes(price.innerRecordId))) {
+            if (
+                selectedInnerRecordIds.value.length > 0 &&
+                (price.innerRecordId == undefined ||
+                    !selectedInnerRecordIds.value?.includes(
+                        price.innerRecordId
+                    ))
+            ) {
                 return false
             }
-            return true
-        })
+        }
+        return true
+    })
 
     if (selectedPriceLists.value.length > 0) {
         filteredPrices.sort((a, b) => {
             if (computedPriceForSale.value != undefined) {
-                const aForSale: boolean = a.priceId === computedPriceForSale.value!.priceId
-                const bForSale: boolean = b.priceId === computedPriceForSale.value!.priceId
+                const aForSale: boolean =
+                    a.priceId === computedPriceForSale.value!.priceId
+                const bForSale: boolean =
+                    b.priceId === computedPriceForSale.value!.priceId
                 if (aForSale && !bForSale) {
                     return -1
                 }
@@ -163,10 +219,13 @@ const filteredAllPrices = computed<EntityPrice[]>(() => {
                     return 1
                 }
             }
-
-            const aIndex = selectedPriceLists.value.indexOf(a.priceList)
-            const bIndex = selectedPriceLists.value.indexOf(b.priceList)
-            return aIndex - bIndex
+            if (a.priceList && b.priceList) {
+                const aIndex = selectedPriceLists.value.indexOf(a.priceList)
+                const bIndex = selectedPriceLists.value.indexOf(b.priceList)
+                return aIndex - bIndex
+            } else {
+                throw new UnexpectedError('Price list is undefined')
+            }
         })
     }
 
@@ -181,11 +240,21 @@ watch(filteredAllPrices, () => {
 
 async function preselectFilterFromQuery(): Promise<void> {
     return new Promise(() => {
-        const priceLists: string | undefined = priceInPriceListsConstraintPattern.get(queryLanguage.value!)!.exec(queryFilter?.value || '')?.[1]
-        const currency: string | undefined = priceInCurrencyConstraintPattern.get(queryLanguage.value!)!.exec(queryFilter?.value || '')?.[1]
+        const priceLists: string | undefined =
+            priceInPriceListsConstraintPattern
+                .get(queryLanguage.value!)!
+                .exec(queryFilter?.value || '')?.[1]
+        const currency: string | undefined = priceInCurrencyConstraintPattern
+            .get(queryLanguage.value!)!
+            .exec(queryFilter?.value || '')?.[1]
         if (priceLists != undefined) {
-            const priceListsMatches: IterableIterator<RegExpMatchArray> = priceLists.matchAll(constraintPriceListsPattern.get(queryLanguage.value!)!)
-            selectedPriceLists.value = Array.from(priceListsMatches).map((match) => match[1])
+            const priceListsMatches: IterableIterator<RegExpMatchArray> =
+                priceLists.matchAll(
+                    constraintPriceListsPattern.get(queryLanguage.value!)!
+                )
+            selectedPriceLists.value = Array.from(priceListsMatches).map(
+                (match) => match[1]
+            )
         }
         if (currency != undefined) {
             selectedCurrencies.value = [currency]
@@ -207,8 +276,15 @@ preselectFilterFromQuery()
                 <h3>{{ t('entityGrid.grid.priceRenderer.title') }}</h3>
             </header>
 
-            <VMarkdown v-if="prices.priceForSale == undefined" :source="t('entityGrid.grid.priceRenderer.filter.help.computePriceForSale')" />
-            <PricesDetailRendererPrice v-else :price="prices.priceForSale"/>
+            <VMarkdown
+                v-if="prices.priceForSale == undefined"
+                :source="
+                    t(
+                        'entityGrid.grid.priceRenderer.filter.help.computePriceForSale'
+                    )
+                "
+            />
+            <PricesDetailRendererPrice v-else :price="prices.priceForSale" />
         </div>
 
         <div class="price-renderer-all-prices">
@@ -228,7 +304,11 @@ preselectFilterFromQuery()
             <VExpansionPanels multiple>
                 <!-- virtual price for sale -->
                 <PricesDetailRendererPriceItem
-                    v-if="computedPriceForSale != undefined && priceInnerRecordHandling === PriceInnerRecordHandling.Sum"
+                    v-if="
+                        computedPriceForSale != undefined &&
+                        priceInnerRecordHandling ===
+                            PriceInnerRecordHandling.Sum
+                    "
                     :price="computedPriceForSale"
                     price-for-sale
                     virtual-price-for-sale
@@ -243,11 +323,13 @@ preselectFilterFromQuery()
                     <template #item="{ item }: { item: EntityPrice }">
                         <PricesDetailRendererPriceItem
                             :price="item"
-                            :price-for-sale="computedPriceForSale != undefined && item.priceId === computedPriceForSale.priceId"
+                            :price-for-sale="
+                                computedPriceForSale != undefined &&
+                                item.priceId === computedPriceForSale.priceId
+                            "
                         />
                     </template>
                 </VExpansionPanelLazyIterator>
-
             </VExpansionPanels>
         </div>
     </div>

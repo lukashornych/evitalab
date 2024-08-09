@@ -1,13 +1,12 @@
 import { Connection } from '@/modules/connection/model/Connection'
 import { EvitaDBDriver } from '@/modules/connection/driver/EvitaDBDriver'
 import { ConnectionServerInfo } from '@/modules/connection/model/ConnectionServerInfo'
-import { EvitaDBDriver_2024_8 } from '@/modules/connection/driver/2024_8/EvitaDBDriver_2024_8'
-import semver from 'semver/preload'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { InjectionKey } from 'vue'
 import { mandatoryInject } from '@/utils/reactivity'
 import { EvitaLabConfig } from '@/modules/config/EvitaLabConfig'
-import { EvitaDBServerProbe, useEvitaDBServerProbe } from '@/modules/connection/service/EvitaDBServerProbe'
+import { EvitaDBServerProbe } from '@/modules/connection/service/EvitaDBServerProbe'
+import { EvitaDBDriverGrpc } from './grpc/EvitaDBDriverGrpc'
 
 export const evitaDBDriverResolverInjectionKey: InjectionKey<EvitaDBDriverResolver> = Symbol('evitaDBDriverResolver')
 
@@ -25,7 +24,7 @@ export class EvitaDBDriverResolver {
 
     constructor(evitaLabConfig: EvitaLabConfig, evitaDBServerProbe: EvitaDBServerProbe) {
         this.driverIndex = [
-            new EvitaDBDriver_2024_8(evitaLabConfig)
+            new EvitaDBDriverGrpc()
         ]
         this.evitaDBServerProbe = evitaDBServerProbe
     }

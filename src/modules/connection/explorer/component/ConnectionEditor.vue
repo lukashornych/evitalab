@@ -67,27 +67,27 @@ const systemApiUrlRules = [
         return t('explorer.connection.editor.form.systemApiUrl.validations.unreachable')
     }
 ]
-const labApiUrlRules = [
+const grpcUrlRules = [
     (value: any) => {
         if (value) return true
-        return t('explorer.connection.editor.form.labApiUrl.validations.required')
+        return t('explorer.connection.editor.form.grpcUrl.validations.required')
     },
     (value: any) => {
         try {
             new URL(value)
             return true
         } catch (e) {
-            return t('explorer.connection.editor.form.labApiUrl.validations.invalidUrl')
+            return t('explorer.connection.editor.form.grpcUrl.validations.invalidUrl')
         }
     },
     async (value: any) => {
         const result = await testLabApiConnection()
         if (result) {
-            modifiedConnection.value.labApiUrlTested = ApiTestResult.Success
+            modifiedConnection.value.grpcUrlTested = ApiTestResult.Success
             return true
         }
-        modifiedConnection.value.labApiUrlTested = ApiTestResult.Failure
-        return t('explorer.connection.editor.form.labApiUrl.validations.unreachable')
+        modifiedConnection.value.grpcUrlTested = ApiTestResult.Failure
+        return t('explorer.connection.editor.form.grpcUrl.validations.unreachable')
     }
 ]
 const gqlUrlRules = [
@@ -120,16 +120,16 @@ const modifiedConnection = ref<{
     name: string,
     systemApiUrl: string,
     systemApiUrlTested: ApiTestResult,
-    labApiUrl: string
-    labApiUrlTested: ApiTestResult
+    grpcUrl: string
+    grpcUrlTested: ApiTestResult
     gqlUrl: string,
     gqlUrlTested: ApiTestResult
 }>({
     name: '',
     systemApiUrl: '',
     systemApiUrlTested: ApiTestResult.NotTested,
-    labApiUrl: '',
-    labApiUrlTested: ApiTestResult.NotTested,
+    grpcUrl: '',
+    grpcUrlTested: ApiTestResult.NotTested,
     gqlUrl: '',
     gqlUrlTested: ApiTestResult.NotTested
 })
@@ -156,8 +156,11 @@ async function testSystemApiConnection(): Promise<boolean> {
 
 async function testLabApiConnection(): Promise<boolean> {
     try {
-        const response: any = await ky.get(modifiedConnection.value.labApiUrl + '/system/liveness').json()
-        return response.liveness || false
+        const emptyObj = {};
+        const response: Response = await ky.post(modifiedConnection.value.grpcUrl + '/io.evitadb.externalApi.grpc.generated.EvitaManagementService/ServerStatus', {json: emptyObj, headers: {
+            'content-type': 'application/json; charset=utf-8'
+        } });
+        return response.ok || false
     } catch (e) {
         return false
     }
@@ -200,10 +203,10 @@ async function testConnection(): Promise<boolean> {
     // test lab API
     const labApiResult = await testLabApiConnection()
     if (labApiResult) {
-        modifiedConnection.value.labApiUrlTested = ApiTestResult.Success
+        modifiedConnection.value.grpcUrlTested = ApiTestResult.Success
     } else {
         success = false
-        modifiedConnection.value.labApiUrlTested = ApiTestResult.Failure
+        modifiedConnection.value.grpcUrlTested = ApiTestResult.Failure
     }
 
     // test GQL API
@@ -230,8 +233,8 @@ function cancel(): void {
         name: '',
         systemApiUrl: '',
         systemApiUrlTested: ApiTestResult.NotTested,
-        labApiUrl: '',
-        labApiUrlTested: ApiTestResult.NotTested,
+        grpcUrl: '',
+        grpcUrlTested: ApiTestResult.NotTested,
         gqlUrl: '',
         gqlUrlTested: ApiTestResult.NotTested
     }
@@ -251,7 +254,7 @@ async function storeConnection(): Promise<void> {
             modifiedConnection.value.name!,
             false,
             modifiedConnection.value.systemApiUrl,
-            modifiedConnection.value.labApiUrl!,
+            modifiedConnection.value.grpcUrl!,
             modifiedConnection.value.gqlUrl!,
             'https://localhost:5555/rest' // todo lho implement rest
         ))
@@ -304,13 +307,13 @@ async function storeConnection(): Promise<void> {
                         :append-inner-icon="getApiTestedIndicator(modifiedConnection.systemApiUrlTested)"
                     />
                     <VTextField
-                        v-model="modifiedConnection.labApiUrl"
-                        :label="t('explorer.connection.editor.form.labApiUrl.label')"
+                        v-model="modifiedConnection.grpcUrl"
+                        :label="t('explorer.connection.editor.form.grpcUrl.label')"
                         placeholder="https://{evitadb-server}:5555/lab/api"
                         variant="solo-filled"
                         required
-                        :rules="labApiUrlRules"
-                        :append-inner-icon="getApiTestedIndicator(modifiedConnection.labApiUrlTested)"
+                        :rules="grpcUrlRules"
+                        :append-inner-icon="getApiTestedIndicator(modifiedConnection.grpcUrlTested)"
                     />
                     <VTextField
                         v-model="modifiedConnection.gqlUrl"

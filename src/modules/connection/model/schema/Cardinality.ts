@@ -6,5 +6,6 @@ export enum Cardinality {
     ZeroOrOne = 'zeroOrOne',
     ExactlyOne = 'exactlyOne',
     ZeroOrMore = 'zeroOrMore',
-    OneOrMore = 'oneOrMore'
+    OneOrMore = 'oneOrMore',
+    NotSpecified = 'notSpecified'
 }

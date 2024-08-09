@@ -11,7 +11,7 @@ export class Connection {
     readonly name: string
     readonly preconfigured: boolean
     readonly systemUrl: string
-    readonly labApiUrl?: string
+    readonly grpcUrl?: string
     readonly gqlUrl?: string
     readonly restUrl?: string
 
@@ -19,14 +19,14 @@ export class Connection {
                 name: string,
                 preconfigured: boolean,
                 systemUrl: string,
-                labApiUrl?: string,
+                grpcUrl?: string,
                 gqlUrl?: string,
                 restUrl?: string) {
         this.id = id ? id : hasher.update(name).digest().toString(16)
         this.name = name
         this.preconfigured = preconfigured
         this.systemUrl = this.normalizeApiUrl(systemUrl)!
-        this.labApiUrl = this.normalizeApiUrl(labApiUrl)
+        this.grpcUrl = this.normalizeApiUrl(grpcUrl)
         this.gqlUrl = this.normalizeApiUrl(gqlUrl)
         this.restUrl = this.normalizeApiUrl(restUrl)
     }
@@ -37,7 +37,7 @@ export class Connection {
             json.name,
             preconfigured,
             json.systemUrl,
-            json.labApiUrl,
+            json.grpcUrl,
             json.gqlUrl,
             json.restUrl
         )

@@ -9,7 +9,6 @@ import { StaticEntityProperties } from '@/modules/entity-viewer/viewer/model/Sta
 import { Scalar } from '@/modules/connection/model/data-type/Scalar'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { useDataLocale, usePriceType } from '@/modules/entity-viewer/viewer/component/dependencies'
-import { AttributeSchema } from '@/modules/connection/model/schema/AttributeSchema'
 import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
 import { isLocalizedSchema } from '@/modules/connection/model/schema/LocalizedSchema'
 import { isTypedSchema } from '@/modules/connection/model/schema/TypedSchema'
@@ -67,7 +66,7 @@ function toPrintablePropertyValue(value: EntityPropertyValue | EntityPropertyVal
         }
         return `[${value.map(it => toPrintablePropertyValue(it)).join(', ')}]`
     } else if (value instanceof EntityPropertyValue) {
-        const previewString = value.toPreviewString({ priceType: priceType?.value })
+        const previewString = value.toPrettyPrintString({ priceType: priceType?.value })
         if (previewString == undefined) {
             return ''
         }

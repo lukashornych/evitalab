@@ -1,5 +1,4 @@
-import { Schema } from '@/modules/connection/model/schema/Schema'
-import { List as ImmutableList, Map as ImmutableMap } from 'immutable'
+import { List, Map} from 'immutable'
 import { NamingConvention } from '../NamingConvetion'
 import { AttributeUniquenessType } from '@/modules/connection/model/schema/AttributeUniquenessType'
 import { Value } from '@/modules/connection/model/Value'
@@ -19,15 +18,15 @@ export class AttributeSchema extends AbstractSchema implements TypedSchema, Sort
      * This is a mandatory value, it cannot be omitted.
      */
     readonly name: string
-    readonly nameVariants: Value<ImmutableMap<NamingConvention, string>>
+    readonly nameVariants: Value<Map<NamingConvention, string>>
     /**
      * Contains description of the model is optional but helps authors of the schema / client API to better explain the original purpose of the model to the consumers.
      */
-    readonly description: Value<string | null>
+    readonly description: Value<string | undefined>
     /**
      * Deprecation notice contains information about planned removal of this entity from the model / client API. This allows to plan and evolve the schema allowing clients to adapt early to planned breaking changes.  If notice is `null`, this schema is considered not deprecated.
      */
-    readonly deprecationNotice: Value<string | null>
+    readonly deprecationNotice: Value<string | undefined>
     /**
      * Data type of the attribute. Must be one of Evita-supported values. Internally the scalar is converted into Java-corresponding data type.
      */
@@ -61,23 +60,23 @@ export class AttributeSchema extends AbstractSchema implements TypedSchema, Sort
      */
     readonly indexedDecimalPlaces: Value<number>
 
-    protected representativeFlags?: ImmutableList<string>
+    protected representativeFlags?: List<string>
 
     constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
-                description: Value<string | null>,
-                deprecationNotice: Value<string | null>,
+                description: Value<string | undefined>,
+                deprecationNotice: Value<string | undefined>,
                 type: Value<Scalar>,
                 uniquenessType: Value<AttributeUniquenessType>,
                 filterable: Value<boolean>,
                 sortable: Value<boolean>,
                 nullable: Value<boolean>,
-                defaultValue: Value<any | any[] | null>,
+                defaultValue: Value<any | any[] | undefined>,
                 localized: Value<boolean>,
                 indexedDecimalPlaces: Value<number>) {
         super()
         this.name = name
-        this.nameVariants = nameVariants.map(it => ImmutableMap(it))
+        this.nameVariants = nameVariants
         this.description = description
         this.deprecationNotice = deprecationNotice
         this.type = type
@@ -90,7 +89,7 @@ export class AttributeSchema extends AbstractSchema implements TypedSchema, Sort
         this.indexedDecimalPlaces = indexedDecimalPlaces
     }
 
-    getRepresentativeFlags(): ImmutableList<string> {
+    getRepresentativeFlags(): List<string> {
         if (this.representativeFlags == undefined) {
             const representativeFlags: string[] = []
 
@@ -109,7 +108,7 @@ export class AttributeSchema extends AbstractSchema implements TypedSchema, Sort
             if (this.localized.getOrElse(false)) representativeFlags.push(AttributeSchemaFlag.Localized)
             if (this.nullable.getOrElse(false)) representativeFlags.push(AttributeSchemaFlag.Nullable)
 
-            this.representativeFlags = ImmutableList(representativeFlags)
+            this.representativeFlags = List(representativeFlags)
         }
         return this.representativeFlags
     }

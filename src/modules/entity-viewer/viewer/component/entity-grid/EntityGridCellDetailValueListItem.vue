@@ -20,7 +20,7 @@ const props = defineProps<{
 }>()
 
 const outputFormat = ref<EntityPropertyValueDesiredOutputFormat>(EntityPropertyValueDesiredOutputFormat.AutoPrettyPrint)
-const previewString = computed(() => props.value.toPreviewString())
+const previewString = computed(() => props.value.toPrettyPrintString())
 </script>
 
 <template>

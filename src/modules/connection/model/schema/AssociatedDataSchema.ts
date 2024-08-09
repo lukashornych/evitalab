@@ -1,5 +1,4 @@
-import { List as ImmutableList, Map as ImmutableMap } from 'immutable'
-import { Schema } from '@/modules/connection/model/schema/Schema'
+import { List, Map} from 'immutable'
 import { NamingConvention } from '../NamingConvetion'
 import { Value } from '@/modules/connection/model/Value'
 import { Scalar } from '@/modules/connection/model/data-type/Scalar'
@@ -20,7 +19,7 @@ export class AssociatedDataSchema extends AbstractSchema implements TypedSchema,
     /**
      * Contains name variants
      */
-    readonly nameVariants: Value<ImmutableMap<NamingConvention, string>>
+    readonly nameVariants: Value<Map<NamingConvention, string>>
     /**
      * Contains description of the model is optional but helps authors of the schema / client API to better explain the original purpose of the model to the consumers.
      */
@@ -43,7 +42,7 @@ export class AssociatedDataSchema extends AbstractSchema implements TypedSchema,
      */
     readonly localized: Value<boolean>
 
-    private representativeFlags?: ImmutableList<string>
+    protected representativeFlags?: List<string>
 
     constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
@@ -54,7 +53,7 @@ export class AssociatedDataSchema extends AbstractSchema implements TypedSchema,
                 localized: Value<boolean>) {
         super()
         this.name = name
-        this.nameVariants = nameVariants.map(it => ImmutableMap(it))
+        this.nameVariants = nameVariants.map(it => Map(it))
         this.description = description
         this.deprecationNotice = deprecationNotice
         this.type = type
@@ -62,7 +61,7 @@ export class AssociatedDataSchema extends AbstractSchema implements TypedSchema,
         this.localized = localized
     }
 
-    getRepresentativeFlags(): ImmutableList<string> {
+    getRepresentativeFlags(): List<string> {
         if (this.representativeFlags == undefined) {
             const representativeFlags: string[] = []
 
@@ -72,7 +71,7 @@ export class AssociatedDataSchema extends AbstractSchema implements TypedSchema,
             if (this.localized.getOrElse(false)) representativeFlags.push(AssociatedDataSchemaFlag.Localized)
             if (this.nullable.getOrElse(false)) representativeFlags.push(AssociatedDataSchemaFlag.Nullable)
 
-            this.representativeFlags = ImmutableList(representativeFlags)
+            this.representativeFlags = List(representativeFlags)
         }
         return this.representativeFlags
     }

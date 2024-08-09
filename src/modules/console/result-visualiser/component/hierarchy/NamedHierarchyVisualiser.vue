@@ -21,7 +21,7 @@ const { t } = useI18n()
 const props = defineProps<{
     visualiserService: ResultVisualiserService,
     name: string
-    namedHierarchyResult: Result[],
+    namedHierarchyResult: Result,
     entityRepresentativeAttributes: string[]
 }>()
 

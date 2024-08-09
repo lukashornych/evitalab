@@ -82,7 +82,7 @@ export class GraphQLResultVisualiserService extends JsonResultVisualiserService 
             return undefined
         }
         const catalogSchema: CatalogSchema = await this.connectionService.getCatalogSchema(connection, catalogName)
-        const entitySchema: EntitySchema | undefined = catalogSchema.entitySchemas
+        const entitySchema: EntitySchema | undefined = (await catalogSchema.entitySchemas())
             .getIfSupported()
             ?.find(it => it.nameVariants
                 .getIfSupported()

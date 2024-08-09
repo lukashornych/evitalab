@@ -1,5 +1,5 @@
 import { AttributeSchemaFlag } from '@/modules/connection/model/schema/AttributeSchema'
-import { List as ImmutableList } from 'immutable'
+import { List, Map } from 'immutable'
 import { AttributeUniquenessType } from '@/modules/connection/model/schema/AttributeUniquenessType'
 import { GlobalAttributeUniquenessType } from '@/modules/connection/model/schema/GlobalAttributeUniquenessType'
 import { NamingConvention } from '../NamingConvetion'
@@ -35,7 +35,7 @@ export class GlobalAttributeSchema extends EntityAttributeSchema {
         this.globalUniquenessType = globalUniquenessType
     }
 
-    getRepresentativeFlags(): ImmutableList<string> {
+    getRepresentativeFlags(): List<string> {
         if (this.representativeFlags == undefined) {
             const representativeFlags: string[] = []
 
@@ -62,7 +62,7 @@ export class GlobalAttributeSchema extends EntityAttributeSchema {
             if (this.localized.getOrElse(false)) representativeFlags.push(AttributeSchemaFlag.Localized)
             if (this.nullable.getOrElse(false)) representativeFlags.push(AttributeSchemaFlag.Nullable)
 
-            this.representativeFlags = ImmutableList(representativeFlags)
+            this.representativeFlags = List(representativeFlags)
         }
         return this.representativeFlags
     }

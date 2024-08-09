@@ -14,6 +14,8 @@ import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSche
 import ReferenceFacetGroupStatisticsVisualiser
     from '@/modules/console/result-visualiser/component/facet-summary/ReferenceFacetGroupStatisticsVisualiser.vue'
 import MissingDataIndicator from '@/modules/console/result-visualiser/component/MissingDataIndicator.vue'
+import { List } from 'immutable'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -37,14 +39,22 @@ const referencesWithGroupStatisticsResults = computed<[ReferenceSchema, Result[]
     }
 })
 
-function getCountForReference(referenceSchema: ReferenceSchema, groupStatisticsResults: Result[]): number {
+function getCountForReference(referenceSchema: ReferenceSchema, groupStatisticsResults: Result): number {
+    let results: any
     if (referenceSchema.referencedGroupType.getIfSupported()! != undefined) {
-        return groupStatisticsResults.length
+        results = groupStatisticsResults
+
     } else {
-        return props.visualiserService
+        results = props.visualiserService
             .getFacetSummaryService()
             .findFacetStatisticsResults(groupStatisticsResults[0])
-            .length
+    }
+    if (results instanceof Array) {
+        return results.length
+    } else if (results instanceof List) {
+        return results.size
+    } else {
+        throw new UnexpectedError('Expected array or list of items')
     }
 }
 </script>
@@ -71,7 +81,7 @@ function getCountForReference(referenceSchema: ReferenceSchema, groupStatisticsR
     <MissingDataIndicator
         v-else
         icon="mdi-text-search"
-        :title="t('resultVisualizer.visualiser.facetStatistics.placeholder.noGroups')"
+        :title="t('resultVisualizer.facetStatisticsVisualiser.placeholder.noGroups')"
     />
 </template>
 

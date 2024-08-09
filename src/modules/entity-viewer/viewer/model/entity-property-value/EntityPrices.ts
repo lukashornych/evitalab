@@ -3,8 +3,8 @@ import { EntityPrice } from '@/modules/entity-viewer/viewer/model/entity-propert
 import {
     EntityPropertyValuePreviewStringContext
 } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPropertyValuePreviewStringContext'
-import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
 import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
+import { QueryPriceMode } from '../QueryPriceMode'
 
 /**
  * Holder for entity prices displayable data grid.
@@ -37,11 +37,11 @@ export class EntityPrices extends EntityPropertyValue {
         if (this.priceForSale != undefined) {
             const priceFormatter = new Intl.NumberFormat(
                 navigator.language,
-                { style: 'currency', currency: this.priceForSale.currency, maximumFractionDigits: 2 }
+                { style: 'currency', currency: this.priceForSale.currency.code, maximumFractionDigits: 2 }
             )
             const actualPriceType: QueryPriceMode = context?.priceType != undefined ? context.priceType : QueryPriceMode.WithTax
-            const price: BigDecimal = actualPriceType === QueryPriceMode.WithTax ? this.priceForSale.priceWithTax : this.priceForSale.priceWithoutTax
-            const formattedPrice: string = priceFormatter.format(parseFloat(price))
+            const price: BigDecimal | undefined = actualPriceType === QueryPriceMode.WithTax ? this.priceForSale.priceWithTax : this.priceForSale.priceWithoutTax
+            const formattedPrice: string = priceFormatter.format(parseFloat(price?.value ?? '0'))
 
             previewString += `${formattedPrice} with `
         }

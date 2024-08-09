@@ -1,3 +1,5 @@
+import { UnexpectedError } from "@/modules/base/exception/UnexpectedError"
+
 /**
  * Represents a driver model property value with supportability support. This to support cases
  * when a specific version of driver doesn't support particular value of the model. The UI can then
@@ -77,5 +79,18 @@ export class Value<T> {
             return undefined
         }
         return this.actualValue!
+    }
+
+    //todo docs
+    getOrThrow(): T {
+        if(this.supported){
+            return this.actualValue!
+        } else {
+            throw new UnexpectedError("Value is not supported");
+        }
+    }
+
+    toString(): string {
+        return String(this.actualValue)
     }
 }
