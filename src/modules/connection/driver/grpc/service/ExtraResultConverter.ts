@@ -46,7 +46,7 @@ export class ExtraResultConverter {
 
     convertAttributeHistogram(histograms: {
         [key: string]: GrpcHistogram
-    }): Immutable.Map<string, Histogram> {
+    }): Immutable.Map<string, Histogram> | undefined {
         const newHistograms = new Map<string, Histogram>()
         for (const histogramName in histograms) {
             const histogram = histograms[histogramName]
@@ -60,7 +60,7 @@ export class ExtraResultConverter {
                 )
             )
         }
-        return Immutable.Map(newHistograms)
+        return newHistograms.size === 0 ? undefined : Immutable.Map(newHistograms)
     }
 
     convertHistogramBuckets(
@@ -81,7 +81,7 @@ export class ExtraResultConverter {
 
     convertFacetGroupStatistics(
         facetGroupStatistics: GrpcFacetGroupStatistics[]
-    ): Immutable.List<FacetGroupStatistics> {
+    ): Immutable.List<FacetGroupStatistics> | undefined {
         const newFacetGroupStatistics: FacetGroupStatistics[] = []
         for (const facetGroupStatistic of facetGroupStatistics) {
             newFacetGroupStatistics.push(
@@ -108,7 +108,7 @@ export class ExtraResultConverter {
                 )
             )
         }
-        return Immutable.List(newFacetGroupStatistics)
+        return newFacetGroupStatistics.length === 0 ? undefined : Immutable.List(newFacetGroupStatistics)
     }
 
     convertFacetStatistics(
@@ -178,7 +178,7 @@ export class ExtraResultConverter {
 
     convertHierarchy(hierarchy: {
         [key: string]: GrpcHierarchy
-    }): Immutable.Map<string, Hierarchy> {
+    }): Immutable.Map<string, Hierarchy> | undefined {
         const newHierarchy: Map<string, Hierarchy> = new Map<
             string,
             Hierarchy
@@ -189,7 +189,7 @@ export class ExtraResultConverter {
             )
             newHierarchy.set(hierarchyName, newHierarchyData)
         }
-        return Immutable.Map(newHierarchy)
+        return newHierarchy.size === 0 ? undefined : Immutable.Map(newHierarchy)
     }
 
     convertHierarchyAttribute(hierarchy: GrpcHierarchy): Hierarchy {

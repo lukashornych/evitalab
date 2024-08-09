@@ -21,6 +21,7 @@ import PriceHistogramVisualiser
     from '@/modules/console/result-visualiser/component/histogram/PriceHistogramVisualiser.vue'
 import MissingDataIndicator from '@/modules/console/result-visualiser/component/MissingDataIndicator.vue'
 import VLoadingCircular from '@/modules/base/component/VLoadingCircular.vue'
+import { Response } from '@/modules/connection/model/data/Response'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -29,7 +30,7 @@ const props = defineProps<{
     catalogPointer: CatalogPointer,
     visualiserService: ResultVisualiserService,
     inputQuery: string,
-    result: Result | undefined
+    result: Response | undefined
 }>()
 
 const querySelectRef = ref<InstanceType<typeof VCombobox> | undefined>()

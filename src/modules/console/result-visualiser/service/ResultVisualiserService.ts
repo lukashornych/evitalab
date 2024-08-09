@@ -12,6 +12,7 @@ import { Result } from '@/modules/console/result-visualiser/model/Result'
 import { Connection } from '@/modules/connection/model/Connection'
 import { VisualiserType } from '@/modules/console/result-visualiser/model/VisualiserType'
 import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import { Value } from '@/modules/connection/model/Value'
 
 /**
  * Service for visualising raw JSON results from query executions of specific query language into interactive GUI.
@@ -58,6 +59,7 @@ export abstract class ResultVisualiserService {
 
     // todo lho refactor into common function
     toPrintableAttributeValue(attributeValue: any): string | undefined {
+        attributeValue = this.unwrapValue(attributeValue)
         if (attributeValue == undefined) {
             return undefined
         }
@@ -70,6 +72,15 @@ export abstract class ResultVisualiserService {
             return JSON.stringify(attributeValue)
         } else {
             return attributeValue.toString()
+        }
+    }
+
+    private unwrapValue(attributeValue:any):any{
+        if(attributeValue instanceof Value) {
+            const val: Value<any> = attributeValue as Value<any>
+            return val.getIfSupported()
+        } else {
+            return attributeValue
         }
     }
 }

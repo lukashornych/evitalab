@@ -16,6 +16,7 @@ export class ResponseConverter {
         this.extraResultConverter = extraResultConverter
     }
 
+    //TODO Remove 2 reponse
     convert(grpcResponse: GrpcQueryResponse, result: string) : Response {
         return new Response(
             Value.of(this.convertDataChunk(grpcResponse.recordPage)),

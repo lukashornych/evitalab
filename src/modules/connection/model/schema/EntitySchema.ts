@@ -29,11 +29,11 @@ export class EntitySchema extends AbstractSchema {
     /**
      * Contains description of the model is optional but helps authors of the schema / client API to better explain the original purpose of the model to the consumers.
      */
-    readonly description: Value<string | null>
+    readonly description: Value<string | undefined>
     /**
      * Deprecation notice contains information about planned removal of this entity from the model / client API. This allows to plan and evolve the schema allowing clients to adapt early to planned breaking changes.  If notice is `null`, this schema is considered not deprecated.
      */
-    readonly deprecationNotice: Value<string | null>
+    readonly deprecationNotice: Value<string | undefined>
     /**
      * Contains `true` when primary keys of entities of this type will not be provided by the external systems and Evita is responsible for generating unique primary keys for the entity on insertion.  Generated key is guaranteed to be unique, but may not represent continuous ascending series. Generated key will be always greater than zero.
      */
@@ -73,8 +73,8 @@ export class EntitySchema extends AbstractSchema {
     constructor(version: Value<number>,
                 name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
-                description: Value<string | null>,
-                deprecationNotice: Value<string | null>,
+                description: Value<string | undefined>,
+                deprecationNotice: Value<string | undefined>,
                 withGeneratedPrimaryKey: Value<boolean>,
                 withHierarchy: Value<boolean>,
                 withPrice: Value<boolean>,
