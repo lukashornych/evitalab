@@ -4,6 +4,8 @@ import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
 import { Response } from '@/modules/connection/model/data/Response'
 import { List } from 'immutable'
 import { ServerStatus } from '../model/data/ServerStatus'
+import { ApiReadiness } from '../model/data/ApiReadiness'
+import { ApiServerStatus } from '../model/data/ApiServerStatus'
 
 /**
  * evitaDB version-agnostic driver to access data from connected evitaDB server
@@ -12,6 +14,12 @@ export interface EvitaDBDriver {
 
     //TODO: Add doc
     getServerDetails(connection: Connection): Promise<ServerStatus>
+    //TODO: Add doc
+    getApiReadiness(connection: Connection): Promise<ApiReadiness>
+    //TODO: Add doc
+    getRuntimeConfig(connection: Connection):Promise<string>
+    //TODO: Add doc
+    getServerStatus(connection: Connection):Promise<ApiServerStatus>
     /**
      * Which versions of evitaDB server this driver supports. Can be any string supported by https://www.npmjs.com/package/semver.
      * Comparison is done using the `.satisfies(...)` method
