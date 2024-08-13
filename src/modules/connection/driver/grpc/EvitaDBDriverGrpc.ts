@@ -25,6 +25,11 @@ import { TransportHelper } from './helpers/TransportHelper'
 import { EntityConverter } from './service/EntityConverter'
 import { EvitaValueConvert } from './service/EvitaValueConverter'
 import { ExtraResultConverter } from './service/ExtraResultConverter'
+import { ServerStatus } from '../../model/data/ServerStatus'
+import { ServerStatusConverter } from './service/ServerStatusConverter'
+import ky from 'ky'
+import { ApiReadiness } from '../../model/data/ApiReadiness'
+import { ApiServerStatus } from '../../model/data/ApiServerStatus'
 
 //TODO: Add docs and add header 'X-EvitaDB-ClientID': this.getClientIdHeaderValue()
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
@@ -41,6 +46,8 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         new CatalogConverter()
     private readonly responseConverter: ResponseConverter =
         new ResponseConverter(this.entityConverter, this.extraResultConverter)
+    private readonly serverStatusConverter: ServerStatusConverter =
+        new ServerStatusConverter()
 
     private readonly clientsHelper: ClientsHelper = new ClientsHelper()
 
@@ -187,6 +194,60 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
 
     getSupportedVersions(): List<string> {
         return List(['all'])
+    }
+
+    async getServerDetails(connection: Connection): Promise<ServerStatus> {
+        const grpcServerStatus = await this.clientsHelper
+            .getManagmentClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .serverStatus(Empty)
+        await this.clientsHelper.getManagmentClient(
+            connection,
+            TransportHelper.getTransport(connection)
+        )
+        return this.serverStatusConverter.convert(grpcServerStatus)
+    }
+
+    async getApiReadiness(connection: Connection): Promise<ApiReadiness> {
+        const apiResponse = await ky.get(connection.systemUrl + '/readiness')
+        const apiStatus = (await apiResponse.json()) as any
+        return new ApiReadiness(apiStatus.status, {
+            graphQL: apiStatus.apis.graphQL,
+            gRPC: apiStatus.apis.gRPC,
+            lab: apiStatus.apis.lab,
+            observability: apiStatus.apis.observability,
+            rest: apiStatus.apis.rest,
+            system: apiStatus.apis.system,
+        })
+    }
+
+    async getRuntimeConfig(connection: Connection): Promise<string> {
+        return (
+            await this.clientsHelper
+                .getManagmentClient(
+                    connection,
+                    TransportHelper.getTransport(connection)
+                )
+                .getConfiguration(Empty)
+        ).configuration
+    }
+
+    async getServerStatus(connection: Connection): Promise<ApiServerStatus> {
+        const apiResponse = await ky.get(connection.systemUrl + '/status')
+        const apiStatus = (await apiResponse.json()) as any
+        return new ApiServerStatus(
+            apiStatus.serverName,
+            apiStatus.version,
+            apiStatus.startedAt,
+            apiStatus.uptime,
+            apiStatus.uptimeForHuman,
+            apiStatus.catalogsCorrupted,
+            apiStatus.catalogsOk,
+            apiStatus.healthProblems,
+            apiStatus.apis
+        )
     }
 
     private handleCallError(e: any, connection?: Connection): LabError {

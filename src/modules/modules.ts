@@ -11,6 +11,7 @@ import { ConfigModuleRegistrar } from '@/modules/config/ConfigModuleRegistrar'
 import { StorageModuleRegistrar } from '@/modules/storage/StorageModuleRegistrar'
 import { WelcomeScreenModuleRegistrar } from '@/modules/welcome-screen/WelcomeScreenModuleRegistrar'
 import { KeymapModuleRegistrar } from '@/modules/keymap/KeymapModuleRegistrar'
+import { ServerActionsModuleRegistrar } from './server-actions/ServerActionsModuleRegistrar'
 
 // todo docs
 export const modules: ModuleRegistrar[] = [
@@ -28,5 +29,6 @@ export const modules: ModuleRegistrar[] = [
     new EvitaQLConsoleModuleRegistrar(),
     new GraphQLConsoleModuleRegistrar(),
     new EntityViewerModuleRegistrar(),
-    new SchemaViewerModuleRegistrar()
+    new SchemaViewerModuleRegistrar(),
+    new ServerActionsModuleRegistrar()
 ]

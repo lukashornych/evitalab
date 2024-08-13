@@ -13,6 +13,7 @@
     "@bufbuild/protoc-gen-es": "^1.10.0",
     "@codemirror/lang-json": "^6.0.1",
     "@codemirror/lang-xml": "^6.0.2",
+    "@codemirror/lang-yaml": "^6.1.1",
     "@connectrpc/connect": "^1.4.0",
     "@connectrpc/connect-web": "^1.4.0",
     "@connectrpc/protoc-gen-connect-es": "^1.4.0",

@@ -71,7 +71,7 @@ function createActions(): Map<CollectionActionType, MenuAction<CollectionActionT
         CollectionActionType.ViewSchema,
         createMenuAction(
             CollectionActionType.ViewSchema,
-            'mdi-file-code',
+            'mdi-file-code-outline',
             () => workspaceService.createTab(
                 schemaViewerTabFactory.createNew(
                     connection,

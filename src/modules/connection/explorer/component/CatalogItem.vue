@@ -152,7 +152,7 @@ function createActions(): ImmutableMap<
     )
     actions.set(
         CatalogActionType.ViewSchema,
-        createMenuAction(CatalogActionType.ViewSchema, 'mdi-file-code', () =>
+        createMenuAction(CatalogActionType.ViewSchema, 'mdi-file-code-outline', () =>
             workspaceService.createTab(
                 schemaViewerTabFactory.createNew(
                     connection,
