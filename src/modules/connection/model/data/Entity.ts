@@ -13,7 +13,7 @@ import { LocalizedAssociatedData } from './LocalizedAssociatedData'
 import { Locale } from '../data-type/Locale'
 import { Map, List } from 'immutable'
 
-// todo implement full rich version
+// todo lho create common entityreference ancestor
 export class Entity {
     readonly entityType: Value<string>
 

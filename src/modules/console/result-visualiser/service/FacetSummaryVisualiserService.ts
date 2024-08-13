@@ -25,7 +25,7 @@ export interface FacetSummaryVisualiserService {
     /**
      * Tries to find facet statistics results in the facet group statistics result.
      */
-    findFacetStatisticsResults(groupStatisticsResult: Result): Result[]
+    findFacetStatisticsResults(groupStatisticsResult: Result): Result
 
     /**
      * Resolves visualisable facet statistics from the facet statistics result.

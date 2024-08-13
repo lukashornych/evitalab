@@ -12,7 +12,7 @@ import {
 import { Histogram } from '@/modules/connection/model/data/Histogram'
 import { Value } from '@/modules/connection/model/Value'
 import Immutable, { List } from 'immutable'
-import { HistogramBuckets } from '@/modules/connection/model/data/HistogramBucket'
+import { HistogramBucket } from '@/modules/connection/model/data/HistogramBucket'
 import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
 import { FacetGroupStatistics } from '@/modules/connection/model/data/FacetGroupStatistics'
 import { FacetStatistics } from '@/modules/connection/model/data/FacetStatistics'
@@ -21,7 +21,6 @@ import { GrpcEntityReference } from '../gen/GrpcEntity_pb'
 import { EntityReference } from '@/modules/connection/model/data/EntityReference'
 import { Hierarchy } from '@/modules/connection/model/data/Hierarchy'
 import { LevelInfo } from '@/modules/connection/model/data/LevelInfo'
-import { LevelInfos } from '@/modules/connection/model/data/LevelInfos'
 
 export class ExtraResultConverter {
     private readonly entityConverter: EntityConverter
@@ -65,11 +64,11 @@ export class ExtraResultConverter {
 
     convertHistogramBuckets(
         buckets: GrpcHistogram_GrpcBucket[]
-    ): List<HistogramBuckets> {
-        const newBuckets: HistogramBuckets[] = []
+    ): List<HistogramBucket> {
+        const newBuckets: HistogramBucket[] = []
         for (const bucket of buckets) {
             newBuckets.push(
-                new HistogramBuckets(
+                new HistogramBucket(
                     Value.of(bucket.occurrences),
                     Value.of(bucket.requested),
                     Value.of(new BigDecimal(bucket.threshold?.valueString))
@@ -86,7 +85,7 @@ export class ExtraResultConverter {
         for (const facetGroupStatistic of facetGroupStatistics) {
             newFacetGroupStatistics.push(
                 new FacetGroupStatistics(
-                    Value.of(facetGroupStatistic.referenceName),
+                    facetGroupStatistic.referenceName,
                     Value.of(facetGroupStatistic.count),
                     Value.of(
                         this.convertFacetStatistics(
@@ -193,10 +192,7 @@ export class ExtraResultConverter {
     }
 
     convertHierarchyAttribute(hierarchy: GrpcHierarchy): Hierarchy {
-        const levelInfos: Map<string, LevelInfos> = new Map<
-            string,
-            LevelInfos
-        >()
+        const levelInfos: Map<string, List<LevelInfo>> = new Map()
         const hierarchyData = hierarchy.hierarchy
         for (const levelInfoName in hierarchyData) {
             levelInfos.set(
@@ -207,7 +203,7 @@ export class ExtraResultConverter {
         return new Hierarchy(Value.of(Immutable.Map(levelInfos)))
     }
 
-    convertLevelInfos(levelInfos: GrpcLevelInfos): LevelInfos {
+    convertLevelInfos(levelInfos: GrpcLevelInfos): List<LevelInfo> {
         const newLevelInfos: LevelInfo[] = []
         for (const levelInfo of levelInfos.levelInfos) {
             newLevelInfos.push(
@@ -227,7 +223,7 @@ export class ExtraResultConverter {
                 )
             )
         }
-        return new LevelInfos(Value.of(Immutable.List(newLevelInfos)))
+        return Immutable.List(newLevelInfos)
     }
 
     convertLevelInfo(levelInfo: GrpcLevelInfo[]): Immutable.List<LevelInfo> {

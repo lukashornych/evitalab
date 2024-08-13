@@ -16,12 +16,11 @@ export class ResponseConverter {
         this.extraResultConverter = extraResultConverter
     }
 
-    //TODO Remove 2 reponse
-    convert(grpcResponse: GrpcQueryResponse, result: string) : Response {
+    convert(grpcResponse: GrpcQueryResponse) : Response {
         return new Response(
             Value.of(this.convertDataChunk(grpcResponse.recordPage)),
-            result,
-            Value.of(this.extraResultConverter.convert(grpcResponse.extraResults))
+            Value.of(this.extraResultConverter.convert(grpcResponse.extraResults)),
+            grpcResponse.toJsonString()
         )
     }
 
@@ -29,7 +28,7 @@ export class ResponseConverter {
         if (driverDataChunk == undefined) {
             return PaginatedList.empty()
         }
-        
+
         const grpcRecordPage = driverDataChunk
         if (grpcRecordPage.chunk.case === 'paginatedList') {
             const page :GrpcPaginatedList = driverDataChunk.chunk.value as GrpcPaginatedList;

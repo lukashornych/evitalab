@@ -34,6 +34,10 @@ const props = defineProps<{
 }>()
 
 const querySelectRef = ref<InstanceType<typeof VCombobox> | undefined>()
+const selectedQuery = ref<string | undefined>()
+
+const selectedVisualiserType = ref<VisualiserTypeType | undefined>()
+
 const supportsMultipleQueries = computed<boolean>(() => {
     try {
         return props.visualiserService.supportsMultipleQueries()
@@ -53,6 +57,7 @@ const queries = computed<string[]>(() => {
         return []
     }
 })
+
 watch(queries, (newValue) => {
     // pre-select first a query on first load
     if (selectedQuery.value == undefined && newValue.length > 0) {
@@ -77,9 +82,8 @@ watch(queries, (newValue) => {
             }
         }
     }
-})
+}, { immediate: true })
 
-const selectedQuery = ref<string | undefined>()
 const selectedQueryResult = computed<Result | undefined>(() => {
     if (props.result == undefined || selectedQuery.value == undefined) {
         return undefined
@@ -108,7 +112,7 @@ watch(selectedQuery, async () => {
     } catch (e: any) {
         toaster.error(e)
     }
-})
+}, { immediate: true })
 
 
 const visualiserTypesRef = ref<InstanceType<typeof VCombobox> | undefined>()
@@ -139,8 +143,7 @@ watch(visualiserTypes, (newValue) => {
             selectedVisualiserType.value = undefined
         }
     }
-})
-const selectedVisualiserType = ref<VisualiserTypeType | undefined>()
+}, { immediate: true })
 
 const resultForVisualiser = computed<Result | undefined>(() => {
     if (selectedQueryResult.value == undefined || selectedVisualiserType.value == undefined) {
