@@ -1,154 +1,192 @@
 <template>
-    <VSheet>
-        <div v-if="serverDetailLoaded">
-            <VCard variant="tonal" class="w-75 a-5 container">
-                <VCardText>
-                    <p class="main-title">{{ serverDetail?.instanceId }}</p>
-                    <div class="version">
-                        <VChip>version: {{ serverDetail?.version }}</VChip>
-                    </div>
-                    <div class="informative-container">
-                        <div class="informative-icons">
-                            <span
-                                class="mdi mdi-chart-bell-curve-cumulative"
-                            ></span>
-                            <div class="log"></div>
+    <div>
+        <!--TODO: LHO fix entension whitespace-->
+        <VTabToolbar prepend-icon="mdi mdi-database-outline" :path="path">
+            <template #append>
+                <VBtn icon density="compact" @click="refresh">
+                    <VIcon>mdi mdi-refresh</VIcon>
+                </VBtn>
+            </template>
+        </VTabToolbar>
+        <VSheet>
+            <div v-if="serverDetailLoaded">
+                <VCard variant="tonal" class="w-75 a-5 container">
+                    <VCardText>
+                        <p class="main-title">{{ serverDetail?.instanceId }}</p>
+                        <div class="version">
+                            <VChip>version: {{ serverDetail?.version }}</VChip>
                         </div>
-                        <div class="informative-items">
-                            <p>
-                                Started:
-                                {{
-                                    serverDetail?.started?.getPrettyPrintableString()
-                                }}
-                            </p>
-                            <p>
-                                Uptime:
-                                {{ getFormattedUptime(serverDetail?.uptime) }}
-                            </p>
-                            <p>Catalogs: {{ serverDetail?.catalogsOk }}</p>
-                            <p>
-                                Corrupted catalogs:
-                                {{ serverDetail?.catalogsCorrupted }}
-                            </p>
-                            <div class="log"></div>
+                        <div class="informative-container">
+                            <div class="informative-icons">
+                                <span
+                                    class="mdi mdi-chart-bell-curve-cumulative"
+                                ></span>
+                                <div class="log"></div>
+                            </div>
+                            <div class="informative-items">
+                                <p>
+                                    Started:
+                                    {{
+                                        serverDetail?.started?.getPrettyPrintableString()
+                                    }}
+                                </p>
+                                <p>
+                                    Uptime:
+                                    {{
+                                        getFormattedUptime(serverDetail?.uptime)
+                                    }}
+                                </p>
+                                <p>Catalogs: {{ serverDetail?.catalogsOk }}</p>
+                                <p>
+                                    Corrupted catalogs:
+                                    {{ serverDetail?.catalogsCorrupted }}
+                                </p>
+                                <div class="log"></div>
+                            </div>
+                            <div class="informative-icons">
+                                <span class="mdi mdi-api"></span>
+                                <span class="mdi mdi-cog-outline"></span>
+                            </div>
+                            <div class="informative-items">
+                                <p>
+                                    <span
+                                        :class="[
+                                            'status-circle',
+                                            apiReadiness?.apis.gRPC === 'ready'
+                                                ? 'active'
+                                                : 'inactive',
+                                        ]"
+                                    ></span
+                                    >gRPC
+                                    <VChipGroup class="d-sm-inline">
+                                        <VChip
+                                            v-for="(url, key) in findApiUrls(
+                                                'gRPC'
+                                            )"
+                                            :key="key + 'gRPC'"
+                                        >
+                                            {{ formatUrl(url) }}
+                                        </VChip>
+                                    </VChipGroup>
+                                </p>
+                                <p>
+                                    <span
+                                        :class="[
+                                            'status-circle',
+                                            apiReadiness?.apis.graphQL ===
+                                            'ready'
+                                                ? 'active'
+                                                : 'inactive',
+                                        ]"
+                                    ></span
+                                    >GraphQL
+                                    <VChipGroup class="d-sm-inline">
+                                        <VChip
+                                            v-for="(url, key) in findApiUrls(
+                                                'graphQL'
+                                            )"
+                                            :key="key + 'graphQL'"
+                                        >
+                                            {{ formatUrl(url) }}
+                                        </VChip>
+                                    </VChipGroup>
+                                </p>
+                                <p>
+                                    <span
+                                        :class="[
+                                            'status-circle',
+                                            apiReadiness?.apis.rest === 'ready'
+                                                ? 'active'
+                                                : 'inactive',
+                                        ]"
+                                    ></span
+                                    >REST
+                                    <VChipGroup class="d-sm-inline">
+                                        <VChip
+                                            v-for="(url, key) in findApiUrls(
+                                                'rest'
+                                            )"
+                                            :key="key + 'rest'"
+                                        >
+                                            {{ formatUrl(url) }}
+                                        </VChip>
+                                    </VChipGroup>
+                                </p>
+                                <p>
+                                    <span
+                                        :class="[
+                                            'status-circle',
+                                            apiReadiness?.apis.lab === 'ready'
+                                                ? 'active'
+                                                : 'inactive',
+                                        ]"
+                                    ></span
+                                    >evitaLab
+                                    <VChipGroup class="d-sm-inline">
+                                        <VChip
+                                            v-for="(url, key) in findApiUrls(
+                                                'lab'
+                                            )"
+                                            :key="key + 'lab'"
+                                        >
+                                            {{ formatUrl(url) }}
+                                        </VChip>
+                                    </VChipGroup>
+                                </p>
+                                <VChip
+                                    @click="
+                                        () => {
+                                            visibleYamlDialog = true
+                                        }
+                                    "
+                                    variant="outlined"
+                                    class="w-75 bottom-title"
+                                    >Open runtime configuration
+                                </VChip>
+                            </div>
                         </div>
-                        <div class="informative-icons">
-                            <span class="mdi mdi-api"></span>
-                            <span class="mdi mdi-cog-outline"></span>
-                        </div>
-                        <div class="informative-items">
-                            <p>
-                                <span
-                                    :class="[
-                                        'status-circle',
-                                        apiReadiness?.apis.gRPC === 'ready'
-                                            ? 'active'
-                                            : 'inactive',
-                                    ]"
-                                ></span
-                                >gRPC
-                                <VChipGroup class="d-sm-inline">
-                                    <VChip
-                                        v-for="(url, key) in findApiUrls(
-                                            'gRPC'
-                                        )"
-                                        :key="key + 'gRPC'"
-                                    >
-                                        {{ formatUrl(url) }}
-                                    </VChip>
-                                </VChipGroup>
-                            </p>
-                            <p>
-                                <span
-                                    :class="[
-                                        'status-circle',
-                                        apiReadiness?.apis.graphQL === 'ready'
-                                            ? 'active'
-                                            : 'inactive',
-                                    ]"
-                                ></span
-                                >GraphQL
-                                <VChipGroup class="d-sm-inline">
-                                    <VChip
-                                        v-for="(url, key) in findApiUrls(
-                                            'graphQL'
-                                        )"
-                                        :key="key + 'graphQL'"
-                                    >
-                                        {{ formatUrl(url) }}
-                                    </VChip>
-                                </VChipGroup>
-                            </p>
-                            <p>
-                                <span
-                                    :class="[
-                                        'status-circle',
-                                        apiReadiness?.apis.rest === 'ready'
-                                            ? 'active'
-                                            : 'inactive',
-                                    ]"
-                                ></span
-                                >REST
-                                <VChipGroup class="d-sm-inline">
-                                    <VChip
-                                        v-for="(url, key) in findApiUrls(
-                                            'rest'
-                                        )"
-                                        :key="key + 'rest'"
-                                    >
-                                        {{ formatUrl(url) }}
-                                    </VChip>
-                                </VChipGroup>
-                            </p>
-                            <p>
-                                <span
-                                    :class="[
-                                        'status-circle',
-                                        apiReadiness?.apis.lab === 'ready'
-                                            ? 'active'
-                                            : 'inactive',
-                                    ]"
-                                ></span
-                                >evitaLab
-                                <VChipGroup class="d-sm-inline">
-                                    <VChip
-                                        v-for="(url, key) in findApiUrls('lab')"
-                                        :key="key + 'lab'"
-                                    >
-                                        {{ formatUrl(url) }}
-                                    </VChip>
-                                </VChipGroup>
-                            </p>
-                            <VChip
-                                @click="
-                                    () => {
-                                        modelValue = true
-                                    }
-                                "
-                                variant="outlined bottom-title"
-                                class="w-75"
-                                >Open runtime configuration
-                            </VChip>
-                        </div>
-                    </div>
-                </VCardText>
-            </VCard>
-            <VDialog :model-value="modelValue" max-width="50rem" height="75%">
-                <template #activator="{ props }">
-                    <slot name="activator" v-bind="props" class="h-100" />
-                </template>
-                <VCard class="py-16 px-16 h-100">
-                    <VPreviewEditor
-                        :model-value="runtimeConfig ?? ''"
-                        class="h-100"
-                        :additional-extensions="extensions"
-                        read-only
-                    >
-                    </VPreviewEditor>
+                    </VCardText>
                 </VCard>
-            </VDialog>
-        </div>
-    </VSheet>
+                <VDialog
+                    :model-value="visibleYamlDialog"
+                    max-width="75rem"
+                    height="75%"
+                >
+                    <template #activator="{ props }">
+                        <slot name="activator" v-bind="props" class="h-100" />
+                    </template>
+                    <VCard class="py-8 px-8 h-100 card">
+                        <VCardTitleWithActions>
+                            <template #default>
+                                {{ t('serverDetail.yamlDialog.runtimeConfig') }}
+                            </template>
+                            <template #actions>
+                                <VBtn
+                                    icon
+                                    variant="flat"
+                                    density="compact"
+                                    @click="visibleYamlDialog = false"
+                                >
+                                    <VIcon>mdi-close</VIcon>
+                                    <VTooltip activator="parent">
+                                        {{ t('common.button.close') }}
+                                    </VTooltip>
+                                </VBtn>
+                            </template>
+                        </VCardTitleWithActions>
+                        <VCardText class="selector-body pt-0 pl-4 mt-4">
+                            <VPreviewEditor
+                                :model-value="runtimeConfig ?? ''"
+                                :additional-extensions="extensions"
+                                read-only
+                            >
+                            </VPreviewEditor>
+                        </VCardText>
+                    </VCard>
+                </VDialog>
+            </div>
+        </VSheet>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -166,10 +204,17 @@ import { ApiServerStatus } from '@/modules/connection/model/data/ApiServerStatus
 import { ApiEndpoint } from '@/modules/connection/model/data/ApiEndpoint'
 import { Extension } from '@codemirror/state'
 import { yaml } from '@codemirror/lang-yaml'
+import { List } from 'immutable'
+import { useI18n } from 'vue-i18n'
+import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
+import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithActions.vue'
+import { VCard, VCardText, VDialog } from 'vuetify/lib/components/index.mjs'
 
 const emit = defineEmits<TabComponentEvents>()
 const props =
     defineProps<TabComponentProps<ServerStatusTabParams, VoidTabData>>()
+
+const { t } = useI18n()
 
 const serverDetailLoaded = ref<boolean>(false)
 const serverDetail = ref<ServerStatus>()
@@ -177,21 +222,23 @@ const apiReadinessLoaded = ref<boolean>(false)
 const apiReadiness = ref<ApiReadiness>()
 const apiStatus = ref<ApiServerStatus>()
 const apiStatusLoaded = ref<boolean>()
-const modelValue = ref<boolean>(false)
+const visibleYamlDialog = ref<boolean>(false)
 const runtimeConfigLoaded = ref<boolean>(false)
 const runtimeConfig = ref<string>()
 const extensions: Extension[] = [yaml()]
+const path: List<string> = List([t('serverDetail.path')])
+const detailViewerService = useDetailViewerService()
 
-useDetailViewerService()
+detailViewerService
     .getServerStatistics(props.params.connection)
     .then((x) => loadedServerStatus(x))
-useDetailViewerService()
+detailViewerService
     .getApiReadiness(props.params.connection)
     .then((x) => loadedApiReadiness(x))
-useDetailViewerService()
+detailViewerService
     .getRuntimeConfiguration(props.params.connection)
     .then((x) => loadedRuntimeConfig(x))
-useDetailViewerService()
+detailViewerService
     .getServerStatus(props.params.connection)
     .then((x) => loadedApiServerStatus(x))
 
@@ -243,6 +290,21 @@ function findApiUrls(apiName: keyof ApiEndpoint): string[] | undefined {
 
 function formatUrl(url: string): string {
     return url.replace('0.0.0.0', '127.0.0.1')
+}
+
+function refresh() {
+    detailViewerService
+        .getServerStatistics(props.params.connection)
+        .then((x) => loadedServerStatus(x))
+    detailViewerService
+        .getApiReadiness(props.params.connection)
+        .then((x) => loadedApiReadiness(x))
+    detailViewerService
+        .getRuntimeConfiguration(props.params.connection)
+        .then((x) => loadedRuntimeConfig(x))
+    detailViewerService
+        .getServerStatus(props.params.connection)
+        .then((x) => loadedApiServerStatus(x))
 }
 </script>
 
@@ -316,4 +378,13 @@ function formatUrl(url: string): string {
 .container {
     margin: 15px;
 }
+
+.card {
+    overflow-y: hidden !important;
+}
+
+.selector-body {
+    position: relative;
+}
+
 </style>

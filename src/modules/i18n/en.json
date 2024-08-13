@@ -741,5 +741,11 @@
         "referencedGroupNameVariants": "Referenced group"
       }
     }
+  },
+  "serverDetail": {
+    "path": "Status",
+    "yamlDialog": {
+      "runtimeConfig": "Runtime configuration"
+    }
   }
 }
