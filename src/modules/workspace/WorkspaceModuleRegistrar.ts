@@ -48,7 +48,7 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
         builder.provide(schemaViewerTabFactoryInjectionKey, schemaViewerTabFactory)
         const keymapViewerTabFactory: KeymapViewerTabFactory = new KeymapViewerTabFactory()
         builder.provide(keymapViewerTabFactoryInjectionKey, keymapViewerTabFactory)
-        const detailViewerTabFactory: ServerStatusTabFactory = new ServerStatusTabFactory()
+        const detailViewerTabFactory: ServerStatusTabFactory = new ServerStatusTabFactory(connectionService)
         builder.provide(detailViewerTabFactoryInjectionKey, detailViewerTabFactory)
 
         // todo lho fix circular dep
@@ -67,7 +67,8 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
                 evitaQLConsoleTabFactory,
                 graphQLConsoleTabFactory,
                 schemaViewerTabFactory,
-                keymapViewerTabFactory
+                keymapViewerTabFactory,
+                detailViewerTabFactory
             )
         )
         builder.provide(
@@ -84,7 +85,8 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
                 entityViewerTabFactory,
                 evitaQLConsoleTabFactory,
                 graphQLConsoleTabFactory,
-                schemaViewerTabFactory
+                schemaViewerTabFactory,
+                detailViewerTabFactory
             )
         )
     }

@@ -250,6 +250,36 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         )
     }
 
+    async createCatalog(connection: Connection, catalogName: string):Promise<boolean>{
+        const response = await this.clientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)).defineCatalog({
+            catalogName
+        })
+        return response.success
+    }
+
+    async dropCatalog(connection: Connection, catalogName: string):Promise<boolean>{
+        const response = await this.clientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)).deleteCatalogIfExists({
+            catalogName
+        })
+        return response.success
+    }
+
+    async renameCatalog(connection: Connection, catalogName: string, newCatalogName:string):Promise<boolean>{
+        const response = await this.clientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)).renameCatalog({
+            catalogName,
+            newCatalogName
+        })
+        return response.success
+    }
+
+    async replaceCatalog(connection: Connection, catalogNameToBeReplaced: string, catalogNameToBeReplacedWith: string):Promise<boolean> {
+        const response = await this.clientsHelper.getEvitaClient(connection, TransportHelper.getTransport(connection)).replaceCatalog({
+            catalogNameToBeReplaced,
+            catalogNameToBeReplacedWith
+        })
+        return response.success
+    }
+
     private handleCallError(e: any, connection?: Connection): LabError {
         if (e.name === 'HTTPError') {
             const statusCode: number = e.response.status

@@ -20,6 +20,14 @@ export interface EvitaDBDriver {
     getRuntimeConfig(connection: Connection):Promise<string>
     //TODO: Add doc
     getServerStatus(connection: Connection):Promise<ApiServerStatus>
+    //TODO: Add doc
+    createCatalog(connection: Connection, catalogName: string):Promise<boolean>
+    //TODO: Add doc
+    dropCatalog(connection: Connection, catalogName: string):Promise<boolean>
+    //TODO: Add doc
+    renameCatalog(connection: Connection, catalogName: string, newCatalogName:string):Promise<boolean>
+    //TODO: Add doc
+    replaceCatalog(connection: Connection, catalogNameToBeReplaced: string, catalogNameToBeReplacedWith: string):Promise<boolean>
     /**
      * Which versions of evitaDB server this driver supports. Can be any string supported by https://www.npmjs.com/package/semver.
      * Comparison is done using the `.satisfies(...)` method

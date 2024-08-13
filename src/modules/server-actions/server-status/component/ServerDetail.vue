@@ -148,7 +148,7 @@
                     </VCardText>
                 </VCard>
                 <VDialog
-                    :model-value="visibleYamlDialog"
+                    v-model="visibleYamlDialog"
                     max-width="75rem"
                     height="75%"
                 >
