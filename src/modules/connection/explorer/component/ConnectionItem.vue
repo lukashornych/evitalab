@@ -64,13 +64,9 @@ const catalogs = ref<Catalog[]>()
 const loading = ref<boolean>(false)
 
 async function loadCatalogs(): Promise<void> {
-    if (catalogs.value !== undefined) {
-        return
-    }
-
     loading.value = true
     try {
-        catalogs.value = await connectionService.getCatalogs(props.connection)
+        catalogs.value = await connectionService.getCatalogs(props.connection, true)
     } catch (e: any) {
         toaster.error(e)
     }
@@ -148,6 +144,7 @@ function createMenuAction(
         execute
     )
 }
+
 </script>
 
 <template>
@@ -177,6 +174,7 @@ function createMenuAction(
                     v-for="catalog in catalogs"
                     :key="catalog.name"
                     :catalog="catalog"
+                    @changed="loadCatalogs()"
                 />
             </template>
             <template v-else>

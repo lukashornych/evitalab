@@ -16,9 +16,13 @@
       "remove": "Remove",
       "save": "Save",
       "run": "Run",
+      "add": "Add",
+      "drop": "Drop",
       "executeQuery": "Execute query",
       "showMore": "Show more",
-      "copy": "Copy"
+      "copy": "Copy",
+      "confirm": "Confirm",
+      "rename": "Rename"
     },
     "notification": {
       "copiedToClipboard": "Copied to clipboard",
@@ -48,16 +52,16 @@
         "item": {
           "evitaLabGithub": "evitaLab GitHub",
           "discussEvitaLab": "Discuss evitaLab",
-          "reportEvitaLabIssue":  "Report evitaLab issue"
+          "reportEvitaLabIssue": "Report evitaLab issue"
         }
       },
       "evitaDBHelp": {
         "title": "evitaDB Help",
         "item": {
           "evitaDBDocumentation": "evitaDB Documentation",
-          "evitaDBGithub":  "evitaDB GitHub",
+          "evitaDBGithub": "evitaDB GitHub",
           "discussEvitaDB": "Discuss evitaDB",
-          "reportEvitaDBIssue":  "Report evitaDB issue"
+          "reportEvitaDBIssue": "Report evitaDB issue"
         }
       }
     },
@@ -244,7 +248,7 @@
     },
     "connection": {
       "actions": {
-        "openGraphQLSystemApiConsole":  "Open GraphQL System API console",
+        "openGraphQLSystemApiConsole": "Open GraphQL System API console",
         "add": "Add connection",
         "edit": "Edit connection",
         "remove": "Remove connection",
@@ -295,16 +299,22 @@
         }
       },
       "remove": {
-        "title":"Remove connection",
+        "title": "Remove connection",
         "question": "Are you sure you want to remove the connection {connectionName}?"
       }
     },
     "catalog": {
+      "subitems": {
+        "modify": "Modify"
+      },
       "actions": {
         "openEvitaQLConsole": "Open evitaQL console",
         "openGraphQLDataApiConsole": "Open GraphQL Data API console",
         "openGraphQLSchemaApiConsole": "Open GraphQL Schema API console",
-        "viewSchema": "View schema"
+        "viewSchema": "View schema",
+        "dropCatalog": "Drop catalog",
+        "renameCatalog": "Rename catalog",
+        "replaceCatalog": "Replace catalog"
       },
       "errors": {
         "couldNotLoad": "This catalog couldn't be loaded because it's corrupted."
@@ -346,11 +356,11 @@
       },
       "section": {
         "type": {
-          "entity":  "Entity",
+          "entity": "Entity",
           "attributes": "Attributes",
-          "associatedData":  "Associated data",
+          "associatedData": "Associated data",
           "references": "References",
-          "referenceAttributes":  "Reference attributes",
+          "referenceAttributes": "Reference attributes",
           "prices": "Prices"
         },
         "button": {
@@ -375,7 +385,6 @@
             "invalidValue": "Invalid value.",
             "unknownProperty": "Unknown property"
           }
-
         }
       },
       "renderer": {
@@ -627,15 +636,15 @@
           "globallyUnique": "globally unique",
           "globallyUniquePerLocale": "globally unique per locale",
           "unique": "unique",
-          "uniquePerLocale":  "unique per locale",
+          "uniquePerLocale": "unique per locale",
           "filterable": "filterable",
-          "sortable":  "sortable",
+          "sortable": "sortable",
           "localized": "localized",
-          "nullable":  "nullable"
+          "nullable": "nullable"
         },
         "associatedDataSchema": {
           "localized": "localized",
-          "nullable":  "nullable"
+          "nullable": "nullable"
         },
         "referenceSchema": {
           "external": "external",
@@ -692,7 +701,7 @@
       "label": {
         "type": "Type",
         "description": "Description",
-        "deprecationNotice":  "Deprecation notice",
+        "deprecationNotice": "Deprecation notice",
         "representative": "Representative",
         "unique": "Unique",
         "globallyUnique": "Globally unique",
@@ -718,7 +727,7 @@
       "label": {
         "type": "Type",
         "description": "Description",
-        "deprecationNotice":  "Deprecation notice",
+        "deprecationNotice": "Deprecation notice",
         "localized": "Localized",
         "nullable": "Nullable"
       }
@@ -729,7 +738,7 @@
     "reference": {
       "label": {
         "description": "Description",
-        "deprecationNotice":  "Deprecation notice",
+        "deprecationNotice": "Deprecation notice",
         "cardinality": "Cardinality",
         "referencedEntity": "Referenced entity",
         "referencedEntityManaged": "Referenced entity managed",
@@ -742,10 +751,25 @@
       }
     }
   },
-  "serverDetail": {
-    "path": "Status",
-    "yamlDialog": {
-      "runtimeConfig": "Runtime configuration"
+  "serverActions": {
+    "serverDetail": {
+      "path": "Status",
+      "yamlDialog": {
+        "runtimeConfig": "Runtime configuration"
+      }
+    },
+    "dropCatalog": {
+      "title": "Drop catalog",
+      "description": "Do you really want to drop this catalog?"
+    },
+    "renameCatalog": {
+      "title": "Rename catalog",
+      "description": "Do you really want to rename this catalog?",
+      "rename": "Rename"
+    },
+    "confirmCatalog": {
+      "title": "Operation confirmation",
+      "description": "This operation is dangerous. Do you really want to do it?"
     }
   }
 }

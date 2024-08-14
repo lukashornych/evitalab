@@ -39,6 +39,12 @@ export const useConnectionStore = defineStore('connections', () => {
     const cachedCatalogs: Ref<Map<ConnectionId, Map<string, Catalog>>> = ref(new Map())
     const cachedCatalogSchemas: Ref<Map<ConnectionId, Map<string, CatalogSchema>>> = ref(new Map())
 
+    const catalogs = computed(() => {
+        return (connectionId: ConnectionId) => {
+            return Array.from(cachedCatalogs.value.get(connectionId)?.values() || [])
+        }
+    })
+
     return {
         preconfiguredConnections: readonly(preconfiguredConnections),
         userConnections,
@@ -46,7 +52,8 @@ export const useConnectionStore = defineStore('connections', () => {
         replacePreconfiguredConnections,
         replaceUserConnections,
         cachedCatalogs,
-        cachedCatalogSchemas
+        cachedCatalogSchemas,
+        catalogs
     }
 })
 

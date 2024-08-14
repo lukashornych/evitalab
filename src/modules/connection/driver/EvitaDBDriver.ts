@@ -6,28 +6,45 @@ import { List } from 'immutable'
 import { ServerStatus } from '../model/data/ServerStatus'
 import { ApiReadiness } from '../model/data/ApiReadiness'
 import { ApiServerStatus } from '../model/data/ApiServerStatus'
+import { EntitySchema } from '../model/schema/EntitySchema'
 
 /**
  * evitaDB version-agnostic driver to access data from connected evitaDB server
  */
 export interface EvitaDBDriver {
-
     //TODO: Add doc
     getServerDetails(connection: Connection): Promise<ServerStatus>
     //TODO: Add doc
     getApiReadiness(connection: Connection): Promise<ApiReadiness>
     //TODO: Add doc
-    getRuntimeConfig(connection: Connection):Promise<string>
+    getRuntimeConfig(connection: Connection): Promise<string>
     //TODO: Add doc
-    getServerStatus(connection: Connection):Promise<ApiServerStatus>
+    getServerStatus(connection: Connection): Promise<ApiServerStatus>
     //TODO: Add doc
-    createCatalog(connection: Connection, catalogName: string):Promise<boolean>
+    createCatalog(connection: Connection, catalogName: string): Promise<boolean>
     //TODO: Add doc
-    dropCatalog(connection: Connection, catalogName: string):Promise<boolean>
+    dropCatalog(connection: Connection, catalogName: string): Promise<boolean>
     //TODO: Add doc
-    renameCatalog(connection: Connection, catalogName: string, newCatalogName:string):Promise<boolean>
+    renameCatalog(
+        connection: Connection,
+        catalogName: string,
+        newCatalogName: string
+    ): Promise<boolean>
     //TODO: Add doc
-    replaceCatalog(connection: Connection, catalogNameToBeReplaced: string, catalogNameToBeReplacedWith: string):Promise<boolean>
+    replaceCatalog(
+        connection: Connection,
+        catalogNameToBeReplaced: string,
+        catalogNameToBeReplacedWith: string
+    ): Promise<boolean>
+    //TODO: Add doc
+    createCollection(
+        connection: Connection,
+        entityType: string
+    ): Promise<EntitySchema | undefined>
+    //TODO: Add doc
+    renameCollection(connection: Connection, entityType: string, newName: string):Promise<boolean>
+    //TODO: Add doc
+    dropCollection(connection: Connection, entityType:  string):Promise<boolean>
     /**
      * Which versions of evitaDB server this driver supports. Can be any string supported by https://www.npmjs.com/package/semver.
      * Comparison is done using the `.satisfies(...)` method
@@ -47,7 +64,10 @@ export interface EvitaDBDriver {
      * @param connection connection to evitaDB server
      * @param catalogName name of catalog for which schema is returned
      */
-    getCatalogSchema(connection: Connection, catalogName: string): Promise<CatalogSchema>
+    getCatalogSchema(
+        connection: Connection,
+        catalogName: string
+    ): Promise<CatalogSchema>
 
     /**
      * Returns list of entities for given query from given catalog for the given evitaDB connection
@@ -56,7 +76,11 @@ export interface EvitaDBDriver {
      * @param catalogName name of catalog to query
      * @param query query to request entities
      */
-    query(connection: Connection, catalogName: string, query: string): Promise<Response>
+    query(
+        connection: Connection,
+        catalogName: string,
+        query: string
+    ): Promise<Response>
 
     // todo use this driver even for GQL etc? it could make sense to differentiate version of gql apis
     // queryGraphQL(connection: Connection, path: string, query: string, variables: any = {}): Promise<GraphQLResponse>

@@ -15,7 +15,6 @@ export class ConnectionModuleRegistrar implements ModuleRegistrar {
 
     register(builder: ModuleContextBuilder): void {
         const connectionStore: ConnectionStore = useConnectionStore()
-
         const evitaLabConfig: EvitaLabConfig = builder.inject(evitaLabConfigInjectionKey)
         const labStorage: LabStorage = builder.inject(labStorageInjectionKey)
 

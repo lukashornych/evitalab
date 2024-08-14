@@ -158,7 +158,7 @@
                     <VCard class="py-8 px-8 h-100 card">
                         <VCardTitleWithActions>
                             <template #default>
-                                {{ t('serverDetail.yamlDialog.runtimeConfig') }}
+                                {{ t('serverActions.serverDetail.yamlDialog.runtimeConfig') }}
                             </template>
                             <template #actions>
                                 <VBtn
@@ -226,7 +226,7 @@ const visibleYamlDialog = ref<boolean>(false)
 const runtimeConfigLoaded = ref<boolean>(false)
 const runtimeConfig = ref<string>()
 const extensions: Extension[] = [yaml()]
-const path: List<string> = List([t('serverDetail.path')])
+const path: List<string> = List([t('serverActions.serverDetail.path')])
 const detailViewerService = useDetailViewerService()
 
 detailViewerService

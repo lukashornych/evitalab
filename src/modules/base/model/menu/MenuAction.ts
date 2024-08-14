@@ -1,15 +1,15 @@
 import { Command } from '@/modules/keymap/model/Command'
+import { MenuItem } from './MenuItem'
 
 /**
  * Represents a runnable menu action
  */
-export class MenuAction<AT> {
+export class MenuAction<AT> implements MenuItem<AT> {
 
     readonly value: AT
     readonly title: string
     readonly prependIcon: string
     readonly command?: Command
-
     /**
      * What happens when the action is selected/clicked
      */
