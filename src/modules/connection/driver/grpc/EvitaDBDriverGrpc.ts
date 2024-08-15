@@ -317,7 +317,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         connection: Connection,
         entityType: string,
         catalogName: string
-    ): Promise<EntitySchema | undefined> {
+    ): Promise<Catalog[] | undefined> {
         const res = await this.clientsHelper
             .getEvitaClient(
                 connection,
@@ -339,15 +339,26 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                     },
                 }
             )
-            await this.clientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).close({},                 {
+        const resultClose = await this.clientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).close({},                 {
                 headers: {
                     sessionId: res.sessionId,
                 },
             })
-        if (response.entitySchema)
-            return this.catalogSchemaConverter.convertEntitySchema(
-                response.entitySchema
-            )
+        if (response.entitySchema && resultClose.catalogVersion){
+            const resultData = (
+                await this.clientsHelper
+                    .getManagmentClient(
+                        connection,
+                        TransportHelper.getTransport(connection)
+                    )
+                    .getCatalogStatistics(Empty, {
+                        headers: {
+                            sessionId: res.sessionId
+                        }
+                    })
+            ).catalogStatistics
+            return resultData.map((x) => this.catalogConverter.convert(x))
+        }
         else return undefined
     }
 

@@ -50,6 +50,7 @@ import {
     useEvitaLabConfig,
 } from '@/modules/config/EvitaLabConfig'
 import CreateCollection from '@/modules/server-actions/modify/components/CreateCollection.vue'
+import { Value } from '../../model/Value'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const connectionService: ConnectionService = useConnectionService()
@@ -63,8 +64,12 @@ const schemaViewerTabFactory: SchemaViewerTabFactory =
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 const componentVisible = ref<boolean>(false)
-const PopupComponent = shallowRef(DropCatalog || RenameCatalog || CreateCollection)
-const emits = defineEmits<{ (e: 'changed'): void }>()
+const PopupComponent = shallowRef(
+    DropCatalog || RenameCatalog || CreateCollection
+)
+const emits = defineEmits<{
+    (e: 'changed', value?: Catalog[]): Promise<void>
+}>()
 
 const props = defineProps<{
     catalog: Catalog
@@ -115,10 +120,7 @@ function handleAction(action: string): void {
     }
 }
 
-function createActions(): Map<
-    CatalogActionType,
-    MenuItem<CatalogActionType>
-> {
+function createActions(): Map<CatalogActionType, MenuItem<CatalogActionType>> {
     const actions: Map<
         CatalogActionType,
         MenuItem<CatalogActionType>
@@ -252,8 +254,9 @@ function changeVisibility(visible: boolean) {
     componentVisible.value = visible
 }
 
-function confirmed() {
-    emits('changed')
+function confirmed(value?: Catalog[]) {
+    if (value) emits('changed', value)
+    else emits('changed', undefined)
 }
 </script>
 

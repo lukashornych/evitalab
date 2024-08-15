@@ -36,7 +36,6 @@ import {
     ServerStatusTabFactory,
     useDetailViewerTabFactory,
 } from '@/modules/server-actions/server-status/service/ServerStatusTabFactory'
-
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const connectionService: ConnectionService = useConnectionService()
@@ -63,8 +62,13 @@ const removeConnectionDialogOpen = ref<boolean>(false)
 const catalogs = ref<Catalog[]>()
 const loading = ref<boolean>(false)
 
-async function loadCatalogs(): Promise<void> {
+async function loadCatalogs(value?: Catalog[]): Promise<void> {
     loading.value = true
+    if(value){
+        catalogs.value = value
+        loading.value = false
+        return
+    }
     try {
         catalogs.value = await connectionService.getCatalogs(props.connection, true)
     } catch (e: any) {
@@ -157,7 +161,7 @@ function createMenuAction(
                 prepend-icon="mdi-power-plug-outline"
                 :loading="loading"
                 :actions="actionList"
-                @click="loadCatalogs"
+                @click="loadCatalogs()"
                 @click:action="handleAction"
                 class="font-weight-bold"
             >
@@ -174,7 +178,7 @@ function createMenuAction(
                     v-for="catalog in catalogs"
                     :key="catalog.name"
                     :catalog="catalog"
-                    @changed="loadCatalogs()"
+                    @changed="loadCatalogs"
                 />
             </template>
             <template v-else>

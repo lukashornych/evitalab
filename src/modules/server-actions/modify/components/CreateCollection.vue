@@ -49,6 +49,7 @@ import {
     VTooltip,
 } from 'vuetify/lib/components/index.mjs'
 import { ModifyActionService, useModifyActionService } from '../services/ModifyActionService'
+import { Catalog } from '@/modules/connection/model/Catalog'
 
 const { t } = useI18n()
 
@@ -59,7 +60,7 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{
     (e: 'visibleChanged', visible: boolean): void
-    (e: 'confirmed'): void
+    (e: 'confirmed', value?: Catalog[] | undefined): void
 }>()
 const visibleDropDialog = ref<boolean>(props.visible)
 const collectionName = ref<string>('')
@@ -71,11 +72,11 @@ function changeVisibility(visible: boolean) {
 }
 
 async function confirmed(value: boolean) {
-    console.log(collectionName.value)
     if (value) {
         const res = await modifyActionService.createCollection(props.connection, collectionName.value, props.catalogName)
-        if(res)
-            emit('confirmed')
+        if(res){
+            emit('confirmed', res)
+        }
     }
     changeVisibility(false)
 }

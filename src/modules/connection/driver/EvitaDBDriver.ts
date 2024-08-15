@@ -7,6 +7,7 @@ import { ServerStatus } from '../model/data/ServerStatus'
 import { ApiReadiness } from '../model/data/ApiReadiness'
 import { ApiServerStatus } from '../model/data/ApiServerStatus'
 import { EntitySchema } from '../model/schema/EntitySchema'
+import { Value } from '../model/Value'
 
 /**
  * evitaDB version-agnostic driver to access data from connected evitaDB server
@@ -41,7 +42,7 @@ export interface EvitaDBDriver {
         connection: Connection,
         entityType: string,
         catalogName: string
-    ): Promise<EntitySchema | undefined>
+    ): Promise<Catalog[] | undefined>
     //TODO: Add doc
     renameCollection(connection: Connection, entityType: string, newName: string):Promise<boolean>
     //TODO: Add doc
