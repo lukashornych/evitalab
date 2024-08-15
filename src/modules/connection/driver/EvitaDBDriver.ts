@@ -39,7 +39,8 @@ export interface EvitaDBDriver {
     //TODO: Add doc
     createCollection(
         connection: Connection,
-        entityType: string
+        entityType: string,
+        catalogName: string
     ): Promise<EntitySchema | undefined>
     //TODO: Add doc
     renameCollection(connection: Connection, entityType: string, newName: string):Promise<boolean>

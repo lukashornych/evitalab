@@ -1,4 +1,5 @@
 import { Connection } from "@/modules/connection/model/Connection";
+import { EntitySchema } from "@/modules/connection/model/schema/EntitySchema";
 import { ConnectionService } from "@/modules/connection/service/ConnectionService";
 import { mandatoryInject } from "@/utils/reactivity";
 import { InjectionKey } from "vue";
@@ -20,6 +21,11 @@ export class ModifyActionService {
     async renameCatalog(connection: Connection, catalogName: string, newCatalogName: string):Promise<boolean>{
         const driver = await this.connectionService.getDriver(connection)
         return await driver.renameCatalog(connection, catalogName, newCatalogName)
+    }
+
+    async createCollection(connection: Connection, collectionName: string, catalogName: string):Promise<EntitySchema | undefined>{
+        const driver = await this.connectionService.getDriver(connection)
+        return await driver.createCollection(connection, collectionName, catalogName)
     }
 }
 

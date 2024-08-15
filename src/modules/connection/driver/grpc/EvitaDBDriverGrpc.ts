@@ -30,6 +30,7 @@ import { ServerStatusConverter } from './service/ServerStatusConverter'
 import ky from 'ky'
 import { ApiReadiness } from '../../model/data/ApiReadiness'
 import { ApiServerStatus } from '../../model/data/ApiServerStatus'
+import { GrpcCommitBehavior } from './gen/GrpcEnums_pb'
 
 //TODO: Add docs and add header 'X-EvitaDB-ClientID': this.getClientIdHeaderValue()
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
@@ -314,16 +315,30 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
 
     async createCollection(
         connection: Connection,
-        entityType: string
+        entityType: string,
+        catalogName: string
     ): Promise<EntitySchema | undefined> {
+        const res = await this.clientsHelper
+            .getEvitaClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .createReadWriteSession({ catalogName })
         const response = await this.clientsHelper
             .getSessionClient(
                 connection,
                 TransportHelper.getTransport(connection)
             )
-            .defineEntitySchema({
-                entityType,
-            })
+            .defineEntitySchema(
+                {
+                    entityType
+                },
+                {
+                    headers: {
+                        sessionId: res.sessionId,
+                    },
+                }
+            )
         if (response.entitySchema)
             return this.catalogSchemaConverter.convertEntitySchema(
                 response.entitySchema
@@ -331,18 +346,35 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         else return undefined
     }
 
-    async renameCollection(connection: Connection, entityType: string, newName: string):Promise<boolean> {
-        const response = await this.clientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).renameCollection({
-            entityType,
-            newName
-        })
+    async renameCollection(
+        connection: Connection,
+        entityType: string,
+        newName: string
+    ): Promise<boolean> {
+        const response = await this.clientsHelper
+            .getSessionClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .renameCollection({
+                entityType,
+                newName,
+            })
         return response.renamed
     }
 
-    async dropCollection(connection: Connection, entityType:  string):Promise<boolean>{
-        const response = await this.clientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).deleteCollection({
-            entityType
-        })
+    async dropCollection(
+        connection: Connection,
+        entityType: string
+    ): Promise<boolean> {
+        const response = await this.clientsHelper
+            .getSessionClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .deleteCollection({
+                entityType,
+            })
         return response.deleted
     }
 

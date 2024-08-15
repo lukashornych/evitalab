@@ -41,7 +41,6 @@ import {
     provideCatalogSchema,
     useConnection,
 } from '@/modules/connection/explorer/component/dependecies'
-import { Map as ImmutableMap } from 'immutable'
 import DropCatalog from '@/modules/server-actions/modify/components/DropCatalog.vue'
 import { MenuItem } from '@/modules/base/model/menu/MenuItem'
 import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
@@ -50,6 +49,7 @@ import {
     EvitaLabConfig,
     useEvitaLabConfig,
 } from '@/modules/config/EvitaLabConfig'
+import CreateCollection from '@/modules/server-actions/modify/components/CreateCollection.vue'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const connectionService: ConnectionService = useConnectionService()
@@ -63,7 +63,7 @@ const schemaViewerTabFactory: SchemaViewerTabFactory =
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 const componentVisible = ref<boolean>(false)
-const PopupComponent = shallowRef(DropCatalog || RenameCatalog)
+const PopupComponent = shallowRef(DropCatalog || RenameCatalog || CreateCollection)
 const emits = defineEmits<{ (e: 'changed'): void }>()
 
 const props = defineProps<{
@@ -71,7 +71,7 @@ const props = defineProps<{
 }>()
 
 const connection: Connection = useConnection()
-const actions: ImmutableMap<
+const actions: Map<
     CatalogActionType,
     MenuItem<CatalogActionType>
 > = createActions()
@@ -115,7 +115,7 @@ function handleAction(action: string): void {
     }
 }
 
-function createActions(): ImmutableMap<
+function createActions(): Map<
     CatalogActionType,
     MenuItem<CatalogActionType>
 > {
@@ -207,7 +207,7 @@ function createActions(): ImmutableMap<
             CatalogActionType.RenameCatalog,
             createMenuAction(
                 CatalogActionType.RenameCatalog,
-                'mdi-rename-box',
+                'mdi-pencil-outline',
                 () => {
                     PopupComponent.value = markRaw(RenameCatalog)
                     componentVisible.value = true
@@ -226,11 +226,13 @@ function createActions(): ImmutableMap<
                 CatalogActionType.CreateCollection,
                 'mdi-plus',
                 () => {
+                    PopupComponent.value = markRaw(CreateCollection)
+                    componentVisible.value = true
                 }
             )
         )
     }
-    return ImmutableMap(actions)
+    return new Map(actions)
 }
 
 function createMenuAction(

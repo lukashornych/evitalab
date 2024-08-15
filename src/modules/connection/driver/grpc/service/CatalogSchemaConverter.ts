@@ -109,8 +109,8 @@ export class CatalogSchemaConverter {
                 Value.of(
                     nameVariants
                 ),
-                Value.of(attribute.description ?? null),
-                Value.of(attribute.deprecationNotice ?? null),
+                Value.of(attribute.description ?? undefined),
+                Value.of(attribute.deprecationNotice ?? undefined),
                 Value.of(scalar),
                 Value.of(uniquenessType),
                 Value.of(attribute.filterable),
@@ -253,8 +253,8 @@ export class CatalogSchemaConverter {
             Value.of(
                 MapUtil.getNamingMap(entitySchema.nameVariant)
             ),
-            Value.of(entitySchema.description || null),
-            Value.of(entitySchema.deprecationNotice || null),
+            Value.of(entitySchema.description || undefined),
+            Value.of(entitySchema.deprecationNotice || undefined),
             Value.of(entitySchema.withGeneratedPrimaryKey),
             Value.of(entitySchema.withHierarchy),
             Value.of(entitySchema.withPrice),

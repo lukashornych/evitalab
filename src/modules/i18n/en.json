@@ -772,6 +772,14 @@
     "confirmCatalog": {
       "title": "Operation confirmation",
       "description": "This operation is dangerous. Do you really want to do it?"
+    },
+    "createCollection": {
+      "title": "Create collection",
+      "newCatalogName": "Please write catalog name:"
+    },
+    "replaceCatalog": {
+      "title": "Replace catalog",
+      "fromCatalog": "Catalog from"
     }
   }
 }
