@@ -46,7 +46,12 @@ import DropCatalog from '@/modules/server-actions/modify/components/DropCatalog.
 import { MenuItem } from '@/modules/base/model/menu/MenuItem'
 import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
 import RenameCatalog from '@/modules/server-actions/modify/components/RenameCatalog.vue'
-//TODO: add dialog options
+import {
+    EvitaLabConfig,
+    useEvitaLabConfig,
+} from '@/modules/config/EvitaLabConfig'
+
+const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const connectionService: ConnectionService = useConnectionService()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory =
@@ -59,7 +64,7 @@ const toaster: Toaster = useToaster()
 const { t } = useI18n()
 const componentVisible = ref<boolean>(false)
 const PopupComponent = shallowRef(DropCatalog || RenameCatalog)
-const emits = defineEmits<{(e: 'changed'):void }>()
+const emits = defineEmits<{ (e: 'changed'): void }>()
 
 const props = defineProps<{
     catalog: Catalog
@@ -105,8 +110,8 @@ async function loadCatalogSchema(): Promise<void> {
 
 function handleAction(action: string): void {
     const foundedAction = actions.get(action as CatalogActionType)
-    if(foundedAction && foundedAction instanceof MenuAction){
-        (foundedAction as MenuAction<CatalogActionType>).execute()       
+    if (foundedAction && foundedAction instanceof MenuAction) {
+        (foundedAction as MenuAction<CatalogActionType>).execute()
     }
 }
 
@@ -180,33 +185,51 @@ function createActions(): ImmutableMap<
                 )
             }
         )
-    ),
-    actions.set(CatalogActionType.ModifySubheader,
-        new MenuSubheader(t('explorer.catalog.subitems.modify'))
     )
-    actions.set(
-        CatalogActionType.DropCatalog,
-        createMenuAction(
+    if (!evitaLabConfig.readOnly) {
+        actions.set(
+            CatalogActionType.ModifySubheader,
+            new MenuSubheader(t('explorer.catalog.subitems.modify'))
+        )
+        actions.set(
             CatalogActionType.DropCatalog,
-            'mdi-delete-outline',
-            () => {
-                PopupComponent.value = markRaw(DropCatalog)
-                componentVisible.value = true
-            }
+            createMenuAction(
+                CatalogActionType.DropCatalog,
+                'mdi-delete-outline',
+                () => {
+                    PopupComponent.value = markRaw(DropCatalog)
+                    componentVisible.value = true
+                }
+            )
         )
-    )
 
-    actions.set(
-        CatalogActionType.RenameCatalog,
-        createMenuAction(
+        actions.set(
             CatalogActionType.RenameCatalog,
-            'mdi-rename-box',
-            () => {
-                PopupComponent.value = markRaw(RenameCatalog)
-                componentVisible.value = true
-            }
+            createMenuAction(
+                CatalogActionType.RenameCatalog,
+                'mdi-rename-box',
+                () => {
+                    PopupComponent.value = markRaw(RenameCatalog)
+                    componentVisible.value = true
+                }
+            )
         )
-    )
+
+        actions.set(
+            CatalogActionType.CollectionsSubheader,
+            new MenuSubheader(t('explorer.catalog.subitems.collections'))
+        )
+
+        actions.set(
+            CatalogActionType.CreateCollection,
+            createMenuAction(
+                CatalogActionType.CreateCollection,
+                'mdi-plus',
+                () => {
+                }
+            )
+        )
+    }
     return ImmutableMap(actions)
 }
 
@@ -223,13 +246,13 @@ function createMenuAction(
     )
 }
 
- function changeVisibility(visible:boolean){
+function changeVisibility(visible: boolean) {
     componentVisible.value = visible
- }
+}
 
- function confirmed(){
+function confirmed() {
     emits('changed')
- }
+}
 </script>
 
 <template>
@@ -284,7 +307,14 @@ function createMenuAction(
             </template>
         </div>
     </VListGroup>
-    <PopupComponent v-if="componentVisible" :visible="true" :connection="connection" :catalog-name="catalog.name" @visible-changed="changeVisibility" @confirmed="confirmed" />
+    <PopupComponent
+        v-if="componentVisible"
+        :visible="true"
+        :connection="connection"
+        :catalog-name="catalog.name"
+        @visible-changed="changeVisibility"
+        @confirmed="confirmed"
+    />
 </template>
 
 <style scoped></style>
