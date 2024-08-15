@@ -339,6 +339,11 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                     },
                 }
             )
+            await this.clientsHelper.getSessionClient(connection, TransportHelper.getTransport(connection)).close({},                 {
+                headers: {
+                    sessionId: res.sessionId,
+                },
+            })
         if (response.entitySchema)
             return this.catalogSchemaConverter.convertEntitySchema(
                 response.entitySchema
