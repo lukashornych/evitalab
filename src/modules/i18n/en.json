@@ -22,7 +22,8 @@
       "showMore": "Show more",
       "copy": "Copy",
       "confirm": "Confirm",
-      "rename": "Rename"
+      "rename": "Rename",
+      "replace": "Replace"
     },
     "notification": {
       "copiedToClipboard": "Copied to clipboard",
@@ -250,6 +251,7 @@
       "actions": {
         "openGraphQLSystemApiConsole": "Open GraphQL System API console",
         "add": "Add connection",
+        "create": "Create catalog",
         "edit": "Edit connection",
         "remove": "Remove connection",
         "detail": "Status"
@@ -325,7 +327,9 @@
     "collection": {
       "actions": {
         "viewEntities": "View entities",
-        "viewSchema": "View schema"
+        "viewSchema": "View schema",
+        "dropCollection": "Drop collection",
+        "renameCollection": "Rename collection"
       }
     }
   },
@@ -779,7 +783,23 @@
     },
     "replaceCatalog": {
       "title": "Replace catalog",
-      "fromCatalog": "Catalog from"
+      "fromCatalog": "Catalog from",
+      "toCatalog": "Catalog to",
+      "fromCatalogLabel": "Please select which catalog you want to take data from:",
+      "toCatalogLabel": "Please select to which catalog the data should be inserted:"
+    },
+    "createCatalog": {
+      "title": "Create catalog",
+      "description": "Write the name of the new catalog:"
+    },
+    "dropCollection": {
+      "title": "Drop collection",
+      "description": "Do you really want to drop this collection?"
+    },
+    "renameCollection": {
+      "title": "Rename collection",
+      "description": "Do you really want to rename this collection?",
+      "rename": "Rename"
     }
   }
 }

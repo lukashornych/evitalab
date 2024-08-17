@@ -6,8 +6,6 @@ import { List } from 'immutable'
 import { ServerStatus } from '../model/data/ServerStatus'
 import { ApiReadiness } from '../model/data/ApiReadiness'
 import { ApiServerStatus } from '../model/data/ApiServerStatus'
-import { EntitySchema } from '../model/schema/EntitySchema'
-import { Value } from '../model/Value'
 
 /**
  * evitaDB version-agnostic driver to access data from connected evitaDB server
@@ -44,9 +42,18 @@ export interface EvitaDBDriver {
         catalogName: string
     ): Promise<Catalog[] | undefined>
     //TODO: Add doc
-    renameCollection(connection: Connection, entityType: string, newName: string):Promise<boolean>
+    renameCollection(
+        connection: Connection,
+        entityType: string,
+        newName: string,
+        catalogName: string
+    ): Promise<Catalog[] | undefined>
     //TODO: Add doc
-    dropCollection(connection: Connection, entityType:  string):Promise<boolean>
+    dropCollection(
+        connection: Connection,
+        entityType: string,
+        catalogName: string
+    ): Promise<Catalog[] | undefined>
     /**
      * Which versions of evitaDB server this driver supports. Can be any string supported by https://www.npmjs.com/package/semver.
      * Comparison is done using the `.satisfies(...)` method

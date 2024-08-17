@@ -3,7 +3,7 @@
  * Explorer tree item representing a single connection to evitaDB.
  */
 
-import { computed, ComputedRef, ref } from 'vue'
+import { computed, ComputedRef, markRaw, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
     useWorkspaceService,
@@ -36,6 +36,7 @@ import {
     ServerStatusTabFactory,
     useDetailViewerTabFactory,
 } from '@/modules/server-actions/server-status/service/ServerStatusTabFactory'
+import CreateCatalog from '@/modules/server-actions/modify/components/CreateCatalog.vue'
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const connectionService: ConnectionService = useConnectionService()
@@ -50,6 +51,8 @@ const props = defineProps<{
     connection: Connection
 }>()
 provideConnection(props.connection)
+const componentVisible = ref<boolean>(false)
+const PopupComponent = shallowRef(CreateCatalog)
 
 const actions: ComputedRef<
     Map<ConnectionActionType, MenuAction<ConnectionActionType>>
@@ -64,13 +67,16 @@ const loading = ref<boolean>(false)
 
 async function loadCatalogs(value?: Catalog[]): Promise<void> {
     loading.value = true
-    if(value){
+    if (value) {
         catalogs.value = value
         loading.value = false
         return
     }
     try {
-        catalogs.value = await connectionService.getCatalogs(props.connection, true)
+        catalogs.value = await connectionService.getCatalogs(
+            props.connection,
+            true
+        )
     } catch (e: any) {
         toaster.error(e)
     }
@@ -110,7 +116,10 @@ function createActions(): Map<
         createMenuAction(
             ConnectionActionType.Detail,
             'mdi-database-outline',
-            () => workspaceService.createTab(detailViewerTabfactory.createNew(props.connection))
+            () =>
+                workspaceService.createTab(
+                    detailViewerTabfactory.createNew(props.connection)
+                )
         )
     )
     if (!evitaLabConfig.readOnly && !props.connection.preconfigured) {
@@ -133,6 +142,13 @@ function createActions(): Map<
                 () => (removeConnectionDialogOpen.value = true)
             )
         )
+        actions.set(
+            ConnectionActionType.Create,
+            createMenuAction(ConnectionActionType.Create, 'mdi-plus', () => {
+                PopupComponent.value = markRaw(CreateCatalog)
+                componentVisible.value = true
+            })
+        )
     }
     return actions
 }
@@ -148,49 +164,59 @@ function createMenuAction(
         execute
     )
 }
-
 </script>
 
 <template>
-    <VListGroup :value="connection.name">
-        <template #activator="{ isOpen, props }">
-            <VTreeViewItem
-                v-bind="props"
-                openable
-                :is-open="isOpen"
-                prepend-icon="mdi-power-plug-outline"
-                :loading="loading"
-                :actions="actionList"
-                @click="loadCatalogs()"
-                @click:action="handleAction"
-                class="font-weight-bold"
-            >
-                {{ connection.name }}
-                <VTooltip activator="parent">
+    <div>
+        <VListGroup :value="connection.name">
+            <template #activator="{ isOpen, props }">
+                <VTreeViewItem
+                    v-bind="props"
+                    openable
+                    :is-open="isOpen"
+                    prepend-icon="mdi-power-plug-outline"
+                    :loading="loading"
+                    :actions="actionList"
+                    @click="loadCatalogs()"
+                    @click:action="handleAction"
+                    class="font-weight-bold"
+                >
                     {{ connection.name }}
-                </VTooltip>
-            </VTreeViewItem>
-        </template>
-
-        <div v-if="catalogs !== undefined">
-            <template v-if="catalogs.length > 0">
-                <CatalogItem
-                    v-for="catalog in catalogs"
-                    :key="catalog.name"
-                    :catalog="catalog"
-                    @changed="loadCatalogs"
-                />
+                    <VTooltip activator="parent">
+                        {{ connection.name }}
+                    </VTooltip>
+                </VTreeViewItem>
             </template>
-            <template v-else>
-                <VTreeViewEmptyItem />
-            </template>
-        </div>
 
-        <RemoveConnectionDialog
-            v-model="removeConnectionDialogOpen"
-            :connection="connection"
-        />
-    </VListGroup>
+            <div v-if="catalogs !== undefined">
+                <template v-if="catalogs.length > 0">
+                    <CatalogItem
+                        v-for="catalog in catalogs"
+                        :key="catalog.name"
+                        :catalog="catalog"
+                        @changed="(e) => loadCatalogs(e)"
+                    />
+                </template>
+                <template v-else>
+                    <VTreeViewEmptyItem />
+                </template>
+            </div>
+
+            <RemoveConnectionDialog
+                v-model="removeConnectionDialogOpen"
+                :connection="connection"
+            />
+        </VListGroup>
+    </div>
+    <PopupComponent
+        v-if="componentVisible"
+        :visible="true"
+        :connection="props.connection"
+        @confirmed="loadCatalogs"
+        @visible-changed="() => {
+            componentVisible = false
+        }"
+    />
 </template>
 
 <style lang="scss" scoped></style>

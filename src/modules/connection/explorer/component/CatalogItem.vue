@@ -3,16 +3,10 @@
  * Explorer tree item representing a single catalog in evitaDB.
  */
 
-import { markRaw, ref, shallowRef } from 'vue'
+import { markRaw, ref, Ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import { Connection } from '@/modules/connection/model/Connection'
-import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
-import {
-    ConnectionService,
-    useConnectionService,
-} from '@/modules/connection/service/ConnectionService'
 import { MenuAction } from '@/modules/base/model/menu/MenuAction'
 import { CatalogActionType } from '@/modules/connection/explorer/model/CatalogActionType'
 import { GraphQLInstanceType } from '@/modules/graphql-console/console/model/GraphQLInstanceType'
@@ -36,9 +30,8 @@ import {
 import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
 import VTreeViewEmptyItem from '@/modules/base/component/VTreeViewEmptyItem.vue'
 import CollectionItem from '@/modules/connection/explorer/component/CollectionItem.vue'
-import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
 import {
-    provideCatalogSchema,
+    provideCatalog,
     useConnection,
 } from '@/modules/connection/explorer/component/dependecies'
 import DropCatalog from '@/modules/server-actions/modify/components/DropCatalog.vue'
@@ -50,10 +43,9 @@ import {
     useEvitaLabConfig,
 } from '@/modules/config/EvitaLabConfig'
 import CreateCollection from '@/modules/server-actions/modify/components/CreateCollection.vue'
-import { Value } from '../../model/Value'
+import ReplaceCatalog from '@/modules/server-actions/modify/components/ReplaceCatalog.vue'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
-const connectionService: ConnectionService = useConnectionService()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory =
     useEvitaQLConsoleTabFactory()
@@ -61,15 +53,10 @@ const graphQLConsoleTabFactory: GraphQLConsoleTabFactory =
     useGraphQLConsoleTabFactory()
 const schemaViewerTabFactory: SchemaViewerTabFactory =
     useSchemaViewerTabFactory()
-const toaster: Toaster = useToaster()
 const { t } = useI18n()
 const componentVisible = ref<boolean>(false)
-const PopupComponent = shallowRef(
-    DropCatalog || RenameCatalog || CreateCollection
-)
-const emits = defineEmits<{
-    (e: 'changed', value?: Catalog[]): Promise<void>
-}>()
+const PopupComponent = shallowRef(DropCatalog || RenameCatalog || CreateCollection || ReplaceCatalog)
+const emits = defineEmits<{ (e: 'changed', value?: Catalog[] | undefined): void }>()
 
 const props = defineProps<{
     catalog: Catalog
@@ -82,36 +69,10 @@ const actions: Map<
 > = createActions()
 const actionList: MenuItem<CatalogActionType>[] = Array.from(actions.values())
 
-const catalogSchema = ref<CatalogSchema>()
-provideCatalogSchema(catalogSchema)
-const entitySchemas = ref<EntitySchema[]>()
+const catalogRef = ref(props.catalog)
+provideCatalog(catalogRef as Ref<Catalog>)
 
 const loading = ref<boolean>(false)
-
-async function loadCatalogSchema(): Promise<void> {
-    if (
-        catalogSchema.value !== undefined ||
-        props.catalog.corrupted.getOrElse(false)
-    ) {
-        return
-    }
-
-    loading.value = true
-    try {
-        catalogSchema.value = await connectionService.getCatalogSchema(
-            connection,
-            props.catalog.name
-        )
-        if (catalogSchema.value) {
-            entitySchemas.value = (await catalogSchema.value.entitySchemas())
-                .map((it) => Array.from(it.values()))
-                .getOrElseGet(() => [])
-        }
-    } catch (e: any) {
-        toaster.error(e)
-    }
-    loading.value = false
-}
 
 function handleAction(action: string): void {
     const foundedAction = actions.get(action as CatalogActionType)
@@ -120,7 +81,10 @@ function handleAction(action: string): void {
     }
 }
 
-function createActions(): Map<CatalogActionType, MenuItem<CatalogActionType>> {
+function createActions(): Map<
+    CatalogActionType,
+    MenuItem<CatalogActionType>
+> {
     const actions: Map<
         CatalogActionType,
         MenuItem<CatalogActionType>
@@ -218,6 +182,18 @@ function createActions(): Map<CatalogActionType, MenuItem<CatalogActionType>> {
         )
 
         actions.set(
+            CatalogActionType.ReplaceCatalog,
+            createMenuAction(
+                CatalogActionType.ReplaceCatalog,
+                'mdi-file-replace-outline',
+                () => {
+                    PopupComponent.value = markRaw(ReplaceCatalog)
+                    componentVisible.value = true
+                }
+            )
+        )
+
+        actions.set(
             CatalogActionType.CollectionsSubheader,
             new MenuSubheader(t('explorer.catalog.subitems.collections'))
         )
@@ -254,9 +230,8 @@ function changeVisibility(visible: boolean) {
     componentVisible.value = visible
 }
 
-function confirmed(value?: Catalog[]) {
-    if (value) emits('changed', value)
-    else emits('changed', undefined)
+function confirmed(value?: Catalog[] | undefined) {
+    emits('changed', value)
 }
 </script>
 
@@ -271,7 +246,6 @@ function confirmed(value?: Catalog[]) {
                 prepend-icon="mdi-menu"
                 :loading="loading"
                 :actions="actionList"
-                @click="loadCatalogSchema"
                 @click:action="handleAction"
                 class="font-weight-bold"
             >
@@ -297,14 +271,16 @@ function confirmed(value?: Catalog[]) {
         <div
             v-if="
                 !catalog.corrupted.getOrElse(false) &&
-                catalogSchema !== undefined
+                catalogRef !== undefined
             "
         >
-            <template v-if="entitySchemas != null && entitySchemas?.length > 0">
+            <template v-if="props.catalog.entityTypes != null && props.catalog.entityTypes.getOrThrow().length > 0">
                 <CollectionItem
-                    v-for="entitySchema in entitySchemas"
-                    :key="entitySchema.name"
-                    :entity-schema="entitySchema"
+                    v-for="entityType in props.catalog.entityTypes.getIfSupported()"
+                    :key="entityType.entityType.getOrThrow()"
+                    :entityType="entityType"
+                    :catalog-name="props.catalog.name"
+                    @changed="confirmed"
                 />
             </template>
             <template v-else>

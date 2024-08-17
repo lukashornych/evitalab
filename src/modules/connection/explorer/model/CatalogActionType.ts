@@ -9,5 +9,5 @@ export enum CatalogActionType {
     ReplaceCatalog = 'replaceCatalog',
     ModifySubheader = 'modifySubheader',
     CollectionsSubheader = 'collectionsSubheader',
-    CreateCollection = 'createCollection'
+    CreateCollection = 'createCollection',
 }

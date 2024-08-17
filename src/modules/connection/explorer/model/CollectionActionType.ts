@@ -1,5 +1,7 @@
 // todo docs
 export enum CollectionActionType {
     ViewEntities = 'viewEntities',
-    ViewSchema = 'viewSchema'
+    ViewSchema = 'viewSchema',
+    DropCollection = 'dropCollection',
+    RenameCollection = 'renameCollection'
 }
