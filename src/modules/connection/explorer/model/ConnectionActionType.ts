@@ -3,5 +3,6 @@ export enum ConnectionActionType {
     OpenGraphQLSystemAPIConsole = 'openGraphQLSystemApiConsole',
     Edit = 'edit',
     Remove = 'remove',
-    Detail = 'detail'
+    Detail = 'detail',
+    Create = 'create'
 }

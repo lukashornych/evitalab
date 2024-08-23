@@ -1,7 +1,7 @@
 import { InjectionKey, provide, Ref } from 'vue'
 import { Connection } from '@/modules/connection/model/Connection'
 import { mandatoryInject } from '@/utils/reactivity'
-import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
+import { Catalog } from '../../model/Catalog'
 
 // todo docs
 const connectionInjectionKey: InjectionKey<Connection> = Symbol('connection')
@@ -13,10 +13,10 @@ export function useConnection(): Connection {
 }
 
 // todo docs
-const catalogSchemaInjectionKey: InjectionKey<Ref<CatalogSchema | undefined>> = Symbol('catalogSchema')
-export function provideCatalogSchema(catalogSchema: Ref<CatalogSchema | undefined>): void {
-    provide(catalogSchemaInjectionKey, catalogSchema)
+const catalogInjectionKey: InjectionKey<Ref<Catalog | undefined>> = Symbol('catalog')
+export function provideCatalog(catalog: Ref<Catalog | undefined>): void {
+    provide(catalogInjectionKey, catalog)
 }
-export function useCatalogSchema(): Ref<CatalogSchema | undefined> {
-    return mandatoryInject(catalogSchemaInjectionKey)
+export function useCatalog(): Ref<Catalog | undefined> {
+    return mandatoryInject(catalogInjectionKey)
 }

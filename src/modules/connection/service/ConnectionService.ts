@@ -152,12 +152,13 @@ export class ConnectionService {
         return catalog
     }
 
-    async getCatalogs(connection: Connection): Promise<Catalog[]> {
+    async getCatalogs(connection: Connection, forceReload?: boolean): Promise<Catalog[]> {
         const cachedCatalogs: IterableIterator<Catalog> | undefined = this.store.cachedCatalogs.get(connection.id)?.values() as IterableIterator<Catalog>
-        if (cachedCatalogs == undefined) {
-            return await this.fetchCatalogs(connection)
+        if (cachedCatalogs == undefined || forceReload === true) {
+            await this.fetchCatalogs(connection)
+            return this.store.catalogs(connection.id)
         } else {
-            return Array.from(cachedCatalogs)
+            return this.store.catalogs(connection.id)
         }
     }
 
@@ -188,7 +189,7 @@ export class ConnectionService {
                 return [catalog.name, catalog]
             }))
         )
-        return fetchedCatalogs
+        return Array.from(this.store.cachedCatalogs.get(connection.id)!.values())
     }
 
     private async fetchCatalogSchema(connection: Connection, catalogName: string): Promise<CatalogSchema> {
@@ -202,7 +203,7 @@ export class ConnectionService {
         return fetchedCatalogSchema
     }
 
-    private async getDriver(connection: Connection): Promise<EvitaDBDriver> {
+    async getDriver(connection: Connection): Promise<EvitaDBDriver> {
         let cachedDriver: EvitaDBDriver | undefined = this.connectionDriverCache.get(connection.id)
         if (cachedDriver == undefined) {
             cachedDriver = await this.evitaDBDriverResolver.resolveDriver(connection)

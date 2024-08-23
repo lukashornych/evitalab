@@ -2,62 +2,95 @@
 /**
  * Explorer tree item representing a single collection in evitaDB within a catalog.
  */
-
-import { Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { CollectionActionType } from '@/modules/connection/explorer/model/CollectionActionType'
 import { MenuAction } from '@/modules/base/model/menu/MenuAction'
-import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
-import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
+import {
+    useWorkspaceService,
+    WorkspaceService,
+} from '@/modules/workspace/service/WorkspaceService'
 import { Connection } from '@/modules/connection/model/Connection'
-import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
 import {
     SchemaViewerTabFactory,
-    useSchemaViewerTabFactory
+    useSchemaViewerTabFactory,
 } from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
 import { EntitySchemaPointer } from '@/modules/schema-viewer/viewer/model/EntitySchemaPointer'
 import {
     EntityViewerTabFactory,
-    useEntityViewerTabFactory
+    useEntityViewerTabFactory,
 } from '@/modules/entity-viewer/viewer/workspace/service/EntityViewerTabFactory'
-import { useCatalogSchema, useConnection } from '@/modules/connection/explorer/component/dependecies'
+import {
+    useCatalog,
+    useConnection,
+} from '@/modules/connection/explorer/component/dependecies'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
-
+import { EntityCollectionStatistics } from '../../model/EntityCollectionStatistics'
+import {
+    EvitaLabConfig,
+    useEvitaLabConfig,
+} from '@/modules/config/EvitaLabConfig'
+import { markRaw, ref, shallowRef } from 'vue'
+import DropCollection from '@/modules/server-actions/modify/components/DropCollection.vue'
+import RenameCollection from '@/modules/server-actions/modify/components/RenameCollection.vue'
+import { Catalog } from '../../model/Catalog'
 const workspaceService: WorkspaceService = useWorkspaceService()
-const entityViewerTabFactory: EntityViewerTabFactory = useEntityViewerTabFactory()
-const schemaViewerTabFactory: SchemaViewerTabFactory = useSchemaViewerTabFactory()
+const entityViewerTabFactory: EntityViewerTabFactory =
+    useEntityViewerTabFactory()
+const schemaViewerTabFactory: SchemaViewerTabFactory =
+    useSchemaViewerTabFactory()
 const { t } = useI18n()
+const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 
 const props = defineProps<{
-    entitySchema: EntitySchema
+    entityType: EntityCollectionStatistics
+    catalogName: string
 }>()
 
+const emits = defineEmits<{ (e: 'changed', value?: Catalog[] | undefined): void }>()
+const componentVisible = ref<boolean>(false)
+const PopupComponent = shallowRef(DropCollection || RenameCollection)
+
 const connection: Connection = useConnection()
-const catalogSchema: Ref<CatalogSchema | undefined> = useCatalogSchema()
-const actions: Map<CollectionActionType, MenuAction<CollectionActionType>> = createActions()
-const actionList: MenuAction<CollectionActionType>[] = Array.from(actions.values())
+const catalogSchema = useCatalog()
+const actions: Map<
+    CollectionActionType,
+    MenuAction<CollectionActionType>
+> = createActions()
+const actionList: MenuAction<CollectionActionType>[] = Array.from(
+    actions.values()
+)
 
 if (catalogSchema.value == undefined) {
-    throw new UnexpectedError(`Catalog schema is not loaded yet, but collection item is already rendered!`)
+    throw new UnexpectedError(
+        `Catalog schema is not loaded yet, but collection item is already rendered!`
+    )
 }
 
 function openDataGrid() {
-    workspaceService.createTab(entityViewerTabFactory.createNew(
-        connection as Connection,
-        catalogSchema.value!.name ,
-        props.entitySchema.name,
-        undefined,
-        true // we want to display data to user right away, there is no malicious code here
-    ))
+    workspaceService.createTab(
+        entityViewerTabFactory.createNew(
+            connection as Connection,
+            catalogSchema.value!.name,
+            props.entityType.entityType.getOrThrow(),
+            undefined,
+            true // we want to display data to user right away, there is no malicious code here
+        )
+    )
 }
 
 function handleAction(action: string) {
     actions.get(action as CollectionActionType)?.execute()
 }
 
-function createActions(): Map<CollectionActionType, MenuAction<CollectionActionType>> {
-    const actions: Map<CollectionActionType, MenuAction<CollectionActionType>> = new Map()
+function createActions(): Map<
+    CollectionActionType,
+    MenuAction<CollectionActionType>
+> {
+    const actions: Map<
+        CollectionActionType,
+        MenuAction<CollectionActionType>
+    > = new Map()
     // todo lho consider moving these static actions directly into HTML code
     actions.set(
         CollectionActionType.ViewEntities,
@@ -67,26 +100,60 @@ function createActions(): Map<CollectionActionType, MenuAction<CollectionActionT
             openDataGrid
         )
     )
-    actions.set(
-        CollectionActionType.ViewSchema,
-        createMenuAction(
-            CollectionActionType.ViewSchema,
-            'mdi-file-code-outline',
-            () => workspaceService.createTab(
-                schemaViewerTabFactory.createNew(
-                    connection,
-                    new EntitySchemaPointer(
-                        catalogSchema.value!.name,
-                        props.entitySchema.name
-                    )
+    const items = catalogSchema.value?.entityTypes.getIfSupported()
+    if (items) {
+        for (const item of items) {
+            actions.set(
+                CollectionActionType.ViewSchema,
+                createMenuAction(
+                    CollectionActionType.ViewSchema,
+                    'mdi-file-code-outline',
+                    () =>
+                        workspaceService.createTab(
+                            schemaViewerTabFactory.createNew(
+                                connection,
+                                new EntitySchemaPointer(
+                                    item.entityType.getOrThrow(),
+                                    props.entityType.entityType.getOrThrow()
+                                )
+                            )
+                        )
                 )
             )
+        }
+    }
+    if (!evitaLabConfig.readOnly) {
+        actions.set(
+            CollectionActionType.DropCollection,
+            createMenuAction(
+                CollectionActionType.DropCollection,
+                'mdi-delete-outline',
+                () => {
+                    PopupComponent.value = markRaw(DropCollection)
+                    componentVisible.value = true
+                }
+            )
         )
-    )
+        actions.set(
+            CollectionActionType.RenameCollection,
+            createMenuAction(
+                CollectionActionType.RenameCollection,
+                'mdi-delete-outline',
+                () => {
+                    PopupComponent.value = markRaw(RenameCollection)
+                    componentVisible.value = true
+                }
+            )
+        )
+    }
     return actions
 }
 
-function createMenuAction(actionType: CollectionActionType, prependIcon: string, execute: () => void): MenuAction<CollectionActionType> {
+function createMenuAction(
+    actionType: CollectionActionType,
+    prependIcon: string,
+    execute: () => void
+): MenuAction<CollectionActionType> {
     return new MenuAction(
         actionType,
         t(`explorer.collection.actions.${actionType}`),
@@ -94,24 +161,40 @@ function createMenuAction(actionType: CollectionActionType, prependIcon: string,
         execute
     )
 }
-
 </script>
 
 <template>
-    <VTreeViewItem
-        prepend-icon="mdi-list-box-outline"
-        :actions="actionList"
-        @click="openDataGrid"
-        @click:action="handleAction"
-        class="text-gray-light text-sm-body-2"
-    >
-        {{ entitySchema.name }}
-        <VTooltip activator="parent">
-            {{ entitySchema.name }}
-        </VTooltip>
-    </VTreeViewItem>
+    <div>
+        <VTreeViewItem
+            prepend-icon="mdi-list-box-outline"
+            :actions="actionList"
+            @click="openDataGrid"
+            @click:action="handleAction"
+            class="text-gray-light text-sm-body-2"
+        >
+            {{ entityType.entityType.getOrThrow() }}
+            <VTooltip activator="parent">
+                {{ entityType.entityType.getOrThrow() }}
+            </VTooltip>
+        </VTreeViewItem>
+        <PopupComponent
+            v-if="componentVisible"
+            :visible="true"
+            :collection-name="entityType.entityType.getOrThrow()"
+            :catalog-name="catalogName"
+            :connection="connection"
+            @visible-changed="
+                () => {
+                    componentVisible = false
+                }
+            "
+            @confirmed="
+                (value?: Catalog[] | undefined) => {
+                    emits('changed', value)
+                }
+            "
+        />
+    </div>
 </template>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>

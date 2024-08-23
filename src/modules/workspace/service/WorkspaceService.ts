@@ -23,6 +23,8 @@ import {
 import { SchemaViewerTabDefinition } from '@/modules/schema-viewer/viewer/workspace/model/SchemaViewerTabDefinition'
 import { KeymapViewerTabDefinition } from '@/modules/keymap/viewer/workspace/model/KeymapViewerTabDefinition'
 import { mandatoryInject } from '@/utils/reactivity'
+import { ServerStatusTabFactory } from '@/modules/server-actions/server-status/service/ServerStatusTabFactory'
+import { ServerStatusDefinition } from '@/modules/server-actions/server-status/model/ServerStatusDefinition'
 
 const openedTabsStorageKey: string = 'openedTabs'
 const tabHistoryStorageKey: string = 'tabHistory'
@@ -41,6 +43,7 @@ export class WorkspaceService {
     private readonly graphQLConsoleTabFactory: GraphQLConsoleTabFactory
     private readonly schemaViewerTabFactory: SchemaViewerTabFactory
     private readonly keymapViewerTabFactory: KeymapViewerTabFactory
+    private readonly serverStatusTabFactory: ServerStatusTabFactory
 
     constructor(store: WorkspaceStore,
                 labStorage: LabStorage,
@@ -48,7 +51,8 @@ export class WorkspaceService {
                 evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory,
                 graphQLConsoleTabFactory: GraphQLConsoleTabFactory,
                 schemaViewerTabFactory: SchemaViewerTabFactory,
-                keymapViewerTabFactory: KeymapViewerTabFactory) {
+                keymapViewerTabFactory: KeymapViewerTabFactory,
+                serverStatusTabFactory: ServerStatusTabFactory) {
         this.store = store
         this.labStorage = labStorage
         this.entityViewerTabFactory = entityViewerTabFactory
@@ -56,6 +60,7 @@ export class WorkspaceService {
         this.graphQLConsoleTabFactory = graphQLConsoleTabFactory
         this.schemaViewerTabFactory = schemaViewerTabFactory
         this.keymapViewerTabFactory = keymapViewerTabFactory
+        this.serverStatusTabFactory = serverStatusTabFactory
     }
 
     getTabDefinitions(): TabDefinition<any, any>[] {
@@ -148,6 +153,8 @@ export class WorkspaceService {
                         return this.schemaViewerTabFactory.restoreFromJson(storedTabObject.tabParams)
                     case TabType.KeymapViewer:
                         return this.keymapViewerTabFactory.createNew()
+                    case TabType.ServerStatus:
+                        return this.serverStatusTabFactory.restoreFromJson(storedTabObject.tabParams)
                     default:
                         throw new UnexpectedError(`Unsupported stored tab type '${storedTabObject.tabType}'.`)
                 }
@@ -180,6 +187,8 @@ export class WorkspaceService {
                     tabType = TabType.SchemaViewer
                 } else if (tabRequest instanceof KeymapViewerTabDefinition) {
                     tabType = TabType.KeymapViewer
+                } else if(tabRequest instanceof ServerStatusDefinition) {
+                    tabType = TabType.ServerStatus
                 } else {
                     console.info(undefined, `Unsupported tab type '${tabRequest.constructor.name}'. Not storing for next session.`)
                     return undefined

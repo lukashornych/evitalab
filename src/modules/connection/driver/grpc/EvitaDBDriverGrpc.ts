@@ -30,6 +30,7 @@ import { ServerStatusConverter } from './service/ServerStatusConverter'
 import ky from 'ky'
 import { ApiReadiness } from '../../model/data/ApiReadiness'
 import { ApiServerStatus } from '../../model/data/ApiServerStatus'
+import { GrpcCommitBehavior } from './gen/GrpcEnums_pb'
 
 //TODO: Add docs and add header 'X-EvitaDB-ClientID': this.getClientIdHeaderValue()
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
@@ -40,10 +41,9 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
     )
     private readonly extraResultConverter: ExtraResultConverter =
         new ExtraResultConverter(this.entityConverter)
-    private readonly grpcCatalogSchemaConverter: CatalogSchemaConverter =
+    private readonly catalogSchemaConverter: CatalogSchemaConverter =
         new CatalogSchemaConverter(this.evitaValueConverter)
-    private readonly grpcCatalogConverter: CatalogConverter =
-        new CatalogConverter()
+    private readonly catalogConverter: CatalogConverter = new CatalogConverter()
     private readonly responseConverter: ResponseConverter =
         new ResponseConverter(this.entityConverter, this.extraResultConverter)
     private readonly serverStatusConverter: ServerStatusConverter =
@@ -81,26 +81,25 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
             if (schemaRes.catalogSchema == null) {
                 throw this.handleCallError('catalog name is null', connection)
             }
-            const result: CatalogSchema =
-                this.grpcCatalogSchemaConverter.convert(
-                    schemaRes.catalogSchema,
-                    async (
-                        catalogName: string
-                    ): Promise<Value<List<EntitySchema>>> => {
-                        return await this.loadEntitySchemas(
-                            catalogName,
-                            this.grpcCatalogSchemaConverter,
-                            this.clientsHelper.getEvitaClient(
-                                connection,
-                                TransportHelper.getTransport(connection)
-                            ),
-                            this.clientsHelper.getSessionClient(
-                                connection,
-                                TransportHelper.getTransport(connection)
-                            )
+            const result: CatalogSchema = this.catalogSchemaConverter.convert(
+                schemaRes.catalogSchema,
+                async (
+                    catalogName: string
+                ): Promise<Value<List<EntitySchema>>> => {
+                    return await this.loadEntitySchemas(
+                        catalogName,
+                        this.catalogSchemaConverter,
+                        this.clientsHelper.getEvitaClient(
+                            connection,
+                            TransportHelper.getTransport(connection)
+                        ),
+                        this.clientsHelper.getSessionClient(
+                            connection,
+                            TransportHelper.getTransport(connection)
                         )
-                    }
-                )
+                    )
+                }
+            )
             return result
         } catch (e: any) {
             throw this.handleCallError(e, connection)
@@ -186,7 +185,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                     )
                     .getCatalogStatistics(Empty)
             ).catalogStatistics
-            return res.map((x) => this.grpcCatalogConverter.convert(x))
+            return res.map((x) => this.catalogConverter.convert(x))
         } catch (e: any) {
             throw this.handleCallError(e, connection)
         }
@@ -248,6 +247,232 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
             apiStatus.healthProblems,
             apiStatus.apis
         )
+    }
+
+    async createCatalog(
+        connection: Connection,
+        catalogName: string
+    ): Promise<boolean> {
+        const response = await this.clientsHelper
+            .getEvitaClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .defineCatalog({
+                catalogName,
+            })
+        return response.success
+    }
+
+    async dropCatalog(
+        connection: Connection,
+        catalogName: string
+    ): Promise<boolean> {
+        const response = await this.clientsHelper
+            .getEvitaClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .deleteCatalogIfExists({
+                catalogName,
+            })
+        return response.success
+    }
+
+    async renameCatalog(
+        connection: Connection,
+        catalogName: string,
+        newCatalogName: string
+    ): Promise<boolean> {
+        const response = await this.clientsHelper
+            .getEvitaClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .renameCatalog({
+                catalogName,
+                newCatalogName,
+            })
+        return response.success
+    }
+
+    async replaceCatalog(
+        connection: Connection,
+        catalogNameToBeReplaced: string,
+        catalogNameToBeReplacedWith: string
+    ): Promise<boolean> {
+        const response = await this.clientsHelper
+            .getEvitaClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .replaceCatalog({
+                catalogNameToBeReplaced,
+                catalogNameToBeReplacedWith,
+            })
+        return response.success
+    }
+
+    async createCollection(
+        connection: Connection,
+        entityType: string,
+        catalogName: string
+    ): Promise<Catalog[] | undefined> {
+        const res = await this.clientsHelper
+            .getEvitaClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .createReadWriteSession({ catalogName })
+        const response = await this.clientsHelper
+            .getSessionClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .defineEntitySchema(
+                {
+                    entityType,
+                },
+                {
+                    headers: {
+                        sessionId: res.sessionId,
+                    },
+                }
+            )
+        const resultClose = await this.clientsHelper
+            .getSessionClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .close(
+                {},
+                {
+                    headers: {
+                        sessionId: res.sessionId,
+                    },
+                }
+            )
+        if (response.entitySchema && resultClose.catalogVersion) {
+            return await this.downloadCtalogsSameSession(
+                connection,
+                res.sessionId
+            )
+        } else return undefined
+    }
+
+    async renameCollection(
+        connection: Connection,
+        entityType: string,
+        newName: string,
+        catalogName: string
+    ): Promise<Catalog[] | undefined> {
+        const res = await this.clientsHelper
+            .getEvitaClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .createReadWriteSession({ catalogName })
+        const response = await this.clientsHelper
+            .getSessionClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .renameCollection(
+                {
+                    entityType,
+                    newName,
+                },
+                {
+                    headers: {
+                        sessionId: res.sessionId,
+                    },
+                }
+            )
+        await this.clientsHelper
+            .getSessionClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .close(
+                {},
+                {
+                    headers: {
+                        sessionId: res.sessionId,
+                    },
+                }
+            )
+        if (response)
+            return await this.downloadCtalogsSameSession(
+                connection,
+                res.sessionId
+            )
+        else return undefined
+    }
+
+    async dropCollection(
+        connection: Connection,
+        entityType: string,
+        catalogName: string
+    ): Promise<Catalog[] | undefined> {
+        const res = await this.clientsHelper
+            .getEvitaClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .createReadWriteSession({ catalogName })
+        const response = await this.clientsHelper
+            .getSessionClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .deleteCollection(
+                {
+                    entityType,
+                },
+                {
+                    headers: {
+                        sessionId: res.sessionId,
+                    },
+                }
+            )
+        await this.clientsHelper
+            .getSessionClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .close(
+                {},
+                {
+                    headers: {
+                        sessionId: res.sessionId,
+                    },
+                }
+            )
+        if (response)
+            return await this.downloadCtalogsSameSession(
+                connection,
+                res.sessionId
+            )
+        else return undefined
+    }
+
+    async downloadCtalogsSameSession(
+        connection: Connection,
+        sessionId: string
+    ): Promise<Catalog[]> {
+        const resultData = (
+            await this.clientsHelper
+                .getManagmentClient(
+                    connection,
+                    TransportHelper.getTransport(connection)
+                )
+                .getCatalogStatistics(Empty, {
+                    headers: {
+                        sessionId,
+                    },
+                })
+        ).catalogStatistics
+        return resultData.map((x) => this.catalogConverter.convert(x))
     }
 
     private handleCallError(e: any, connection?: Connection): LabError {

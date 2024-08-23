@@ -3,16 +3,10 @@
  * Explorer tree item representing a single catalog in evitaDB.
  */
 
-import { ref } from 'vue'
+import { markRaw, ref, Ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import { Connection } from '@/modules/connection/model/Connection'
-import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
-import {
-    ConnectionService,
-    useConnectionService,
-} from '@/modules/connection/service/ConnectionService'
 import { MenuAction } from '@/modules/base/model/menu/MenuAction'
 import { CatalogActionType } from '@/modules/connection/explorer/model/CatalogActionType'
 import { GraphQLInstanceType } from '@/modules/graphql-console/console/model/GraphQLInstanceType'
@@ -36,14 +30,22 @@ import {
 import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
 import VTreeViewEmptyItem from '@/modules/base/component/VTreeViewEmptyItem.vue'
 import CollectionItem from '@/modules/connection/explorer/component/CollectionItem.vue'
-import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
 import {
-    provideCatalogSchema,
+    provideCatalog,
     useConnection,
 } from '@/modules/connection/explorer/component/dependecies'
-import { Map as ImmutableMap } from 'immutable'
-//TODO: add dialog options
-const connectionService: ConnectionService = useConnectionService()
+import DropCatalog from '@/modules/server-actions/modify/components/DropCatalog.vue'
+import { MenuItem } from '@/modules/base/model/menu/MenuItem'
+import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
+import RenameCatalog from '@/modules/server-actions/modify/components/RenameCatalog.vue'
+import {
+    EvitaLabConfig,
+    useEvitaLabConfig,
+} from '@/modules/config/EvitaLabConfig'
+import CreateCollection from '@/modules/server-actions/modify/components/CreateCollection.vue'
+import ReplaceCatalog from '@/modules/server-actions/modify/components/ReplaceCatalog.vue'
+
+const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory =
     useEvitaQLConsoleTabFactory()
@@ -51,73 +53,56 @@ const graphQLConsoleTabFactory: GraphQLConsoleTabFactory =
     useGraphQLConsoleTabFactory()
 const schemaViewerTabFactory: SchemaViewerTabFactory =
     useSchemaViewerTabFactory()
-const toaster: Toaster = useToaster()
 const { t } = useI18n()
+const componentVisible = ref<boolean>(false)
+const PopupComponent = shallowRef(DropCatalog || RenameCatalog || CreateCollection || ReplaceCatalog)
+const emits = defineEmits<{ (e: 'changed', value?: Catalog[] | undefined): void }>()
 
 const props = defineProps<{
     catalog: Catalog
 }>()
 
 const connection: Connection = useConnection()
-const actions: ImmutableMap<
+const actions: Map<
     CatalogActionType,
-    MenuAction<CatalogActionType>
+    MenuItem<CatalogActionType>
 > = createActions()
-const actionList: MenuAction<CatalogActionType>[] = Array.from(actions.values())
+const actionList: MenuItem<CatalogActionType>[] = Array.from(actions.values())
 
-const catalogSchema = ref<CatalogSchema>()
-provideCatalogSchema(catalogSchema)
-const entitySchemas = ref<EntitySchema[]>()
+const catalogRef = ref(props.catalog)
+provideCatalog(catalogRef as Ref<Catalog>)
 
 const loading = ref<boolean>(false)
 
-async function loadCatalogSchema(): Promise<void> {
-    if (
-        catalogSchema.value !== undefined ||
-        props.catalog.corrupted.getOrElse(false)
-    ) {
-        return
-    }
-
-    loading.value = true
-    try {
-        catalogSchema.value = await connectionService.getCatalogSchema(
-            connection,
-            props.catalog.name
-        )
-        if (catalogSchema.value) {
-            entitySchemas.value = (await catalogSchema.value.entitySchemas())
-                .map((it) => Array.from(it.values()))
-                .getOrElseGet(() => [])
-        }
-    } catch (e: any) {
-        toaster.error(e)
-    }
-    loading.value = false
-}
-
 function handleAction(action: string): void {
-    actions.get(action as CatalogActionType)?.execute()
+    const foundedAction = actions.get(action as CatalogActionType)
+    if (foundedAction && foundedAction instanceof MenuAction) {
+        (foundedAction as MenuAction<CatalogActionType>).execute()
+    }
 }
 
-function createActions(): ImmutableMap<
+function createActions(): Map<
     CatalogActionType,
-    MenuAction<CatalogActionType>
+    MenuItem<CatalogActionType>
 > {
-    const actions: Map<CatalogActionType, MenuAction<CatalogActionType>> = new Map()
+    const actions: Map<
+        CatalogActionType,
+        MenuItem<CatalogActionType>
+    > = new Map()
     // todo lho consider moving these static actions directly into HTML code
     actions.set(
         CatalogActionType.OpenEvitaQLConsole,
         createMenuAction(
             CatalogActionType.OpenEvitaQLConsole,
             'mdi-variable',
-            () =>
+            () => {
                 workspaceService.createTab(
                     evitaQLConsoleTabFactory.createNew(
                         connection,
                         props.catalog.name
                     )
                 )
+            }
         )
     )
     actions.set(
@@ -125,7 +110,7 @@ function createActions(): ImmutableMap<
         createMenuAction(
             CatalogActionType.OpenGraphQLDataAPIConsole,
             'mdi-graphql',
-            () =>
+            () => {
                 workspaceService.createTab(
                     graphQLConsoleTabFactory.createNew(
                         connection,
@@ -133,6 +118,7 @@ function createActions(): ImmutableMap<
                         GraphQLInstanceType.Data
                     )
                 )
+            }
         )
     )
     actions.set(
@@ -140,7 +126,7 @@ function createActions(): ImmutableMap<
         createMenuAction(
             CatalogActionType.OpenGraphQLSchemaAPIConsole,
             'mdi-graphql',
-            () =>
+            () => {
                 workspaceService.createTab(
                     graphQLConsoleTabFactory.createNew(
                         connection,
@@ -148,33 +134,104 @@ function createActions(): ImmutableMap<
                         GraphQLInstanceType.Schema
                     )
                 )
+            }
         )
     )
     actions.set(
         CatalogActionType.ViewSchema,
-        createMenuAction(CatalogActionType.ViewSchema, 'mdi-file-code-outline', () =>
-            workspaceService.createTab(
-                schemaViewerTabFactory.createNew(
-                    connection,
-                    new CatalogSchemaPointer(props.catalog.name)
+        createMenuAction(
+            CatalogActionType.ViewSchema,
+            'mdi-file-code-outline',
+            () => {
+                workspaceService.createTab(
+                    schemaViewerTabFactory.createNew(
+                        connection,
+                        new CatalogSchemaPointer(props.catalog.name)
+                    )
                 )
-            )
+            }
         )
     )
-    return ImmutableMap(actions)
+    if (!evitaLabConfig.readOnly) {
+        actions.set(
+            CatalogActionType.ModifySubheader,
+            new MenuSubheader(t('explorer.catalog.subitems.modify'))
+        )
+        actions.set(
+            CatalogActionType.DropCatalog,
+            createMenuAction(
+                CatalogActionType.DropCatalog,
+                'mdi-delete-outline',
+                () => {
+                    PopupComponent.value = markRaw(DropCatalog)
+                    componentVisible.value = true
+                }
+            )
+        )
+
+        actions.set(
+            CatalogActionType.RenameCatalog,
+            createMenuAction(
+                CatalogActionType.RenameCatalog,
+                'mdi-pencil-outline',
+                () => {
+                    PopupComponent.value = markRaw(RenameCatalog)
+                    componentVisible.value = true
+                }
+            )
+        )
+
+        actions.set(
+            CatalogActionType.ReplaceCatalog,
+            createMenuAction(
+                CatalogActionType.ReplaceCatalog,
+                'mdi-file-replace-outline',
+                () => {
+                    PopupComponent.value = markRaw(ReplaceCatalog)
+                    componentVisible.value = true
+                }
+            )
+        )
+
+        actions.set(
+            CatalogActionType.CollectionsSubheader,
+            new MenuSubheader(t('explorer.catalog.subitems.collections'))
+        )
+
+        actions.set(
+            CatalogActionType.CreateCollection,
+            createMenuAction(
+                CatalogActionType.CreateCollection,
+                'mdi-plus',
+                () => {
+                    PopupComponent.value = markRaw(CreateCollection)
+                    componentVisible.value = true
+                }
+            )
+        )
+    }
+    return new Map(actions)
 }
 
 function createMenuAction(
     actionType: CatalogActionType,
     prependIcon: string,
     execute: () => void
-): MenuAction<CatalogActionType> {
+): MenuItem<CatalogActionType> {
     return new MenuAction(
         actionType,
         t(`explorer.catalog.actions.${actionType}`),
         prependIcon,
         execute
     )
+}
+
+function changeVisibility(visible: boolean) {
+    componentVisible.value = visible
+}
+
+function confirmed(value?: Catalog[] | undefined) {
+    emits('changed', value)
 }
 </script>
 
@@ -189,7 +246,6 @@ function createMenuAction(
                 prepend-icon="mdi-menu"
                 :loading="loading"
                 :actions="actionList"
-                @click="loadCatalogSchema"
                 @click:action="handleAction"
                 class="font-weight-bold"
             >
@@ -215,19 +271,16 @@ function createMenuAction(
         <div
             v-if="
                 !catalog.corrupted.getOrElse(false) &&
-                catalogSchema !== undefined
+                catalogRef !== undefined
             "
         >
-            <template
-                v-if="
-                    entitySchemas != null &&
-                    entitySchemas?.length > 0
-                "
-            >
+            <template v-if="props.catalog.entityTypes != null && props.catalog.entityTypes.getOrThrow().length > 0">
                 <CollectionItem
-                    v-for="entitySchema in entitySchemas"
-                    :key="entitySchema.name"
-                    :entity-schema="entitySchema"
+                    v-for="entityType in props.catalog.entityTypes.getIfSupported()"
+                    :key="entityType.entityType.getOrThrow()"
+                    :entityType="entityType"
+                    :catalog-name="props.catalog.name"
+                    @changed="confirmed"
                 />
             </template>
             <template v-else>
@@ -235,6 +288,14 @@ function createMenuAction(
             </template>
         </div>
     </VListGroup>
+    <PopupComponent
+        v-if="componentVisible"
+        :visible="true"
+        :connection="connection"
+        :catalog-name="catalog.name"
+        @visible-changed="changeVisibility"
+        @confirmed="confirmed"
+    />
 </template>
 
 <style scoped></style>

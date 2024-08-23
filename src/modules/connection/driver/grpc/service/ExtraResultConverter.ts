@@ -54,8 +54,8 @@ export class ExtraResultConverter {
                 new Histogram(
                     Value.of(histogram.overallCount),
                     Value.of(this.convertHistogramBuckets(histogram.buckets)),
-                    Value.of(new BigDecimal(histogram.min?.valueString)),
-                    Value.of(new BigDecimal(histogram.max?.valueString))
+                    Value.of(new BigDecimal(histogram.min?.valueString!)),
+                    Value.of(new BigDecimal(histogram.max?.valueString!))
                 )
             )
         }
@@ -71,7 +71,7 @@ export class ExtraResultConverter {
                 new HistogramBucket(
                     Value.of(bucket.occurrences),
                     Value.of(bucket.requested),
-                    Value.of(new BigDecimal(bucket.threshold?.valueString))
+                    Value.of(new BigDecimal(bucket.threshold?.valueString!))
                 )
             )
         }
@@ -253,8 +253,8 @@ export class ExtraResultConverter {
         return new Histogram(
             Value.of(histogram.overallCount),
             Value.of(this.convertHistogramBuckets(histogram.buckets)),
-            Value.of(new BigDecimal(histogram.min?.valueString)),
-            Value.of(new BigDecimal(histogram.max?.valueString))
+            Value.of(new BigDecimal(histogram.min?.valueString!)),
+            Value.of(new BigDecimal(histogram.max?.valueString!))
         )
     }
 }

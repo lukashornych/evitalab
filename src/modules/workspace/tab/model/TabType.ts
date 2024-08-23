@@ -7,5 +7,6 @@ export enum TabType {
     GraphQLConsole = 'graphQLConsole',
     SchemaViewer = 'schemaViewer',
     KeymapViewer = 'keymapViewer',
-    ErrorViewer = 'errorViewer'
+    ErrorViewer = 'errorViewer',
+    ServerStatus = 'serverStatus'
 }
