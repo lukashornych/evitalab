@@ -46,7 +46,7 @@ const noLocaleSelected = computed<boolean>(() => {
     return props.propertyDescriptor?.schema != undefined &&
         isLocalizedSchema(props.propertyDescriptor.schema) &&
         props.propertyDescriptor.schema.localized.getOrElse(false) &&
-        !dataLocale
+        dataLocale.value == undefined
 })
 const emptyArray = computed<boolean>(() => {
     return props.propertyValue instanceof Array && props.propertyValue.length === 0

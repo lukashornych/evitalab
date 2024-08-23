@@ -9,9 +9,11 @@ import { Map } from 'immutable'
 export class Reference {
     readonly referenceName: Value<string>
     readonly version: Value<number>
-    readonly referencedEntityReference: Value<EntityReference | undefined>
-    readonly referencedEntity: Value<Entity | undefined>
+    readonly referencedPrimaryKey: number
+    readonly referencedEntity: Entity | undefined
     readonly groupReferenceType: Value<EntityReference | Entity | undefined>
+    readonly group: EntityReference | undefined // todo lho groupentityref?
+    readonly groupEntity: EntityReference | undefined
     readonly globalAttributes: Value<Map<string, object>>
     readonly localizedAttributes: Value<Map<string, LocalizedAttribute>>
     readonly referenceCardinality: Value<Cardinality>

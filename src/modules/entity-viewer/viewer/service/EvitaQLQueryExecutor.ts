@@ -101,7 +101,10 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
     }
 
     private flattenParent(entity: Entity): WritableEntityProperty | undefined {
-        const parentPrimaryKey: number = entity.primaryKey.getOrThrow()
+        const parentPrimaryKey: number | undefined = entity.parent.getOrThrow()
+        if (parentPrimaryKey == undefined) {
+            return undefined
+        }
 
         const representativeAttributes: (NativeValue | NativeValue[])[] = []
         const globalAttributes = entity.globalAttributes.getIfSupported()
