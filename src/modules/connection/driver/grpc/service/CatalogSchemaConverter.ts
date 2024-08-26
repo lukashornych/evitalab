@@ -126,8 +126,8 @@ export class CatalogSchemaConverter {
                 Value.of(
                     nameVariants
                 ),
-                Value.of(attribute.description ?? null),
-                Value.of(attribute.deprecationNotice ?? null),
+                Value.of(attribute.description),
+                Value.of(attribute.deprecationNotice),
                 Value.of(scalar),
                 Value.of(uniquenessType),
                 Value.of(attribute.filterable),
@@ -151,13 +151,11 @@ export class CatalogSchemaConverter {
             MapUtil.getNamingMap(globalAttributeSchema.nameVariant)
         )
 
-        const description: Value<string | null> = Value.of(
-            globalAttributeSchema.description ?? null
+        const description: Value<string | undefined> = Value.of(
+            globalAttributeSchema.description
         )
-        const deprecationNotice: Value<string | null> = Value.of(
-            globalAttributeSchema.deprecationNotice === undefined
-                ? null
-                : globalAttributeSchema.deprecationNotice
+        const deprecationNotice: Value<string | undefined> = Value.of(
+            globalAttributeSchema.deprecationNotice
         )
         const type: Value<Scalar> = Value.of(
             ScalarConverter.convertScalar(globalAttributeSchema.type)

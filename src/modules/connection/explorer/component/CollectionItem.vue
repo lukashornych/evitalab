@@ -74,7 +74,10 @@ function openDataGrid() {
 }
 
 function handleAction(action: string) {
-    actions.get(action as CollectionActionType)?.execute()
+    const item: MenuItem<CollectionActionType> | undefined = actions.get(action as CollectionActionType)
+    if (item instanceof MenuAction) {
+        item.execute()
+    }
 }
 
 function createActions(): Map<

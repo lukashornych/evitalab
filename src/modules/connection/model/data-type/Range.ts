@@ -5,7 +5,7 @@ export abstract class Range<T> {
     protected from?: T
     protected to?: T
 
-    constructor(from?: T, to?: T) {
+    constructor(from: T | undefined, to: T | undefined) {
         if (this.checkDateTimeValidity(from, to)) {
             this.from = from
             this.to = to

@@ -19,8 +19,8 @@ export class GlobalAttributeSchema extends EntityAttributeSchema {
 
     constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
-                description: Value<string | null>,
-                deprecationNotice: Value<string | null>,
+                description: Value<string | undefined>,
+                deprecationNotice: Value<string | undefined>,
                 type: Value<Scalar>,
                 uniquenessType: Value<AttributeUniquenessType>,
                 filterable: Value<boolean>,

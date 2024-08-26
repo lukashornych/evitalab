@@ -29,6 +29,7 @@ import {
 } from '@/modules/server-actions/server-status/service/ServerStatusTabFactory'
 import CreateCatalog from '@/modules/server-actions/modify/components/CreateCatalog.vue'
 import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
+import { MenuItem } from '@/modules/base/model/menu/MenuItem'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
@@ -48,9 +49,9 @@ const componentVisible = ref<boolean>(false)
 const PopupComponent = shallowRef(CreateCatalog)
 
 const actions: ComputedRef<
-    Map<ConnectionActionType, MenuAction<ConnectionActionType>>
+    Map<ConnectionActionType, MenuItem<ConnectionActionType>>
 > = computed(() => createActions())
-const actionList: ComputedRef<MenuAction<ConnectionActionType>[]> = computed(
+const actionList: ComputedRef<MenuItem<ConnectionActionType>[]> = computed(
     () => Array.from(actions.value.values())
 )
 
@@ -77,17 +78,20 @@ async function loadCatalogs(value?: Catalog[]): Promise<void> {
 }
 
 function handleAction(action: string): void {
-    actions.value.get(action as ConnectionActionType)?.execute()
+    const item: MenuItem<ConnectionActionType> | undefined = actions.value.get(action as ConnectionActionType)
+    if (item instanceof MenuAction) {
+        item.execute()
+    }
 }
 
 // todo lho these should be some kind of factories
 function createActions(): Map<
     ConnectionActionType,
-    MenuAction<ConnectionActionType>
+    MenuItem<ConnectionActionType>
 > {
     const actions: Map<
         ConnectionActionType,
-        MenuAction<ConnectionActionType>
+        MenuItem<ConnectionActionType>
     > = new Map()
     actions.set(
         ConnectionActionType.OpenGraphQLSystemAPIConsole,

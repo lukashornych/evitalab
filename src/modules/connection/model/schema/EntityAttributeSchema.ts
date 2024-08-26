@@ -17,14 +17,14 @@ export class EntityAttributeSchema extends AttributeSchema {
 
     constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
-                description: Value<string | null>,
-                deprecationNotice: Value<string | null>,
+                description: Value<string | undefined>,
+                deprecationNotice: Value<string | undefined>,
                 type: Value<Scalar>,
                 uniquenessType: Value<AttributeUniquenessType>,
                 filterable: Value<boolean>,
                 sortable: Value<boolean>,
                 nullable: Value<boolean>,
-                defaultValue: Value<any | any[] | null>,
+                defaultValue: Value<any | any[] | undefined>,
                 localized: Value<boolean>,
                 indexedDecimalPlaces: Value<number>,
                 representative: Value<boolean>) {

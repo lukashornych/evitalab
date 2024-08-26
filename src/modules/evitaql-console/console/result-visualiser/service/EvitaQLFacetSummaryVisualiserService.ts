@@ -56,8 +56,8 @@ export class EvitaQLFacetSummaryVisualiserService
             return new VisualisedFacetGroupStatistics(count)
         }
         const primaryKey: number | undefined = groupStatisticsResult.groupEntityReference.getOrElse(undefined) != undefined
-            ? groupStatisticsResult.groupEntityReference.getOrThrow()!.primaryKey.getOrThrow()
-            : groupStatisticsResult.groupEntity.getOrThrow()!.primaryKey.getOrThrow()
+            ? groupStatisticsResult.groupEntityReference.getOrThrow()!.primaryKey
+            : groupStatisticsResult.groupEntity.getOrThrow()!.primaryKey
         const title: string | undefined = this.visualiserService.resolveRepresentativeTitleForEntityResult(
             groupStatisticsResult.groupEntity.getOrElse(undefined),
             groupRepresentativeAttributes
@@ -82,8 +82,8 @@ export class EvitaQLFacetSummaryVisualiserService
 
         // todo lho rewrite entity access
         const primaryKey: number | undefined = facetStatisticsResult.facetEntityReference.getOrElse(undefined) != undefined
-            ? facetStatisticsResult.facetEntityReference.getOrThrow()!.primaryKey.getOrThrow()
-            : facetStatisticsResult.facetEntity.getOrThrow()!.primaryKey.getOrThrow()
+            ? facetStatisticsResult.facetEntityReference.getOrThrow()!.primaryKey
+            : facetStatisticsResult.facetEntity.getOrThrow()!.primaryKey
         const title: string | undefined = this.visualiserService.resolveRepresentativeTitleForEntityResult(
             facetStatisticsResult.facetEntity.getOrElse(undefined),
             facetRepresentativeAttributes
