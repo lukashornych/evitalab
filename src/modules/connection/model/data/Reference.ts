@@ -1,64 +1,65 @@
-import { Value } from '../Value'
 import { EntityReference } from './EntityReference'
-import { LocalizedAttribute } from './LocalizedAttribute'
-import { Entity } from './Entity'
+import { Attributes } from './Attributes'
 import { Cardinality } from '../schema/Cardinality'
-import { Map } from 'immutable'
+import { List, Set } from 'immutable'
+import { Locale } from '@/modules/connection/model/data-type/Locale'
+import { AttributeValue } from '@/modules/connection/model/data/AttributeValue'
 
 //TODO: Add documentation
 export class Reference {
-    readonly referenceName: Value<string>
-    readonly version: Value<number>
-    readonly referencedEntityReference: Value<EntityReference | undefined>
-    readonly referencedEntity: Value<Entity | undefined>
-    readonly groupReferenceType: Value<EntityReference | Entity | undefined>
-    readonly globalAttributes: Value<Map<string, object>>
-    readonly localizedAttributes: Value<Map<string, LocalizedAttribute>>
-    readonly referenceCardinality: Value<Cardinality>
+
+    readonly referenceName: string
+    readonly version: number
+
+    readonly referencedEntity: EntityReference
+    readonly groupReferencedEntity: EntityReference | undefined
+
+    private readonly _attributes: Attributes
+
+    readonly referenceCardinality: Cardinality
 
     constructor(
-        referenceName: Value<string>,
-        version: Value<number>,
-        referencedEntityReference: Value<EntityReference | undefined>,
-        referencedEntity: Value<Entity | undefined>,
-        referenceCardinality: Value<Cardinality>,
-        groupReferenceType: Value<EntityReference | Entity | undefined>,
-        globalAttributes: Value<Map<string, object>>,
-        localizedAttributes: Value<Map<string, LocalizedAttribute>>
+        referenceName: string,
+        version: number,
+        referencedEntity: EntityReference,
+        groupReferencedEntity: EntityReference | undefined,
+        attributes: Attributes,
+        referenceCardinality: Cardinality
     ) {
         this.referenceName = referenceName
         this.version = version
-        this.referencedEntityReference = referencedEntityReference
         this.referencedEntity = referencedEntity
-        this.groupReferenceType = groupReferenceType
-        this.globalAttributes = globalAttributes
-        this.localizedAttributes = localizedAttributes
+        this.groupReferencedEntity = groupReferencedEntity
+        this._attributes = attributes
         this.referenceCardinality = referenceCardinality
     }
 
-    getReferencedPrimaryKey(): number {
-        const referencedEntity = this.referencedEntity.getIfSupported()
-        const referencedEntityReference =
-            this.referencedEntityReference.getIfSupported()
-        if (referencedEntity) {
-            return referencedEntity.primaryKey.getOrThrow()
-        } else if (referencedEntityReference) {
-            return referencedEntityReference.primaryKey.getOrThrow()
-        } else {
-            throw new Error('Both references are null or undefined')
-        }
+    get referencedPrimaryKey(): number {
+        return this.referencedEntity.primaryKey
     }
 
-    getReferencedType(): string {
-        const referencedEntity = this.referencedEntity.getIfSupported()
-        const referencedEntityReference =
-            this.referencedEntityReference.getIfSupported()
-        if(referencedEntity){
-            return referencedEntity.entityType.getOrThrow();
-        } else if(referencedEntityReference){
-            return referencedEntityReference.entityType.getOrThrow()
-        } else {
-            throw new Error('Both references are null or undefined')
+    get referencedEntityType(): string {
+        return this.referencedEntity.entityType
+    }
+
+    attribute(attributeName: string): any | undefined
+    attribute(attributeName: string, locale?: Locale): any | undefined
+    attribute(attributeName: string, locale?: Locale): any | undefined {
+        if (locale == undefined) {
+            return this._attributes.attribute(attributeName)
         }
+        return this._attributes.attribute(attributeName, locale)
+    }
+
+    get allAttributes(): List<AttributeValue> {
+        return this._attributes.allAttributes
+    }
+
+    get attributeNames(): Set<string> {
+        return this._attributes.names
+    }
+
+    get attributeLocales(): Set<Locale> {
+        return this._attributes.locales
     }
 }

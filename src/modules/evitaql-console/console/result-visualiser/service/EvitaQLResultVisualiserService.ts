@@ -32,8 +32,9 @@ import { VisualiserType } from '@/modules/console/result-visualiser/model/Visual
 import { Entity } from '@/modules/connection/model/data/Entity'
 import { VisualiserTypeType } from '@/modules/console/result-visualiser/model/VisualiserTypeType'
 import { ExtraResults } from '@/modules/connection/model/data/ExtraResults'
-import { LocalizedAttribute } from '@/modules/connection/model/data/LocalizedAttribute'
+import { Attributes } from '@/modules/connection/model/data/Attributes'
 import { Response } from '@/modules/connection/model/data/Response'
+import Immutable from 'immutable'
 
 export const evitaQLResultVisualiserServiceInjectionKey: InjectionKey<EvitaQLResultVisualiserService> =
     Symbol('evitaQLResultViewerService')
@@ -205,7 +206,7 @@ export class EvitaQLResultVisualiserService extends ResultVisualiserService {
         }
 
         const localizedAttributes:
-            | Immutable.Map<string, LocalizedAttribute>
+            | Immutable.Map<string, Attributes>
             | undefined = entityResult.localizedAttributes.getIfSupported()
         if (localizedAttributes) {
             const localizedAttributesLocales: string[] = localizedAttributes

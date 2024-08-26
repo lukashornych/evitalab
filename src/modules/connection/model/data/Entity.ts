@@ -3,73 +3,91 @@
  * Note: this is a temporary simple "implementation", in the future, we want full rich implementation
  * of the entity object.
  */
-import { Value } from '../Value'
 import { EntityReferenceWithParent } from './EntityReferenceWithParent'
-import { LocalizedAttribute } from './LocalizedAttribute'
+import { Attributes } from './Attributes'
 import { Price } from './Price'
 import { PriceInnerRecordHandling } from '../data-type/PriceInnerRecordHandling'
 import { Reference } from './Reference'
-import { LocalizedAssociatedData } from './LocalizedAssociatedData'
 import { Locale } from '../data-type/Locale'
-import { Map, List } from 'immutable'
+import { List, Set } from 'immutable'
+import { AssociatedData } from '@/modules/connection/model/data/AssociatedData'
+import { AttributeValue } from '@/modules/connection/model/data/AttributeValue'
+import { AssociatedDataValue } from '@/modules/connection/model/data/AssociatedDataValue'
 
-// todo lho create common entityreference ancestor
-export class Entity {
-    readonly entityType: Value<string>
+export class Entity extends EntityReferenceWithParent {
 
-    readonly primaryKey: Value<number>
+    readonly schemaVersion: number
 
-    readonly version: Value<number>
+    private readonly _attributes: Attributes
 
-    readonly schemaVersion: Value<number>
+    private readonly _associatedData: AssociatedData
 
-    readonly parent: Value<number | undefined>
+    readonly references: List<Reference>
 
-    readonly parentReference: Value<EntityReferenceWithParent | undefined>
-    readonly globalAttributes: Value<Map<string, object>>
-    readonly localizedAttributes: Value<Map<string, LocalizedAttribute>>
-    readonly prices: Value<List<Price>>
-    readonly priceForSale: Value<Price | undefined>
-    readonly priceInnerRecordHandling: Value<PriceInnerRecordHandling>
-    readonly references: Value<List<Reference>>
-    readonly globalAssociatedData: Value<Map<string, any>>
-    readonly localizedAssociatedData: Value<Map<string, LocalizedAssociatedData>>
-    readonly locales: Value<List<Locale>>
+    readonly priceInnerRecordHandling: PriceInnerRecordHandling
+    readonly prices: List<Price>
+    readonly priceForSale: Price | undefined
+
+    readonly locales: List<Locale>
 
     constructor(
-        entityType: Value<string>,
-        primaryKey: Value<number>,
-        version: Value<number>,
-        schemaVersion: Value<number>,
-        parent: Value<number | undefined>,
-        parentReference: Value<EntityReferenceWithParent | undefined>,
-        globalAttribtes: Value<Map<string,object>>,
-        localizedAttribtes: Value<Map<string, LocalizedAttribute>>,
-        references: Value<List<Reference>>,
-        priceInnerRecordHandling: Value<PriceInnerRecordHandling>,
-        globalAssociatedData: Value<Map<string, any>>,
-        localizedAssociatedData: Value<Map<string, LocalizedAssociatedData>>,
-        locales: Value<List<Locale>>,
-        prices: Value<List<Price>>,
-        priceForSale: Value<Price | undefined>
+        entityType: string,
+        primaryKey: number,
+        version: number,
+        schemaVersion: number,
+        parentEntity: EntityReferenceWithParent | undefined,
+        attributes: Attributes,
+        associatedData: AssociatedData,
+        references: List<Reference>,
+        priceInnerRecordHandling: PriceInnerRecordHandling,
+        prices: List<Price>,
+        priceForSale: Price | undefined,
+        locales: List<Locale>
     ) {
-        this.entityType = entityType
-        this.primaryKey = primaryKey
-        this.version = version
+        super(entityType, primaryKey, version, parentEntity)
         this.schemaVersion = schemaVersion
-        this.localizedAttributes = localizedAttribtes
-        this.priceInnerRecordHandling = priceInnerRecordHandling
-        this.globalAssociatedData = globalAssociatedData
-        this.localizedAssociatedData = localizedAssociatedData
-        this.parent = parent
-        this.parentReference = parentReference
-        this.globalAttributes = globalAttribtes
-        this.prices = prices
-        this.locales = locales
+        this._attributes = attributes
+        this._associatedData = associatedData
         this.references = references
+        this.priceInnerRecordHandling = priceInnerRecordHandling
+        this.prices = prices
         this.priceForSale = priceForSale
+        this.locales = locales
     }
-}
 
-//TODO: Remove
-export type EntityOld = any
+    attribute(attributeName: string): any | undefined
+    attribute(attributeName: string, locale?: Locale): any | undefined
+    attribute(attributeName: string, locale?: Locale): any | undefined {
+        if (locale == undefined) {
+            return this._attributes.attribute(attributeName)
+        }
+        return this._attributes.attribute(attributeName, locale)
+    }
+
+    get allAttributes(): List<AttributeValue> {
+        return this._attributes.allAttributes
+    }
+
+    get attributeNames(): Set<string> {
+        return this._attributes.names
+    }
+
+    get attributeLocales(): Set<Locale> {
+        return this._attributes.locales
+    }
+
+    associatedData(associatedDataName: string): any | undefined
+    associatedData(associatedDataName: string, locale?: Locale): any | undefined
+    associatedData(associatedDataName: string, locale?: Locale): any | undefined {
+        if (locale == undefined) {
+            return this._associatedData.associatedData(associatedDataName)
+        }
+        return this._associatedData.associatedData(associatedDataName, locale)
+    }
+
+    get allAssociatedData(): List<AssociatedDataValue> {
+        return this._associatedData.allAssociatedData
+    }
+
+    // todo lho references
+}

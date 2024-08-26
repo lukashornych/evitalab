@@ -256,6 +256,9 @@
         "remove": "Remove connection",
         "detail": "Status"
       },
+      "subheader": {
+        "modify": "Modify"
+      },
       "editor": {
         "addTitle": "Add connection",
         "editTitle": "Edit connection",
@@ -306,7 +309,7 @@
       }
     },
     "catalog": {
-      "subitems": {
+      "subheader": {
         "modify": "Modify",
         "collections": "Collections"
       },
@@ -325,6 +328,9 @@
       }
     },
     "collection": {
+      "subheader": {
+        "modify": "Modify"
+      },
       "actions": {
         "viewEntities": "View entities",
         "viewSchema": "View schema",

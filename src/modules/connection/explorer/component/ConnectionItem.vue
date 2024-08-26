@@ -5,24 +5,15 @@
 
 import { computed, ComputedRef, markRaw, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-    useWorkspaceService,
-    WorkspaceService,
-} from '@/modules/workspace/service/WorkspaceService'
-import {
-    ConnectionService,
-    useConnectionService,
-} from '@/modules/connection/service/ConnectionService'
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import { ConnectionService, useConnectionService } from '@/modules/connection/service/ConnectionService'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
 import { Connection } from '@/modules/connection/model/Connection'
-import {
-    EvitaLabConfig,
-    useEvitaLabConfig,
-} from '@/modules/config/EvitaLabConfig'
+import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import {
     GraphQLConsoleTabFactory,
-    useGraphQLConsoleTabFactory,
+    useGraphQLConsoleTabFactory
 } from '@/modules/graphql-console/console/workspace/service/GraphQLConsoleTabFactory'
 import { GraphQLInstanceType } from '@/modules/graphql-console/console/model/GraphQLInstanceType'
 import { ConnectionActionType } from '@/modules/connection/explorer/model/ConnectionActionType'
@@ -34,9 +25,11 @@ import RemoveConnectionDialog from '@/modules/connection/explorer/component/Remo
 import VTreeViewEmptyItem from '@/modules/base/component/VTreeViewEmptyItem.vue'
 import {
     ServerStatusTabFactory,
-    useDetailViewerTabFactory,
+    useDetailViewerTabFactory
 } from '@/modules/server-actions/server-status/service/ServerStatusTabFactory'
 import CreateCatalog from '@/modules/server-actions/modify/components/CreateCatalog.vue'
+import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
+
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const connectionService: ConnectionService = useConnectionService()
@@ -122,25 +115,31 @@ function createActions(): Map<
                 )
         )
     )
-    if (!evitaLabConfig.readOnly && !props.connection.preconfigured) {
-        // todo lho implement
-        // actions.set(
-        //     ConnectionActionType.Edit,
-        //     createMenuAction(
-        //         ConnectionActionType.Edit,
-        //         'mdi-pencil',
-        //         () => {
-        //             throw new UnexpectedError('Not implemented yet.')
-        //         }
-        //     )
-        // )
-        actions.set(
-            ConnectionActionType.Remove,
-            createMenuAction(
+    if (!evitaLabConfig.readOnly) {
+        if (!props.connection.preconfigured) {
+            // todo lho implement
+            // actions.set(
+            //     ConnectionActionType.Edit,
+            //     createMenuAction(
+            //         ConnectionActionType.Edit,
+            //         'mdi-pencil',
+            //         () => {
+            //             throw new UnexpectedError('Not implemented yet.')
+            //         }
+            //     )
+            // )
+            actions.set(
                 ConnectionActionType.Remove,
-                'mdi-delete-outline',
-                () => (removeConnectionDialogOpen.value = true)
+                createMenuAction(
+                    ConnectionActionType.Remove,
+                    'mdi-delete-outline',
+                    () => (removeConnectionDialogOpen.value = true)
+                )
             )
+        }
+        actions.set(
+            ConnectionActionType.ModifySubheader,
+            new MenuSubheader(t('explorer.connection.subheader.modify'))
         )
         actions.set(
             ConnectionActionType.Create,

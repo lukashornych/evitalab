@@ -10,7 +10,7 @@ import { LocalTime } from '@/modules/connection/model/data-type/LocalTime'
 import { Predecessor } from '@/modules/connection/model/data-type/Predecessor'
 import { DateTimeRange } from '@/modules/connection/model/data-type/DateTimeRange'
 import { PrettyPrintable } from '@/modules/connection/model/data-type/PrettyPrintable'
-import { LocalizedAttribute } from '@/modules/connection/model/data/LocalizedAttribute'
+import { Attributes } from '@/modules/connection/model/data/Attributes'
 
 /**
  * Represents a single entity property value that is a scalar (native to JavaScript). Cannot be an array, each array item
@@ -72,7 +72,7 @@ export class NativeValue extends EntityPropertyValue {
             this.delegate instanceof LocalTime ||
             this.delegate instanceof Predecessor ||
             this.delegate instanceof DateTimeRange ||
-            this.delegate instanceof LocalizedAttribute
+            this.delegate instanceof Attributes
         ) {
             return this.delegate.toString()
         } else if (this.delegate instanceof Object) {

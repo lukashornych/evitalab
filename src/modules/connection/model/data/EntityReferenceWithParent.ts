@@ -1,19 +1,12 @@
-import { Value } from "../Value";
 import { EntityReference } from "./EntityReference";
 
 //TODO: Add documentation
 export class EntityReferenceWithParent extends EntityReference
 {
-    readonly primaryKey: Value<number>;
+    readonly parentEntity: EntityReferenceWithParent | undefined
 
-    readonly version: Value<number>;
-
-    readonly parent: Value<EntityReferenceWithParent | undefined>;
-
-    constructor(entityType: Value<string>, primaryKey: Value<number>, version: Value<number>, parent: Value<EntityReferenceWithParent | undefined>){
+    constructor(entityType: string, primaryKey: number, version: number, parentEntity: EntityReferenceWithParent | undefined){
         super(entityType, primaryKey, version);
-        this.primaryKey = primaryKey;
-        this.version = version;
-        this.parent = parent;
+        this.parentEntity = parentEntity;
     }
 }

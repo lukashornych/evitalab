@@ -61,18 +61,18 @@ export class ConnectionService {
                 'Demo (dev)',
                 true,
                 'http://demo.evitadb.io:5555/system',
-                'https://demo.evitadb.io/lab/api',
-                'https://demo.evitadb.io:5555/gql',
-                'https://demo.evitadb.io:5555/rest'
+                'https://demo.evitadb.io:5555/',
+                'http://demo.evitadb.io:5555/gql',
+                'http://demo.evitadb.io:5555/rest'
             ))
             preconfiguredConnections.push(new Connection(
                 'localhost',
                 'Localhost (dev)',
                 true,
-                'http://127.0.0.1:5555/system',
-                'https://127.0.0.1:5555/',
-                'https://127.0.0.1:5555/gql',
-                'https://127.0.0.1:5555/rest'
+                'http://localhost:5555/system',
+                'https://localhost:5555/',
+                'http://localhost:5555/gql',
+                'http://localhost:5555/rest'
             ))
         }
 
