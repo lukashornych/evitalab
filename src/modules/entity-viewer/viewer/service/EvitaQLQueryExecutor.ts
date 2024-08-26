@@ -19,6 +19,8 @@ import { Reference } from '@/modules/connection/model/data/Reference'
 import { Locale } from '@/modules/connection/model/data-type/Locale'
 import { EntityPrices } from '../model/entity-property-value/EntityPrices'
 import { GroupByUtil, Grouped } from '@/utils/GroupByUtil'
+import { EntityReferenceWithParent } from '@/modules/connection/model/data/EntityReferenceWithParent'
+import Immutable from 'immutable'
 
 /**
  * Query executor for EvitaQL language.
@@ -69,13 +71,13 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
         flattenedProperties.push([
             EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey),
             this.wrapRawValueIntoNativeValue(
-                Object(entity.primaryKey.getOrThrow())
+                Object(entity.primaryKey)
             ),
         ])
         flattenedProperties.push(this.flattenParent(entity))
 
         const newLocales: Locale[] = []
-        const locales = entity.locales.getOrThrow()
+        const locales = entity.locales
 
         for (const locale of locales) {
             newLocales.push(locale)
@@ -90,7 +92,7 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
             EntityPropertyKey.entity(
                 StaticEntityProperties.PriceInnerRecordHandling
             ),
-            new NativeValue(entity.priceInnerRecordHandling.getOrThrow()),
+            new NativeValue(entity.priceInnerRecordHandling),
         ])
 
         flattenedProperties.push(...this.flattenAttributes(entity))
@@ -101,35 +103,22 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
     }
 
     private flattenParent(entity: Entity): WritableEntityProperty | undefined {
-        const parentPrimaryKey: number | undefined = entity.parent.getOrThrow()
-        if (parentPrimaryKey == undefined) {
+        const parentEntity: EntityReferenceWithParent | undefined = entity.parentEntity
+        if (parentEntity == undefined) {
             return undefined
         }
 
         const representativeAttributes: (NativeValue | NativeValue[])[] = []
-        const globalAttributes = entity.globalAttributes.getIfSupported()
-        if (globalAttributes) {
-            for (const [_, attribute] of globalAttributes) {
-                representativeAttributes.push(
-                    this.wrapRawValueIntoNativeValue(attribute)
-                )
-            }
-        }
-        const localizedRepresentativeAttributes =
-            entity.localizedAttributes.getIfSupported()
-        if (localizedRepresentativeAttributes) {
-            for (const [
-                _,
-                attribute,
-            ] of localizedRepresentativeAttributes) {
-                representativeAttributes.push(
-                    this.wrapRawValueIntoNativeValue(attribute) //todo
-                )
-            }
+        if (parentEntity instanceof Entity) {
+            representativeAttributes.push(
+                ...parentEntity.allAttributes
+                    .map(it => this.wrapRawValueIntoNativeValue(it.value))
+                    .toArray()
+            )
         }
 
         const parentReference: EntityReferenceValue = new EntityReferenceValue(
-            parentPrimaryKey,
+            parentEntity.primaryKey,
             representativeAttributes.flat()
         )
         return [
@@ -141,117 +130,48 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
     private flattenAttributes(entity: Entity): WritableEntityProperty[] {
         const flattenedAttributes: WritableEntityProperty[] = []
 
-        const globalAttributes = entity.globalAttributes.getIfSupported()
-        if (globalAttributes) {
-            for (const [key, attributeName] of globalAttributes) {
-                flattenedAttributes.push([
-                    EntityPropertyKey.attributes(key),
-                    this.wrapRawValueIntoNativeValue(attributeName),
-                ])
-            }
-        }
-        const localizedAttributes = entity.localizedAttributes.getIfSupported()
-        if (localizedAttributes && localizedAttributes.size) {
-            for (const [_, localizedAttribute] of localizedAttributes) {
-                // this expects that we support only one locale
-                const attributesInLocale = localizedAttribute.attributes.getIfSupported()
-                if (attributesInLocale) {
-                    for (const [
-                        attributeName,
-                        attribute,
-                    ] of attributesInLocale) {
-                        flattenedAttributes.push([
-                            EntityPropertyKey.attributes(attributeName),
-                            this.wrapRawValueIntoNativeValue(attribute),
-                        ])
-                    }
-                }
-            }
-        }
+        entity.allAttributes.forEach(it =>
+            flattenedAttributes.push([
+                EntityPropertyKey.attributes(it.name),
+                this.wrapRawValueIntoNativeValue(it.value)
+            ]))
+
         return flattenedAttributes
     }
 
     private flattenAssociatedData(entity: Entity): WritableEntityProperty[] {
         const flattenedAssociatedData: WritableEntityProperty[] = []
 
-        const globalAssociatedData =
-            entity.globalAssociatedData.getIfSupported()
-        if (globalAssociatedData) {
-            for (const [
-                associatedDataName,
-                associatedData,
-            ] of globalAssociatedData) {
-                flattenedAssociatedData.push([
-                    EntityPropertyKey.associatedData(associatedDataName),
-                    this.wrapRawValueIntoNativeValue(associatedData),
-                ])
-            }
-        }
-        const localizedAssociatedData =
-            entity.localizedAssociatedData.getIfSupported()
-        if (localizedAssociatedData) {
-            for (const [_, localeAssociatedData] of localizedAssociatedData) {
-                // this expects that we support only one locale
-                const associatedDataInLocale = localeAssociatedData.associatedData
-                if (associatedDataInLocale) {
-                    for (const [
-                        associatedDataName,
-                        associatedData,
-                    ] of associatedDataInLocale) {
-                        flattenedAssociatedData.push([
-                            EntityPropertyKey.associatedData(
-                                associatedDataName
-                            ),
-                            this.wrapRawValueIntoNativeValue(associatedData),
-                        ])
-                    }
-                }
-            }
-        }
+        entity.allAssociatedData.forEach(it =>
+            flattenedAssociatedData.push([
+                EntityPropertyKey.associatedData(it.name),
+                this.wrapRawValueIntoNativeValue(it.value)
+            ]))
+
         return flattenedAssociatedData
     }
 
     private flattenPrices(entity: Entity): WritableEntityProperty | undefined {
-        const priceForSale: Price | undefined =
-            entity.priceForSale.getIfSupported()
-        const prices = entity.prices.getIfSupported()
+        const priceForSale: Price | undefined = entity.priceForSale
+        const prices: Immutable.List<Price> = entity.prices
         if (priceForSale == undefined && prices == undefined) {
             return undefined
         }
 
         const entityPrices: EntityPrice[] = []
-        if (prices) {
+        if (prices != undefined) {
             for (const price of prices) {
-                entityPrices.push(
-                    new EntityPrice(
-                        price.priceId.getIfSupported(),
-                        price.priceList.getOrThrow(),
-                        price.currency.getOrThrow(),
-                        price.innerRecordId.getIfSupported(),
-                        price.sellable.getIfSupported(),
-                        price.validity.getIfSupported(),
-                        price.priceWithoutTax.getOrThrow(),
-                        price.priceWithTax.getOrThrow(),
-                        price.taxRate.getOrThrow()
-                    )
-                )
+                entityPrices.push(EntityPrice.fromPrice(price))
             }
         }
-        if (priceForSale) {
-            const newPriceForSale: EntityPrice = new EntityPrice(
-                priceForSale?.priceId.getIfSupported(),
-                priceForSale?.priceList.getOrThrow(),
-                priceForSale?.currency.getOrThrow(),
-                priceForSale?.innerRecordId.getIfSupported(),
-                priceForSale?.sellable.getIfSupported(),
-                priceForSale?.validity.getIfSupported(),
-                priceForSale?.priceWithoutTax.getOrThrow(),
-                priceForSale?.priceWithTax.getOrThrow(),
-                priceForSale?.taxRate.getOrThrow()
-            )
+
+        if (priceForSale != undefined) {
             return [
                 EntityPropertyKey.prices(),
-                new EntityPrices(newPriceForSale, entityPrices),
+                new EntityPrices(
+                    EntityPrice.fromPrice(priceForSale),
+                    entityPrices
+                ),
             ]
         } else {
             return [
@@ -264,67 +184,46 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
     private flattenReferences(entity: Entity): WritableEntityProperty[] {
         const flattenedReferences: WritableEntityProperty[] = []
 
-        const references = entity.references.getOrThrow();
+        const references = entity.references;
         const grouped: Grouped<Reference> = GroupByUtil.groupBy(references.toArray(), 'referenceName');
 
         for (const referenceName in grouped) { // by reference name
-          if (Object.prototype.hasOwnProperty.call(grouped, referenceName)) {
-            const referenceGroup = grouped[referenceName];
-            const refName = referenceGroup[0].referenceName.getIfSupported();
+            if (Object.prototype.hasOwnProperty.call(grouped, referenceName)) {
+                const referenceGroup: Reference[] = grouped[referenceName]
+                if (referenceGroup == undefined) {
+                    continue
+                }
 
-            if (!referenceGroup) {
-              continue;
-            }
+                const representativeValues: EntityReferenceValue[] = referenceGroup.map((referenceOfName) =>
+                    this.resolveReferenceRepresentativeValue(referenceOfName)
+                )
 
-            if (referenceGroup instanceof Array) {
-              const representativeValues: EntityReferenceValue[] = referenceGroup.map((referenceOfName) =>
-                this.resolveReferenceRepresentativeValue(referenceOfName)
-              );
-
-              const refNameValue = referenceGroup[0].referenceName.getIfSupported();
-              if (refNameValue)
                 flattenedReferences.push([
-                  EntityPropertyKey.references(refNameValue),
-                  representativeValues,
-                ]);
+                    EntityPropertyKey.references(referenceName),
+                    representativeValues
+                ])
 
-              const mergedReferenceAttributesByName: Map<string, EntityReferenceValue[]> = referenceGroup
-                .map((referenceOfName) => this.flattenAttributesForSingleReference(referenceOfName))
-                .reduce((accumulator, referenceAttributes) => {
-                  referenceAttributes.forEach(([attributeName, attributeValue]) => {
-                    let attributes = accumulator.get(attributeName);
-                    if (!attributes) {
-                      attributes = [];
-                      accumulator.set(attributeName, attributes);
-                    }
-                    attributes.push(attributeValue);
-                  });
-                  return accumulator;
-                }, new Map<string, EntityReferenceValue[]>());
+                const mergedReferenceAttributesByName: Map<string, EntityReferenceValue[]> = referenceGroup
+                    .map((referenceOfName) => this.flattenAttributesForSingleReference(referenceOfName))
+                    .reduce((accumulator, referenceAttributes) => {
+                        referenceAttributes.forEach(([attributeName, attributeValue]) => {
+                            let attributes = accumulator.get(attributeName)
+                            if (!attributes) {
+                                attributes = []
+                                accumulator.set(attributeName, attributes)
+                            }
+                            attributes.push(attributeValue)
+                        })
+                        return accumulator
+                    }, new Map<string, EntityReferenceValue[]>())
 
-              mergedReferenceAttributesByName.forEach((attributeValues, attributeName) => {
-                if (refName)
-                  flattenedReferences.push([
-                    EntityPropertyKey.referenceAttributes(refName, attributeName),
-                    attributeValues,
-                  ]);
-              });
-            } else {
-              const representativeValue: EntityReferenceValue = this.resolveReferenceRepresentativeValue(referenceGroup);
-              flattenedReferences.push([
-                EntityPropertyKey.references(referenceName),
-                representativeValue,
-              ]);
-
-              this.flattenAttributesForSingleReference(referenceGroup).forEach(([attributeName, attributeValue]) => {
-                if (refName)
-                  flattenedReferences.push([
-                    EntityPropertyKey.referenceAttributes(refName, attributeName),
-                    attributeValue,
-                  ]);
-              });
+                mergedReferenceAttributesByName.forEach((attributeValues, attributeName) => {
+                    flattenedReferences.push([
+                        EntityPropertyKey.referenceAttributes(referenceName, attributeName),
+                        attributeValues
+                    ])
+                })
             }
-          }
         }
 
         return flattenedReferences;
@@ -333,39 +232,13 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
     private resolveReferenceRepresentativeValue(
         reference: Reference
     ): EntityReferenceValue {
-        const referencedPrimaryKey: number | undefined =
-            reference.getReferencedPrimaryKey()
-        const representativeAttributes: (
-            | EntityPropertyValue
-            | EntityPropertyValue[]
-        )[] = []
+        const referencedPrimaryKey: number = reference.referencedPrimaryKey
+        const representativeAttributes: (EntityPropertyValue | EntityPropertyValue[])[] = []
 
-        const globalRepresentativeAttributes = reference.referencedEntity
-            ?.getIfSupported()
-            ?.globalAttributes.getIfSupported()
-        if (globalRepresentativeAttributes) {
-            for (const [
-                _,
-                attribute,
-            ] of globalRepresentativeAttributes) {
-                representativeAttributes.push(
-                    this.wrapRawValueIntoNativeValue(attribute)
-                )
-            }
-        }
-
-        const localizedRepresentativeAttributes = reference.referencedEntity
-            ?.getIfSupported()
-            ?.localizedAttributes.getIfSupported()
-        if (localizedRepresentativeAttributes) {
-            for (const [
-                _,
-                attribute,
-            ] of localizedRepresentativeAttributes) {
-                representativeAttributes.push(
-                    this.wrapRawValueIntoNativeValue(attribute)
-                )
-            }
+        if (reference.referencedEntity instanceof Entity) {
+            reference.referencedEntity.allAttributes
+                .forEach(it =>
+                    representativeAttributes.push(this.wrapRawValueIntoNativeValue(it.value)))
         }
 
         return new EntityReferenceValue(
@@ -377,52 +250,24 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
     private flattenAttributesForSingleReference(
         reference: Reference
     ): [string, EntityReferenceValue][] {
-        const referencedPrimaryKey: number | undefined =
-            reference.getReferencedPrimaryKey()
+        const referencedPrimaryKey: number = reference.referencedPrimaryKey
         const flattenedAttributes: [string, EntityReferenceValue][] = []
 
-        const globalAttributes = reference.globalAttributes.getIfSupported()
-        if (globalAttributes) {
-            for (const [attributeName, attribute] of globalAttributes) {
+        reference.allAttributes
+            .forEach(it => {
                 const wrappedValue: NativeValue | NativeValue[] =
-                    this.wrapRawValueIntoNativeValue(attribute)
+                    this.wrapRawValueIntoNativeValue(it.value)
                 flattenedAttributes.push([
-                    attributeName,
+                    it.name,
                     new EntityReferenceValue(
-                        referencedPrimaryKey ?? 0,
+                        referencedPrimaryKey,
                         wrappedValue instanceof Array
                             ? wrappedValue
                             : [wrappedValue]
-                    ),
-                ])
-            }
-        }
-        const localizedAttributes =
-            reference.localizedAttributes.getIfSupported()
-        if (localizedAttributes) {
-            for (const [_, localizedAttribute] of localizedAttributes) {
-                // this expects that we support only one locale
-                const attributesInLocale = localizedAttribute.attributes.getIfSupported()
-                if (attributesInLocale) {
-                    for (const [
-                        attributeName,
-                        attribute,
-                    ] of attributesInLocale) {
-                        const wrappedValue: NativeValue | NativeValue[] =
-                            this.wrapRawValueIntoNativeValue(attribute)
-                        flattenedAttributes.push([
-                            attributeName,
-                            new EntityReferenceValue(
-                                referencedPrimaryKey,
-                                wrappedValue instanceof Array
-                                    ? wrappedValue
-                                    : [wrappedValue]
-                            ),
-                        ])
-                    }
-                }
-            }
-        }
+                    )
+                ] as [string, EntityReferenceValue])
+            })
+
         return flattenedAttributes
     }
 

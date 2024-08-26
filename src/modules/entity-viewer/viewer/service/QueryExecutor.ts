@@ -44,7 +44,7 @@ export abstract class QueryExecutor {
      * @param value a raw entity property value
      * @protected
      */
-    protected wrapRawValueIntoNativeValue(value: object | undefined): NativeValue | NativeValue[] {
+    protected wrapRawValueIntoNativeValue(value: any | undefined): NativeValue | NativeValue[] {
         if (value instanceof Array) {
             return value.map(item => new NativeValue(item))
         } else if(value instanceof List) {

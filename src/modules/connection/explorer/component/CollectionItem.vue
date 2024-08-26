@@ -5,35 +5,29 @@
 import { useI18n } from 'vue-i18n'
 import { CollectionActionType } from '@/modules/connection/explorer/model/CollectionActionType'
 import { MenuAction } from '@/modules/base/model/menu/MenuAction'
-import {
-    useWorkspaceService,
-    WorkspaceService,
-} from '@/modules/workspace/service/WorkspaceService'
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
 import { Connection } from '@/modules/connection/model/Connection'
 import {
     SchemaViewerTabFactory,
-    useSchemaViewerTabFactory,
+    useSchemaViewerTabFactory
 } from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
 import { EntitySchemaPointer } from '@/modules/schema-viewer/viewer/model/EntitySchemaPointer'
 import {
     EntityViewerTabFactory,
-    useEntityViewerTabFactory,
+    useEntityViewerTabFactory
 } from '@/modules/entity-viewer/viewer/workspace/service/EntityViewerTabFactory'
-import {
-    useCatalog,
-    useConnection,
-} from '@/modules/connection/explorer/component/dependecies'
+import { useCatalog, useConnection } from '@/modules/connection/explorer/component/dependecies'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
 import { EntityCollectionStatistics } from '../../model/EntityCollectionStatistics'
-import {
-    EvitaLabConfig,
-    useEvitaLabConfig,
-} from '@/modules/config/EvitaLabConfig'
+import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
 import { markRaw, ref, shallowRef } from 'vue'
 import DropCollection from '@/modules/server-actions/modify/components/DropCollection.vue'
 import RenameCollection from '@/modules/server-actions/modify/components/RenameCollection.vue'
 import { Catalog } from '../../model/Catalog'
+import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
+import { MenuItem } from '@/modules/base/model/menu/MenuItem'
+
 const workspaceService: WorkspaceService = useWorkspaceService()
 const entityViewerTabFactory: EntityViewerTabFactory =
     useEntityViewerTabFactory()
@@ -55,9 +49,9 @@ const connection: Connection = useConnection()
 const catalogSchema = useCatalog()
 const actions: Map<
     CollectionActionType,
-    MenuAction<CollectionActionType>
+    MenuItem<CollectionActionType>
 > = createActions()
-const actionList: MenuAction<CollectionActionType>[] = Array.from(
+const actionList: MenuItem<CollectionActionType>[] = Array.from(
     actions.values()
 )
 
@@ -85,11 +79,11 @@ function handleAction(action: string) {
 
 function createActions(): Map<
     CollectionActionType,
-    MenuAction<CollectionActionType>
+    MenuItem<CollectionActionType>
 > {
     const actions: Map<
         CollectionActionType,
-        MenuAction<CollectionActionType>
+        MenuItem<CollectionActionType>
     > = new Map()
     // todo lho consider moving these static actions directly into HTML code
     actions.set(
@@ -123,6 +117,10 @@ function createActions(): Map<
         }
     }
     if (!evitaLabConfig.readOnly) {
+        actions.set(
+            CollectionActionType.ModifySubheader,
+            new MenuSubheader(t('explorer.collection.subheader.modify'))
+        )
         actions.set(
             CollectionActionType.DropCollection,
             createMenuAction(

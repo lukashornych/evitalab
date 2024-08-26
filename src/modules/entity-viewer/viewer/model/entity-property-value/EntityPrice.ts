@@ -6,6 +6,7 @@ import {
 import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
 import { DateTimeRange } from '@/modules/connection/model/data-type/DateTimeRange'
 import { Currency } from '@/modules/connection/model/data/Currency'
+import { Price } from '@/modules/connection/model/data/Price'
 
 /**
  * Represents a single entity price.
@@ -22,7 +23,7 @@ export class EntityPrice extends EntityPropertyValue {
     readonly priceWithTax: BigDecimal
     readonly taxRate: BigDecimal
 
-    constructor(priceId: number | undefined,
+    private constructor(priceId: number | undefined,
                 priceList: string,
                 currency: Currency,
                 innerRecordId: number | undefined,
@@ -41,6 +42,20 @@ export class EntityPrice extends EntityPropertyValue {
         this.priceWithoutTax = priceWithoutTax
         this.priceWithTax = priceWithTax
         this.taxRate = taxRate
+    }
+
+    static fromPrice(price: Price): EntityPrice {
+        return new EntityPrice(
+            price.priceId,
+            price.priceList,
+            price.currency,
+            price.innerRecordId,
+            price.sellable,
+            price.validity,
+            price.priceWithoutTax,
+            price.priceWithTax,
+            price.taxRate
+        )
     }
 
     static fromJson(json: any): EntityPrice {

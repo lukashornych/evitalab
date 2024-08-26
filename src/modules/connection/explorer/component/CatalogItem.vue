@@ -155,7 +155,7 @@ function createActions(): Map<
     if (!evitaLabConfig.readOnly) {
         actions.set(
             CatalogActionType.ModifySubheader,
-            new MenuSubheader(t('explorer.catalog.subitems.modify'))
+            new MenuSubheader(t('explorer.catalog.subheader.modify'))
         )
         actions.set(
             CatalogActionType.DropCatalog,
@@ -195,7 +195,7 @@ function createActions(): Map<
 
         actions.set(
             CatalogActionType.CollectionsSubheader,
-            new MenuSubheader(t('explorer.catalog.subitems.collections'))
+            new MenuSubheader(t('explorer.catalog.subheader.collections'))
         )
 
         actions.set(
