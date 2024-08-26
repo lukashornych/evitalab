@@ -63,4 +63,8 @@ export class Catalog {
         this.indexCount = indexCount
         this.sizeOnDisk = sizeOnDisk
     }
+
+    get isInWarmup(): boolean {
+        return this.catalogState.getOrThrow() === CatalogState.WarmingUp
+    }
 }

@@ -4,10 +4,10 @@ import { Transport } from "@connectrpc/connect";
 import { createGrpcWebTransport } from '@connectrpc/connect-web'
 
 //TODO implement and add doc
-export class TransportHelper {
-    private static readonly transports: Map<ConnectionId, Transport> = new Map();
+export class TransportProvider {
+    private readonly transports: Map<ConnectionId, Transport> = new Map();
 
-    public static getTransport(connection: Connection){
+    public getTransport(connection: Connection){
         let transport: Transport | undefined = this.transports.get(connection.id);
         if(!transport){
             if(!connection.grpcUrl){
