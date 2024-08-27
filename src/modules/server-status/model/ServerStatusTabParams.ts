@@ -3,6 +3,7 @@ import { ServerStatusTabParamsDto } from './ServerStatusTabParamsDto'
 import { ExecutableTabRequest } from '@/modules/workspace/tab/model/ExecutableTabRequest'
 import { Connection } from '@/modules/connection/model/Connection'
 
+// todo docs
 export class ServerStatusTabParams implements TabParams<ServerStatusTabParamsDto>, ExecutableTabRequest {
     readonly executeOnOpen: boolean
     readonly connection: Connection

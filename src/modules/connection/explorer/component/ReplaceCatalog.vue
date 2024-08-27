@@ -7,15 +7,15 @@
         <VCard>
             <VCardTitleWithActions>
                 <template #default>
-                    {{ t('serverActions.replaceCatalog.title') }}
+                    {{ t('explorer.catalog.replaceCatalog.title') }}
                 </template>
             </VCardTitleWithActions>
             <VCardText>
                 <VLabel>{{
-                    t('serverActions.replaceCatalog.fromCatalogLabel')
+                    t('explorer.catalog.replaceCatalog.form.fromCatalog.help')
                 }}</VLabel>
                 <VCombobox
-                    :label="t('serverActions.replaceCatalog.fromCatalog')"
+                    :label="t('explorer.catalog.replaceCatalog.form.fromCatalog.label')"
                     variant="outlined"
                     v-model="selectedFrom"
                     :items="
@@ -27,10 +27,10 @@
                 >
                 </VCombobox>
                 <VLabel>{{
-                    t('serverActions.replaceCatalog.toCatalogLabel')
+                    t('explorer.catalog.replaceCatalog.form.toCatalog.help')
                 }}</VLabel>
                 <VCombobox
-                    :label="t('serverActions.replaceCatalog.toCatalog')"
+                    :label="t('explorer.catalog.replaceCatalog.form.toCatalog.label')"
                     variant="outlined"
                     :items="
                         catalogs

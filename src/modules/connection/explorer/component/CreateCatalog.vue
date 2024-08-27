@@ -3,12 +3,12 @@
         <VCard>
             <VCardTitleWithActions>
                 <template #default>
-                    {{ t('serverActions.createCatalog.title') }}
+                    {{ t('explorer.connection.createCatalog.title') }}
                 </template>
             </VCardTitleWithActions>
             <VCardText>
                 <VLabel>{{
-                    t('serverActions.createCatalog.description')
+                    t('explorer.connection.createCatalog.description')
                 }}</VLabel>
                 <VTextField
                     variant="outlined"

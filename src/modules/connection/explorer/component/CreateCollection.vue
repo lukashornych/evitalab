@@ -3,11 +3,11 @@
         <VCard>
             <VCardTitleWithActions>
                 <template #default>
-                    {{ t('serverActions.createCollection.title') }}
+                    {{ t('explorer.catalog.createCollection.title') }}
                 </template>
             </VCardTitleWithActions>
             <VCardText>
-                <p>{{ t('serverActions.createCollection.newCatalogName') }}</p>
+                <p>{{ t('explorer.catalog.createCollection.newCatalogName') }}</p>
                 <VTextField variant="outlined" class="mt-3" v-model="collectionName"></VTextField>
                 <div class="buttons">
                     <VBtn variant="outlined" density="compact" @click="changeVisibility(false)">

@@ -3,11 +3,11 @@
         <VCard>
             <VCardTitleWithActions>
                 <template #default>
-                    {{ t('serverActions.dropCatalog.title') }}
+                    {{ t('explorer.catalog.dropCatalog.title') }}
                 </template>
             </VCardTitleWithActions>
             <VCardText>
-                <p>{{ t('serverActions.dropCatalog.description') }} <b>{{ props.catalogName }}</b></p>
+                <p>{{ t('explorer.catalog.dropCatalog.description') }} <b>{{ props.catalogName }}</b></p>
                 <div class="buttons">
                     <VBtn
                         variant="outlined"

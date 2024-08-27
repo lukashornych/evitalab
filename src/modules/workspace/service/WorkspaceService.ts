@@ -24,7 +24,7 @@ import { SchemaViewerTabDefinition } from '@/modules/schema-viewer/viewer/worksp
 import { KeymapViewerTabDefinition } from '@/modules/keymap/viewer/workspace/model/KeymapViewerTabDefinition'
 import { mandatoryInject } from '@/utils/reactivity'
 import { ServerStatusTabFactory } from '@/modules/server-status/service/ServerStatusTabFactory'
-import { ServerStatusDefinition } from '@/modules/server-status/model/ServerStatusDefinition'
+import { ServerStatusTabDefinition } from '@/modules/server-status/model/ServerStatusTabDefinition'
 
 const openedTabsStorageKey: string = 'openedTabs'
 const tabHistoryStorageKey: string = 'tabHistory'
@@ -187,7 +187,7 @@ export class WorkspaceService {
                     tabType = TabType.SchemaViewer
                 } else if (tabRequest instanceof KeymapViewerTabDefinition) {
                     tabType = TabType.KeymapViewer
-                } else if(tabRequest instanceof ServerStatusDefinition) {
+                } else if(tabRequest instanceof ServerStatusTabDefinition) {
                     tabType = TabType.ServerStatus
                 } else {
                     console.info(undefined, `Unsupported tab type '${tabRequest.constructor.name}'. Not storing for next session.`)

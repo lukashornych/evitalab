@@ -3,11 +3,11 @@
         <VCard>
             <VCardTitleWithActions>
                 <template #default>
-                    {{ t('serverActions.dropCollection.title') }}
+                    {{ t('explorer.collection.dropCollection.title') }}
                 </template>
             </VCardTitleWithActions>
             <VCardText>
-                <p>{{ t('serverActions.dropCollection.description') }} <b>{{ props.collectionName }}</b></p>
+                <p>{{ t('explorer.collection.dropCollection.description') }} <b>{{ props.collectionName }}</b></p>
                 <div class="buttons">
                     <VBtn variant="outlined" density="compact" @click="changeVisibility(false)">
                         {{ t('common.button.cancel') }}

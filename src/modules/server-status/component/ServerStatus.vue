@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="server-status">
         <!--TODO: LHO fix entension whitespace-->
         <VTabToolbar prepend-icon="mdi mdi-database-outline" :path="path">
             <template #append>
@@ -14,32 +14,27 @@
                     <VCardText>
                         <p class="main-title">{{ serverDetail?.instanceId }}</p>
                         <div class="version">
-                            <VChip>version: {{ serverDetail?.version }}</VChip>
+                            <VChip>
+                                {{ t('serverStatus.detail.flags.version', { version: serverDetail?.version || '?' }) }}
+                            </VChip>
                         </div>
                         <div class="informative-container">
                             <div class="informative-icons">
-                                <span
-                                    class="mdi mdi-chart-bell-curve-cumulative"
-                                ></span>
+                                <span class="mdi mdi-chart-bell-curve-cumulative"></span>
                                 <div class="log"></div>
                             </div>
                             <div class="informative-items">
                                 <p>
-                                    Started:
-                                    {{
-                                        serverDetail?.started?.getPrettyPrintableString()
-                                    }}
+                                    {{ t('serverStatus.detail.stats.started', { started: serverDetail?.started?.getPrettyPrintableString() || '?' }) }}
                                 </p>
                                 <p>
-                                    Uptime:
-                                    {{
-                                        getFormattedUptime(serverDetail?.uptime)
-                                    }}
+                                    {{ t('serverStatus.detail.stats.uptime', { uptime: getFormattedUptime(serverDetail?.uptime) || '?' }) }}
                                 </p>
-                                <p>Catalogs: {{ serverDetail?.catalogsOk }}</p>
                                 <p>
-                                    Corrupted catalogs:
-                                    {{ serverDetail?.catalogsCorrupted }}
+                                    {{ t('serverStatus.detail.stats.catalogsOk', { catalogCount: serverDetail?.catalogsOk || '?' }) }}
+                                </p>
+                                <p>
+                                    {{ t('serverStatus.detail.stats.catalogsCorrupted', { catalogCount: serverDetail?.catalogsCorrupted || '?' }) }}
                                 </p>
                                 <div class="log"></div>
                             </div>
@@ -134,14 +129,11 @@
                                     </VChipGroup>
                                 </p>
                                 <VChip
-                                    @click="
-                                        () => {
-                                            visibleYamlDialog = true
-                                        }
-                                    "
+                                    @click="visibleYamlDialog = true"
                                     variant="outlined"
                                     class="w-75 bottom-title"
-                                    >Open runtime configuration
+                                >
+                                    {{ t('serverStatus.detail.actions.openRuntimeConfiguration') }}
                                 </VChip>
                             </div>
                         </div>
@@ -158,7 +150,7 @@
                     <VCard class="py-8 px-8 h-100 card">
                         <VCardTitleWithActions>
                             <template #default>
-                                {{ t('serverActions.serverDetail.yamlDialog.runtimeConfig') }}
+                                {{ t('serverStatus.detail.runtimeConfig.title') }}
                             </template>
                             <template #actions>
                                 <VBtn
@@ -208,11 +200,9 @@ import { List } from 'immutable'
 import { useI18n } from 'vue-i18n'
 import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
 import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithActions.vue'
-import { VCard, VCardText, VDialog } from 'vuetify/lib/components/index.mjs'
 
 const emit = defineEmits<TabComponentEvents>()
-const props =
-    defineProps<TabComponentProps<ServerStatusTabParams, VoidTabData>>()
+const props = defineProps<TabComponentProps<ServerStatusTabParams, VoidTabData>>()
 
 const { t } = useI18n()
 
@@ -226,19 +216,19 @@ const visibleYamlDialog = ref<boolean>(false)
 const runtimeConfigLoaded = ref<boolean>(false)
 const runtimeConfig = ref<string>()
 const extensions: Extension[] = [yaml()]
-const path: List<string> = List([t('serverActions.serverDetail.path')])
-const detailViewerService = useServerStatusService()
+const path: List<string> = List([t('serverStatus.toolbar.title')])
+const serverStatusService = useServerStatusService()
 
-detailViewerService
+serverStatusService
     .getServerStatistics(props.params.connection)
     .then((x) => loadedServerStatus(x))
-detailViewerService
+serverStatusService
     .getApiReadiness(props.params.connection)
     .then((x) => loadedApiReadiness(x))
-detailViewerService
+serverStatusService
     .getRuntimeConfiguration(props.params.connection)
     .then((x) => loadedRuntimeConfig(x))
-detailViewerService
+serverStatusService
     .getServerStatus(props.params.connection)
     .then((x) => loadedApiServerStatus(x))
 
@@ -293,16 +283,16 @@ function formatUrl(url: string): string {
 }
 
 function refresh() {
-    detailViewerService
+    serverStatusService
         .getServerStatistics(props.params.connection)
         .then((x) => loadedServerStatus(x))
-    detailViewerService
+    serverStatusService
         .getApiReadiness(props.params.connection)
         .then((x) => loadedApiReadiness(x))
-    detailViewerService
+    serverStatusService
         .getRuntimeConfiguration(props.params.connection)
         .then((x) => loadedRuntimeConfig(x))
-    detailViewerService
+    serverStatusService
         .getServerStatus(props.params.connection)
         .then((x) => loadedApiServerStatus(x))
 }
@@ -310,6 +300,20 @@ function refresh() {
 
 <style lang="scss" scoped>
 @import '@/styles/colors.scss';
+
+.server-status {
+    display: grid;
+    grid-template-rows: 3rem 1fr;
+
+    &__header {
+        z-index: 100;
+    }
+
+    &__body {
+        position: relative;
+    }
+}
+
 .main-title {
     color: white;
     font-weight: bold;
