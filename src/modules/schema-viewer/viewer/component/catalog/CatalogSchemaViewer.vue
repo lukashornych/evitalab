@@ -80,13 +80,11 @@ const baseProperties = ref<Property[]>([
                     :attributes="List(schema.attributes.getIfSupported()!.values())"
                 />
 
-                <div v-if="loadedSchemas">
-                    <EntitySchemaList
-                        v-if="entitySchemas?.getIfSupported() && entitySchemas.getIfSupported()!.size > 0"
-                        :data-pointer="dataPointer"
-                        :entities="List(entitySchemas.getIfSupported()!.values())"
-                    />
-                </div>
+                <EntitySchemaList
+                    v-if="loadedSchemas && entitySchemas?.getIfSupported() && entitySchemas.getIfSupported()!.size > 0"
+                    :data-pointer="dataPointer"
+                    :entities="List(entitySchemas.getIfSupported()!.values())"
+                />
             </template>
         </SchemaContainer>
     </div>
