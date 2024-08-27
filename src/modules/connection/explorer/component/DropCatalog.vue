@@ -1,69 +1,62 @@
 <template>
-    <VDialog v-model="visibleDropDialog" class="w-25">
+    <VDialog v-if="visibleDropDialog" v-model="visibleDropDialog" class="w-25">
         <VCard>
             <VCardTitleWithActions>
                 <template #default>
-                    {{ t('serverActions.createCollection.title') }}
+                    {{ t('serverActions.dropCatalog.title') }}
                 </template>
             </VCardTitleWithActions>
             <VCardText>
-                <p>{{ t('serverActions.createCollection.newCatalogName') }}</p>
-                <VTextField variant="outlined" class="mt-3" v-model="collectionName"></VTextField>
+                <p>{{ t('serverActions.dropCatalog.description') }} <b>{{ props.catalogName }}</b></p>
                 <div class="buttons">
-                    <VBtn variant="outlined" density="compact" @click="changeVisibility(false)">
+                    <VBtn
+                        variant="outlined"
+                        density="compact"
+                        @click="changeVisibility(false)"
+                    >
                         {{ t('common.button.cancel') }}
                         <VTooltip activator="parent">
                             {{ t('common.button.cancel') }}
                         </VTooltip>
                     </VBtn>
                     <VBtn
-                        prepend-icon="mdi-plus"
+                        prepend-icon="mdi-delete-outline"
                         variant="outlined"
                         density="compact"
-                        color="success"
+                        color="error"
                         class="border"
-                        @click="confirmed"
+                        @click="showConfirmation"
                     >
-                        {{ t('common.button.add') }}
+                        {{ t('common.button.drop') }}
                         <VTooltip activator="parent">
-                            {{ t('common.button.add') }}
+                            {{ t('common.button.drop') }}
                         </VTooltip>
                     </VBtn>
                 </div>
             </VCardText>
         </VCard>
     </VDialog>
+    <ConfirmDialog @confirmed="confirmed" v-else> </ConfirmDialog>
 </template>
 
 <script setup lang="ts">
 import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithActions.vue'
-import { Connection } from '@/modules/connection/model/Connection'
+import ConfirmDialog from './ConfirmDialog.vue'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-    VBtn,
-    VCard,
-    VCardText,
-    VDialog,
-    VTextField,
-    VTooltip,
-} from 'vuetify/lib/components/index.mjs'
-import { ModifyActionService, useModifyActionService } from '../services/ModifyActionService'
-import { Catalog } from '@/modules/connection/model/Catalog'
+import { Connection } from '@/modules/connection/model/Connection'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { ModifyActionService, useModifyActionService } from '@/modules/connection/explorer/service/ModifyActionService'
 
 const { t } = useI18n()
-
 const props = defineProps<{
     visible: boolean
     catalogName: string
     connection: Connection
 }>()
-const emit = defineEmits<{
-    (e: 'visibleChanged', visible: boolean): void
-    (e: 'confirmed', value?: Catalog[] | undefined): void
-}>()
+const emit = defineEmits<{ (e: 'visibleChanged', visible: boolean): void, (e: 'confirmed'):void }>()
+
 const visibleDropDialog = ref<boolean>(props.visible)
-const collectionName = ref<string>('')
 const modifyActionService: ModifyActionService = useModifyActionService()
 
 function changeVisibility(visible: boolean) {
@@ -71,12 +64,17 @@ function changeVisibility(visible: boolean) {
     emit('visibleChanged', visibleDropDialog.value)
 }
 
+function showConfirmation() {
+    visibleDropDialog.value = false
+}
+
 async function confirmed(value: boolean) {
     if (value) {
-        const res = await modifyActionService.createCollection(props.connection, collectionName.value, props.catalogName)
-        if(res){
-            emit('confirmed', res)
-        }
+        const res = await modifyActionService.dropCatalog(props.connection, props.catalogName)
+        if(res)
+            emit('confirmed')
+        else
+            throw new UnexpectedError('Catalog can not be deleted. Try it again')
     }
     changeVisibility(false)
 }
@@ -92,6 +90,6 @@ async function confirmed(value: boolean) {
 }
 
 .border {
-    border-color: $success !important;
+    border-color: $error !important;
 }
 </style>

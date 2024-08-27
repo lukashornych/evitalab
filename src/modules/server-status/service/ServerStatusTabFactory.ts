@@ -8,7 +8,7 @@ import { TabDataDto } from '@/modules/workspace/tab/model/TabDataDto'
 import { ServerStatusTabParamsDto } from '../model/ServerStatusTabParamsDto'
 import { ConnectionService } from '@/modules/connection/service/ConnectionService'
 
-export const detailViewerTabFactoryInjectionKey: InjectionKey<ServerStatusTabFactory> = Symbol('DetailViewerTabFactory')
+export const serverStatusTabFactoryInjectionKey: InjectionKey<ServerStatusTabFactory> = Symbol('serverStatusTabFactory')
 
 export class ServerStatusTabFactory {
     private readonly connectionService: ConnectionService
@@ -25,12 +25,12 @@ export class ServerStatusTabFactory {
         return new ServerStatusTabParams(connection, executeOnOpen)
     }
 
-    restoreFromJson(paramsJson: TabParamsDto, dataJson?: TabDataDto): ServerStatusDefinition { 
+    restoreFromJson(paramsJson: TabParamsDto, dataJson?: TabDataDto): ServerStatusDefinition {
         const params: ServerStatusTabParamsDto = paramsJson as ServerStatusTabParams
         return new ServerStatusDefinition('Status', new ServerStatusTabParams(this.connectionService.getConnection(params.connection.id)))
     }
 }
 
-export const useDetailViewerTabFactory = (): ServerStatusTabFactory => {
-    return mandatoryInject(detailViewerTabFactoryInjectionKey) as ServerStatusTabFactory
+export const useServerStatusTabFactory = (): ServerStatusTabFactory => {
+    return mandatoryInject(serverStatusTabFactoryInjectionKey) as ServerStatusTabFactory
 }

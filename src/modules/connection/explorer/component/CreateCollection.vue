@@ -1,13 +1,14 @@
 <template>
-    <VDialog v-if="visibleDropCollection" v-model="visibleDropCollection" class="w-25">
+    <VDialog v-model="visibleDropDialog" class="w-25">
         <VCard>
             <VCardTitleWithActions>
                 <template #default>
-                    {{ t('serverActions.dropCollection.title') }}
+                    {{ t('serverActions.createCollection.title') }}
                 </template>
             </VCardTitleWithActions>
             <VCardText>
-                <p>{{ t('serverActions.dropCollection.description') }} <b>{{ props.collectionName }}</b></p>
+                <p>{{ t('serverActions.createCollection.newCatalogName') }}</p>
+                <VTextField variant="outlined" class="mt-3" v-model="collectionName"></VTextField>
                 <div class="buttons">
                     <VBtn variant="outlined" density="compact" @click="changeVisibility(false)">
                         {{ t('common.button.cancel') }}
@@ -19,60 +20,55 @@
                         prepend-icon="mdi-plus"
                         variant="outlined"
                         density="compact"
-                        color="error"
+                        color="success"
                         class="border"
-                        @click="showConfirmation"
+                        @click="confirmed"
                     >
-                        {{ t('common.button.drop') }}
+                        {{ t('common.button.add') }}
                         <VTooltip activator="parent">
-                            {{ t('common.button.drop') }}
+                            {{ t('common.button.add') }}
                         </VTooltip>
                     </VBtn>
                 </div>
             </VCardText>
         </VCard>
     </VDialog>
-    <ConfirmDialog v-else @confirmed="confirmed" />
 </template>
 
 <script setup lang="ts">
 import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithActions.vue'
-import { Connection } from '@/modules/connection/model/Connection';
-import { ref } from 'vue';
+import { Connection } from '@/modules/connection/model/Connection'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { VBtn, VCard, VCardText, VDialog, VTooltip } from 'vuetify/lib/components/index.mjs'
-import { ModifyActionService, useModifyActionService } from '../services/ModifyActionService';
-import { UnexpectedError } from '@/modules/base/exception/UnexpectedError';
-import ConfirmDialog from './ConfirmDialog.vue';
-import { Catalog } from '@/modules/connection/model/Catalog';
+import { Catalog } from '@/modules/connection/model/Catalog'
+import { ModifyActionService, useModifyActionService } from '@/modules/connection/explorer/service/ModifyActionService'
 
 const { t } = useI18n()
+
 const props = defineProps<{
     visible: boolean
-    collectionName: string
     catalogName: string
     connection: Connection
 }>()
-const visibleDropCollection = ref<boolean>(props.visible)
+const emit = defineEmits<{
+    (e: 'visibleChanged', visible: boolean): void
+    (e: 'confirmed', value?: Catalog[] | undefined): void
+}>()
+const visibleDropDialog = ref<boolean>(props.visible)
+const collectionName = ref<string>('')
 const modifyActionService: ModifyActionService = useModifyActionService()
-const emit = defineEmits<{ (e: 'visibleChanged', visible: boolean): void, (e: 'confirmed', value?: Catalog[] | undefined):void }>()
 
 function changeVisibility(visible: boolean) {
-    visibleDropCollection.value = visible
-    emit('visibleChanged', visibleDropCollection.value)
-}
-
-function showConfirmation() {
-    visibleDropCollection.value = false
+    visibleDropDialog.value = visible
+    emit('visibleChanged', visibleDropDialog.value)
 }
 
 async function confirmed(value: boolean) {
     if (value) {
-        const res = await modifyActionService.dropCollection(props.connection, props.collectionName, props.catalogName)
-        if(res)
+        const res = await modifyActionService.createCollection(props.connection, collectionName.value, props.catalogName)
+        if(res){
             emit('confirmed', res)
-        else
-            throw new UnexpectedError('Collection can not be deleted. Try it again')
+        }
     }
     changeVisibility(false)
 }
@@ -88,6 +84,6 @@ async function confirmed(value: boolean) {
 }
 
 .border {
-    border-color: $error !important;
+    border-color: $success !important;
 }
 </style>

@@ -1,13 +1,21 @@
 <template>
-    <VDialog v-if="visibleDropDialog" v-model="visibleDropDialog" class="w-25">
+    <VDialog v-if="visibleRenameDialog" v-model="visibleRenameDialog" class="w-25 min-width">
         <VCard>
             <VCardTitleWithActions>
                 <template #default>
-                    {{ t('serverActions.dropCatalog.title') }}
+                    {{ t('serverActions.renameCatalog.title') }}
                 </template>
             </VCardTitleWithActions>
             <VCardText>
-                <p>{{ t('serverActions.dropCatalog.description') }} <b>{{ props.catalogName }}</b></p>
+                <p>{{ t('serverActions.renameCatalog.description') }} <b>{{ props.catalogName }}</b></p>
+                <VTextField
+                    :label="t('serverActions.renameCatalog.rename')"
+                    variant="outlined"
+                    class="rename-input"
+                    append-inner-icon="mdi-pencil-outline"
+                    v-model="newCatalogName">
+
+                </VTextField>
                 <div class="buttons">
                     <VBtn
                         variant="outlined"
@@ -20,16 +28,16 @@
                         </VTooltip>
                     </VBtn>
                     <VBtn
-                        prepend-icon="mdi-delete-outline"
+                        prepend-icon="mdi-pencil-outline"
                         variant="outlined"
                         density="compact"
                         color="error"
                         class="border"
                         @click="showConfirmation"
                     >
-                        {{ t('common.button.drop') }}
+                        {{ t('common.button.rename') }}
                         <VTooltip activator="parent">
-                            {{ t('common.button.drop') }}
+                            {{ t('common.button.rename') }}
                         </VTooltip>
                     </VBtn>
                 </div>
@@ -44,18 +52,11 @@ import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithAction
 import ConfirmDialog from './ConfirmDialog.vue'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-    VBtn,
-    VCard,
-    VCardText,
-    VDialog,
-} from 'vuetify/lib/components/index.mjs'
 import { Connection } from '@/modules/connection/model/Connection'
-import {
-    ModifyActionService,
-    useModifyActionService,
-} from '../services/ModifyActionService'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { ModifyActionService, useModifyActionService } from '@/modules/connection/explorer/service/ModifyActionService'
+
+const modifyActionService: ModifyActionService = useModifyActionService()
 
 const { t } = useI18n()
 const props = defineProps<{
@@ -65,25 +66,25 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ (e: 'visibleChanged', visible: boolean): void, (e: 'confirmed'):void }>()
 
-const visibleDropDialog = ref<boolean>(props.visible)
-const modifyActionService: ModifyActionService = useModifyActionService()
+const visibleRenameDialog = ref<boolean>(props.visible)
+const newCatalogName = ref<string>('')
 
 function changeVisibility(visible: boolean) {
-    visibleDropDialog.value = visible
-    emit('visibleChanged', visibleDropDialog.value)
+    visibleRenameDialog.value = visible
+    emit('visibleChanged', visibleRenameDialog.value)
 }
 
 function showConfirmation() {
-    visibleDropDialog.value = false
+    visibleRenameDialog.value = false
 }
 
 async function confirmed(value: boolean) {
     if (value) {
-        const res = await modifyActionService.dropCatalog(props.connection, props.catalogName)
+        const res = await modifyActionService.renameCatalog(props.connection, props.catalogName, newCatalogName.value)
         if(res)
             emit('confirmed')
         else
-            throw new UnexpectedError('Catalog can not be deleted. Try it again')
+            throw new UnexpectedError('Catalog can not be renamed. Try it again')
     }
     changeVisibility(false)
 }
@@ -100,5 +101,13 @@ async function confirmed(value: boolean) {
 
 .border {
     border-color: $error !important;
+}
+
+.rename-input {
+    margin-top: 15px
+}
+
+.min-width {
+    min-width: 400px;
 }
 </style>

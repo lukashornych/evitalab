@@ -48,16 +48,7 @@ import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithAction
 import { Connection } from '@/modules/connection/model/Connection'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-    VBtn,
-    VCard,
-    VCardText,
-    VDialog,
-    VLabel,
-    VTextField,
-    VTooltip,
-} from 'vuetify/lib/components/index.mjs'
-import { ModifyActionService, useModifyActionService } from '../services/ModifyActionService'
+import { ModifyActionService, useModifyActionService } from '@/modules/connection/explorer/service/ModifyActionService'
 
 const { t } = useI18n()
 
@@ -73,7 +64,7 @@ const emit = defineEmits<{
 
 const visibleCreateCatalog = ref<boolean>(props.visible)
 const catalogName = ref<string>('')
-    const modifyActionService: ModifyActionService = useModifyActionService()
+const modifyActionService: ModifyActionService = useModifyActionService()
 
 function changeVisibility(visible: boolean) {
     visibleCreateCatalog.value = visible

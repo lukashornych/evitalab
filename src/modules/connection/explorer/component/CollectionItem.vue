@@ -22,11 +22,11 @@ import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
 import { EntityCollection } from '../../model/EntityCollection'
 import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
 import { computed, ComputedRef, markRaw, ref, shallowRef } from 'vue'
-import DropCollection from '@/modules/server-actions/modify/components/DropCollection.vue'
-import RenameCollection from '@/modules/server-actions/modify/components/RenameCollection.vue'
 import { Catalog } from '../../model/Catalog'
 import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
 import { MenuItem } from '@/modules/base/model/menu/MenuItem'
+import DropCollection from '@/modules/connection/explorer/component/DropCollection.vue'
+import RenameCollection from '@/modules/connection/explorer/component/RenameCollection.vue'
 
 const workspaceService: WorkspaceService = useWorkspaceService()
 const entityViewerTabFactory: EntityViewerTabFactory =
@@ -42,7 +42,7 @@ const props = defineProps<{
 }>()
 
 const emits = defineEmits<{ (e: 'changed', value?: Catalog[] | undefined): void }>()
-const componentVisible = ref<boolean>(false)
+const popupComponentVisible = ref<boolean>(false)
 const PopupComponent = shallowRef(DropCollection || RenameCollection)
 
 const connection: Connection = useConnection()
@@ -122,7 +122,7 @@ function createActions(): Map<
                 'mdi-delete-outline',
                 () => {
                     PopupComponent.value = markRaw(DropCollection)
-                    componentVisible.value = true
+                    popupComponentVisible.value = true
                 }
             )
         )
@@ -133,7 +133,7 @@ function createActions(): Map<
                 'mdi-delete-outline',
                 () => {
                     PopupComponent.value = markRaw(RenameCollection)
-                    componentVisible.value = true
+                    popupComponentVisible.value = true
                 }
             )
         )
@@ -170,14 +170,14 @@ function createMenuAction(
             </VTooltip>
         </VTreeViewItem>
         <PopupComponent
-            v-if="componentVisible"
+            v-if="popupComponentVisible"
             :visible="true"
             :collection-name="entityCollection.entityType"
             :catalog-name="catalogName"
             :connection="connection"
             @visible-changed="
                 () => {
-                    componentVisible = false
+                    popupComponentVisible = false
                 }
             "
             @confirmed="

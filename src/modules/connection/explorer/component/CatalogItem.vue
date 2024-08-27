@@ -34,16 +34,16 @@ import {
     provideCatalog,
     useConnection,
 } from '@/modules/connection/explorer/component/dependecies'
-import DropCatalog from '@/modules/server-actions/modify/components/DropCatalog.vue'
 import { MenuItem } from '@/modules/base/model/menu/MenuItem'
 import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
-import RenameCatalog from '@/modules/server-actions/modify/components/RenameCatalog.vue'
 import {
     EvitaLabConfig,
     useEvitaLabConfig,
 } from '@/modules/config/EvitaLabConfig'
-import CreateCollection from '@/modules/server-actions/modify/components/CreateCollection.vue'
-import ReplaceCatalog from '@/modules/server-actions/modify/components/ReplaceCatalog.vue'
+import DropCatalog from '@/modules/connection/explorer/component/DropCatalog.vue'
+import RenameCatalog from '@/modules/connection/explorer/component/RenameCatalog.vue'
+import ReplaceCatalog from '@/modules/connection/explorer/component/ReplaceCatalog.vue'
+import CreateCollection from '@/modules/connection/explorer/component/CreateCollection.vue'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()

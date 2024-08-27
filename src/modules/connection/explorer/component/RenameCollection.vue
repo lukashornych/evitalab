@@ -51,12 +51,13 @@
 import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithActions.vue';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { VBtn, VCard, VCardText, VDialog, VTextField, VTooltip } from 'vuetify/lib/components/index.mjs';
-import { ModifyActionService, useModifyActionService } from '../services/ModifyActionService';
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError';
 import { Connection } from '@/modules/connection/model/Connection';
 import ConfirmDialog from './ConfirmDialog.vue';
 import { Catalog } from '@/modules/connection/model/Catalog';
+import { ModifyActionService, useModifyActionService } from '@/modules/connection/explorer/service/ModifyActionService'
+
+const modifyActionService: ModifyActionService = useModifyActionService()
 
 const props = defineProps<{
     visible: boolean
@@ -70,7 +71,6 @@ const emit = defineEmits<{ (e: 'visibleChanged', visible: boolean): void, (e: 'c
 
 const visibleRenameCollection = ref<boolean>(props.visible)
 const newCollectionName = ref<string>('')
-const modifyActionService: ModifyActionService = useModifyActionService()
 
 function changeVisibility(visible: boolean) {
     visibleRenameCollection.value = visible

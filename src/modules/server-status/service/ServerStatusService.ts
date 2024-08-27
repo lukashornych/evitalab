@@ -6,9 +6,10 @@ import { ServerStatus } from '@/modules/connection/model/data/ServerStatus'
 import { mandatoryInject } from '@/utils/reactivity'
 import { InjectionKey } from 'vue'
 
-export const detailViewerServiceInjectionKey: InjectionKey<DetailViewerService> = Symbol('detailViewerService')
+export const serverStatusServiceInjectionKey: InjectionKey<ServerStatusService> = Symbol('serverStatusService')
 
-export class DetailViewerService {
+// todo docs
+export class ServerStatusService {
     private readonly evitaDBDriverResolver: EvitaDBDriverResolver
 
     constructor(evitaDBDriver: EvitaDBDriverResolver) {
@@ -29,13 +30,13 @@ export class DetailViewerService {
         const driver = await this.evitaDBDriverResolver.resolveDriver(connection)
         return await driver.getServerStatus(connection)
     }
-    
+
     async getRuntimeConfiguration(connection: Connection):Promise<string> {
         const driver = await this.evitaDBDriverResolver.resolveDriver(connection)
         return await driver.getRuntimeConfig(connection)
     }
 }
 
-export const useDetailViewerService = (): DetailViewerService => {
-    return mandatoryInject(detailViewerServiceInjectionKey) as DetailViewerService
+export const useServerStatusService = (): ServerStatusService => {
+    return mandatoryInject(serverStatusServiceInjectionKey) as ServerStatusService
 }

@@ -23,8 +23,8 @@ import {
 import { SchemaViewerTabDefinition } from '@/modules/schema-viewer/viewer/workspace/model/SchemaViewerTabDefinition'
 import { KeymapViewerTabDefinition } from '@/modules/keymap/viewer/workspace/model/KeymapViewerTabDefinition'
 import { mandatoryInject } from '@/utils/reactivity'
-import { ServerStatusTabFactory } from '@/modules/server-actions/server-status/service/ServerStatusTabFactory'
-import { ServerStatusDefinition } from '@/modules/server-actions/server-status/model/ServerStatusDefinition'
+import { ServerStatusTabFactory } from '@/modules/server-status/service/ServerStatusTabFactory'
+import { ServerStatusDefinition } from '@/modules/server-status/model/ServerStatusDefinition'
 
 const openedTabsStorageKey: string = 'openedTabs'
 const tabHistoryStorageKey: string = 'tabHistory'

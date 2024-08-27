@@ -23,21 +23,19 @@ import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
 import CatalogItem from '@/modules/connection/explorer/component/CatalogItem.vue'
 import RemoveConnectionDialog from '@/modules/connection/explorer/component/RemoveConnectionDialog.vue'
 import VTreeViewEmptyItem from '@/modules/base/component/VTreeViewEmptyItem.vue'
-import {
-    ServerStatusTabFactory,
-    useDetailViewerTabFactory
-} from '@/modules/server-actions/server-status/service/ServerStatusTabFactory'
-import CreateCatalog from '@/modules/server-actions/modify/components/CreateCatalog.vue'
 import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
 import { MenuItem } from '@/modules/base/model/menu/MenuItem'
+import {
+    ServerStatusTabFactory,
+    useServerStatusTabFactory
+} from '@/modules/server-status/service/ServerStatusTabFactory'
+import CreateCatalog from '@/modules/connection/explorer/component/CreateCatalog.vue'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const connectionService: ConnectionService = useConnectionService()
-const graphQLConsoleTabFactory: GraphQLConsoleTabFactory =
-    useGraphQLConsoleTabFactory()
-const detailViewerTabfactory: ServerStatusTabFactory =
-    useDetailViewerTabFactory()
+const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = useGraphQLConsoleTabFactory()
+const serverStatusTabFactory: ServerStatusTabFactory = useServerStatusTabFactory()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
@@ -45,8 +43,6 @@ const props = defineProps<{
     connection: Connection
 }>()
 provideConnection(props.connection)
-const componentVisible = ref<boolean>(false)
-const PopupComponent = shallowRef(CreateCatalog)
 
 const actions: ComputedRef<
     Map<ConnectionActionType, MenuItem<ConnectionActionType>>
@@ -58,6 +54,8 @@ const actionList: ComputedRef<MenuItem<ConnectionActionType>[]> = computed(
 const removeConnectionDialogOpen = ref<boolean>(false)
 const catalogs = ref<Catalog[]>()
 const loading = ref<boolean>(false)
+
+const createCatalogDialogOpen = ref<boolean>(false)
 
 async function loadCatalogs(value?: Catalog[]): Promise<void> {
     loading.value = true
@@ -115,7 +113,7 @@ function createActions(): Map<
             'mdi-database-outline',
             () =>
                 workspaceService.createTab(
-                    detailViewerTabfactory.createNew(props.connection)
+                    serverStatusTabFactory.createNew(props.connection)
                 )
         )
     )
@@ -148,8 +146,7 @@ function createActions(): Map<
         actions.set(
             ConnectionActionType.Create,
             createMenuAction(ConnectionActionType.Create, 'mdi-plus', () => {
-                PopupComponent.value = markRaw(CreateCatalog)
-                componentVisible.value = true
+                createCatalogDialogOpen.value = true
             })
         )
     }
@@ -211,13 +208,13 @@ function createMenuAction(
             />
         </VListGroup>
     </div>
-    <PopupComponent
-        v-if="componentVisible"
+    <CreateCatalog
+        v-if="createCatalogDialogOpen"
         :visible="true"
         :connection="props.connection"
         @confirmed="loadCatalogs"
         @visible-changed="() => {
-            componentVisible = false
+            createCatalogDialogOpen = false
         }"
     />
 </template>

@@ -27,7 +27,10 @@ import { useWorkspaceStore, WorkspaceStore } from '@/modules/workspace/store/wor
 import { LabStorage, labStorageInjectionKey } from '@/modules/storage/LabStorage'
 import { SharedTabResolver, sharedTabResolverInjectionKey } from '@/modules/workspace/tab/service/SharedTabResolver'
 import { ModuleContextBuilder } from '@/ModuleContextBuilder'
-import { detailViewerTabFactoryInjectionKey, ServerStatusTabFactory } from '@/modules/server-actions/server-status/service/ServerStatusTabFactory'
+import {
+    ServerStatusTabFactory,
+    serverStatusTabFactoryInjectionKey
+} from '@/modules/server-status/service/ServerStatusTabFactory'
 
 export class WorkspaceModuleRegistrar implements ModuleRegistrar {
 
@@ -48,8 +51,8 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
         builder.provide(schemaViewerTabFactoryInjectionKey, schemaViewerTabFactory)
         const keymapViewerTabFactory: KeymapViewerTabFactory = new KeymapViewerTabFactory()
         builder.provide(keymapViewerTabFactoryInjectionKey, keymapViewerTabFactory)
-        const detailViewerTabFactory: ServerStatusTabFactory = new ServerStatusTabFactory(connectionService)
-        builder.provide(detailViewerTabFactoryInjectionKey, detailViewerTabFactory)
+        const serverStatusTabFactory: ServerStatusTabFactory = new ServerStatusTabFactory(connectionService)
+        builder.provide(serverStatusTabFactoryInjectionKey, serverStatusTabFactory)
 
         // todo lho fix circular dep
         // const entityViewerTabFactory: EntityViewerTabFactory = builder.inject(entityViewerTabFactoryInjectionKey)
@@ -68,7 +71,7 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
                 graphQLConsoleTabFactory,
                 schemaViewerTabFactory,
                 keymapViewerTabFactory,
-                detailViewerTabFactory
+                serverStatusTabFactory
             )
         )
         builder.provide(
@@ -86,7 +89,7 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
                 evitaQLConsoleTabFactory,
                 graphQLConsoleTabFactory,
                 schemaViewerTabFactory,
-                detailViewerTabFactory
+                serverStatusTabFactory
             )
         )
     }

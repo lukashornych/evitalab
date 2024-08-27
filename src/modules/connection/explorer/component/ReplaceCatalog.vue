@@ -76,23 +76,12 @@ import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithAction
 import { Connection } from '@/modules/connection/model/Connection'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-    VBtn,
-    VCard,
-    VCardText,
-    VCombobox,
-    VDialog,
-    VLabel,
-    VTooltip,
-} from 'vuetify/lib/components/index.mjs'
-import {
-    ModifyActionService,
-    useModifyActionService,
-} from '../services/ModifyActionService'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import ConfirmDialog from './ConfirmDialog.vue'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { ModifyActionService, useModifyActionService } from '@/modules/connection/explorer/service/ModifyActionService'
 
+const modifyActionService: ModifyActionService = useModifyActionService()
 const { t } = useI18n()
 
 const props = defineProps<{
@@ -101,7 +90,6 @@ const props = defineProps<{
     connection: Connection
 }>()
 
-const modifyActionService: ModifyActionService = useModifyActionService()
 const visibleReplaceCatalog = ref<boolean>(props.visible)
 const selectedFrom = ref<string>(props.catalogName)
 const selectedTo = ref<string>('')

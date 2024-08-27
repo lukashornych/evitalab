@@ -191,7 +191,7 @@
 
 <script setup lang="ts">
 import { TabComponentEvents } from '@/modules/workspace/tab/model/TabComponentEvents'
-import { useDetailViewerService } from '../service/ServerStatusService'
+import { useServerStatusService } from '../service/ServerStatusService'
 import { ref } from 'vue'
 import { ServerStatus } from '@/modules/connection/model/data/ServerStatus'
 import { TabComponentProps } from '@/modules/workspace/tab/model/TabComponentProps'
@@ -227,7 +227,7 @@ const runtimeConfigLoaded = ref<boolean>(false)
 const runtimeConfig = ref<string>()
 const extensions: Extension[] = [yaml()]
 const path: List<string> = List([t('serverActions.serverDetail.path')])
-const detailViewerService = useDetailViewerService()
+const detailViewerService = useServerStatusService()
 
 detailViewerService
     .getServerStatistics(props.params.connection)

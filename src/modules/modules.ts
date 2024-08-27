@@ -11,7 +11,7 @@ import { ConfigModuleRegistrar } from '@/modules/config/ConfigModuleRegistrar'
 import { StorageModuleRegistrar } from '@/modules/storage/StorageModuleRegistrar'
 import { WelcomeScreenModuleRegistrar } from '@/modules/welcome-screen/WelcomeScreenModuleRegistrar'
 import { KeymapModuleRegistrar } from '@/modules/keymap/KeymapModuleRegistrar'
-import { ServerActionsModuleRegistrar } from './server-actions/ServerActionsModuleRegistrar'
+import { ServerActionsModuleRegistrar } from '@/modules/server-status/ServerActionsModuleRegistrar'
 
 // todo docs
 export const modules: ModuleRegistrar[] = [
