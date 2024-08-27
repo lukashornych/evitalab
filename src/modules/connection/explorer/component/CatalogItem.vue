@@ -89,7 +89,6 @@ function createActions(): Map<
         CatalogActionType,
         MenuItem<CatalogActionType>
     > = new Map()
-    // todo lho consider moving these static actions directly into HTML code
     actions.set(
         CatalogActionType.OpenEvitaQLConsole,
         createMenuAction(
@@ -239,7 +238,7 @@ function confirmed(value?: Catalog[] | undefined) {
     <VListGroup :value="`${connection.name}|${catalog.name}`">
         <template #activator="{ isOpen, props }">
             <VTreeViewItem
-                v-if="!catalog.corrupted.getOrElse(false)"
+                v-if="!catalog.corrupted"
                 v-bind="props"
                 openable
                 :is-open="isOpen"
@@ -268,18 +267,13 @@ function confirmed(value?: Catalog[] | undefined) {
             </VTreeViewItem>
         </template>
 
-        <div
-            v-if="
-                !catalog.corrupted.getOrElse(false) &&
-                catalogRef !== undefined
-            "
-        >
-            <template v-if="props.catalog.entityTypes != null && props.catalog.entityTypes.getOrThrow().length > 0">
+        <div v-if="!catalog.corrupted">
+            <template v-if="catalog.entityCollections.size > 0">
                 <CollectionItem
-                    v-for="entityType in props.catalog.entityTypes.getIfSupported()"
-                    :key="entityType.entityType.getOrThrow()"
-                    :entityType="entityType"
-                    :catalog-name="props.catalog.name"
+                    v-for="entityCollection in catalog.entityCollections"
+                    :key="entityCollection.entityType"
+                    :entity-collection="entityCollection"
+                    :catalog-name="catalog.name"
                     @changed="confirmed"
                 />
             </template>

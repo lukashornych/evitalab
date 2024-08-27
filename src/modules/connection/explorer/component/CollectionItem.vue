@@ -19,9 +19,9 @@ import {
 import { useCatalog, useConnection } from '@/modules/connection/explorer/component/dependecies'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
-import { EntityCollectionStatistics } from '../../model/EntityCollectionStatistics'
+import { EntityCollection } from '../../model/EntityCollection'
 import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
-import { markRaw, ref, shallowRef } from 'vue'
+import { computed, ComputedRef, markRaw, ref, shallowRef } from 'vue'
 import DropCollection from '@/modules/server-actions/modify/components/DropCollection.vue'
 import RenameCollection from '@/modules/server-actions/modify/components/RenameCollection.vue'
 import { Catalog } from '../../model/Catalog'
@@ -37,7 +37,7 @@ const { t } = useI18n()
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 
 const props = defineProps<{
-    entityType: EntityCollectionStatistics
+    entityCollection: EntityCollection
     catalogName: string
 }>()
 
@@ -46,16 +46,13 @@ const componentVisible = ref<boolean>(false)
 const PopupComponent = shallowRef(DropCollection || RenameCollection)
 
 const connection: Connection = useConnection()
-const catalogSchema = useCatalog()
-const actions: Map<
-    CollectionActionType,
-    MenuItem<CollectionActionType>
-> = createActions()
-const actionList: MenuItem<CollectionActionType>[] = Array.from(
-    actions.values()
-)
+const catalog = useCatalog()
+const actions: ComputedRef<Map<CollectionActionType, MenuItem<CollectionActionType>>> = computed(() => createActions())
+const actionList: ComputedRef<MenuItem<CollectionActionType>[]> = computed(() => Array.from(
+    actions.value.values()
+))
 
-if (catalogSchema.value == undefined) {
+if (catalog.value == undefined) {
     throw new UnexpectedError(
         `Catalog schema is not loaded yet, but collection item is already rendered!`
     )
@@ -65,8 +62,8 @@ function openDataGrid() {
     workspaceService.createTab(
         entityViewerTabFactory.createNew(
             connection as Connection,
-            catalogSchema.value!.name,
-            props.entityType.entityType.getOrThrow(),
+            catalog.value!.name,
+            props.entityCollection.entityType,
             undefined,
             true // we want to display data to user right away, there is no malicious code here
         )
@@ -74,7 +71,7 @@ function openDataGrid() {
 }
 
 function handleAction(action: string) {
-    const item: MenuItem<CollectionActionType> | undefined = actions.get(action as CollectionActionType)
+    const item: MenuItem<CollectionActionType> | undefined = actions.value.get(action as CollectionActionType)
     if (item instanceof MenuAction) {
         item.execute()
     }
@@ -88,7 +85,6 @@ function createActions(): Map<
         CollectionActionType,
         MenuItem<CollectionActionType>
     > = new Map()
-    // todo lho consider moving these static actions directly into HTML code
     actions.set(
         CollectionActionType.ViewEntities,
         createMenuAction(
@@ -97,28 +93,23 @@ function createActions(): Map<
             openDataGrid
         )
     )
-    const items = catalogSchema.value?.entityTypes.getIfSupported()
-    if (items) {
-        for (const item of items) {
-            actions.set(
-                CollectionActionType.ViewSchema,
-                createMenuAction(
-                    CollectionActionType.ViewSchema,
-                    'mdi-file-code-outline',
-                    () =>
-                        workspaceService.createTab(
-                            schemaViewerTabFactory.createNew(
-                                connection,
-                                new EntitySchemaPointer(
-                                    item.entityType.getOrThrow(),
-                                    props.entityType.entityType.getOrThrow()
-                                )
-                            )
+    actions.set(
+        CollectionActionType.ViewSchema,
+        createMenuAction(
+            CollectionActionType.ViewSchema,
+            'mdi-file-code-outline',
+            () =>
+                workspaceService.createTab(
+                    schemaViewerTabFactory.createNew(
+                        connection,
+                        new EntitySchemaPointer(
+                            props.catalogName,
+                            props.entityCollection.entityType
                         )
+                    )
                 )
-            )
-        }
-    }
+        )
+    )
     if (!evitaLabConfig.readOnly) {
         actions.set(
             CollectionActionType.ModifySubheader,
@@ -173,15 +164,15 @@ function createMenuAction(
             @click:action="handleAction"
             class="text-gray-light text-sm-body-2"
         >
-            {{ entityType.entityType.getOrThrow() }}
+            {{ entityCollection.entityType }}
             <VTooltip activator="parent">
-                {{ entityType.entityType.getOrThrow() }}
+                {{ entityCollection.entityType }}
             </VTooltip>
         </VTreeViewItem>
         <PopupComponent
             v-if="componentVisible"
             :visible="true"
-            :collection-name="entityType.entityType.getOrThrow()"
+            :collection-name="entityCollection.entityType"
             :catalog-name="catalogName"
             :connection="connection"
             @visible-changed="

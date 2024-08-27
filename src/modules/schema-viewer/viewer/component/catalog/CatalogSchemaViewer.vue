@@ -37,7 +37,7 @@ const schemaViewerService: SchemaViewerService = useSchemaViewerService()
 schemaViewerService
     .getCatalog(props.dataPointer, props.schema.name)
     .then((x) => {
-        catalogId.value = x.catalogId.getIfSupported()
+        catalogId.value = x.catalogId
         loaded.value = true
     })
     .catch((e) => toaster.error(e))
