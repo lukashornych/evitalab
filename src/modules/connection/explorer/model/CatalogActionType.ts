@@ -10,4 +10,6 @@ export enum CatalogActionType {
     ModifySubheader = 'modifySubheader',
     CollectionsSubheader = 'collectionsSubheader',
     CreateCollection = 'createCollection',
+    BackupSubheader = 'backupSubheader',
+    Backup = 'backup'
 }

@@ -9,6 +9,47 @@ import { GrpcCatalogState, GrpcCommitBehavior, GrpcSessionType } from "./GrpcEnu
 import { GrpcTopLevelCatalogSchemaMutation } from "./GrpcCatalogSchemaMutation_pb.js";
 
 /**
+ * Response to a server status request.
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GrpcReadyResponse
+ */
+export class GrpcReadyResponse extends Message<GrpcReadyResponse> {
+  /**
+   * Always true when returned
+   *
+   * @generated from field: bool ready = 1;
+   */
+  ready = false;
+
+  constructor(data?: PartialMessage<GrpcReadyResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "io.evitadb.externalApi.grpc.generated.GrpcReadyResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "ready", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcReadyResponse {
+    return new GrpcReadyResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GrpcReadyResponse {
+    return new GrpcReadyResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GrpcReadyResponse {
+    return new GrpcReadyResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GrpcReadyResponse | PlainMessage<GrpcReadyResponse> | undefined, b: GrpcReadyResponse | PlainMessage<GrpcReadyResponse> | undefined): boolean {
+    return proto3.util.equals(GrpcReadyResponse, a, b);
+  }
+}
+
+/**
  * Request to create a session inside of a catalog.
  *
  * @generated from message io.evitadb.externalApi.grpc.generated.GrpcEvitaSessionRequest

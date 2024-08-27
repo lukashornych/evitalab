@@ -44,6 +44,10 @@ import {
 } from '@/modules/config/EvitaLabConfig'
 import CreateCollection from '@/modules/server-actions/modify/components/CreateCollection.vue'
 import ReplaceCatalog from '@/modules/server-actions/modify/components/ReplaceCatalog.vue'
+import {
+    BackupsTabFactory,
+    useBackupsTabFactory,
+} from '@/modules/backups/service/BackupsTabFactory'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
@@ -53,10 +57,15 @@ const graphQLConsoleTabFactory: GraphQLConsoleTabFactory =
     useGraphQLConsoleTabFactory()
 const schemaViewerTabFactory: SchemaViewerTabFactory =
     useSchemaViewerTabFactory()
+const backupsService: BackupsTabFactory = useBackupsTabFactory()
 const { t } = useI18n()
 const componentVisible = ref<boolean>(false)
-const PopupComponent = shallowRef(DropCatalog || RenameCatalog || CreateCollection || ReplaceCatalog)
-const emits = defineEmits<{ (e: 'changed', value?: Catalog[] | undefined): void }>()
+const PopupComponent = shallowRef(
+    DropCatalog || RenameCatalog || CreateCollection || ReplaceCatalog
+)
+const emits = defineEmits<{
+    (e: 'changed', value?: Catalog[] | undefined): void
+}>()
 
 const props = defineProps<{
     catalog: Catalog
@@ -81,10 +90,7 @@ function handleAction(action: string): void {
     }
 }
 
-function createActions(): Map<
-    CatalogActionType,
-    MenuItem<CatalogActionType>
-> {
+function createActions(): Map<CatalogActionType, MenuItem<CatalogActionType>> {
     const actions: Map<
         CatalogActionType,
         MenuItem<CatalogActionType>
@@ -153,6 +159,24 @@ function createActions(): Map<
         )
     )
     if (!evitaLabConfig.readOnly) {
+        actions.set(
+            CatalogActionType.BackupSubheader,
+            new MenuSubheader(t('explorer.catalog.subheader.backup'))
+        )
+
+        actions.set(
+            CatalogActionType.Backup,
+            createMenuAction(
+                CatalogActionType.Backup,
+                'mdi-cloud-download-outline',
+                () => {
+                    workspaceService.createTab(
+                        backupsService.createNew(connection, props.catalog.name, false)
+                    )
+                }
+            )
+        )
+
         actions.set(
             CatalogActionType.ModifySubheader,
             new MenuSubheader(t('explorer.catalog.subheader.modify'))
@@ -270,11 +294,15 @@ function confirmed(value?: Catalog[] | undefined) {
 
         <div
             v-if="
-                !catalog.corrupted.getOrElse(false) &&
-                catalogRef !== undefined
+                !catalog.corrupted.getOrElse(false) && catalogRef !== undefined
             "
         >
-            <template v-if="props.catalog.entityTypes != null && props.catalog.entityTypes.getOrThrow().length > 0">
+            <template
+                v-if="
+                    props.catalog.entityTypes != null &&
+                    props.catalog.entityTypes.getOrThrow().length > 0
+                "
+            >
                 <CollectionItem
                     v-for="entityType in props.catalog.entityTypes.getIfSupported()"
                     :key="entityType.entityType.getOrThrow()"

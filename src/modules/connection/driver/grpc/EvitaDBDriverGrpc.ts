@@ -10,7 +10,10 @@ import { CatalogConverter } from '../grpc/service/CatalogConverter'
 import { ResponseConverter } from './service/ResponseConverter'
 import { Value } from '../../model/Value'
 import { EntitySchema } from '../../model/schema/EntitySchema'
-import { GrpcCatalogSchemaResponse } from '@/modules/connection/driver/grpc/gen/GrpcEvitaSessionAPI_pb'
+import {
+    GrpcCatalogSchemaResponse,
+    GrpcCatalogVersionAtResponse,
+} from '@/modules/connection/driver/grpc/gen/GrpcEvitaSessionAPI_pb'
 import { EvitaDBInstanceServerError } from '@/modules/driver-support/exception/EvitaDBInstanceServerError'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { TimeoutError } from '../../exception/TimeoutError'
@@ -30,7 +33,13 @@ import { ServerStatusConverter } from './service/ServerStatusConverter'
 import ky from 'ky'
 import { ApiReadiness } from '../../model/data/ApiReadiness'
 import { ApiServerStatus } from '../../model/data/ApiServerStatus'
-import { GrpcCommitBehavior } from './gen/GrpcEnums_pb'
+import { OffsetDateTime } from '../../model/data-type/OffsetDateTime'
+import { CatalogVersionAtResponse } from '../../model/data/CatalogVersionAtResponse'
+import { TaskStatus } from '../../model/data/TaskStatus'
+import { FilesToFetch } from '../../model/data/FilesToFetch'
+import { BackupConverter } from './service/BackupConverter'
+import { JobsConverter } from './service/JobsConverter'
+import { TaskStatuses } from '../../model/data/TaskStatuses'
 
 //TODO: Add docs and add header 'X-EvitaDB-ClientID': this.getClientIdHeaderValue()
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
@@ -48,6 +57,8 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         new ResponseConverter(this.entityConverter, this.extraResultConverter)
     private readonly serverStatusConverter: ServerStatusConverter =
         new ServerStatusConverter()
+    private readonly backupConverter: BackupConverter = new BackupConverter()
+    private readonly jobsConverter: JobsConverter = new JobsConverter()
 
     private readonly clientsHelper: ClientsHelper = new ClientsHelper()
 
@@ -473,6 +484,102 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                 })
         ).catalogStatistics
         return resultData.map((x) => this.catalogConverter.convert(x))
+    }
+
+    async createBackup(
+        connection: Connection,
+        catalogName: string,
+        includingWAL: boolean,
+        pastMoment: OffsetDateTime
+    ): Promise<TaskStatus> {
+        const res = await this.clientsHelper
+            .getEvitaClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .createReadWriteSession({ catalogName })
+        const result = await this.clientsHelper
+            .getSessionClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .backupCatalog(
+                {
+                    includingWAL,
+                    pastMoment: {
+                        offset: pastMoment.offset,
+                        timestamp: pastMoment.timestamp,
+                    },
+                },
+                {
+                    headers: {
+                        sessionId: res.sessionId,
+                    },
+                }
+            )
+        return this.backupConverter.convertBackupCatalog(result)
+    }
+
+    async getMinimalBackupDate(
+        connection: Connection,
+        catalogName: string
+    ): Promise<CatalogVersionAtResponse> {
+        const res = await this.clientsHelper
+            .getEvitaClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .createReadOnlySession({ catalogName })
+        const result: GrpcCatalogVersionAtResponse = await this.clientsHelper
+            .getSessionClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .getCatalogVersionAt(
+                {},
+                {
+                    headers: {
+                        sessionId: res.sessionId,
+                    },
+                }
+            )
+        return new CatalogVersionAtResponse(
+            result.version,
+            new OffsetDateTime(
+                result.introducedAt?.timestamp,
+                result.introducedAt?.offset
+            )
+        )
+    }
+
+    async getBackups(
+        connection: Connection,
+        pageNumber: number,
+        pageSize: number = 50
+    ): Promise<FilesToFetch> {
+        this.clientsHelper.getSessionClient(
+            connection,
+            TransportHelper.getTransport(connection)
+        )
+        const result = await this.clientsHelper
+            .getManagmentClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .listFilesToFetch({
+                origin: 'BackupTask',
+                pageNumber,
+                pageSize,
+            })
+        return this.backupConverter.convertFilesTofetch(result)
+    }
+
+    async getAciveJobs(connection: Connection, pageNumber:number, pageSize:number):Promise<TaskStatuses>{
+        const result = await this.clientsHelper.getManagmentClient(connection, TransportHelper.getTransport(connection)).listTaskStatuses({
+            pageNumber,
+            pageSize
+        })
+        return this.jobsConverter.convertJobs(result)
     }
 
     private handleCallError(e: any, connection?: Connection): LabError {

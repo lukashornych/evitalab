@@ -6,6 +6,12 @@ import { List } from 'immutable'
 import { ServerStatus } from '../model/data/ServerStatus'
 import { ApiReadiness } from '../model/data/ApiReadiness'
 import { ApiServerStatus } from '../model/data/ApiServerStatus'
+import { CatalogVersionAtResponse } from '../model/data/CatalogVersionAtResponse'
+import { OffsetDateTime } from '../model/data-type/OffsetDateTime'
+import { TaskStatus } from '../model/data/TaskStatus'
+import { File } from '../model/data/File'
+import { FilesToFetch } from '../model/data/FilesToFetch'
+import { TaskStatuses } from '../model/data/TaskStatuses'
 
 /**
  * evitaDB version-agnostic driver to access data from connected evitaDB server
@@ -54,6 +60,26 @@ export interface EvitaDBDriver {
         entityType: string,
         catalogName: string
     ): Promise<Catalog[] | undefined>
+    //TODO: Add doc
+    getMinimalBackupDate(
+        connection: Connection,
+        catalogName: string
+    ): Promise<CatalogVersionAtResponse>
+    //TODO: Add doc
+    createBackup(
+        connection: Connection,
+        catalogName: string,
+        includingWAL: boolean,
+        pastMoment: OffsetDateTime
+    ): Promise<TaskStatus>
+    //TODO: Add doc
+    getBackups(
+        connection: Connection,
+        pageNumber: number,
+        pageSize: number
+    ): Promise<FilesToFetch>
+    //TODO: Add doc
+    getAciveJobs(connection: Connection, pageNumber:number, pageSize:number):Promise<TaskStatuses>
     /**
      * Which versions of evitaDB server this driver supports. Can be any string supported by https://www.npmjs.com/package/semver.
      * Comparison is done using the `.satisfies(...)` method

@@ -23,7 +23,8 @@
       "copy": "Copy",
       "confirm": "Confirm",
       "rename": "Rename",
-      "replace": "Replace"
+      "replace": "Replace",
+      "backup": "Backup"
     },
     "notification": {
       "copiedToClipboard": "Copied to clipboard",
@@ -311,7 +312,8 @@
     "catalog": {
       "subheader": {
         "modify": "Modify",
-        "collections": "Collections"
+        "collections": "Collections",
+        "backup": "Backup"
       },
       "actions": {
         "openEvitaQLConsole": "Open evitaQL console",
@@ -321,7 +323,8 @@
         "dropCatalog": "Drop catalog",
         "renameCatalog": "Rename catalog",
         "replaceCatalog": "Replace catalog",
-        "createCollection": "Create collection"
+        "createCollection": "Create collection",
+        "backup": "Backups"
       },
       "errors": {
         "couldNotLoad": "This catalog couldn't be loaded because it's corrupted."
@@ -806,6 +809,15 @@
       "title": "Rename collection",
       "description": "Do you really want to rename this collection?",
       "rename": "Rename"
+    }
+  },
+  "backups": {
+    "path": "Backups",
+    "createDialog": {
+      "titleFirst": "Back up ",
+      "titleSecond": " catalog",
+      "includeWal": "Will apply all mutations from WAL during restoration resulting in the latest version of catalog",
+      "information": "The back up process may take a while. Therefore it will be started asynchronously. You can find it’s progress and backup file to download in job listing."
     }
   }
 }

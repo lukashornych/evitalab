@@ -17,7 +17,7 @@ export class ServerStatusTabFactory {
         this.connectionService = connectionService
     }
 
-    createNew(connection: Connection, executeOnOpen: boolean = false) {
+    createNew(connection: Connection, executeOnOpen: boolean = false):ServerStatusDefinition {
         return new ServerStatusDefinition('Status', this.createTabParams(connection, executeOnOpen))
     }
 

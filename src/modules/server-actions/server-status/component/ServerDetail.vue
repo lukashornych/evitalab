@@ -208,7 +208,7 @@ import { List } from 'immutable'
 import { useI18n } from 'vue-i18n'
 import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
 import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithActions.vue'
-import { VCard, VCardText, VDialog } from 'vuetify/lib/components/index.mjs'
+import { VBtn, VCard, VCardText, VChip, VChipGroup, VDialog, VIcon, VSheet, VTooltip } from 'vuetify/lib/components/index.mjs'
 
 const emit = defineEmits<TabComponentEvents>()
 const props =

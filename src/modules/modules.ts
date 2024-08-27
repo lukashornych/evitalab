@@ -12,6 +12,7 @@ import { StorageModuleRegistrar } from '@/modules/storage/StorageModuleRegistrar
 import { WelcomeScreenModuleRegistrar } from '@/modules/welcome-screen/WelcomeScreenModuleRegistrar'
 import { KeymapModuleRegistrar } from '@/modules/keymap/KeymapModuleRegistrar'
 import { ServerActionsModuleRegistrar } from './server-actions/ServerActionsModuleRegistrar'
+import { BackupsModuleRegistrar } from './backups/BackupsModuleRegistrar'
 
 // todo docs
 export const modules: ModuleRegistrar[] = [
@@ -30,5 +31,6 @@ export const modules: ModuleRegistrar[] = [
     new GraphQLConsoleModuleRegistrar(),
     new EntityViewerModuleRegistrar(),
     new SchemaViewerModuleRegistrar(),
-    new ServerActionsModuleRegistrar()
+    new ServerActionsModuleRegistrar(),
+    new BackupsModuleRegistrar()
 ]

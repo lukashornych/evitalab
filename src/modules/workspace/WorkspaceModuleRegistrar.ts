@@ -28,6 +28,7 @@ import { LabStorage, labStorageInjectionKey } from '@/modules/storage/LabStorage
 import { SharedTabResolver, sharedTabResolverInjectionKey } from '@/modules/workspace/tab/service/SharedTabResolver'
 import { ModuleContextBuilder } from '@/ModuleContextBuilder'
 import { detailViewerTabFactoryInjectionKey, ServerStatusTabFactory } from '@/modules/server-actions/server-status/service/ServerStatusTabFactory'
+import { BackupsTabFactory, backupsTabFactoryInjectionKey } from '../backups/service/BackupsTabFactory'
 
 export class WorkspaceModuleRegistrar implements ModuleRegistrar {
 
@@ -50,7 +51,8 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
         builder.provide(keymapViewerTabFactoryInjectionKey, keymapViewerTabFactory)
         const detailViewerTabFactory: ServerStatusTabFactory = new ServerStatusTabFactory(connectionService)
         builder.provide(detailViewerTabFactoryInjectionKey, detailViewerTabFactory)
-
+        const backupsTabfactory: BackupsTabFactory = new BackupsTabFactory(connectionService)
+        builder.provide(backupsTabFactoryInjectionKey, backupsTabfactory)
         // todo lho fix circular dep
         // const entityViewerTabFactory: EntityViewerTabFactory = builder.inject(entityViewerTabFactoryInjectionKey)
         // const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory = builder.inject(evitaQLConsoleTabFactoryInjectionKey)

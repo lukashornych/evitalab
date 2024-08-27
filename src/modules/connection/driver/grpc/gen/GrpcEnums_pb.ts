@@ -1369,6 +1369,114 @@ proto3.util.setEnumType(GrpcNamingConvention, "io.evitadb.externalApi.grpc.gener
 ]);
 
 /**
+ * This enum represents the possible health problems that can be signaled by the server.
+ *
+ * @generated from enum io.evitadb.externalApi.grpc.generated.GrpcHealthProblem
+ */
+export enum GrpcHealthProblem {
+  /**
+   * *
+   * Signalized when the consumed memory never goes below 85% of the maximum heap size and the GC tries to free
+   * old generation at least once (this situation usually leads to repeated attempts of expensive old generation GC
+   * and pressure on system CPUs).
+   *
+   * @generated from enum value: MEMORY_SHORTAGE = 0;
+   */
+  MEMORY_SHORTAGE = 0,
+
+  /**
+   * *
+   * Signalized when the readiness probe signals that at least one external API, that is configured to be enabled
+   * doesn't respond to internal HTTP check call.
+   *
+   * @generated from enum value: EXTERNAL_API_UNAVAILABLE = 1;
+   */
+  EXTERNAL_API_UNAVAILABLE = 1,
+
+  /**
+   * *
+   * Signalized when the input queues are full and the server is not able to process incoming requests. The problem
+   * is reported when there is ration of rejected tasks to accepted tasks >= 2. This flag is cleared when the rejection
+   * ratio decreases below the specified threshold, which signalizes that server is able to process incoming requests
+   * again.
+   *
+   * @generated from enum value: INPUT_QUEUES_OVERLOADED = 2;
+   */
+  INPUT_QUEUES_OVERLOADED = 2,
+
+  /**
+   * *
+   * Signaled when there are occurrences of Java internal errors. These errors are usually caused by the server
+   * itself and are not related to the client's requests. Java errors signal fatal problems inside the JVM.
+   *
+   * @generated from enum value: JAVA_INTERNAL_ERRORS = 3;
+   */
+  JAVA_INTERNAL_ERRORS = 3,
+}
+// Retrieve enum metadata with: proto3.getEnumType(GrpcHealthProblem)
+proto3.util.setEnumType(GrpcHealthProblem, "io.evitadb.externalApi.grpc.generated.GrpcHealthProblem", [
+  { no: 0, name: "MEMORY_SHORTAGE" },
+  { no: 1, name: "EXTERNAL_API_UNAVAILABLE" },
+  { no: 2, name: "INPUT_QUEUES_OVERLOADED" },
+  { no: 3, name: "JAVA_INTERNAL_ERRORS" },
+]);
+
+/**
+ * Enum representing overall readiness state of the server API.
+ *
+ * @generated from enum io.evitadb.externalApi.grpc.generated.GrpcReadiness
+ */
+export enum GrpcReadiness {
+  /**
+   * *
+   * At least one API is not ready.
+   *
+   * @generated from enum value: API_STARTING = 0;
+   */
+  API_STARTING = 0,
+
+  /**
+   * *
+   * All APIs are ready.
+   *
+   * @generated from enum value: API_READY = 1;
+   */
+  API_READY = 1,
+
+  /**
+   * *
+   * At least one API that was ready is not ready anymore.
+   *
+   * @generated from enum value: API_STALLING = 2;
+   */
+  API_STALLING = 2,
+
+  /**
+   * *
+   * Server is shutting down. None of the APIs are ready.
+   *
+   * @generated from enum value: API_SHUTDOWN = 3;
+   */
+  API_SHUTDOWN = 3,
+
+  /**
+   * *
+   * Unknown state - cannot determine the state of the APIs (should not happen).
+   *
+   * @generated from enum value: API_UNKNOWN = 4;
+   */
+  API_UNKNOWN = 4,
+}
+// Retrieve enum metadata with: proto3.getEnumType(GrpcReadiness)
+proto3.util.setEnumType(GrpcReadiness, "io.evitadb.externalApi.grpc.generated.GrpcReadiness", [
+  { no: 0, name: "API_STARTING" },
+  { no: 1, name: "API_READY" },
+  { no: 2, name: "API_STALLING" },
+  { no: 3, name: "API_SHUTDOWN" },
+  { no: 4, name: "API_UNKNOWN" },
+]);
+
+/**
  * This enum contains all supported data types of AssociatedData.
  *
  * @generated from message io.evitadb.externalApi.grpc.generated.GrpcEvitaAssociatedDataDataType
