@@ -14,10 +14,12 @@ import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
 import TabWindow from '@/modules/workspace/tab/component/TabWindow.vue'
 import WelcomeScreen from '@/modules/welcome-screen/component/WelcomeScreen.vue'
 import TabSharedDialog from '@/modules/workspace/tab/component/TabSharedDialog.vue'
+import { useI18n } from 'vue-i18n'
 
 const currentRoute: RouteLocationNormalizedLoaded = useRoute()
 const toaster = useToaster()
 const keymap: Keymap = useKeymap()
+const { t } = useI18n()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const demoCodeSnippetResolver: DemoSnippetResolver = useDemoSnippetResolver()
 const sharedTabResolver: SharedTabResolver = useSharedTabResolver()
@@ -220,7 +222,7 @@ window.addEventListener('beforeunload', () => {
                 >
                     <VIcon>mdi-close</VIcon>
                     <VActionTooltip :command="Command.System_Editor_CloseTab">
-                        Close tab
+                        {{ t('tab.button.closeTab') }}
                     </VActionTooltip>
                 </VBtn>
             </VTab>

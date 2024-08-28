@@ -3,11 +3,11 @@
         <VCard>
             <VCardTitleWithActions>
                 <template #default>
-                    {{ t('serverActions.dropCatalog.title') }}
+                    {{ t('explorer.catalog.dropCatalog.title') }}
                 </template>
             </VCardTitleWithActions>
             <VCardText>
-                <p>{{ t('serverActions.dropCatalog.description') }} <b>{{ props.catalogName }}</b></p>
+                <p>{{ t('explorer.catalog.dropCatalog.description') }} <b>{{ props.catalogName }}</b></p>
                 <div class="buttons">
                     <VBtn
                         variant="outlined"
@@ -44,18 +44,9 @@ import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithAction
 import ConfirmDialog from './ConfirmDialog.vue'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-    VBtn,
-    VCard,
-    VCardText,
-    VDialog,
-} from 'vuetify/lib/components/index.mjs'
 import { Connection } from '@/modules/connection/model/Connection'
-import {
-    ModifyActionService,
-    useModifyActionService,
-} from '../services/ModifyActionService'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { ModifyActionService, useModifyActionService } from '@/modules/connection/explorer/service/ModifyActionService'
 
 const { t } = useI18n()
 const props = defineProps<{

@@ -77,12 +77,12 @@ export class EvitaQLHierarchyVisualiserService
 
         // todo lho rewrite entity access
         const primaryKey: number | undefined = nodeResult.entity.getOrThrow() != undefined
-            ? nodeResult.entity.getOrThrow()!.primaryKey.getOrThrow()
-            : nodeResult.entityReference.getOrThrow()!.primaryKey.getOrThrow()
+            ? nodeResult.entity.getOrThrow()!.primaryKey
+            : nodeResult.entityReference.getOrThrow()!.primaryKey
         // only root nodes should display parents, we know parents in nested nodes from the direct parent in the tree
         let parentPrimaryKey: number | undefined = undefined
         if (level === 1 && nodeResult.entity.getOrElse(undefined) != undefined) {
-            parentPrimaryKey = nodeResult.entity.getOrThrow()!.parent.getOrThrow()
+            parentPrimaryKey = nodeResult.entity.getOrThrow()!.parentEntity?.primaryKey
         }
         const title: string | undefined =
             this.visualizerService.resolveRepresentativeTitleForEntityResult(

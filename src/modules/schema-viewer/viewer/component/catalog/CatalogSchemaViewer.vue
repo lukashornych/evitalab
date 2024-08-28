@@ -37,7 +37,7 @@ const schemaViewerService: SchemaViewerService = useSchemaViewerService()
 schemaViewerService
     .getCatalog(props.dataPointer, props.schema.name)
     .then((x) => {
-        catalogId.value = x.catalogId.getIfSupported()
+        catalogId.value = x.catalogId
         loaded.value = true
     })
     .catch((e) => toaster.error(e))
@@ -80,13 +80,11 @@ const baseProperties = ref<Property[]>([
                     :attributes="List(schema.attributes.getIfSupported()!.values())"
                 />
 
-                <div v-if="loadedSchemas">
-                    <EntitySchemaList
-                        v-if="entitySchemas?.getIfSupported() && entitySchemas.getIfSupported()!.size > 0"
-                        :data-pointer="dataPointer"
-                        :entities="List(entitySchemas.getIfSupported()!.values())"
-                    />
-                </div>
+                <EntitySchemaList
+                    v-if="loadedSchemas && entitySchemas?.getIfSupported() && entitySchemas.getIfSupported()!.size > 0"
+                    :data-pointer="dataPointer"
+                    :entities="List(entitySchemas.getIfSupported()!.values())"
+                />
             </template>
         </SchemaContainer>
     </div>

@@ -4,7 +4,7 @@ import { Range } from "./Range";
 
 //TODO: Add documentation
 export class BigDecimalRange extends Range<BigDecimal> implements PrettyPrintable{
-    constructor(from: BigDecimal, to: BigDecimal){
+    constructor(from: BigDecimal | undefined, to: BigDecimal | undefined){
         super(from, to)
     }
 

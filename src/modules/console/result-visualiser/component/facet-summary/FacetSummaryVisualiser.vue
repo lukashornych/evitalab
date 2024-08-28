@@ -52,7 +52,7 @@ function getCountForReference(referenceSchema: ReferenceSchema, groupStatisticsR
     if (results instanceof Array) {
         return results.length
     } else if (results instanceof List) {
-        return results.size
+        return (results as List<any>).size
     } else {
         throw new UnexpectedError('Expected array or list of items')
     }

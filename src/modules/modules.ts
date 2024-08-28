@@ -14,6 +14,7 @@ import { KeymapModuleRegistrar } from '@/modules/keymap/KeymapModuleRegistrar'
 import { ServerActionsModuleRegistrar } from './server-actions/ServerActionsModuleRegistrar'
 import { BackupsModuleRegistrar } from './backups/BackupsModuleRegistrar'
 import { JobModuleRegistrar } from './Jobs/JobModuleRegistrar'
+import { ServerActionsModuleRegistrar } from '@/modules/server-status/ServerActionsModuleRegistrar'
 
 // todo docs
 export const modules: ModuleRegistrar[] = [

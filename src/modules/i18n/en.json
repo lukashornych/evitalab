@@ -113,6 +113,9 @@
     }
   },
   "tab": {
+    "button": {
+      "closeTab": "Close tab"
+    },
     "placeholder": {
       "loading": "Loading, please wait ..."
     }
@@ -255,7 +258,8 @@
         "create": "Create catalog",
         "edit": "Edit connection",
         "remove": "Remove connection",
-        "detail": "Status"
+        "detail": "Status",
+        "createCatalog": "Create catalog"
       },
       "subheader": {
         "modify": "Modify"
@@ -307,6 +311,10 @@
       "remove": {
         "title": "Remove connection",
         "question": "Are you sure you want to remove the connection {connectionName}?"
+      },
+      "createCatalog": {
+        "title": "Create catalog",
+        "description": "Write the name of the new catalog:"
       }
     },
     "catalog": {
@@ -328,6 +336,40 @@
       },
       "errors": {
         "couldNotLoad": "This catalog couldn't be loaded because it's corrupted."
+      },
+      "dropCatalog": {
+        "title": "Drop catalog",
+        "description": "Do you really want to drop this catalog?"
+      },
+      "renameCatalog": {
+        "title": "Rename catalog",
+        "description": "Do you really want to rename this catalog?",
+        "form": {
+          "rename": {
+            "label": "Rename"
+          }
+        }
+      },
+      "replaceCatalog": {
+        "title": "Replace catalog",
+        "form": {
+          "fromCatalog": {
+            "label": "Catalog from",
+            "help": "Please select which catalog you want to take data from:"
+          },
+          "toCatalog": {
+            "label": "Catalog to",
+            "help": "Please select to which catalog the data should be inserted:"
+          }
+        }
+      },
+      "createCollection": {
+        "title": "Create collection",
+        "newCatalogName": "Please write catalog name:"
+      },
+      "confirmCatalog": {
+        "title": "Operation confirmation",
+        "description": "This operation is dangerous. Do you really want to do it?"
       }
     },
     "collection": {
@@ -339,6 +381,19 @@
         "viewSchema": "View schema",
         "dropCollection": "Drop collection",
         "renameCollection": "Rename collection"
+      },
+      "dropCollection": {
+        "title": "Drop collection",
+        "description": "Do you really want to drop this collection?"
+      },
+      "renameCollection": {
+        "title": "Rename collection",
+        "description": "Do you really want to rename this collection?",
+        "form": {
+          "rename": {
+            "label": "Rename"
+          }
+        }
       }
     }
   },
@@ -766,49 +821,26 @@
       }
     }
   },
-  "serverActions": {
-    "serverDetail": {
-      "path": "Status",
-      "yamlDialog": {
-        "runtimeConfig": "Runtime configuration"
+  "serverStatus": {
+    "toolbar": {
+      "title": "Status"
+    },
+    "detail": {
+      "flags": {
+        "version": "version: {version}"
+      },
+      "stats": {
+        "started": "Started: {started}",
+        "uptime": "Uptime: {uptime}",
+        "catalogsOk": "Catalogs: {catalogCount}",
+        "catalogsCorrupted": "Corrupted catalogs: {catalogCount}"
+      },
+      "actions": {
+        "openRuntimeConfiguration": "Open runtime configuration"
+      },
+      "runtimeConfig": {
+        "title": "Runtime configuration"
       }
-    },
-    "dropCatalog": {
-      "title": "Drop catalog",
-      "description": "Do you really want to drop this catalog?"
-    },
-    "renameCatalog": {
-      "title": "Rename catalog",
-      "description": "Do you really want to rename this catalog?",
-      "rename": "Rename"
-    },
-    "confirmCatalog": {
-      "title": "Operation confirmation",
-      "description": "This operation is dangerous. Do you really want to do it?"
-    },
-    "createCollection": {
-      "title": "Create collection",
-      "newCatalogName": "Please write catalog name:"
-    },
-    "replaceCatalog": {
-      "title": "Replace catalog",
-      "fromCatalog": "Catalog from",
-      "toCatalog": "Catalog to",
-      "fromCatalogLabel": "Please select which catalog you want to take data from:",
-      "toCatalogLabel": "Please select to which catalog the data should be inserted:"
-    },
-    "createCatalog": {
-      "title": "Create catalog",
-      "description": "Write the name of the new catalog:"
-    },
-    "dropCollection": {
-      "title": "Drop collection",
-      "description": "Do you really want to drop this collection?"
-    },
-    "renameCollection": {
-      "title": "Rename collection",
-      "description": "Do you really want to rename this collection?",
-      "rename": "Rename"
     }
   },
   "backups": {

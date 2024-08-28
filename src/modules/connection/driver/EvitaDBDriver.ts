@@ -100,6 +100,9 @@ export interface EvitaDBDriver {
      */
     getCatalogs(connection: Connection): Promise<Catalog[]>
 
+    // todo docs
+    getCatalog(connection: Connection, catalogName: string): Promise<Catalog>
+
     /**
      * Returns schema for a given catalog name from server for the given evitaDB connection
      *

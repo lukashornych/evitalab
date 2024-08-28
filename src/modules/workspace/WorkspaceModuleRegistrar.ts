@@ -27,6 +27,10 @@ import { useWorkspaceStore, WorkspaceStore } from '@/modules/workspace/store/wor
 import { LabStorage, labStorageInjectionKey } from '@/modules/storage/LabStorage'
 import { SharedTabResolver, sharedTabResolverInjectionKey } from '@/modules/workspace/tab/service/SharedTabResolver'
 import { ModuleContextBuilder } from '@/ModuleContextBuilder'
+import {
+    ServerStatusTabFactory,
+    serverStatusTabFactoryInjectionKey
+} from '@/modules/server-status/service/ServerStatusTabFactory'
 import { detailViewerTabFactoryInjectionKey, ServerStatusTabFactory } from '@/modules/server-actions/server-status/service/ServerStatusTabFactory'
 import { BackupsTabFactory, backupsTabFactoryInjectionKey } from '../backups/service/BackupsTabFactory'
 
@@ -49,6 +53,9 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
         builder.provide(schemaViewerTabFactoryInjectionKey, schemaViewerTabFactory)
         const keymapViewerTabFactory: KeymapViewerTabFactory = new KeymapViewerTabFactory()
         builder.provide(keymapViewerTabFactoryInjectionKey, keymapViewerTabFactory)
+        const serverStatusTabFactory: ServerStatusTabFactory = new ServerStatusTabFactory(connectionService)
+        builder.provide(serverStatusTabFactoryInjectionKey, serverStatusTabFactory)
+
         const detailViewerTabFactory: ServerStatusTabFactory = new ServerStatusTabFactory(connectionService)
         builder.provide(detailViewerTabFactoryInjectionKey, detailViewerTabFactory)
         const backupsTabfactory: BackupsTabFactory = new BackupsTabFactory(connectionService)
@@ -70,7 +77,7 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
                 graphQLConsoleTabFactory,
                 schemaViewerTabFactory,
                 keymapViewerTabFactory,
-                detailViewerTabFactory
+                serverStatusTabFactory
             )
         )
         builder.provide(
@@ -88,7 +95,7 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
                 evitaQLConsoleTabFactory,
                 graphQLConsoleTabFactory,
                 schemaViewerTabFactory,
-                detailViewerTabFactory
+                serverStatusTabFactory
             )
         )
     }

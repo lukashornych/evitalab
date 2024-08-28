@@ -1,5 +1,5 @@
 import { Connection } from '@/modules/connection/model/Connection'
-import { ServerStatusDefinition } from '../model/ServerStatusDefinition'
+import { ServerStatusTabDefinition } from '../model/ServerStatusTabDefinition'
 import { ServerStatusTabParams } from '../model/ServerStatusTabParams'
 import { mandatoryInject } from '@/utils/reactivity'
 import { InjectionKey } from 'vue'
@@ -8,7 +8,7 @@ import { TabDataDto } from '@/modules/workspace/tab/model/TabDataDto'
 import { ServerStatusTabParamsDto } from '../model/ServerStatusTabParamsDto'
 import { ConnectionService } from '@/modules/connection/service/ConnectionService'
 
-export const detailViewerTabFactoryInjectionKey: InjectionKey<ServerStatusTabFactory> = Symbol('DetailViewerTabFactory')
+export const serverStatusTabFactoryInjectionKey: InjectionKey<ServerStatusTabFactory> = Symbol('serverStatusTabFactory')
 
 export class ServerStatusTabFactory {
     private readonly connectionService: ConnectionService
@@ -17,20 +17,20 @@ export class ServerStatusTabFactory {
         this.connectionService = connectionService
     }
 
-    createNew(connection: Connection, executeOnOpen: boolean = false):ServerStatusDefinition {
-        return new ServerStatusDefinition('Status', this.createTabParams(connection, executeOnOpen))
+    createNew(connection: Connection, executeOnOpen: boolean = false) {
+        return new ServerStatusTabDefinition(this.createTabParams(connection, executeOnOpen))
     }
 
     private createTabParams(connection: Connection, executeOnOpen: boolean = false): ServerStatusTabParams {
         return new ServerStatusTabParams(connection, executeOnOpen)
     }
 
-    restoreFromJson(paramsJson: TabParamsDto, dataJson?: TabDataDto): ServerStatusDefinition { 
+    restoreFromJson(paramsJson: TabParamsDto): ServerStatusTabDefinition {
         const params: ServerStatusTabParamsDto = paramsJson as ServerStatusTabParams
-        return new ServerStatusDefinition('Status', new ServerStatusTabParams(this.connectionService.getConnection(params.connection.id)))
+        return new ServerStatusTabDefinition(new ServerStatusTabParams(this.connectionService.getConnection(params.connection.id)))
     }
 }
 
-export const useDetailViewerTabFactory = (): ServerStatusTabFactory => {
-    return mandatoryInject(detailViewerTabFactoryInjectionKey) as ServerStatusTabFactory
+export const useServerStatusTabFactory = (): ServerStatusTabFactory => {
+    return mandatoryInject(serverStatusTabFactoryInjectionKey) as ServerStatusTabFactory
 }

@@ -145,9 +145,9 @@ export class ExtraResultConverter {
     ): EntityReference | undefined {
         if (entityReference) {
             return new EntityReference(
-                Value.of(entityReference.entityType),
-                Value.of(entityReference.primaryKey),
-                Value.of(entityReference.version)
+                entityReference.entityType,
+                entityReference.primaryKey,
+                entityReference.version
             )
         } else {
             return undefined
@@ -159,9 +159,9 @@ export class ExtraResultConverter {
     ) {
         if (facetGroupEntityReference) {
             return new EntityReference(
-                Value.of(facetGroupEntityReference.entityType),
-                Value.of(facetGroupEntityReference.primaryKey),
-                Value.of(facetGroupEntityReference.version)
+                facetGroupEntityReference.entityType,
+                facetGroupEntityReference.primaryKey,
+                facetGroupEntityReference.version
             )
         } else {
             return undefined

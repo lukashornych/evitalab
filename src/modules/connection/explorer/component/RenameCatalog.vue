@@ -3,13 +3,13 @@
         <VCard>
             <VCardTitleWithActions>
                 <template #default>
-                    {{ t('serverActions.renameCatalog.title') }}
+                    {{ t('explorer.catalog.renameCatalog.title') }}
                 </template>
             </VCardTitleWithActions>
             <VCardText>
-                <p>{{ t('serverActions.renameCatalog.description') }} <b>{{ props.catalogName }}</b></p>
+                <p>{{ t('explorer.catalog.renameCatalog.description') }} <b>{{ props.catalogName }}</b></p>
                 <VTextField
-                    :label="t('serverActions.renameCatalog.rename')"
+                    :label="t('explorer.catalog.renameCatalog.form.rename.label')"
                     variant="outlined"
                     class="rename-input"
                     append-inner-icon="mdi-pencil-outline"
@@ -48,23 +48,15 @@
 </template>
 
 <script setup lang="ts">
-import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithActions.vue'
-import ConfirmDialog from './ConfirmDialog.vue'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-    VBtn,
-    VCard,
-    VCardText,
-    VDialog,
-    VTextField,
-} from 'vuetify/lib/components/index.mjs'
 import { Connection } from '@/modules/connection/model/Connection'
-import {
-    ModifyActionService,
-    useModifyActionService,
-} from '../services/ModifyActionService'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { ModifyActionService, useModifyActionService } from '@/modules/connection/explorer/service/ModifyActionService'
+import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithActions.vue'
+import ConfirmDialog from '@/modules/connection/explorer/component/ConfirmDialog.vue'
+
+const modifyActionService: ModifyActionService = useModifyActionService()
 
 const { t } = useI18n()
 const props = defineProps<{
@@ -76,7 +68,6 @@ const emit = defineEmits<{ (e: 'visibleChanged', visible: boolean): void, (e: 'c
 
 const visibleRenameDialog = ref<boolean>(props.visible)
 const newCatalogName = ref<string>('')
-const modifyActionService: ModifyActionService = useModifyActionService()
 
 function changeVisibility(visible: boolean) {
     visibleRenameDialog.value = visible

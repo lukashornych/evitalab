@@ -3,11 +3,11 @@
         <VCard>
             <VCardTitleWithActions>
                 <template #default>
-                    {{ t('serverActions.confirmCatalog.title') }}
+                    {{ t('explorer.catalog.confirmCatalog.title') }}
                 </template>
             </VCardTitleWithActions>
             <VCardText>
-                <p>{{ t('serverActions.confirmCatalog.description') }}</p>
+                <p>{{ t('explorer.catalog.confirmCatalog.description') }}</p>
                 <div class="buttons">
                     <VBtn
                         variant="outlined"

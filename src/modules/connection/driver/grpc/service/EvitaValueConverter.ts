@@ -233,8 +233,12 @@ export class EvitaValueConvert {
         value: GrpcBigDecimalNumberRange
     ): Range<BigDecimal> {
         return new BigDecimalRange(
-            new BigDecimal(value.from?.valueString),
-            new BigDecimal(value.to?.valueString)
+            value.from != undefined
+                ? new BigDecimal(value.from.valueString)
+                : undefined,
+            value.to != undefined
+                ? new BigDecimal(value.to.valueString)
+                : undefined
         )
     }
 
@@ -394,8 +398,12 @@ export class EvitaValueConvert {
         for (const grpcBigDecimalRange of value.value) {
             bigDecimalRange.push(
                 new BigDecimalRange(
-                    new BigDecimal(grpcBigDecimalRange.from?.valueString),
-                    new BigDecimal(grpcBigDecimalRange.to?.valueString)
+                    grpcBigDecimalRange.from != undefined
+                        ? new BigDecimal(grpcBigDecimalRange.from.valueString)
+                        : undefined,
+                    grpcBigDecimalRange.to != undefined
+                        ? new BigDecimal(grpcBigDecimalRange.to.valueString)
+                        : undefined
                 )
             )
         }

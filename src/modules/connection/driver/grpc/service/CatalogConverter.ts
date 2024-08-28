@@ -6,22 +6,22 @@ import {
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import { CatalogState } from '@/modules/connection/model/CatalogState'
-import { EntityCollectionStatistics } from '@/modules/connection/model/EntityCollectionStatistics'
-import { Value } from '@/modules/connection/model/Value'
+import { EntityCollection } from '@/modules/connection/model/EntityCollection'
+import Immutable from 'immutable'
 
 //TODO: Add documentation
 export class CatalogConverter {
     convert(catalog: GrpcCatalogStatistics): Catalog {
         return new Catalog(
-            Value.of(catalog.catalogId?.toJsonString()),
-            Value.of(catalog.catalogVersion),
+            catalog.catalogId?.toJsonString(),
+            catalog.catalogVersion,
             catalog.catalogName,
-            Value.of(this.convertEntityTypes(catalog.entityCollectionStatistics)),
-            Value.of(catalog.corrupted),
-            Value.of(this.convertCatalogState(catalog.catalogState)),
-            Value.of(catalog.totalRecords),
-            Value.of(catalog.indexCount),
-            Value.of(catalog.sizeOnDiskInBytes)
+            this.convertEntityTypes(catalog.entityCollectionStatistics),
+            catalog.corrupted,
+            this.convertCatalogState(catalog.catalogState),
+            catalog.totalRecords,
+            catalog.indexCount,
+            catalog.sizeOnDiskInBytes
         )
     }
 
@@ -40,18 +40,18 @@ export class CatalogConverter {
 
     private convertEntityTypes(
         entityTypes: GrpcEntityCollectionStatistics[]
-    ): EntityCollectionStatistics[] {
-        const newEntityTypes: EntityCollectionStatistics[] = []
+    ): Immutable.List<EntityCollection> {
+        const newEntityTypes: EntityCollection[] = []
         for (const entityType of entityTypes) {
             newEntityTypes.push(
-                new EntityCollectionStatistics(
-                    Value.of(entityType.entityType),
-                    Value.of(entityType.totalRecords),
-                    Value.of(entityType.indexCount),
-                    Value.of(entityType.sizeOnDiskInBytes)
+                new EntityCollection(
+                    entityType.entityType,
+                    entityType.totalRecords,
+                    entityType.indexCount,
+                    entityType.sizeOnDiskInBytes
                 )
             )
         }
-        return newEntityTypes;
+        return Immutable.List<EntityCollection>(newEntityTypes);
     }
 }

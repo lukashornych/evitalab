@@ -194,43 +194,13 @@ export class EvitaQLResultVisualiserService extends ResultVisualiserService {
 
         const possibleAttributes: [any, boolean][] = []
 
-        const globalAttributes: Immutable.Map<string, object> | undefined =
-            entityResult.globalAttributes.getIfSupported()
-        if (globalAttributes) {
-            for (const [attributeName, attribute] of globalAttributes) {
-                possibleAttributes.push([
-                    attribute,
-                    representativeAttributes.includes(attributeName)
-                ])
-            }
-        }
-
-        const localizedAttributes:
-            | Immutable.Map<string, Attributes>
-            | undefined = entityResult.localizedAttributes.getIfSupported()
-        if (localizedAttributes) {
-            const localizedAttributesLocales: string[] = localizedAttributes
-                .keySeq()
-                .toArray()
-            if (localizedAttributesLocales.length > 0) {
-                // todo lho there can be legitimately more locales, we need to look for the entityLocaleEquals if there are multiple locales
-                const locale: string = localizedAttributesLocales[0]
-                const attributesInLocale = localizedAttributes
-                    .get(locale)
-                    ?.attributes.getIfSupported()
-                if (attributesInLocale) {
-                    for (const [
-                        attributeName,
-                        attribute,
-                    ] of attributesInLocale) {
-                        possibleAttributes.push([
-                            attribute,
-                            representativeAttributes.includes(attributeName)
-                        ])
-                    }
-                }
-            }
-        }
+        entityResult.allAttributes.forEach(it => {
+            // todo lho there can be legitimately more locales, we need to look for the entityLocaleEquals if there are multiple locales
+            possibleAttributes.push([
+                it.value,
+                representativeAttributes.includes(it.name)
+            ])
+        })
 
         if (possibleAttributes.length === 0) {
             return undefined
@@ -274,7 +244,7 @@ export class EvitaQLResultVisualiserService extends ResultVisualiserService {
     getPriceHistogramService(): PriceHistogramVisualiserService {
         if (!this.priceHistogramVisualiserService) {
             this.priceHistogramVisualiserService =
-                new EvitaQLPriceHistogramVisualiserService(this)
+                new EvitaQLPriceHistogramVisualiserService()
         }
         return this.priceHistogramVisualiserService
     }

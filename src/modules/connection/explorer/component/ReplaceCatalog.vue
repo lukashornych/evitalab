@@ -7,15 +7,15 @@
         <VCard>
             <VCardTitleWithActions>
                 <template #default>
-                    {{ t('serverActions.replaceCatalog.title') }}
+                    {{ t('explorer.catalog.replaceCatalog.title') }}
                 </template>
             </VCardTitleWithActions>
             <VCardText>
                 <VLabel>{{
-                    t('serverActions.replaceCatalog.fromCatalogLabel')
+                    t('explorer.catalog.replaceCatalog.form.fromCatalog.help')
                 }}</VLabel>
                 <VCombobox
-                    :label="t('serverActions.replaceCatalog.fromCatalog')"
+                    :label="t('explorer.catalog.replaceCatalog.form.fromCatalog.label')"
                     variant="outlined"
                     v-model="selectedFrom"
                     :items="
@@ -27,10 +27,10 @@
                 >
                 </VCombobox>
                 <VLabel>{{
-                    t('serverActions.replaceCatalog.toCatalogLabel')
+                    t('explorer.catalog.replaceCatalog.form.toCatalog.help')
                 }}</VLabel>
                 <VCombobox
-                    :label="t('serverActions.replaceCatalog.toCatalog')"
+                    :label="t('explorer.catalog.replaceCatalog.form.toCatalog.label')"
                     variant="outlined"
                     :items="
                         catalogs
@@ -76,23 +76,12 @@ import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithAction
 import { Connection } from '@/modules/connection/model/Connection'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-    VBtn,
-    VCard,
-    VCardText,
-    VCombobox,
-    VDialog,
-    VLabel,
-    VTooltip,
-} from 'vuetify/lib/components/index.mjs'
-import {
-    ModifyActionService,
-    useModifyActionService,
-} from '../services/ModifyActionService'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import ConfirmDialog from './ConfirmDialog.vue'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { ModifyActionService, useModifyActionService } from '@/modules/connection/explorer/service/ModifyActionService'
 
+const modifyActionService: ModifyActionService = useModifyActionService()
 const { t } = useI18n()
 
 const props = defineProps<{
@@ -101,7 +90,6 @@ const props = defineProps<{
     connection: Connection
 }>()
 
-const modifyActionService: ModifyActionService = useModifyActionService()
 const visibleReplaceCatalog = ref<boolean>(props.visible)
 const selectedFrom = ref<string>(props.catalogName)
 const selectedTo = ref<string>('')
