@@ -98,7 +98,7 @@ const componentDataType = computed<Scalar | ExtraEntityObjectType | undefined>((
                 >
                     {{ headerPrependIcon }}
                 </VIcon>
-                <span>{{ propertyDescriptor?.flattenedTitle || t('entityGrid.grid.cell.detail.placeholder.unknownProperty') }}</span>
+                <span>{{ propertyDescriptor?.flattenedTitle || t('entityViewer.grid.cell.detail.placeholder.unknownProperty') }}</span>
             </template>
             <template #actions>
                 <DetailOutputFormatSelector

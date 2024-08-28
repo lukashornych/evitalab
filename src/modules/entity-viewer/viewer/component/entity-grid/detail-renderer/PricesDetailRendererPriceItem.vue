@@ -33,7 +33,7 @@ const priceType = usePriceType()
                     <VIcon class="mr-3" v-bind="props">mdi-cart-outline</VIcon>
                 </template>
 
-                {{ t('entityGrid.grid.priceRenderer.price.help.priceForSale') }}
+                {{ t('entityViewer.grid.priceRenderer.price.help.priceForSale') }}
             </VTooltip>
 
             <VTooltip>
@@ -42,10 +42,10 @@ const priceType = usePriceType()
                 </template>
 
                 <template v-if="price.sellable">
-                    {{ t('entityGrid.grid.priceRenderer.price.tooltip.sellablePrice') }}
+                    {{ t('entityViewer.grid.priceRenderer.price.tooltip.sellablePrice') }}
                 </template>
                 <template v-else>
-                    {{ t('entityGrid.grid.priceRenderer.price.tooltip.notSellablePrice') }}
+                    {{ t('entityViewer.grid.priceRenderer.price.tooltip.notSellablePrice') }}
                 </template>
             </VTooltip>
 
@@ -55,23 +55,23 @@ const priceType = usePriceType()
                         {{ price.priceId }}
 
                         <VTooltip activator="parent">
-                            {{ t('entityGrid.grid.priceRenderer.price.label.priceId') }}
+                            {{ t('entityViewer.grid.priceRenderer.price.label.priceId') }}
                         </VTooltip>
                     </span>
                         <span v-if="price.innerRecordId != undefined">
                         &nbsp;/&nbsp;{{ price.innerRecordId }}
 
                         <VTooltip activator="parent">
-                            {{ t('entityGrid.grid.priceRenderer.price.label.innerRecordId') }}
+                            {{ t('entityViewer.grid.priceRenderer.price.label.innerRecordId') }}
                         </VTooltip>
                     </span>
                 </VChip>
                 <VChip v-else prepend-icon="mdi-identifier" variant="flat">
                     <span>
-                        {{ t('entityGrid.grid.priceRenderer.price.label.virtual' )}}
+                        {{ t('entityViewer.grid.priceRenderer.price.label.virtual' )}}
 
                         <VTooltip activator="parent">
-                            <VMarkdown :source="t('entityGrid.grid.priceRenderer.price.help.virtualPriceForSale')"/>
+                            <VMarkdown :source="t('entityViewer.grid.priceRenderer.price.help.virtualPriceForSale')"/>
                         </VTooltip>
                     </span>
                 </VChip>
@@ -80,7 +80,7 @@ const priceType = usePriceType()
                     {{ price.priceList }}
 
                     <VTooltip activator="parent">
-                        {{ t('entityGrid.grid.priceRenderer.price.label.priceList') }}
+                        {{ t('entityViewer.grid.priceRenderer.price.label.priceList') }}
                     </VTooltip>
                 </VChip>
 
@@ -89,10 +89,10 @@ const priceType = usePriceType()
 
                     <VTooltip activator="parent">
                         <template v-if="priceType === QueryPriceMode.WithTax">
-                            {{ t('entityGrid.grid.priceRenderer.price.label.priceWithTax') }}
+                            {{ t('entityViewer.grid.priceRenderer.price.label.priceWithTax') }}
                         </template>
                         <template v-else>
-                            {{ t('entityGrid.grid.priceRenderer.price.label.priceWithoutTax') }}
+                            {{ t('entityViewer.grid.priceRenderer.price.label.priceWithoutTax') }}
                         </template>
                     </VTooltip>
                 </VChip>

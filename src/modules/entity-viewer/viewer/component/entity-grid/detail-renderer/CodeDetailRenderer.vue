@@ -47,7 +47,7 @@ const formattedValue = computed<string>(() => {
     } catch (e: any) {
         console.error(e)
         return t(
-            'entityGrid.grid.codeRenderer.placeholder.failedToFormatValue',
+            'entityViewer.grid.codeRenderer.placeholder.failedToFormatValue',
             {
                 codeLanguage: props.codeLanguage,
                 message: e?.message ? `${e.message}.` : ''
@@ -67,7 +67,7 @@ const codeBlockExtensions = computed<Extension[]>(() => {
         case EntityPropertyValueSupportedCodeLanguage.Xml:
             return [xml()]
         default:
-            toaster.error(new UnexpectedError(t('entityGrid.grid.codeRenderer.notification.unsupportedCodeLanguage')))
+            toaster.error(new UnexpectedError(t('entityViewer.grid.codeRenderer.notification.unsupportedCodeLanguage')))
             return []
     }
 })
@@ -100,7 +100,7 @@ function createActions(): Map<CodeDetailRendererActionType, MenuAction<CodeDetai
             CodeDetailRendererActionType.PrettyPrint,
             new MenuAction<CodeDetailRendererActionType>(
                 CodeDetailRendererActionType.PrettyPrint,
-                prettyPrint.value ? t('entityGrid.grid.renderer.button.displayRawValue') : t('entityGrid.grid.renderer.button.prettyPrintValue'),
+                prettyPrint.value ? t('entityViewer.grid.renderer.button.displayRawValue') : t('entityViewer.grid.renderer.button.prettyPrintValue'),
                 prettyPrint.value ? 'mdi-raw' : 'mdi-auto-fix',
                 () => prettyPrint.value = !prettyPrint.value
             )

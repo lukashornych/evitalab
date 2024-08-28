@@ -94,7 +94,7 @@ const priceInnerRecordHandling = computed<PriceInnerRecordHandling>(() => {
 })
 const entityPricingProperties = computed<Property[]>(() => [
     {
-        name: t('entityGrid.grid.priceRenderer.label.priceInnerRecordHandling'),
+        name: t('entityViewer.grid.priceRenderer.label.priceInnerRecordHandling'),
         value: new PropertyValue(
             new KeywordValue(priceInnerRecordHandling.value)
         ),
@@ -103,7 +103,7 @@ const entityPricingProperties = computed<Property[]>(() => [
 const prices = computed<EntityPrices>(() => {
     if (!(props.value instanceof EntityPrices)) {
         toaster.error(
-            t('entityGrid.grid.priceRenderer.notification.invalidPricesObject')
+            t('entityViewer.grid.priceRenderer.notification.invalidPricesObject')
         )
         return new EntityPrices(undefined, [])
     }
@@ -273,14 +273,14 @@ preselectFilterFromQuery()
 
         <div>
             <header>
-                <h3>{{ t('entityGrid.grid.priceRenderer.title') }}</h3>
+                <h3>{{ t('entityViewer.grid.priceRenderer.title') }}</h3>
             </header>
 
             <VMarkdown
                 v-if="prices.priceForSale == undefined"
                 :source="
                     t(
-                        'entityGrid.grid.priceRenderer.filter.help.computePriceForSale'
+                        'entityViewer.grid.priceRenderer.filter.help.computePriceForSale'
                     )
                 "
             />

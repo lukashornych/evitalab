@@ -57,7 +57,7 @@ defineExpose<{
         <VIcon v-if="!selected">mdi-translate-off</VIcon>
         <VIcon v-else>mdi-translate</VIcon>
 
-        <VActionTooltip :command="Command.EntityGrid_ChangeDataLocale" />
+        <VActionTooltip :command="Command.EntityViewer_ChangeDataLocale" />
 
         <VMenu activator="parent">
             <VList
@@ -69,7 +69,7 @@ defineExpose<{
                 <VListItem
                     value="none"
                 >
-                    <VListItemTitle>{{ t('entityGrid.dataLocaleSelector.item.none') }}</VListItemTitle>
+                    <VListItemTitle>{{ t('entityViewer.dataLocaleSelector.item.none') }}</VListItemTitle>
                 </VListItem>
 
                 <VListItemDivider />

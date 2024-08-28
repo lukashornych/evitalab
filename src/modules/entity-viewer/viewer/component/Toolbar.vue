@@ -44,11 +44,11 @@ const shareTabButtonRef = ref<InstanceType<typeof ShareTabButton> | undefined>()
 
 onMounted(() => {
     // register grid specific keyboard shortcuts
-    keymap.bind(Command.EntityGrid_ShareTab, tabProps.id, () => shareTabButtonRef.value?.share())
+    keymap.bind(Command.EntityViewer_ShareTab, tabProps.id, () => shareTabButtonRef.value?.share())
 })
 onUnmounted(() => {
     // unregister grid specific keyboard shortcuts
-    keymap.unbind(Command.EntityGrid_ShareTab, tabProps.id)
+    keymap.unbind(Command.EntityViewer_ShareTab, tabProps.id)
 })
 </script>
 
@@ -68,7 +68,7 @@ onUnmounted(() => {
             />
 
             <VExecuteQueryButton :loading="loading" @click="emit('executeQuery')">
-                <VActionTooltip :command="Command.EntityGrid_ExecuteQuery" />
+                <VActionTooltip :command="Command.EntityViewer_ExecuteQuery" />
                 {{ t('common.button.run') }}
             </VExecuteQueryButton>
         </template>

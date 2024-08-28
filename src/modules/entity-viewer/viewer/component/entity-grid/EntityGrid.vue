@@ -69,7 +69,7 @@ const propertyDetailValue = ref<EntityPropertyValue | EntityPropertyValue[] | un
 function getPropertyDescriptor(key: string): EntityPropertyDescriptor | undefined {
     const descriptor = entityPropertyDescriptorIndex.value.get(key)
     if (descriptor == undefined) {
-        toaster.error(new UnexpectedError(t('entityGrid.grid.notification.failedToFindProperty', { key })))
+        toaster.error(new UnexpectedError(t('entityViewer.grid.notification.failedToFindProperty', { key })))
     }
     return descriptor
 }

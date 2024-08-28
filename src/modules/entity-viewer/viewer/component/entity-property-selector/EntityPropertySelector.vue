@@ -190,7 +190,7 @@ function togglePropertySectionSelection(sectionType: EntityPropertyType, newSele
 
         emit('update:selected', newSelected)
     } else {
-        toaster.error(new UnexpectedError(t('entityGrid.propertySelector.notification.invalidPropertySectionSelection')))
+        toaster.error(new UnexpectedError(t('entityViewer.propertySelector.notification.invalidPropertySectionSelection')))
     }
 }
 
@@ -233,11 +233,11 @@ function toggleReferenceAttributeProperty(referenceProperty: EntityPropertyDescr
 
 onMounted(() => {
     // register keyboard shortcuts for property selector
-    keymap.bindWithinScope(Command.EntityGrid_PropertySelector_FindProperty, tabProps.id, propertySelectorScope, () => filterInput?.value?.select())
+    keymap.bindWithinScope(Command.EntityViewer_PropertySelector_FindProperty, tabProps.id, propertySelectorScope, () => filterInput?.value?.select())
 })
 onUnmounted(() => {
     // unregister keyboard shortcuts for property selector
-    keymap.unbindWithinScope(Command.EntityGrid_PropertySelector_FindProperty, tabProps.id, propertySelectorScope)
+    keymap.unbindWithinScope(Command.EntityViewer_PropertySelector_FindProperty, tabProps.id, propertySelectorScope)
 })
 </script>
 
@@ -255,8 +255,8 @@ onUnmounted(() => {
                 v-bind="props"
             >
                 <VIcon>mdi-view-column-outline</VIcon>
-                <VActionTooltip :command="Command.EntityGrid_OpenPropertySelector">
-                    {{ t('entityGrid.propertySelector.button.selectDisplayedProperties') }}
+                <VActionTooltip :command="Command.EntityViewer_OpenPropertySelector">
+                    {{ t('entityViewer.propertySelector.button.selectDisplayedProperties') }}
                 </VActionTooltip>
             </VBtn>
         </template>
@@ -264,7 +264,7 @@ onUnmounted(() => {
         <VCard class="py-8 px-4">
             <VCardTitleWithActions>
                 <template #default>
-                    {{ t('entityGrid.propertySelector.title') }}
+                    {{ t('entityViewer.propertySelector.title') }}
                 </template>
                 <template #actions>
                     <VBtn
@@ -284,7 +284,7 @@ onUnmounted(() => {
                 <VTextField
                     ref="filterInput"
                     :model-value="filter"
-                    :label="t('entityGrid.propertySelector.label.filterProperties')"
+                    :label="t('entityViewer.propertySelector.label.filterProperties')"
                     variant="solo-filled"
                     density="compact"
                     autofocus

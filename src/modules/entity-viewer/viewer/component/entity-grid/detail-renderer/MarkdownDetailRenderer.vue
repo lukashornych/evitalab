@@ -202,7 +202,7 @@ const formattedValue = computed<string>(() => {
         }
     } catch (e) {
         console.error(e)
-        return t('entityGrid.grid.cell.detail.placeholder.invalidValue')
+        return t('entityViewer.grid.cell.detail.placeholder.invalidValue')
     }
 })
 
@@ -263,8 +263,8 @@ function createActions(): Map<
         new MenuAction<MarkdownDetailRendererActionType>(
             MarkdownDetailRendererActionType.PrettyPrint,
             prettyPrint.value
-                ? t('entityGrid.grid.renderer.button.displayRawValue')
-                : t('entityGrid.grid.renderer.button.prettyPrintValue'),
+                ? t('entityViewer.grid.renderer.button.displayRawValue')
+                : t('entityViewer.grid.renderer.button.prettyPrintValue'),
             prettyPrint.value ? 'mdi-raw' : 'mdi-auto-fix',
             () => (prettyPrint.value = !prettyPrint.value)
         )
