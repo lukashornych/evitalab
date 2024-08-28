@@ -1,5 +1,6 @@
 import { EvitaDBDriverResolver } from "@/modules/connection/driver/EvitaDBDriverResolver";
 import { Connection } from "@/modules/connection/model/Connection";
+import { TaskSimplifiedState } from "@/modules/connection/model/data/TaskSimplifiedState";
 import { TaskStatuses } from "@/modules/connection/model/data/TaskStatuses";
 import { mandatoryInject } from "@/utils/reactivity";
 import { InjectionKey } from "vue";
@@ -13,9 +14,9 @@ export class JobService {
         this.evitaDBDriverResolver = evitaDBDriver
     }
 
-    async getJobs(connection: Connection, pageNumber: number, pageSize: number):Promise<TaskStatuses>{
+    async getJobs(connection: Connection, pageNumber: number, pageSize: number, simplifiedState?: TaskSimplifiedState[], taskType?: string):Promise<TaskStatuses>{
         const driver = await this.evitaDBDriverResolver.resolveDriver(connection)
-        return await driver.getAciveJobs(connection, pageNumber, pageSize)
+        return await driver.getAciveJobs(connection, pageNumber, pageSize, simplifiedState, taskType)
     }
 }
 

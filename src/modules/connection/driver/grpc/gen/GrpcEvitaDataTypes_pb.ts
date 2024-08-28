@@ -5,7 +5,7 @@
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Int32Value, Int64Value, Message, proto3, protoInt64, StringValue, Timestamp } from "@bufbuild/protobuf";
-import { GrpcAttributeSpecialValue, GrpcCatalogState, GrpcEmptyHierarchicalEntityBehaviour, GrpcEvitaAssociatedDataDataType_GrpcEvitaDataType, GrpcEvitaDataType, GrpcFacetStatisticsDepth, GrpcNamingConvention, GrpcOrderDirection, GrpcPriceContentMode, GrpcQueryPriceMode, GrpcStatisticsBase, GrpcStatisticsType, GrpcHistogramBehavior } from "./GrpcEnums_pb.js";
+import { GrpcAttributeSpecialValue, GrpcCatalogState, GrpcEmptyHierarchicalEntityBehaviour, GrpcEvitaAssociatedDataDataType_GrpcEvitaDataType, GrpcEvitaDataType, GrpcFacetStatisticsDepth, GrpcNamingConvention, GrpcOrderDirection, GrpcPriceContentMode, GrpcQueryPriceMode, GrpcStatisticsBase, GrpcStatisticsType, GrpcTaskSimplifiedState, GrpcHistogramBehavior } from "./GrpcEnums_pb.js";
 
 /**
  * Representation of IntegerNumberRange structures with optional from and to values.
@@ -1914,16 +1914,23 @@ export class GrpcTaskStatus extends Message<GrpcTaskStatus> {
   finished?: GrpcOffsetDateTime;
 
   /**
+   * Simplified state of the status
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTaskSimplifiedState simplifiedState = 8;
+   */
+  simplifiedState = GrpcTaskSimplifiedState.TASK_QUEUED;
+
+  /**
    * Progress of the task (0-100)
    *
-   * @generated from field: int32 progress = 8;
+   * @generated from field: int32 progress = 9;
    */
   progress = 0;
 
   /**
    * Configuration settings of the task
    *
-   * @generated from field: google.protobuf.StringValue settings = 9;
+   * @generated from field: google.protobuf.StringValue settings = 10;
    */
   settings?: string;
 
@@ -1936,7 +1943,7 @@ export class GrpcTaskStatus extends Message<GrpcTaskStatus> {
     /**
      * Textual result of the task
      *
-     * @generated from field: google.protobuf.StringValue text = 10;
+     * @generated from field: google.protobuf.StringValue text = 11;
      */
     value: StringValue;
     case: "text";
@@ -1944,7 +1951,7 @@ export class GrpcTaskStatus extends Message<GrpcTaskStatus> {
     /**
      * File that was created by the task and is available for fetching
      *
-     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcFile file = 11;
+     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcFile file = 12;
      */
     value: GrpcFile;
     case: "file";
@@ -1953,7 +1960,7 @@ export class GrpcTaskStatus extends Message<GrpcTaskStatus> {
   /**
    * Exception that occurred during the task execution
    *
-   * @generated from field: google.protobuf.StringValue exception = 12;
+   * @generated from field: google.protobuf.StringValue exception = 13;
    */
   exception?: string;
 
@@ -1972,11 +1979,12 @@ export class GrpcTaskStatus extends Message<GrpcTaskStatus> {
     { no: 5, name: "issued", kind: "message", T: GrpcOffsetDateTime },
     { no: 6, name: "started", kind: "message", T: GrpcOffsetDateTime },
     { no: 7, name: "finished", kind: "message", T: GrpcOffsetDateTime },
-    { no: 8, name: "progress", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 9, name: "settings", kind: "message", T: StringValue },
-    { no: 10, name: "text", kind: "message", T: StringValue, oneof: "result" },
-    { no: 11, name: "file", kind: "message", T: GrpcFile, oneof: "result" },
-    { no: 12, name: "exception", kind: "message", T: StringValue },
+    { no: 8, name: "simplifiedState", kind: "enum", T: proto3.getEnumType(GrpcTaskSimplifiedState) },
+    { no: 9, name: "progress", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 10, name: "settings", kind: "message", T: StringValue },
+    { no: 11, name: "text", kind: "message", T: StringValue, oneof: "result" },
+    { no: 12, name: "file", kind: "message", T: GrpcFile, oneof: "result" },
+    { no: 13, name: "exception", kind: "message", T: StringValue },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcTaskStatus {

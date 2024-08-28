@@ -40,6 +40,8 @@ import { FilesToFetch } from '../../model/data/FilesToFetch'
 import { BackupConverter } from './service/BackupConverter'
 import { JobsConverter } from './service/JobsConverter'
 import { TaskStatuses } from '../../model/data/TaskStatuses'
+import { TaskSimplifiedState } from '../../model/data/TaskSimplifiedState'
+import { TaskSimplifiedStateConverter } from './service/TaskSimplifiedStateConverter'
 
 //TODO: Add docs and add header 'X-EvitaDB-ClientID': this.getClientIdHeaderValue()
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
@@ -57,8 +59,14 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         new ResponseConverter(this.entityConverter, this.extraResultConverter)
     private readonly serverStatusConverter: ServerStatusConverter =
         new ServerStatusConverter()
-    private readonly backupConverter: BackupConverter = new BackupConverter()
-    private readonly jobsConverter: JobsConverter = new JobsConverter()
+    private readonly taskSimplifiedStateConverter: TaskSimplifiedStateConverter =
+        new TaskSimplifiedStateConverter()
+    private readonly backupConverter: BackupConverter = new BackupConverter(
+        this.taskSimplifiedStateConverter
+    )
+    private readonly jobsConverter: JobsConverter = new JobsConverter(
+        this.taskSimplifiedStateConverter
+    )
 
     private readonly clientsHelper: ClientsHelper = new ClientsHelper()
 
@@ -364,7 +372,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                 }
             )
         if (response.entitySchema && resultClose.catalogVersion) {
-            return await this.downloadCtalogsSameSession(
+            return await this.downloadCatalogsSameSession(
                 connection,
                 res.sessionId
             )
@@ -413,7 +421,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                 }
             )
         if (response)
-            return await this.downloadCtalogsSameSession(
+            return await this.downloadCatalogsSameSession(
                 connection,
                 res.sessionId
             )
@@ -460,14 +468,14 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                 }
             )
         if (response)
-            return await this.downloadCtalogsSameSession(
+            return await this.downloadCatalogsSameSession(
                 connection,
                 res.sessionId
             )
         else return undefined
     }
 
-    async downloadCtalogsSameSession(
+    async downloadCatalogsSameSession(
         connection: Connection,
         sessionId: string
     ): Promise<Catalog[]> {
@@ -574,11 +582,28 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         return this.backupConverter.convertFilesTofetch(result)
     }
 
-    async getAciveJobs(connection: Connection, pageNumber:number, pageSize:number):Promise<TaskStatuses>{
-        const result = await this.clientsHelper.getManagmentClient(connection, TransportHelper.getTransport(connection)).listTaskStatuses({
-            pageNumber,
-            pageSize
-        })
+    async getAciveJobs(
+        connection: Connection,
+        pageNumber: number,
+        pageSize: number,
+        simplifiedState?: TaskSimplifiedState[],
+        taskType?: string
+    ): Promise<TaskStatuses> {
+        const result = await this.clientsHelper
+            .getManagmentClient(
+                connection,
+                TransportHelper.getTransport(connection)
+            )
+            .listTaskStatuses({
+                pageNumber,
+                pageSize,
+                taskType,
+                simplifiedState: simplifiedState
+                    ? this.taskSimplifiedStateConverter.convertTaskStatesToGrpc(
+                          simplifiedState
+                      )
+                    : undefined,
+            })
         return this.jobsConverter.convertJobs(result)
     }
 

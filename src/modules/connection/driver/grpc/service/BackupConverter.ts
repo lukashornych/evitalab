@@ -6,8 +6,15 @@ import { File } from "@/modules/connection/model/data/File"
 import { OffsetDateTime } from "@/modules/connection/model/data-type/OffsetDateTime"
 import { GrpcBackupCatalogResponse } from "../gen/GrpcEvitaSessionAPI_pb"
 import { TaskStatus } from "@/modules/connection/model/data/TaskStatus"
+import { TaskSimplifiedStateConverter } from "./TaskSimplifiedStateConverter"
 
 export class BackupConverter {
+    readonly taskConverter: TaskSimplifiedStateConverter
+
+    constructor(taskConverter: TaskSimplifiedStateConverter) {
+        this.taskConverter = taskConverter
+    }
+
     convertFilesTofetch(result: GrpcFilesToFetchResponse) {
         const files: File[] = []
         for (const file of result.filesToFetch) {
@@ -81,7 +88,8 @@ export class BackupConverter {
             taskStatus?.progress!,
             taskStatus?.settings!,
             value,
-            taskStatus?.exception!
+            taskStatus?.exception!,
+            this.taskConverter.convertTaskState(taskStatus?.simplifiedState!)
         )
     }
 }

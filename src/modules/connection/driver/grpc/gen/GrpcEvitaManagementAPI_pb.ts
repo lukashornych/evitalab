@@ -6,7 +6,7 @@
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3, protoInt64, StringValue } from "@bufbuild/protobuf";
 import { GrpcCatalogStatistics, GrpcFile, GrpcOffsetDateTime, GrpcTaskStatus, GrpcUuid } from "./GrpcEvitaDataTypes_pb.js";
-import { GrpcReadiness, GrpcHealthProblem } from "./GrpcEnums_pb.js";
+import { GrpcReadiness, GrpcTaskSimplifiedState, GrpcHealthProblem } from "./GrpcEnums_pb.js";
 
 /**
  * Response to a server status request.
@@ -479,6 +479,22 @@ export class GrpcTaskStatusesRequest extends Message<GrpcTaskStatusesRequest> {
    */
   pageSize = 0;
 
+  /**
+   * Optional taskType of the listed task, passing non-null value
+   * in this argument filters the returned status to only those that are related to the tasks of specified type
+   *
+   * @generated from field: google.protobuf.StringValue taskType = 3;
+   */
+  taskType?: string;
+
+  /**
+   * Optional set of simplified task states, passing list of enums in this argument
+   * filters the returned statuses to only those that match this simplified status
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcTaskSimplifiedState simplifiedState = 4;
+   */
+  simplifiedState: GrpcTaskSimplifiedState[] = [];
+
   constructor(data?: PartialMessage<GrpcTaskStatusesRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -489,6 +505,8 @@ export class GrpcTaskStatusesRequest extends Message<GrpcTaskStatusesRequest> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "pageNumber", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 2, name: "pageSize", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 3, name: "taskType", kind: "message", T: StringValue },
+    { no: 4, name: "simplifiedState", kind: "enum", T: proto3.getEnumType(GrpcTaskSimplifiedState), repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcTaskStatusesRequest {

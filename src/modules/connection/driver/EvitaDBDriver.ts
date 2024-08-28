@@ -9,9 +9,10 @@ import { ApiServerStatus } from '../model/data/ApiServerStatus'
 import { CatalogVersionAtResponse } from '../model/data/CatalogVersionAtResponse'
 import { OffsetDateTime } from '../model/data-type/OffsetDateTime'
 import { TaskStatus } from '../model/data/TaskStatus'
-import { File } from '../model/data/File'
 import { FilesToFetch } from '../model/data/FilesToFetch'
 import { TaskStatuses } from '../model/data/TaskStatuses'
+import { GrpcTaskSimplifiedState } from './grpc/gen/GrpcEnums_pb'
+import { TaskSimplifiedState } from '../model/data/TaskSimplifiedState'
 
 /**
  * evitaDB version-agnostic driver to access data from connected evitaDB server
@@ -79,7 +80,13 @@ export interface EvitaDBDriver {
         pageSize: number
     ): Promise<FilesToFetch>
     //TODO: Add doc
-    getAciveJobs(connection: Connection, pageNumber:number, pageSize:number):Promise<TaskStatuses>
+    getAciveJobs(
+        connection: Connection,
+        pageNumber: number,
+        pageSize: number,
+        simplifiedState?: TaskSimplifiedState[],
+        taskType?: string
+    ): Promise<TaskStatuses>
     /**
      * Which versions of evitaDB server this driver supports. Can be any string supported by https://www.npmjs.com/package/semver.
      * Comparison is done using the `.satisfies(...)` method

@@ -1477,6 +1477,52 @@ proto3.util.setEnumType(GrpcReadiness, "io.evitadb.externalApi.grpc.generated.Gr
 ]);
 
 /**
+ * State aggregates the possible states of a task into a simple enumeration.
+ *
+ * @generated from enum io.evitadb.externalApi.grpc.generated.GrpcTaskSimplifiedState
+ */
+export enum GrpcTaskSimplifiedState {
+  /**
+   * *
+   * Task is waiting in the queue to be executed.
+   *
+   * @generated from enum value: TASK_QUEUED = 0;
+   */
+  TASK_QUEUED = 0,
+
+  /**
+   * *
+   * Task is currently running.
+   *
+   * @generated from enum value: TASK_RUNNING = 1;
+   */
+  TASK_RUNNING = 1,
+
+  /**
+   * *
+   * Task has finished successfully.
+   *
+   * @generated from enum value: TASK_FINISHED = 2;
+   */
+  TASK_FINISHED = 2,
+
+  /**
+   * *
+   * Task has failed.
+   *
+   * @generated from enum value: TASK_FAILED = 3;
+   */
+  TASK_FAILED = 3,
+}
+// Retrieve enum metadata with: proto3.getEnumType(GrpcTaskSimplifiedState)
+proto3.util.setEnumType(GrpcTaskSimplifiedState, "io.evitadb.externalApi.grpc.generated.GrpcTaskSimplifiedState", [
+  { no: 0, name: "TASK_QUEUED" },
+  { no: 1, name: "TASK_RUNNING" },
+  { no: 2, name: "TASK_FINISHED" },
+  { no: 3, name: "TASK_FAILED" },
+]);
+
+/**
  * This enum contains all supported data types of AssociatedData.
  *
  * @generated from message io.evitadb.externalApi.grpc.generated.GrpcEvitaAssociatedDataDataType

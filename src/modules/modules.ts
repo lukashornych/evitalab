@@ -13,6 +13,7 @@ import { WelcomeScreenModuleRegistrar } from '@/modules/welcome-screen/WelcomeSc
 import { KeymapModuleRegistrar } from '@/modules/keymap/KeymapModuleRegistrar'
 import { ServerActionsModuleRegistrar } from './server-actions/ServerActionsModuleRegistrar'
 import { BackupsModuleRegistrar } from './backups/BackupsModuleRegistrar'
+import { JobModuleRegistrar } from './Jobs/JobModuleRegistrar'
 
 // todo docs
 export const modules: ModuleRegistrar[] = [
@@ -32,5 +33,6 @@ export const modules: ModuleRegistrar[] = [
     new EntityViewerModuleRegistrar(),
     new SchemaViewerModuleRegistrar(),
     new ServerActionsModuleRegistrar(),
-    new BackupsModuleRegistrar()
+    new BackupsModuleRegistrar(),
+    new JobModuleRegistrar()
 ]
