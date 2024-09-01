@@ -260,6 +260,7 @@ export class EntityViewerService {
             dataPointer.entityType
         )
         const descriptors: EntityPropertyDescriptor[] = []
+        // todo lho i18n
         descriptors.push(new EntityPropertyDescriptor(
             EntityPropertyType.Entity,
             EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey),

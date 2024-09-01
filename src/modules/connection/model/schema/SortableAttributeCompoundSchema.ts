@@ -30,7 +30,7 @@ export class SortableAttributeCompoundSchema extends AbstractSchema {
      */
     readonly attributeElements: Value<List<AttributeElement>>
 
-    private readonly representativeAttributes: List<string> = List()
+    private readonly _representativeFlags: List<string> = List()
 
     constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
@@ -45,8 +45,8 @@ export class SortableAttributeCompoundSchema extends AbstractSchema {
         this.attributeElements = attributeElements.map(it => List(it))
     }
 
-    getRepresentativeFlags(): List<string> {
-        return this.representativeAttributes
+    get representativeFlags(): List<string> {
+        return this._representativeFlags
     }
 }
 

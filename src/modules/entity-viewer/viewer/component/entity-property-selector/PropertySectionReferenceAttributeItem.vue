@@ -12,7 +12,7 @@ import { EntityPropertyDescriptor } from '@/modules/entity-viewer/viewer/model/E
 import { EntityPropertyKey } from '@/modules/entity-viewer/viewer/model/EntityPropertyKey'
 import { ReferenceAttributeSchemaPointer } from '@/modules/schema-viewer/viewer/model/ReferenceAttributeSchemaPointer'
 import { AttributeSchema } from '@/modules/connection/model/schema/AttributeSchema'
-import { computed } from 'vue'
+import { computed, ComputedRef } from 'vue'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
 import PropertySectionItem
@@ -33,20 +33,20 @@ const emit = defineEmits<{
 }>()
 const tabProps = useTabProps()
 
-const referenceSchema = computed(() => {
+const referenceSchema: ComputedRef<ReferenceSchema> = computed(() => {
     if (props.referencePropertyDescriptor.schema == undefined || !(props.referencePropertyDescriptor.schema instanceof ReferenceSchema)) {
         throw new UnexpectedError(`Schema is expected to be present and of type 'ReferenceSchema'.`)
     }
     return props.referencePropertyDescriptor.schema
 })
-const referenceAttributeSchema = computed(() => {
+const referenceAttributeSchema: ComputedRef<AttributeSchema> = computed(() => {
     if (props.attributePropertyDescriptor.schema == undefined || !(props.attributePropertyDescriptor.schema instanceof AttributeSchema)) {
         throw new UnexpectedError(`Schema is expected to be present and of type 'AttributeSchema'.`)
     }
     return props.attributePropertyDescriptor.schema
 })
 
-const flags: List<string> = referenceAttributeSchema.value.getRepresentativeFlags()
+const flags: ComputedRef<List<string>> = computed(() => referenceAttributeSchema.value.representativeFlags)
 
 function openSchema(): void {
     workspaceService.createTab(

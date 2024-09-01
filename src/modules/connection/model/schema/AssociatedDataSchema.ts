@@ -42,7 +42,7 @@ export class AssociatedDataSchema extends AbstractSchema implements TypedSchema,
      */
     readonly localized: Value<boolean>
 
-    protected representativeFlags?: List<string>
+    protected _representativeFlags?: List<string>
 
     constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
@@ -61,8 +61,8 @@ export class AssociatedDataSchema extends AbstractSchema implements TypedSchema,
         this.localized = localized
     }
 
-    getRepresentativeFlags(): List<string> {
-        if (this.representativeFlags == undefined) {
+    get representativeFlags(): List<string> {
+        if (this._representativeFlags == undefined) {
             const representativeFlags: string[] = []
 
             this.type.ifSupported(type =>
@@ -71,9 +71,9 @@ export class AssociatedDataSchema extends AbstractSchema implements TypedSchema,
             if (this.localized.getOrElse(false)) representativeFlags.push(AssociatedDataSchemaFlag.Localized)
             if (this.nullable.getOrElse(false)) representativeFlags.push(AssociatedDataSchemaFlag.Nullable)
 
-            this.representativeFlags = List(representativeFlags)
+            this._representativeFlags = List(representativeFlags)
         }
-        return this.representativeFlags
+        return this._representativeFlags
     }
 }
 

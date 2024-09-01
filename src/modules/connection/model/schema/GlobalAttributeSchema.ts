@@ -35,12 +35,11 @@ export class GlobalAttributeSchema extends EntityAttributeSchema {
         this.globalUniquenessType = globalUniquenessType
     }
 
-    getRepresentativeFlags(): List<string> {
-        if (this.representativeFlags == undefined) {
+    get representativeFlags(): List<string> {
+        if (this._representativeFlags == undefined) {
             const representativeFlags: string[] = []
 
-            this.type.ifSupported(type =>
-                representativeFlags.push(this.formatDataTypeForFlag(type)))
+            this.type.ifSupported(type => representativeFlags.push(this.formatDataTypeForFlag(type)))
 
             const globalUniquenessType = this.globalUniquenessType.getOrElse(GlobalAttributeUniquenessType.NotUnique)
             const uniquenessType = this.uniquenessType.getOrElse(AttributeUniquenessType.NotUnique)
@@ -62,9 +61,10 @@ export class GlobalAttributeSchema extends EntityAttributeSchema {
             if (this.localized.getOrElse(false)) representativeFlags.push(AttributeSchemaFlag.Localized)
             if (this.nullable.getOrElse(false)) representativeFlags.push(AttributeSchemaFlag.Nullable)
 
-            this.representativeFlags = List(representativeFlags)
+            this._representativeFlags = List(representativeFlags)
+        // return List(representativeFlags)
         }
-        return this.representativeFlags
+        return this._representativeFlags
     }
 }
 

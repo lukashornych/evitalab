@@ -52,7 +52,7 @@ const { t } = useI18n()
 
 const props = defineProps<{
     modelValue: boolean,
-    selected: EntityPropertyKey[],
+    selected: EntityPropertyKey[]
 }>()
 const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void

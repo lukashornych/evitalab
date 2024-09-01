@@ -32,8 +32,8 @@ export class EntityAttributeSchema extends AttributeSchema {
         this.representative = representative
     }
 
-    getRepresentativeFlags(): Immutable.List<string> {
-        if (this.representativeFlags == undefined) {
+    get representativeFlags(): Immutable.List<string> {
+        if (this._representativeFlags == undefined) {
             const representativeFlags: string[] = []
 
             this.type.ifSupported(type =>
@@ -57,9 +57,10 @@ export class EntityAttributeSchema extends AttributeSchema {
             if (this.localized.getOrElse(false)) representativeFlags.push(AttributeSchemaFlag.Localized)
             if (this.nullable.getOrElse(false)) representativeFlags.push(AttributeSchemaFlag.Nullable)
 
-            this.representativeFlags = List(representativeFlags)
+            this._representativeFlags = List(representativeFlags)
+        // return List(representativeFlags)
         }
-        return this.representativeFlags
+        return this._representativeFlags
     }
 }
 

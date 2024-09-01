@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
-import { computed, ComputedRef, readonly, Ref, ref, UnwrapRef } from 'vue'
+import { computed, ComputedRef, reactive, Ref, ref, shallowReadonly, UnwrapRef } from 'vue'
 import { Connection } from '@/modules/connection/model/Connection'
 import { ConnectionId } from '@/modules/connection/model/ConnectionId'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
+import { UnwrapNestedRefs } from '@vue/reactivity'
 
 /**
  * Defines Pinia store for evitaDB connections
@@ -36,17 +37,17 @@ export const useConnectionStore = defineStore('connections', () => {
     }
 
 
-    const cachedCatalogs: Ref<Map<ConnectionId, Map<string, Catalog>>> = ref(new Map())
-    const cachedCatalogSchemas: Ref<Map<ConnectionId, Map<string, CatalogSchema>>> = ref(new Map())
+    const cachedCatalogs: UnwrapNestedRefs<Map<ConnectionId, Map<string, Catalog>>> = reactive(new Map())
+    const cachedCatalogSchemas: UnwrapNestedRefs<Map<ConnectionId, Map<string, CatalogSchema>>> = reactive(new Map())
 
     const catalogs = computed(() => {
         return (connectionId: ConnectionId) => {
-            return Array.from(cachedCatalogs.value.get(connectionId)?.values() || [])
+            return Array.from(cachedCatalogs.get(connectionId)?.values() || [])
         }
     })
 
     return {
-        preconfiguredConnections: readonly(preconfiguredConnections),
+        preconfiguredConnections: shallowReadonly(preconfiguredConnections),
         userConnections,
         connections,
         replacePreconfiguredConnections,
