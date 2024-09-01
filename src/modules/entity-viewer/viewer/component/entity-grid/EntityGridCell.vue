@@ -95,7 +95,7 @@ function copyValue(): void {
     >
         <span class="data-grid-cell__body">
             <template v-if="noLocaleSelected">
-                <span class="text-disabled">{{ t('entityGrid.grid.cell.placeholder.noLocaleSelected') }}</span>
+                <span class="text-disabled">{{ t('entityViewer.grid.cell.placeholder.noLocaleSelected') }}</span>
             </template>
             <template v-else-if="emptyArray">
                 <span class="text-disabled">{{ t('common.placeholder.emptyArray') }}</span>

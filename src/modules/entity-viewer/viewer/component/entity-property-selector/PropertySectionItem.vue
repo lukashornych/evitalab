@@ -89,7 +89,7 @@ const emit = defineEmits<{
             >
                 <VIcon>mdi-open-in-new</VIcon>
                 <VTooltip activator="parent">
-                    {{ t('entityGrid.propertySelector.section.button.openSchema') }}
+                    {{ t('entityViewer.propertySelector.section.button.openSchema') }}
                 </VTooltip>
             </VBtn>
             <VIcon

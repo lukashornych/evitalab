@@ -14,8 +14,8 @@ import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
 const { t } = useI18n()
 
 const priceTypes: any[] = [
-    { title: t(`entityGrid.priceTypeSelector.${QueryPriceMode.WithTax}`), value: QueryPriceMode.WithTax },
-    { title: t(`entityGrid.priceTypeSelector.${QueryPriceMode.WithoutTax}`), value: QueryPriceMode.WithoutTax }
+    { title: t(`entityViewer.priceTypeSelector.${QueryPriceMode.WithTax}`), value: QueryPriceMode.WithTax },
+    { title: t(`entityViewer.priceTypeSelector.${QueryPriceMode.WithoutTax}`), value: QueryPriceMode.WithoutTax }
 ];
 
 const props = defineProps<{
@@ -56,7 +56,7 @@ defineExpose<{
     >
         <VIcon>mdi-cash-100</VIcon>
 
-        <VActionTooltip :command="Command.EntityGrid_ChangePriceType" />
+        <VActionTooltip :command="Command.EntityViewer_ChangePriceType" />
 
         <VMenu activator="parent">
             <VList

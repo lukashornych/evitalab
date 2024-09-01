@@ -11,7 +11,7 @@ const { t } = useI18n()
 <template>
     <VListItem disabled>
         <template #title>
-            {{ t('entityGrid.propertySelector.section.placeholder.noItemsForSearchedTerm') }}
+            {{ t('entityViewer.propertySelector.section.placeholder.noItemsForSearchedTerm') }}
         </template>
     </VListItem>
 </template>

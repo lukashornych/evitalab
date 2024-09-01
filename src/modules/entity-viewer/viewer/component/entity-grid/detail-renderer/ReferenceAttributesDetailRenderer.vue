@@ -105,7 +105,7 @@ function openReference(primaryKey: number): void {
                         <VBtn icon variant="text" density="compact" @click="openReference(reference.primaryKey)">
                             <VIcon>mdi-open-in-new</VIcon>
                             <VTooltip activator="parent">
-                                {{ t('entityGrid.grid.referenceAttributeRenderer.button.openReference') }}
+                                {{ t('entityViewer.grid.referenceAttributeRenderer.button.openReference') }}
                             </VTooltip>
                         </VBtn>
                     </div>

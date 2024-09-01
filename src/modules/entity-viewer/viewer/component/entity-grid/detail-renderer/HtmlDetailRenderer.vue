@@ -21,7 +21,7 @@ const props = withDefaults(defineProps<{
 
 const formattedValue = computed<string>(() => {
     if (props.value instanceof Array || typeof (props.value as EntityPropertyValue).value() !== 'string') {
-        return t('entityGrid.grid.htmlRenderer.placeholder.failedToRenderHtml')
+        return t('entityViewer.grid.htmlRenderer.placeholder.failedToRenderHtml')
     }
     return DOMPurify.sanitize((props.value as EntityPropertyValue).toPreviewString())
 })

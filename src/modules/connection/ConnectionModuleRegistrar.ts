@@ -21,27 +21,21 @@ export class ConnectionModuleRegistrar implements ModuleRegistrar {
         const connectionStore: ConnectionStore = useConnectionStore()
         const evitaLabConfig: EvitaLabConfig = builder.inject(evitaLabConfigInjectionKey)
         const labStorage: LabStorage = builder.inject(labStorageInjectionKey)
-        const connectionService: ConnectionService = builder.inject(connectionServiceInjectionKey)
 
         const evitaDBServerProbe: EvitaDBServerProbe = new EvitaDBServerProbe(evitaLabConfig)
         const evitaDBDriverResolver: EvitaDBDriverResolver = new EvitaDBDriverResolver(
             evitaLabConfig,
             evitaDBServerProbe
         )
-        const modifyActionService: ModifyActionService = new ModifyActionService(connectionService)
-
-        builder.provide(
-            connectionServiceInjectionKey,
-            ConnectionService.load(
-                connectionStore,
-                labStorage,
-                evitaDBDriverResolver
-            )
-        )
-        builder.provide(
-            evitaDBDriverResolverInjectionKey,
+        const connectionService: ConnectionService = ConnectionService.load(
+            connectionStore,
+            labStorage,
             evitaDBDriverResolver
         )
+        const modifyActionService: ModifyActionService = new ModifyActionService(connectionService)
+
+        builder.provide(connectionServiceInjectionKey, connectionService)
+        builder.provide(evitaDBDriverResolverInjectionKey, evitaDBDriverResolver)
         builder.provide(evitaDBServerProbeInjectionKey, evitaDBServerProbe)
         builder.provide(modifyActionServiceInjectionKey, modifyActionService)
     }

@@ -68,7 +68,7 @@ function resolveNewSelection() {
                 </template>
 
                 <template #title>
-                    {{ t(`entityGrid.propertySelector.section.type.${propertyType || 'entity'}`) }} ({{ selected.length || 0 }}/{{ propertyDescriptors.length }})
+                    {{ t(`entityViewer.propertySelector.section.type.${propertyType || 'entity'}`) }} ({{ selected.length || 0 }}/{{ propertyDescriptors.length }})
                 </template>
             </VListItem>
         </template>

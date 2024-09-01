@@ -36,7 +36,7 @@ const emit = defineEmits<{
                 :model-value="selectedPriceIds"
                 :disabled="filterData.priceIds.length === 0"
                 prepend-inner-icon="mdi-identifier"
-                :label="t('entityGrid.grid.priceRenderer.filter.label.priceId')"
+                :label="t('entityViewer.grid.priceRenderer.filter.label.priceId')"
                 :items="filterData.priceIds"
                 class="price-renderer-all-prices-filter__select"
                 clearable
@@ -48,7 +48,7 @@ const emit = defineEmits<{
                 :model-value="selectedPriceLists"
                 :disabled="filterData.priceLists.length === 0"
                 prepend-inner-icon="mdi-format-list-bulleted"
-                :label="t('entityGrid.grid.priceRenderer.filter.label.priceList')"
+                :label="t('entityViewer.grid.priceRenderer.filter.label.priceList')"
                 :items="filterData.priceLists"
                 class="price-renderer-all-prices-filter__select"
                 clearable
@@ -62,7 +62,7 @@ const emit = defineEmits<{
                             <VIcon v-bind="props">mdi-help-circle-outline</VIcon>
                         </template>
 
-                        <span v-html="t('entityGrid.grid.priceRenderer.filter.help.priceListOrder')" />
+                        <span v-html="t('entityViewer.grid.priceRenderer.filter.help.priceListOrder')" />
                     </VTooltip>
                 </template>
             </VCombobox>
@@ -70,7 +70,7 @@ const emit = defineEmits<{
                 :model-value="selectedCurrencies"
                 :disabled="filterData.currencies.length === 0"
                 prepend-inner-icon="mdi-currency-usd"
-                :label="t('entityGrid.grid.priceRenderer.filter.label.currency')"
+                :label="t('entityViewer.grid.priceRenderer.filter.label.currency')"
                 :items="filterData.currencies"
                 class="price-renderer-all-prices-filter__select"
                 clearable
@@ -82,7 +82,7 @@ const emit = defineEmits<{
                 :model-value="selectedInnerRecordIds"
                 :disabled="filterData.innerRecordIds.length === 0"
                 prepend-inner-icon="mdi-format-list-group"
-                :label="t('entityGrid.grid.priceRenderer.filter.label.innerRecordIds')"
+                :label="t('entityViewer.grid.priceRenderer.filter.label.innerRecordIds')"
                 :items="filterData.innerRecordIds"
                 class="price-renderer-all-prices-filter__select"
                 clearable
@@ -94,22 +94,22 @@ const emit = defineEmits<{
 
         <div v-if="filteredAllPrices.length === 0 || selectedPriceLists.length === 0 || selectedCurrencies.length != 1">
             <VAlert v-if="selectedPriceLists.length === 0 && selectedCurrencies.length === 0" type="info">
-                {{ t('entityGrid.grid.priceRenderer.filter.help.missingPriceListsAndCurrencyForPriceForSale') }}
+                {{ t('entityViewer.grid.priceRenderer.filter.help.missingPriceListsAndCurrencyForPriceForSale') }}
             </VAlert>
             <VAlert v-else type="warning">
-                <I18nT keypath="entityGrid.grid.cell.detail.renderer.price.help.noPriceForSale.text">
+                <I18nT keypath="entityViewer.grid.priceRenderer.filter.help.noPriceForSale.text">
                     <template #reason>
                         <template v-if="filteredAllPrices.length === 0">
-                            {{ t('entityGrid.grid.priceRenderer.filter.help.noPriceForSale.reason.noPrices') }}
+                            {{ t('entityViewer.grid.priceRenderer.filter.help.noPriceForSale.reason.noPrices') }}
                         </template>
                         <template v-else-if="selectedPriceLists.length === 0">
-                            {{ t('entityGrid.grid.priceRenderer.filter.help.noPriceForSale.reason.noPriceLists') }}
+                            {{ t('entityViewer.grid.priceRenderer.filter.help.noPriceForSale.reason.noPriceLists') }}
                         </template>
                         <template v-else-if="selectedCurrencies.length === 0">
-                            {{ t('entityGrid.grid.priceRenderer.filter.help.noPriceForSale.reason.noCurrency') }}
+                            {{ t('entityViewer.grid.priceRenderer.filter.help.noPriceForSale.reason.noCurrency') }}
                         </template>
                         <template v-else-if="selectedCurrencies.length > 1">
-                            {{ t('entityGrid.grid.priceRenderer.filter.help.noPriceForSale.reason.tooManyCurrencies') }}
+                            {{ t('entityViewer.grid.priceRenderer.filter.help.noPriceForSale.reason.tooManyCurrencies') }}
                         </template>
                     </template>
                 </I18nT>

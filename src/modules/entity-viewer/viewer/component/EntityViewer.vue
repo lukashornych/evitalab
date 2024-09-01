@@ -220,7 +220,7 @@ function preselectEntityProperties(): void {
 
         if (notFoundProperties.length > 0) {
             toaster.info(t(
-                'entityGrid.grid.notification.failedToFindRequestedProperties',
+                'entityViewer.grid.notification.failedToFindRequestedProperties',
                 { keys: notFoundProperties.map(it => `'${it}'`).join(', ') }
             ))
         }
@@ -343,10 +343,10 @@ async function executeQuery(): Promise<void> {
             @grid-updated="gridUpdated"
         />
         <div v-else class="data-grid__init-screen">
-            <p>{{ t('entityGrid.loadedDataWarning') }}</p>
+            <p>{{ t('entityViewer.loadedDataWarning') }}</p>
             <VBtn @click="executeQueryManually">
                 {{ t('common.button.executeQuery') }}
-                <VActionTooltip :command="Command.EntityGrid_ExecuteQuery"/>
+                <VActionTooltip :command="Command.EntityViewer_ExecuteQuery"/>
             </VBtn>
         </div>
     </div>

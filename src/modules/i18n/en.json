@@ -397,7 +397,7 @@
       }
     }
   },
-  "entityGrid": {
+  "entityViewer": {
     "loadedDataWarning": "Loaded query data must be manually executed.",
     "dataLocaleSelector": {
       "item": {

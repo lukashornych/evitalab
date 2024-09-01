@@ -36,17 +36,17 @@ export enum Command {
 
     // entity grid
 
-    EntityGrid_ExecuteQuery = 'entityGrid.executeQuery',
+    EntityViewer_ExecuteQuery = 'entityViewer.executeQuery',
 
-    EntityGrid_ChangeQueryLanguage = 'entityGrid.changeQueryLanguage',
-    EntityGrid_FilterBy = 'entityGrid.filterBy',
-    EntityGrid_OrderBy = 'entityGrid.orderBy',
-    EntityGrid_ChangeDataLocale = 'entityGrid.changeDataLocale',
-    EntityGrid_ChangePriceType = 'entityGrid.changePriceType',
-    EntityGrid_ShareTab = 'entityGrid.shareTab',
+    EntityViewer_ChangeQueryLanguage = 'entityViewer.changeQueryLanguage',
+    EntityViewer_FilterBy = 'entityViewer.filterBy',
+    EntityViewer_OrderBy = 'entityViewer.orderBy',
+    EntityViewer_ChangeDataLocale = 'entityViewer.changeDataLocale',
+    EntityViewer_ChangePriceType = 'entityViewer.changePriceType',
+    EntityViewer_ShareTab = 'entityViewer.shareTab',
 
-    EntityGrid_OpenPropertySelector = 'entityGrid.openPropertySelector',
-    EntityGrid_PropertySelector_FindProperty = 'entityGrid.propertySelector.findProperty',
+    EntityViewer_OpenPropertySelector = 'entityViewer.openPropertySelector',
+    EntityViewer_PropertySelector_FindProperty = 'entityViewer.propertySelector.findProperty',
 
     // evitaQL console
 

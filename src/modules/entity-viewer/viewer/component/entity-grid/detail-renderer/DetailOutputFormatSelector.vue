@@ -29,7 +29,7 @@ const emit = defineEmits<{
             >
                 <VIcon>mdi-code-braces</VIcon>
                 <VTooltip activator="parent">
-                    {{ t('entityGrid.grid.renderer.button.selectOutputFormat') }}
+                    {{ t('entityViewer.grid.renderer.button.selectOutputFormat') }}
                 </VTooltip>
             </VBtn>
         </template>
@@ -38,22 +38,22 @@ const emit = defineEmits<{
             @update:selected="emit('update:modelValue', $event[0] as EntityPropertyValueDesiredOutputFormat)"
         >
             <VListItem :value="EntityPropertyValueDesiredOutputFormat.AutoPrettyPrint" prepend-icon="mdi-auto-fix">
-                {{ t(`entityGrid.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.AutoPrettyPrint}`) }}
+                {{ t(`entityViewer.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.AutoPrettyPrint}`) }}
             </VListItem>
             <VListItem :value="EntityPropertyValueDesiredOutputFormat.Raw" prepend-icon="mdi-text">
-                {{ t(`entityGrid.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.Raw}`) }}
+                {{ t(`entityViewer.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.Raw}`) }}
             </VListItem>
             <VListItem :value="EntityPropertyValueDesiredOutputFormat.Markdown" prepend-icon="mdi-language-markdown-outline">
-                {{ t(`entityGrid.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.Markdown}`) }}
+                {{ t(`entityViewer.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.Markdown}`) }}
             </VListItem>
             <VListItem :value="EntityPropertyValueDesiredOutputFormat.Json" prepend-icon="mdi-code-json">
-                {{ t(`entityGrid.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.Json}`) }}
+                {{ t(`entityViewer.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.Json}`) }}
             </VListItem>
             <VListItem :value="EntityPropertyValueDesiredOutputFormat.Xml" prepend-icon="mdi-xml">
-                {{ t(`entityGrid.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.Xml}`) }}
+                {{ t(`entityViewer.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.Xml}`) }}
             </VListItem>
             <VListItem :value="EntityPropertyValueDesiredOutputFormat.Html" prepend-icon="mdi-language-html5">
-                {{ t(`entityGrid.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.Html}`) }}
+                {{ t(`entityViewer.grid.renderer.format.${EntityPropertyValueDesiredOutputFormat.Html}`) }}
             </VListItem>
         </VList>
     </VMenu>

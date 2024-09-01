@@ -40,17 +40,17 @@ createKeyboardShortcutMapping(Command.InlineQueryEditor_OpenHistory, 'Alt+ArrowD
 
 // entity grid
 
-createKeyboardShortcutMapping(Command.EntityGrid_ExecuteQuery, 'Ctrl+Enter', 'Cmd+Enter')
-createKeyboardShortcutMapping(Command.EntityGrid_ShareTab, 'Ctrl+L', 'Cmd+L')
+createKeyboardShortcutMapping(Command.EntityViewer_ExecuteQuery, 'Ctrl+Enter', 'Cmd+Enter')
+createKeyboardShortcutMapping(Command.EntityViewer_ShareTab, 'Ctrl+L', 'Cmd+L')
 
-createKeyboardShortcutMapping(Command.EntityGrid_ChangeQueryLanguage, 'Ctrl+D', 'Cmd+D')
-createKeyboardShortcutMapping(Command.EntityGrid_FilterBy, 'Ctrl+F', 'Cmd+F')
-createKeyboardShortcutMapping(Command.EntityGrid_OrderBy, 'Ctrl+G', 'Cmd+G')
-createKeyboardShortcutMapping(Command.EntityGrid_ChangeDataLocale, 'Ctrl+H', 'Cmd+U')
-createKeyboardShortcutMapping(Command.EntityGrid_ChangePriceType, 'Ctrl+J', 'Cmd+I')
-createKeyboardShortcutMapping(Command.EntityGrid_OpenPropertySelector, 'Ctrl+P', 'Cmd+P')
+createKeyboardShortcutMapping(Command.EntityViewer_ChangeQueryLanguage, 'Ctrl+D', 'Cmd+D')
+createKeyboardShortcutMapping(Command.EntityViewer_FilterBy, 'Ctrl+F', 'Cmd+F')
+createKeyboardShortcutMapping(Command.EntityViewer_OrderBy, 'Ctrl+G', 'Cmd+G')
+createKeyboardShortcutMapping(Command.EntityViewer_ChangeDataLocale, 'Ctrl+H', 'Cmd+U')
+createKeyboardShortcutMapping(Command.EntityViewer_ChangePriceType, 'Ctrl+J', 'Cmd+I')
+createKeyboardShortcutMapping(Command.EntityViewer_OpenPropertySelector, 'Ctrl+P', 'Cmd+P')
 
-createKeyboardShortcutMapping(Command.EntityGrid_PropertySelector_FindProperty, 'Ctrl+F', 'Cmd+F')
+createKeyboardShortcutMapping(Command.EntityViewer_PropertySelector_FindProperty, 'Ctrl+F', 'Cmd+F')
 
 // evitaQL console
 

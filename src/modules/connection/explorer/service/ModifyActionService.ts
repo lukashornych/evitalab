@@ -10,8 +10,8 @@ export const modifyActionServiceInjectionKey: InjectionKey<ModifyActionService> 
 export class ModifyActionService {
     private readonly connectionService: ConnectionService
 
-    constructor(evitaDBDriver: ConnectionService) {
-        this.connectionService = evitaDBDriver
+    constructor(connectionService: ConnectionService) {
+        this.connectionService = connectionService
     }
 
     async dropCatalog(

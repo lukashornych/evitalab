@@ -63,7 +63,7 @@ defineExpose<{
         density="comfortable"
     >
         <VIcon>{{ selectedIcon }}</VIcon>
-        <VActionTooltip :command="Command.EntityGrid_ChangeQueryLanguage" />
+        <VActionTooltip :command="Command.EntityViewer_ChangeQueryLanguage" />
 
         <VMenu activator="parent">
             <VList
