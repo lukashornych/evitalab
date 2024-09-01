@@ -25,7 +25,7 @@ import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
 import EntityGrid from '@/modules/entity-viewer/viewer/component/entity-grid/EntityGrid.vue'
 import Toolbar from '@/modules/entity-viewer/viewer/component/Toolbar.vue'
 import QueryInput from '@/modules/entity-viewer/viewer/component/QueryInput.vue'
-import { List } from 'immutable'
+import Immutable, { List } from 'immutable'
 import { EntityAttributeSchema } from '@/modules/connection/model/schema/EntityAttributeSchema'
 import {
     provideDataLocale,
@@ -52,7 +52,7 @@ const path = List([
 
 let sortedEntityPropertyKeys: string[] = []
 let entityPropertyDescriptors: EntityPropertyDescriptor[] = []
-const entityPropertyDescriptorIndex = ref<Map<string, EntityPropertyDescriptor>>(new Map<string, EntityPropertyDescriptor>())
+const entityPropertyDescriptorIndex = ref<Immutable.Map<string, EntityPropertyDescriptor>>(Immutable.Map<string, EntityPropertyDescriptor>())
 provideEntityPropertyDescriptorIndex(entityPropertyDescriptorIndex)
 
 let gridHeaders: Map<string, any> = new Map<string, any>()
@@ -134,10 +134,11 @@ onBeforeMount(() => {
         })
         .then(ep => {
             entityPropertyDescriptors = ep
+            const entityPropertyDescriptorIndexBuilder: Map<string, EntityPropertyDescriptor> = new Map()
             for (const entityPropertyDescriptor of entityPropertyDescriptors) {
-                entityPropertyDescriptorIndex.value.set(entityPropertyDescriptor.key.toString(), entityPropertyDescriptor)
+                entityPropertyDescriptorIndexBuilder.set(entityPropertyDescriptor.key.toString(), entityPropertyDescriptor)
                 entityPropertyDescriptor.children.forEach(childPropertyDescriptor => {
-                    entityPropertyDescriptorIndex.value.set(childPropertyDescriptor.key.toString(), childPropertyDescriptor)
+                    entityPropertyDescriptorIndexBuilder.set(childPropertyDescriptor.key.toString(), childPropertyDescriptor)
                 })
 
                 sortedEntityPropertyKeys.push(entityPropertyDescriptor.key.toString())
@@ -145,6 +146,7 @@ onBeforeMount(() => {
                     sortedEntityPropertyKeys.push(childEntityPropertyDescriptor.key.toString())
                 }
             }
+            entityPropertyDescriptorIndex.value = Immutable.Map(entityPropertyDescriptorIndexBuilder)
             return initializeGridHeaders(entityPropertyDescriptors)
         })
         .then(gh => {

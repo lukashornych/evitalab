@@ -10,7 +10,7 @@ import {
 } from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
 import { EntityPropertyDescriptor } from '@/modules/entity-viewer/viewer/model/EntityPropertyDescriptor'
 import { EntityPropertyKey } from '@/modules/entity-viewer/viewer/model/EntityPropertyKey'
-import { computed } from 'vue'
+import { computed, ComputedRef } from 'vue'
 import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { List } from 'immutable'
@@ -34,14 +34,14 @@ const emit = defineEmits<{
 }>()
 const tabProps = useTabProps()
 
-const schema = computed(() => {
+const schema: ComputedRef<ReferenceSchema> = computed(() => {
     if (props.propertyDescriptor.schema == undefined || !(props.propertyDescriptor.schema instanceof ReferenceSchema)) {
         throw new UnexpectedError(`Schema is expected to be present and of type 'ReferenceSchema'.`)
     }
     return props.propertyDescriptor.schema
 })
 
-const flags: List<string> = schema.value.getRepresentativeFlags()
+const flags: ComputedRef<List<string>> = computed(() => schema.value.representativeFlags)
 
 function openSchema(): void {
     workspaceService.createTab(

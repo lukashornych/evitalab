@@ -18,12 +18,8 @@ export class CatalogSchema extends AbstractSchema {
     readonly description: Value<string | null>
 
     readonly attributes: Value<Map<string, GlobalAttributeSchema>>
-    private _entitySchemas:
-        | Value<Map<string, EntitySchema>>
-        | undefined
-    private readonly entitySchemaAccessor: (catalogName: string) => Promise<
-        Value<List<EntitySchema>>
-    >
+    private _entitySchemas: Value<Map<string, EntitySchema>> | undefined
+    private readonly entitySchemaAccessor: (catalogName: string) => Promise<Value<List<EntitySchema>>>
 
     async entitySchemas(): Promise<Value<Map<string, EntitySchema>>> {
         if (this._entitySchemas == undefined) {
@@ -35,8 +31,7 @@ export class CatalogSchema extends AbstractSchema {
         return this._entitySchemas
     }
 
-    private readonly representativeFlags: List<string> =
-        List()
+    private readonly _representativeFlags: List<string> = List()
 
     constructor(
         version: Value<number>,
@@ -59,7 +54,7 @@ export class CatalogSchema extends AbstractSchema {
         this.entitySchemaAccessor = entitySchemaAccessor
     }
 
-    getRepresentativeFlags(): List<string> {
-        return this.representativeFlags
+    get representativeFlags(): List<string> {
+        return this._representativeFlags
     }
 }

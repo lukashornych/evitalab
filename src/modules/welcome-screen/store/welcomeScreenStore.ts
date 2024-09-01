@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { EvitaDBBlogPost } from '@/modules/welcome-screen/model/EvitaDBBlogPost'
-import { readonly, Ref, ref } from 'vue'
+import { Ref, ref, shallowReadonly } from 'vue'
 
 /**
  * Defines Pinia store for welcome screen
@@ -14,7 +14,7 @@ export const useWelcomeScreenStore = defineStore('welcomeScreen', () => {
     }
 
     return {
-        blogPosts: readonly(blogPosts),
+        blogPosts: shallowReadonly(blogPosts),
         replaceBlogPosts
     }
 })

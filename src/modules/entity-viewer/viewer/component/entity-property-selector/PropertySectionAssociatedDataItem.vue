@@ -13,7 +13,7 @@ import PropertySectionItem
     from '@/modules/entity-viewer/viewer/component/entity-property-selector/PropertySectionItem.vue'
 import { AssociatedDataSchema } from '@/modules/connection/model/schema/AssociatedDataSchema'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
-import { computed } from 'vue'
+import { computed, ComputedRef } from 'vue'
 import { useTabProps } from '@/modules/entity-viewer/viewer/component/dependencies'
 
 const workspaceService: WorkspaceService = useWorkspaceService()
@@ -27,14 +27,14 @@ const emit = defineEmits<{
 }>()
 const tabProps = useTabProps()
 
-const schema = computed(() => {
+const schema: ComputedRef<AssociatedDataSchema> = computed(() => {
     if (props.propertyDescriptor.schema == undefined || !(props.propertyDescriptor.schema instanceof AssociatedDataSchema)) {
         throw new UnexpectedError(`Schema is expected to be present and of type 'AssociatedDataSchema'.`)
     }
     return props.propertyDescriptor.schema
 })
 
-const flags: List<string> = schema.value.getRepresentativeFlags()
+const flags: ComputedRef<List<string>> = computed(() => schema.value!.representativeFlags)
 
 function openSchema(): void {
     workspaceService.createTab(

@@ -66,7 +66,7 @@ export class ReferenceSchema extends AbstractSchema {
      */
     readonly sortableAttributeCompounds: Value<Map<string, SortableAttributeCompoundSchema>>
 
-    private representativeFlags?: List<string>
+    private _representativeFlags?: List<string>
 
     constructor(name: string,
                 nameVariants: Value<Map<NamingConvention, string>>,
@@ -108,17 +108,17 @@ export class ReferenceSchema extends AbstractSchema {
             Map(it.map(sac => [sac.name, sac])))
     }
 
-    getRepresentativeFlags(): List<string> {
-        if (this.representativeFlags == null) {
+    get representativeFlags(): List<string> {
+        if (this._representativeFlags == null) {
             const representativeFlags: string[] = []
 
             if (!this.referencedEntityTypeManaged.getOrElse(false)) representativeFlags.push(ReferenceSchemaFlag.External)
             if (this.indexed.getOrElse(false)) representativeFlags.push(ReferenceSchemaFlag.Indexed)
             if (this.faceted.getOrElse(false)) representativeFlags.push(ReferenceSchemaFlag.Faceted)
 
-            this.representativeFlags = List(representativeFlags)
+            this._representativeFlags = List(representativeFlags)
         }
-        return this.representativeFlags
+        return this._representativeFlags
     }
 }
 

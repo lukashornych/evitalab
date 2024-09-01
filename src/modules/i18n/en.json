@@ -192,7 +192,7 @@
       "_title": "Inline query editor",
       "openHistory": "Open history"
     },
-    "entityGrid": {
+    "entityViewer": {
       "_title": "Entity grid",
       "executeQuery": "Execute query",
       "changeQueryLanguage": "Change query language",
