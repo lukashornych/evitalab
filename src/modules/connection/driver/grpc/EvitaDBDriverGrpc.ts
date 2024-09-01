@@ -34,6 +34,7 @@ import { ApiReadiness } from '../../model/data/ApiReadiness'
 import { ApiServerStatus } from '../../model/data/ApiServerStatus'
 import { GrpcDefineCatalogResponse } from '@/modules/connection/driver/grpc/gen/GrpcEvitaAPI_pb'
 import { EvitaSessionProvider } from '@/modules/connection/driver/grpc/service/EvitaSessionProvider'
+import { ConnectError } from '@connectrpc/connect'
 
 //TODO: Add docs and add header 'X-EvitaDB-ClientID': this.getClientIdHeaderValue()
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
@@ -406,7 +407,9 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
     }
 
     private handleCallError(e: any, connection?: Connection): LabError {
-        if (e.name === 'HTTPError') {
+        if (e instanceof ConnectError) {
+            return new UnexpectedError(`${e.code}: ${e.message}`)
+        } else if (e.name === 'HTTPError') {
             const statusCode: number = e.response.status
             if (statusCode >= 500) {
                 return new EvitaDBInstanceServerError(connection)
