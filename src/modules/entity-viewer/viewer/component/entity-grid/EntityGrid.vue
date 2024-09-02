@@ -184,10 +184,10 @@ function closePropertyDetail(): void {
                         />
                     </tr>
                 </template>
-                <template #item="{ item, index }">
+                <template #item="{ internalItem, index }">
                     <tr>
                         <EntityGridCell
-                            v-for="(propertyValue, propertyKey) in item.columns"
+                            v-for="(propertyValue, propertyKey) in internalItem.columns"
                             :key="propertyKey"
                             :property-descriptor="entityPropertyDescriptorIndex.get(propertyKey as string)"
                             :property-value="propertyValue"
