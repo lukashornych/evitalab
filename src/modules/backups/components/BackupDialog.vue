@@ -1,5 +1,5 @@
 <template>
-    <VDialog v-model="visibleAddBackup" class="w-25">
+    <VDialog v-model="visibleAddBackup" class="w-25" @update:model-value="isExit">
         <VCard>
             <VCardTitleWithActions>
                 <template #default>
@@ -62,12 +62,18 @@ const emit = defineEmits<{
     (e: 'backup', date: string): void
 }>()
 
-function exit() {
+function exit():void {
     emit('exit')
 }
 
-function backup() {
+function backup():void {
     if (selectedDate.value) emit('backup', selectedDate.value!)
+}
+
+function isExit(visible: boolean):void{
+    if(!visible){
+        emit('exit')
+    }
 }
 </script>
 

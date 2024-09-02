@@ -1,9 +1,14 @@
 //TODO: Add docs
 export class Uuid {
     readonly code: string
+    readonly mostSignificantBits: bigint
+    readonly leastSignificantBits: bigint
 
-    constructor(code: string) {
+    constructor(code: string, mostSignificantBits: bigint,
+        leastSignificantBits: bigint) {
         this.code = code
+        this.leastSignificantBits = leastSignificantBits
+        this.mostSignificantBits = mostSignificantBits
     }
 
     private static bigintToHex(num: bigint): string {
@@ -25,7 +30,9 @@ export class Uuid {
             )}-${msbHex.substring(12, 16)}-${lsbHex.substring(
                 0,
                 4
-            )}-${lsbHex.substring(4)}`
+            )}-${lsbHex.substring(4)}`,
+            mostSignificantBits,
+            leastSignificantBits
         )
     }
 }

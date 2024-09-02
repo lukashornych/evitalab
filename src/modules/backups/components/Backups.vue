@@ -1,58 +1,91 @@
 <template>
-    <TabWindowBody icon="mdi-cloud-download-outline" :path="path" @top-button-click="changeVisibility">
-        <JobVisualizer :connection="props.params.connection" @task-ended="getAllBackupFiles" :simplified-state="[TaskSimplifiedState.TaskRunning, TaskSimplifiedState.TaskQueued]" />
-        <div v-if="!visibleAddBackup">
-            <VList>
-                <VListItem v-for="item in backupFiles?.filesToFetch" :key="item.fileId.code">
-                    <VRow class="align-center">
-                        <VCol>
-                            <div class="d-flex align-center">
-                                <VListItemTitle
-                                    >{{ item.name }}</VListItemTitle
-                                >
-                                <VChip
-                                    color="grey"
-                                    text-color="white"
-                                    class="ml-2 small-chip"
-                                    >finished</VChip
-                                >
-                            </div>
-                        </VCol>
-                        <VCol class="d-flex justify-end" cols="auto" v-if="item.created">
-                            <!--<VBtn icon variant="flat">
+    <TabWindowBody
+        icon="mdi-cloud-download-outline"
+        :path="path"
+        @top-button-click="() => (visibleAddBackup = !visibleAddBackup)"
+    >
+        <JobVisualizer
+            :connection="props.params.connection"
+            @task-ended="getAllBackupFiles"
+            :simplified-state="[
+                TaskSimplifiedState.TaskRunning,
+                TaskSimplifiedState.TaskQueued,
+            ]"
+        />
+
+        <VList>
+            <VListItem
+                v-for="item in backupFiles?.filesToFetch"
+                :key="item.fileId.code"
+            >
+                <VRow class="align-center">
+                    <VCol>
+                        <div class="d-flex align-center">
+                            <VListItemTitle>{{ item.name }}</VListItemTitle>
+                            <VChip
+                                color="grey"
+                                text-color="white"
+                                class="ml-2 small-chip"
+                                >finished</VChip
+                            >
+                        </div>
+                    </VCol>
+                    <VCol
+                        class="d-flex justify-end"
+                        cols="auto"
+                        v-if="item.created"
+                    >
+                        <!--<VBtn icon variant="flat">
                                 <VIcon>mdi-download</VIcon>
                             </VBtn>
                             -->
-                            <VBtn icon variant="flat">
-                                <VIcon>mdi-database-arrow-right-outline</VIcon>
-                            </VBtn>
-                        </VCol>
-                        <VCol class="d-flex justify-end" cols="auto" v-else>
-                            <VBtn icon variant="flat">
-                                <VIcon>mdi-window-close</VIcon>
-                            </VBtn>
-                        </VCol>
-                    </VRow>
-                </VListItem>
-            </VList>
-            <VPagination v-if="backupFiles?.totalNumberOfRecords && Math.ceil(backupFiles?.totalNumberOfRecords / pageSize) > 1" :rounded="true" @update:model-value="(x) => pageNumber = x" :length="Math.ceil(backupFiles?.totalNumberOfRecords! / pageSize)">
-
-            </VPagination>
-        </div>
-        <BackupDialog :catalog-name="props.params.catalogName" :minimal-date="minimalDate!" @exit="changeVisibility" @backup="backup"  v-else />
+                        <VBtn
+                            icon
+                            variant="flat"
+                            @click="showRestoreDialog(item.fileId)"
+                        >
+                            <VIcon>mdi-database-arrow-right-outline</VIcon>
+                        </VBtn>
+                    </VCol>
+                    <VCol class="d-flex justify-end" cols="auto" v-else>
+                        <VBtn icon variant="flat">
+                            <VIcon>mdi-window-close</VIcon>
+                        </VBtn>
+                    </VCol>
+                </VRow>
+            </VListItem>
+        </VList>
+        <VPagination
+            v-if="
+                backupFiles?.totalNumberOfRecords &&
+                Math.ceil(backupFiles?.totalNumberOfRecords / pageSize) > 1
+            "
+            :rounded="true"
+            @update:model-value="(x) => (pageNumber = x)"
+            :length="Math.ceil(backupFiles?.totalNumberOfRecords! / pageSize)"
+        >
+        </VPagination>
+        <BackupDialog
+            :catalog-name="props.params.catalogName"
+            :minimal-date="minimalDate!"
+            @exit="() => (visibleAddBackup = false)"
+            @backup="backup"
+            v-if="visibleAddBackup"
+        />
+        <RestoreCatalog
+            @exit="() => (visibleRestoreCatalog = !visibleRestoreCatalog)"
+            @restore="restoreBackup"
+            v-if="visibleRestoreCatalog"
+        />
     </TabWindowBody>
 </template>
 
 <script setup lang="ts">
 import { TabComponentEvents } from '@/modules/workspace/tab/model/TabComponentEvents'
 import { List } from 'immutable'
-import { ref, watch } from 'vue';
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-    VBtn,
-    VIcon,
-    VList,
-} from 'vuetify/lib/components/index.mjs'
+import { VBtn, VIcon, VList } from 'vuetify/lib/components/index.mjs'
 import { BackupTabParams } from '../model/BackupsTabParams'
 import { TabComponentProps } from '@/modules/workspace/tab/model/TabComponentProps'
 import { VoidTabData } from '@/modules/workspace/tab/model/void/VoidTabData'
@@ -64,8 +97,10 @@ import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { FilesToFetch } from '@/modules/connection/model/data/FilesToFetch'
 import TabWindowBody from '@/modules/global/components/TabWindowBody.vue'
 import JobVisualizer from '@/modules/Jobs/components/JobVisualizer.vue'
-import { TaskSimplifiedState } from '@/modules/connection/model/data/TaskSimplifiedState';
-import BackupDialog from './BackupDialog.vue';
+import { TaskSimplifiedState } from '@/modules/connection/model/data/TaskSimplifiedState'
+import BackupDialog from './BackupDialog.vue'
+import RestoreCatalog from './RestoreCatalog.vue'
+import { Uuid } from '@/modules/connection/model/data-type/Uuid'
 
 const emit = defineEmits<TabComponentEvents>()
 const props = defineProps<TabComponentProps<BackupTabParams, VoidTabData>>()
@@ -74,6 +109,8 @@ const backupService: BackupsService = useBackupsService()
 
 const path: List<string> = List([t('backups.path')])
 const visibleAddBackup = ref<boolean>(false)
+const visibleRestoreCatalog = ref<boolean>(false)
+const restoreBackupFileId = ref<Uuid>()
 const minimalDateLoaded = ref<boolean>(false)
 const minimalDate = ref<OffsetDateTime>()
 const backupFilesLoaded = ref<boolean>(false)
@@ -87,10 +124,7 @@ getAllBackupFiles().then(() => checkAllDataLoaded())
 
 watch(pageNumber, async () => {
     await getAllBackupFiles()
-});
-function changeVisibility(): void {
-    visibleAddBackup.value = !visibleAddBackup.value
-}
+})
 
 async function getMinimalDate(): Promise<void> {
     const minimalDateResponse = await backupService.getMinimalBackupDate(
@@ -101,7 +135,7 @@ async function getMinimalDate(): Promise<void> {
     minimalDateLoaded.value = true
 }
 
-async function getAllBackupFiles() {
+async function getAllBackupFiles(): Promise<void> {
     const files = await backupService.getAllBackups(
         props.params.connection,
         pageNumber.value,
@@ -121,18 +155,32 @@ async function backup(selectedDate: string): Promise<void> {
         includingWAL.value,
         new OffsetDateTime(timestamp, offsetDateTime.toFormat('ZZ'))
     )
-    if (!result.exception)  {
-        changeVisibility() 
-    }
-    else throw new UnexpectedError(result.exception)
+    if (!result.exception) {
+        visibleAddBackup.value = false
+    } else throw new UnexpectedError(result.exception)
 }
 
 function checkAllDataLoaded(): void {
     if (backupFilesLoaded.value && minimalDateLoaded.value) emit('ready')
 }
 
+function showRestoreDialog(fileId: Uuid): void {
+    restoreBackupFileId.value = fileId
+    visibleRestoreCatalog.value = true
+}
+
+async function restoreBackup(catalogName: string) {
+    const result = await backupService.restoreCatalog(
+        props.params.connection,
+        catalogName,
+        restoreBackupFileId.value!
+    )
+    if (!result.exception) {
+        visibleRestoreCatalog.value = false
+    } else throw new UnexpectedError(result.exception)
+}
+
 setInterval(getAllBackupFiles, 2000)
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

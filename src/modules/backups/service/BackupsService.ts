@@ -1,13 +1,15 @@
-import { EvitaDBDriverResolver } from "@/modules/connection/driver/EvitaDBDriverResolver"
-import { Connection } from "@/modules/connection/model/Connection"
-import { OffsetDateTime } from "@/modules/connection/model/data-type/OffsetDateTime"
-import { CatalogVersionAtResponse } from "@/modules/connection/model/data/CatalogVersionAtResponse"
-import { FilesToFetch } from "@/modules/connection/model/data/FilesToFetch"
-import { TaskStatus } from "@/modules/connection/model/data/TaskStatus"
-import { mandatoryInject } from "@/utils/reactivity"
-import { InjectionKey } from "vue"
+import { EvitaDBDriverResolver } from '@/modules/connection/driver/EvitaDBDriverResolver'
+import { Connection } from '@/modules/connection/model/Connection'
+import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateTime'
+import { Uuid } from '@/modules/connection/model/data-type/Uuid'
+import { CatalogVersionAtResponse } from '@/modules/connection/model/data/CatalogVersionAtResponse'
+import { FilesToFetch } from '@/modules/connection/model/data/FilesToFetch'
+import { TaskStatus } from '@/modules/connection/model/data/TaskStatus'
+import { mandatoryInject } from '@/utils/reactivity'
+import { InjectionKey } from 'vue'
 
-export const backupsServiceInjectionKey: InjectionKey<BackupsService> = Symbol('backupsService')
+export const backupsServiceInjectionKey: InjectionKey<BackupsService> =
+    Symbol('backupsService')
 
 export class BackupsService {
     private readonly evitaDBDriverResolver: EvitaDBDriverResolver
@@ -16,19 +18,53 @@ export class BackupsService {
         this.evitaDBDriverResolver = evitaDBDriver
     }
 
-    async getMinimalBackupDate(connection: Connection, catalogName: string): Promise<CatalogVersionAtResponse> {
-        const driver = await this.evitaDBDriverResolver.resolveDriver(connection)
-        return driver.getMinimalBackupDate(connection,catalogName);
+    async getMinimalBackupDate(
+        connection: Connection,
+        catalogName: string
+    ): Promise<CatalogVersionAtResponse> {
+        const driver = await this.evitaDBDriverResolver.resolveDriver(
+            connection
+        )
+        return driver.getMinimalBackupDate(connection, catalogName)
     }
 
-    async backupCatalog(connection: Connection, catalogName: string, includingWAL: boolean, pastMoment: OffsetDateTime):Promise<TaskStatus> {
-        const driver = await this.evitaDBDriverResolver.resolveDriver(connection)
-        return driver.createBackup(connection, catalogName, includingWAL, pastMoment)
+    async backupCatalog(
+        connection: Connection,
+        catalogName: string,
+        includingWAL: boolean,
+        pastMoment: OffsetDateTime
+    ): Promise<TaskStatus> {
+        const driver = await this.evitaDBDriverResolver.resolveDriver(
+            connection
+        )
+        return driver.createBackup(
+            connection,
+            catalogName,
+            includingWAL,
+            pastMoment
+        )
     }
 
-    async getAllBackups(connection: Connection, pageNumber: number, pageSize: number):Promise<FilesToFetch>{
-        const driver = await this.evitaDBDriverResolver.resolveDriver(connection)
+    async getAllBackups(
+        connection: Connection,
+        pageNumber: number,
+        pageSize: number
+    ): Promise<FilesToFetch> {
+        const driver = await this.evitaDBDriverResolver.resolveDriver(
+            connection
+        )
         return await driver.getBackups(connection, pageNumber, pageSize)
+    }
+
+    async restoreCatalog(
+        connection: Connection,
+        catalogName: string,
+        fileId: Uuid
+    ) {
+        const driver = await this.evitaDBDriverResolver.resolveDriver(
+            connection
+        )
+        return await driver.restoreCatalog(connection, catalogName, fileId)
     }
 }
 

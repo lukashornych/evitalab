@@ -11,8 +11,8 @@ import { OffsetDateTime } from '../model/data-type/OffsetDateTime'
 import { TaskStatus } from '../model/data/TaskStatus'
 import { FilesToFetch } from '../model/data/FilesToFetch'
 import { TaskStatuses } from '../model/data/TaskStatuses'
-import { GrpcTaskSimplifiedState } from './grpc/gen/GrpcEnums_pb'
 import { TaskSimplifiedState } from '../model/data/TaskSimplifiedState'
+import { Uuid } from '../model/data-type/Uuid'
 
 /**
  * evitaDB version-agnostic driver to access data from connected evitaDB server
@@ -87,6 +87,14 @@ export interface EvitaDBDriver {
         simplifiedState?: TaskSimplifiedState[],
         taskType?: string
     ): Promise<TaskStatuses>
+    //TODO: Add doc
+    restoreCatalog(
+        connection: Connection,
+        catalogName: string,
+        fileId: Uuid
+    ): Promise<TaskStatus>
+    //TODO: Add doc
+    cancelJob(connection: Connection, taskId: Uuid): Promise<boolean>
     /**
      * Which versions of evitaDB server this driver supports. Can be any string supported by https://www.npmjs.com/package/semver.
      * Comparison is done using the `.satisfies(...)` method

@@ -44,8 +44,6 @@ import DropCatalog from '@/modules/connection/explorer/component/DropCatalog.vue
 import RenameCatalog from '@/modules/connection/explorer/component/RenameCatalog.vue'
 import ReplaceCatalog from '@/modules/connection/explorer/component/ReplaceCatalog.vue'
 import CreateCollection from '@/modules/connection/explorer/component/CreateCollection.vue'
-import CreateCollection from '@/modules/server-actions/modify/components/CreateCollection.vue'
-import ReplaceCatalog from '@/modules/server-actions/modify/components/ReplaceCatalog.vue'
 import {
     BackupsTabFactory,
     useBackupsTabFactory,

@@ -8,11 +8,12 @@ import { List } from 'immutable'
 import { File } from '@/modules/connection/model/data/File'
 import { StringValue } from '@bufbuild/protobuf'
 import { TaskSimplifiedStateConverter } from './TaskSimplifiedStateConverter'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 
 export class JobsConverter {
     private readonly taskConverter: TaskSimplifiedStateConverter
 
-    constructor(taskConverter: TaskSimplifiedStateConverter){
+    constructor(taskConverter: TaskSimplifiedStateConverter) {
         this.taskConverter = taskConverter
     }
 
@@ -51,7 +52,9 @@ export class JobsConverter {
                         oldFile.settings!,
                         file,
                         oldFile.exception!,
-                        this.taskConverter.convertTaskState(oldFile.simplifiedState)
+                        this.taskConverter.convertTaskState(
+                            oldFile.simplifiedState
+                        )
                     )
                 )
         }
@@ -62,6 +65,41 @@ export class JobsConverter {
             List(newFiles),
             job.totalNumberOfRecords
         )
+    }
+
+    convertJob(oldFile: GrpcTaskStatus): TaskStatus {
+        const file = this.convertResultFile(
+            oldFile.result.case,
+            oldFile.result.value
+        )
+        if (file)
+            return new TaskStatus(
+                oldFile.taskType,
+                oldFile.taskName,
+                Uuid.createUUID(
+                    oldFile.taskId?.mostSignificantBits!,
+                    oldFile.taskId?.leastSignificantBits!
+                ),
+                oldFile.catalogName!,
+                new OffsetDateTime(
+                    oldFile.issued?.timestamp,
+                    oldFile.issued?.offset
+                ),
+                new OffsetDateTime(
+                    oldFile.started?.timestamp,
+                    oldFile.started?.offset
+                ),
+                new OffsetDateTime(
+                    oldFile.finished?.timestamp,
+                    oldFile.finished?.offset
+                ),
+                oldFile.progress,
+                oldFile.settings!,
+                file,
+                oldFile.exception!,
+                this.taskConverter.convertTaskState(oldFile.simplifiedState)
+            )
+        else throw new UnexpectedError('File is undefined in job converter')
     }
 
     private convertResultFile(

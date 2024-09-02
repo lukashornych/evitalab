@@ -2,7 +2,7 @@
     <div>
         <VList>
             <VListItem
-                v-for="item in taskStatuses?.taskStatus"
+                v-for="item in jobs"
                 :key="item.taskId.code"
             >
                 <VRow class="align-center">
@@ -26,7 +26,7 @@
                                 :model-value="item.progress"
                             ></VProgressLinear>
                         </div>
-                        <VBtn icon variant="flat">
+                        <VBtn icon variant="flat" @click="cancelTask(item.taskId)">
                             <VIcon>mdi-window-close</VIcon>
                         </VBtn>
                     </VCol>
@@ -38,7 +38,7 @@
                                 indeterminate
                             />
                         </div>
-                        <VBtn icon variant="flat">
+                        <VBtn icon variant="flat" @click="cancelTask(item.taskId)">
                             <VIcon>mdi-window-close</VIcon>
                         </VBtn>
                     </VCol>
@@ -60,12 +60,14 @@
 
 <script setup lang="ts">
 import { Connection } from '@/modules/connection/model/Connection'
-import { useJobService } from '../services/JobService'
+import { JobService, useJobService } from '../services/JobService'
 import { ref } from 'vue'
 import { TaskStatuses } from '@/modules/connection/model/data/TaskStatuses'
 import { TaskSimplifiedState } from '@/modules/connection/model/data/TaskSimplifiedState'
+import { Uuid } from '@/modules/connection/model/data-type/Uuid'
+import { TaskStatus } from '@/modules/connection/model/data/TaskStatus'
 
-const jobService = useJobService()
+const jobService: JobService = useJobService()
 const props = defineProps<{
     connection: Connection
     simplifiedState?: TaskSimplifiedState[]
@@ -78,6 +80,7 @@ const emit = defineEmits<{
 const pageNumber = ref<number>(1)
 const pageSize = ref<number>(5)
 const taskStatuses = ref<TaskStatuses>()
+const jobs = ref<TaskStatus[]>()
 const loadedTaskStatuses = ref<boolean>()
 
 getJobs().then()
@@ -103,7 +106,17 @@ async function getJobs() {
         pageNumber.value--
     }
     taskStatuses.value = newJobs
+    jobs.value = newJobs.taskStatus.toArray()
     loadedTaskStatuses.value = true
+}
+
+async function cancelTask(jobId: Uuid) {
+    const result = await jobService.cancelJob(props.connection, jobId)
+    if (result) {
+        jobs.value = taskStatuses.value?.taskStatus
+            .filter((x) => x.taskId.code === jobId.code)
+            .toArray()
+    }
 }
 
 setInterval(getJobs, 100)

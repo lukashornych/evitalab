@@ -31,7 +31,6 @@ import {
     ServerStatusTabFactory,
     serverStatusTabFactoryInjectionKey
 } from '@/modules/server-status/service/ServerStatusTabFactory'
-import { detailViewerTabFactoryInjectionKey, ServerStatusTabFactory } from '@/modules/server-actions/server-status/service/ServerStatusTabFactory'
 import { BackupsTabFactory, backupsTabFactoryInjectionKey } from '../backups/service/BackupsTabFactory'
 
 export class WorkspaceModuleRegistrar implements ModuleRegistrar {
@@ -56,8 +55,6 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
         const serverStatusTabFactory: ServerStatusTabFactory = new ServerStatusTabFactory(connectionService)
         builder.provide(serverStatusTabFactoryInjectionKey, serverStatusTabFactory)
 
-        const detailViewerTabFactory: ServerStatusTabFactory = new ServerStatusTabFactory(connectionService)
-        builder.provide(detailViewerTabFactoryInjectionKey, detailViewerTabFactory)
         const backupsTabfactory: BackupsTabFactory = new BackupsTabFactory(connectionService)
         builder.provide(backupsTabFactoryInjectionKey, backupsTabfactory)
         // todo lho fix circular dep
