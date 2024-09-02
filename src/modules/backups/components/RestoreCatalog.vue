@@ -20,7 +20,7 @@
                     ></VBtn>
                     <VBtn variant="outlined" @click="restore">
                         <VIcon>mdi-cloud-upload-outline</VIcon>
-                        {{ t('backups.restoreDialog.restore') }}
+                        {{ t('common.button.restore') }}
                     </VBtn>
                 </div>
             </VCardText>
