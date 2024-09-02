@@ -6,7 +6,6 @@
 
 <script setup lang="ts">
 import TabWindowBody from '@/modules/global/components/TabWindowBody.vue'
-import { JobService, useJobService } from '@/modules/jobs/services/JobService'
 import { useI18n } from 'vue-i18n'
 import { TabComponentProps } from '@/modules/workspace/tab/model/TabComponentProps'
 import { JobTabParams } from '@/modules/jobs/model/JobTabParams'
@@ -16,7 +15,6 @@ import JobVisualizer from '@/modules/jobs/components/JobVisualizer.vue'
 import { TabComponentEvents } from '@/modules/workspace/tab/model/TabComponentEvents'
 
 const { t } = useI18n()
-const jobService: JobService = useJobService()
 
 const props = defineProps<TabComponentProps<JobTabParams, VoidTabData>>()
 const emit = defineEmits<TabComponentEvents>()

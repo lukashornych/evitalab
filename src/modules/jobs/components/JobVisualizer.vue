@@ -12,10 +12,10 @@
 
                             </div>
                             <template v-if="item.taskType === 'BackupTask'">
-                                <VIcon class="mx-4" icon="mdi-backup-restore"></VIcon>
+                                <VIcon class="mx-4" icon="mdi-cloud-download-outline"></VIcon>
                             </template>
                             <template v-else-if="item.taskType === 'JfrRecorderTask'">
-                                <VIcon class="mx-4" icon="mdi-record-rec"></VIcon>
+                                <VIcon class="mx-4" icon="mdi-chart-timeline"></VIcon>
                             </template>
                             <template v-else-if="item.taskType === 'MetricTask'">
                                 <VIcon class="mx-4" icon="mdi-folder-information-outline"></VIcon>
