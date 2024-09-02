@@ -17,7 +17,7 @@ export class JobService {
 
     async getJobs(connection: Connection, pageNumber: number, pageSize: number, simplifiedState?: TaskSimplifiedState[], taskType?: string):Promise<TaskStatuses>{
         const driver = await this.evitaDBDriverResolver.resolveDriver(connection)
-        return await driver.getAciveJobs(connection, pageNumber, pageSize, simplifiedState, taskType)
+        return await driver.getActiveJobs(connection, pageNumber, pageSize, simplifiedState, taskType)
     }
 
     async cancelJob(connection: Connection, jobId: Uuid):Promise<boolean>{

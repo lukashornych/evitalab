@@ -13,7 +13,7 @@ import { WelcomeScreenModuleRegistrar } from '@/modules/welcome-screen/WelcomeSc
 import { KeymapModuleRegistrar } from '@/modules/keymap/KeymapModuleRegistrar'
 import { ServerActionsModuleRegistrar } from './server-actions/ServerActionsModuleRegistrar'
 import { BackupsModuleRegistrar } from './backups/BackupsModuleRegistrar'
-import { JobModuleRegistrar } from './Jobs/JobModuleRegistrar'
+import { JobModuleRegistrar } from '@/modules/jobs/JobModuleRegistrar'
 import { ServerActionsModuleRegistrar } from '@/modules/server-status/ServerActionsModuleRegistrar'
 
 // todo docs

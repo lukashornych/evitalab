@@ -3,7 +3,7 @@
  * Explorer tree item representing a single connection to evitaDB.
  */
 
-import { computed, ComputedRef, markRaw, ref, shallowRef } from 'vue'
+import { computed, ComputedRef, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
 import { ConnectionService, useConnectionService } from '@/modules/connection/service/ConnectionService'
@@ -30,12 +30,15 @@ import {
     useServerStatusTabFactory
 } from '@/modules/server-status/service/ServerStatusTabFactory'
 import CreateCatalog from '@/modules/connection/explorer/component/CreateCatalog.vue'
+import { JobTabFactory, useJobTabFactory } from '@/modules/jobs/services/JobTabFactory'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const connectionService: ConnectionService = useConnectionService()
 const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = useGraphQLConsoleTabFactory()
 const serverStatusTabFactory: ServerStatusTabFactory = useServerStatusTabFactory()
+const jobTabFactory: JobTabFactory = useJobTabFactory()
+
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
@@ -117,6 +120,17 @@ function createActions(): Map<
                 )
         )
     )
+    actions.set(ConnectionActionType.Jobs, createMenuAction(
+        ConnectionActionType.Jobs,
+        'mdi-chart-gantt',
+        () => {
+            workspaceService.createTab(
+                jobTabFactory.createNew(
+                    props.connection
+                )
+            )
+        }
+    ))
     if (!evitaLabConfig.readOnly) {
         if (!props.connection.preconfigured) {
             // todo lho implement

@@ -1,9 +1,10 @@
 <template>
     <div class="main">
-        <VTabToolbar prepend-icon="mdi mdi-database-outline" :path="path">
+        <VTabToolbar :prepend-icon="icon" :path="path">
             <template #append>
                 <VBtn
                     icon
+                    v-if="visibleButton"
                     density="compact"
                     class="me-4"
                     @click="
@@ -29,6 +30,7 @@ import { List } from 'immutable';
 const props = defineProps<{
     path: List<string>
     icon: string
+    visibleButton: boolean
 }>()
 const emit = defineEmits<{
     (e: 'topButtonClick'): void

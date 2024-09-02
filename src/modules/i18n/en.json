@@ -260,7 +260,8 @@
         "edit": "Edit connection",
         "remove": "Remove connection",
         "detail": "Status",
-        "createCatalog": "Create catalog"
+        "createCatalog": "Create catalog",
+        "jobs": "Jobs"
       },
       "subheader": {
         "modify": "Modify"
@@ -855,5 +856,8 @@
     "restoreDialog": {
       "catalogName": "New catalog name"
     }
+  },
+  "jobs": {
+    "path": "Jobs"
   }
 }

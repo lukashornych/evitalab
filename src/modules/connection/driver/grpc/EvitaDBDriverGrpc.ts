@@ -529,26 +529,28 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         return this.backupConverter.convertFilesTofetch(result)
     }
 
-    async getAciveJobs(
+    async getActiveJobs(
         connection: Connection,
         pageNumber: number,
         pageSize: number,
         simplifiedState?: TaskSimplifiedState[],
         taskType?: string
     ): Promise<TaskStatuses> {
+        const params = simplifiedState && simplifiedState.length > 0
+            ? this.taskSimplifiedStateConverter.convertTaskStatesToGrpc(
+                simplifiedState
+            )
+            : []
         const result = await this.clientProvider
             .getEvitaManagementClient(connection)
             .listTaskStatuses({
                 pageNumber,
                 pageSize,
                 taskType,
-                simplifiedState: simplifiedState
-                    ? this.taskSimplifiedStateConverter.convertTaskStatesToGrpc(
-                          simplifiedState
-                      )
-                    : undefined,
+                simplifiedState: params,
             })
-        return this.jobsConverter.convertJobs(result)
+        const jobs = this.jobsConverter.convertJobs(result)
+        return jobs
     }
 
     async restoreCatalog(

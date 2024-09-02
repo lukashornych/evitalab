@@ -5,5 +5,6 @@ export enum ConnectionActionType {
     Remove = 'remove',
     Detail = 'detail',
     ModifySubheader = 'modifySubheader',
-    Create = 'create'
+    Create = 'create',
+    Jobs = 'jobs'
 }

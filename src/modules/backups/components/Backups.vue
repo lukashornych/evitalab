@@ -2,6 +2,7 @@
     <TabWindowBody
         icon="mdi-cloud-download-outline"
         :path="path"
+        :visible-button="true"
         @top-button-click="() => (visibleAddBackup = !visibleAddBackup)"
     >
         <JobVisualizer
@@ -11,6 +12,7 @@
                 TaskSimplifiedState.TaskRunning,
                 TaskSimplifiedState.TaskQueued,
             ]"
+            task-type="BackupTask"
         />
 
         <VList>
@@ -96,7 +98,7 @@ import { Timestamp } from '@bufbuild/protobuf'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { FilesToFetch } from '@/modules/connection/model/data/FilesToFetch'
 import TabWindowBody from '@/modules/global/components/TabWindowBody.vue'
-import JobVisualizer from '@/modules/Jobs/components/JobVisualizer.vue'
+import JobVisualizer from '@/modules/jobs/components/JobVisualizer.vue'
 import { TaskSimplifiedState } from '@/modules/connection/model/data/TaskSimplifiedState'
 import BackupDialog from './BackupDialog.vue'
 import RestoreCatalog from './RestoreCatalog.vue'

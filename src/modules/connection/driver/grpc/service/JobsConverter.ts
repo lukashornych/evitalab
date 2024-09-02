@@ -26,36 +26,8 @@ export class JobsConverter {
                 oldFile.result.case,
                 oldFile.result.value
             )
-            if (file)
                 newFiles.push(
-                    new TaskStatus(
-                        oldFile.taskType,
-                        oldFile.taskName,
-                        Uuid.createUUID(
-                            oldFile.taskId?.mostSignificantBits!,
-                            oldFile.taskId?.leastSignificantBits!
-                        ),
-                        oldFile.catalogName!,
-                        new OffsetDateTime(
-                            oldFile.issued?.timestamp,
-                            oldFile.issued?.offset
-                        ),
-                        new OffsetDateTime(
-                            oldFile.started?.timestamp,
-                            oldFile.started?.offset
-                        ),
-                        new OffsetDateTime(
-                            oldFile.finished?.timestamp,
-                            oldFile.finished?.offset
-                        ),
-                        oldFile.progress,
-                        oldFile.settings!,
-                        file,
-                        oldFile.exception!,
-                        this.taskConverter.convertTaskState(
-                            oldFile.simplifiedState
-                        )
-                    )
+                    this.convertJob(oldFile)
                 )
         }
 
@@ -72,34 +44,31 @@ export class JobsConverter {
             oldFile.result.case,
             oldFile.result.value
         )
-        if (file)
-            return new TaskStatus(
-                oldFile.taskType,
-                oldFile.taskName,
-                Uuid.createUUID(
-                    oldFile.taskId?.mostSignificantBits!,
-                    oldFile.taskId?.leastSignificantBits!
-                ),
-                oldFile.catalogName!,
-                new OffsetDateTime(
-                    oldFile.issued?.timestamp,
-                    oldFile.issued?.offset
-                ),
-                new OffsetDateTime(
-                    oldFile.started?.timestamp,
-                    oldFile.started?.offset
-                ),
-                new OffsetDateTime(
-                    oldFile.finished?.timestamp,
-                    oldFile.finished?.offset
-                ),
-                oldFile.progress,
-                oldFile.settings!,
-                file,
-                oldFile.exception!,
-                this.taskConverter.convertTaskState(oldFile.simplifiedState)
-            )
-        else throw new UnexpectedError('File is undefined in job converter')
+        return new TaskStatus(
+            oldFile.taskType,
+            oldFile.taskName,
+            Uuid.createUUID(
+                oldFile.taskId?.mostSignificantBits!,
+                oldFile.taskId?.leastSignificantBits!
+            ),
+            oldFile.catalogName!,
+            new OffsetDateTime(
+                oldFile.issued?.timestamp,
+                oldFile.issued?.offset
+            ),
+            new OffsetDateTime(
+                oldFile.started?.timestamp,
+                oldFile.started?.offset
+            ),
+            new OffsetDateTime(
+                oldFile.finished?.timestamp,
+                oldFile.finished?.offset
+            ),
+            oldFile.progress,
+            oldFile.settings!,
+            file,
+            oldFile.exception!,
+            this.taskConverter.convertTaskState(oldFile.simplifiedState))
     }
 
     private convertResultFile(

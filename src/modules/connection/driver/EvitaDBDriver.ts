@@ -80,7 +80,7 @@ export interface EvitaDBDriver {
         pageSize: number
     ): Promise<FilesToFetch>
     //TODO: Add doc
-    getAciveJobs(
+    getActiveJobs(
         connection: Connection,
         pageNumber: number,
         pageSize: number,

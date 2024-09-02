@@ -25,6 +25,7 @@ import { KeymapViewerTabDefinition } from '@/modules/keymap/viewer/workspace/mod
 import { mandatoryInject } from '@/utils/reactivity'
 import { ServerStatusTabFactory } from '@/modules/server-status/service/ServerStatusTabFactory'
 import { ServerStatusTabDefinition } from '@/modules/server-status/model/ServerStatusTabDefinition'
+import { JobTabFactory } from '@/modules/jobs/services/JobTabFactory'
 
 const openedTabsStorageKey: string = 'openedTabs'
 const tabHistoryStorageKey: string = 'tabHistory'
@@ -44,6 +45,7 @@ export class WorkspaceService {
     private readonly schemaViewerTabFactory: SchemaViewerTabFactory
     private readonly keymapViewerTabFactory: KeymapViewerTabFactory
     private readonly serverStatusTabFactory: ServerStatusTabFactory
+    private readonly jobTabFactory: JobTabFactory
 
     constructor(store: WorkspaceStore,
                 labStorage: LabStorage,
@@ -52,7 +54,8 @@ export class WorkspaceService {
                 graphQLConsoleTabFactory: GraphQLConsoleTabFactory,
                 schemaViewerTabFactory: SchemaViewerTabFactory,
                 keymapViewerTabFactory: KeymapViewerTabFactory,
-                serverStatusTabFactory: ServerStatusTabFactory) {
+                serverStatusTabFactory: ServerStatusTabFactory,
+                jobTabFactory: JobTabFactory) {
         this.store = store
         this.labStorage = labStorage
         this.entityViewerTabFactory = entityViewerTabFactory
@@ -61,6 +64,7 @@ export class WorkspaceService {
         this.schemaViewerTabFactory = schemaViewerTabFactory
         this.keymapViewerTabFactory = keymapViewerTabFactory
         this.serverStatusTabFactory = serverStatusTabFactory
+        this.jobTabFactory = jobTabFactory
     }
 
     getTabDefinitions(): TabDefinition<any, any>[] {

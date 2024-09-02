@@ -13,11 +13,11 @@ export class TaskStatus {
     readonly finished: OffsetDateTime
     readonly progress: number
     readonly settings: string
-    readonly result: string | File
+    readonly result: string | File | undefined
     readonly exception: string
     readonly simplifiedState: TaskSimplifiedState
 
-    constructor(taskType: string, taskName: string, taskId: Uuid, catalogName: string, issued: OffsetDateTime, started: OffsetDateTime, finished: OffsetDateTime, progress: number, settings: string, result: string | File, exception: string, simplifiedState: TaskSimplifiedState){
+    constructor(taskType: string, taskName: string, taskId: Uuid, catalogName: string, issued: OffsetDateTime, started: OffsetDateTime, finished: OffsetDateTime, progress: number, settings: string, result: string | File | undefined, exception: string, simplifiedState: TaskSimplifiedState){
         this.taskType = taskType
         this.taskName = taskName
         this.taskId = taskId

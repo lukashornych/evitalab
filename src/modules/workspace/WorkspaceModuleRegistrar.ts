@@ -32,6 +32,7 @@ import {
     serverStatusTabFactoryInjectionKey
 } from '@/modules/server-status/service/ServerStatusTabFactory'
 import { BackupsTabFactory, backupsTabFactoryInjectionKey } from '../backups/service/BackupsTabFactory'
+import { JobTabFactory, jobTabFactoryInjectionKey } from '@/modules/jobs/services/JobTabFactory'
 
 export class WorkspaceModuleRegistrar implements ModuleRegistrar {
 
@@ -54,6 +55,8 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
         builder.provide(keymapViewerTabFactoryInjectionKey, keymapViewerTabFactory)
         const serverStatusTabFactory: ServerStatusTabFactory = new ServerStatusTabFactory(connectionService)
         builder.provide(serverStatusTabFactoryInjectionKey, serverStatusTabFactory)
+        const jobTabFactory: JobTabFactory = new JobTabFactory(connectionService)
+        builder.provide(jobTabFactoryInjectionKey, jobTabFactory)
 
         const backupsTabfactory: BackupsTabFactory = new BackupsTabFactory(connectionService)
         builder.provide(backupsTabFactoryInjectionKey, backupsTabfactory)
@@ -74,7 +77,8 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
                 graphQLConsoleTabFactory,
                 schemaViewerTabFactory,
                 keymapViewerTabFactory,
-                serverStatusTabFactory
+                serverStatusTabFactory,
+                jobTabFactory
             )
         )
         builder.provide(
@@ -92,7 +96,8 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
                 evitaQLConsoleTabFactory,
                 graphQLConsoleTabFactory,
                 schemaViewerTabFactory,
-                serverStatusTabFactory
+                serverStatusTabFactory,
+                jobTabFactory
             )
         )
     }

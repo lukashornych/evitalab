@@ -9,6 +9,7 @@ import { GraphQLConsoleTabFactory } from '@/modules/graphql-console/console/work
 import { SchemaViewerTabFactory } from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
 import { mandatoryInject } from '@/utils/reactivity'
 import { ServerStatusTabFactory } from '@/modules/server-status/service/ServerStatusTabFactory'
+import { JobTabFactory } from '@/modules/jobs/services/JobTabFactory'
 
 export const sharedTabResolverInjectionKey: InjectionKey<SharedTabResolver> = Symbol('sharedTabResolver')
 
@@ -21,17 +22,20 @@ export class SharedTabResolver {
     private readonly graphQLConsoleTabFactory: GraphQLConsoleTabFactory
     private readonly schemaViewerTabFactory: SchemaViewerTabFactory
     private readonly serverStatusTabFactory: ServerStatusTabFactory
+    private readonly jobTabFactory: JobTabFactory
 
     constructor(entityViewerTabFactory: EntityViewerTabFactory,
                 evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory,
                 graphQLConsoleTabFactory: GraphQLConsoleTabFactory,
                 schemaViewerTabFactory: SchemaViewerTabFactory,
-                serverStatusTabFactory: ServerStatusTabFactory) {
+                serverStatusTabFactory: ServerStatusTabFactory,
+                jobTabFactory: JobTabFactory) {
         this.entityViewerTabFactory = entityViewerTabFactory
         this.evitaQLConsoleTabFactory = evitaQLConsoleTabFactory
         this.graphQLConsoleTabFactory = graphQLConsoleTabFactory
         this.schemaViewerTabFactory = schemaViewerTabFactory
         this.serverStatusTabFactory = serverStatusTabFactory
+        this.jobTabFactory = jobTabFactory
     }
 
     async resolve(shareTabObjectSerialized: string | undefined): Promise<TabDefinition<any, any> | undefined> {

@@ -8,8 +8,17 @@
                 <VRow class="align-center">
                     <VCol>
                         <div class="d-flex align-center">
-                            <template>
-                                <VIcon>mdi-cloud-arrow-down-outline</VIcon>
+                            <div :class="['circle', item.progress < 100 ? 'processing' : 'done']">
+
+                            </div>
+                            <template v-if="item.taskType === 'BackupTask'">
+                                <VIcon class="mx-4" icon="mdi-backup-restore"></VIcon>
+                            </template>
+                            <template v-else-if="item.taskType === 'JfrRecorderTask'">
+                                <VIcon class="mx-4" icon="mdi-record-rec"></VIcon>
+                            </template>
+                            <template v-else-if="item.taskType === 'MetricTask'">
+                                <VIcon class="mx-4" icon="mdi-folder-information-outline"></VIcon>
                             </template>
                             <VListItemTitle>{{ item.taskName }}</VListItemTitle>
                         </div>
@@ -26,8 +35,11 @@
                                 :model-value="item.progress"
                             ></VProgressLinear>
                         </div>
-                        <VBtn icon variant="flat" @click="cancelTask(item.taskId)">
-                            <VIcon>mdi-window-close</VIcon>
+                        <VBtn icon variant="flat" @click="cancelTask(item.taskId)" v-if="item.progress < 100">
+                            <VIcon @click="cancelTask(item.taskId)">mdi-window-close</VIcon>
+                        </VBtn>
+                        <VBtn icon variant="flat" disabled v-else>
+                            <VIcon>mdi-check</VIcon>
                         </VBtn>
                     </VCol>
                     <VCol class="d-flex justify-end" cols="auto" v-else>
@@ -93,6 +105,7 @@ async function getJobs() {
         props.simplifiedState,
         props.taskType
     )
+    console.log(newJobs.taskStatus)
     const endedJobs = newJobs.taskStatus.filter(
         (x) =>
             !taskStatuses.value?.taskStatus.some(
@@ -122,20 +135,43 @@ async function cancelTask(jobId: Uuid) {
 setInterval(getJobs, 100)
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/styles/colors.scss';
+
 .linear-progress-container {
     width: 100px;
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
+
 .circular-progress-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
+
 .circular-progress {
     height: 24px;
     width: 24px;
+}
+
+.done {
+    background-color: $success;
+}
+
+.processing {
+    background-color: $warning;
+}
+
+.circle {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 8px;
+    border-radius: 50%;
+}
+.white-space {
+
 }
 </style>
