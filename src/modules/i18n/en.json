@@ -24,7 +24,8 @@
       "confirm": "Confirm",
       "rename": "Rename",
       "replace": "Replace",
-      "backup": "Backup"
+      "backup": "Backup",
+      "restore": "Restore"
     },
     "notification": {
       "copiedToClipboard": "Copied to clipboard",
@@ -850,6 +851,9 @@
       "titleSecond": " catalog",
       "includeWal": "Will apply all mutations from WAL during restoration resulting in the latest version of catalog",
       "information": "The back up process may take a while. Therefore it will be started asynchronously. You can find it’s progress and backup file to download in job listing."
+    },
+    "restoreDialog": {
+      "catalogName": "New catalog name"
     }
   }
 }
