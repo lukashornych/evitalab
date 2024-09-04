@@ -13,21 +13,15 @@ import { EntitySchema } from '../../model/schema/EntitySchema'
 import {
     GrpcCatalogSchemaResponse,
     GrpcCatalogVersionAtResponse,
-} from '@/modules/connection/driver/grpc/gen/GrpcEvitaSessionAPI_pb'
-import {
     GrpcDefineEntitySchemaResponse,
-    GrpcDeleteCollectionResponse,
+    GrpcDeleteCollectionResponse
 } from '@/modules/connection/driver/grpc/gen/GrpcEvitaSessionAPI_pb'
 import { EvitaDBInstanceServerError } from '@/modules/driver-support/exception/EvitaDBInstanceServerError'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { TimeoutError } from '../../exception/TimeoutError'
 import { EvitaDBInstanceNetworkError } from '@/modules/driver-support/exception/EvitaDBInstanceNetworkError'
 import { LabError } from '@/modules/base/exception/LabError'
-import {
-    ClientProvider,
-    EvitaClient,
-    EvitaSessionClient,
-} from './service/ClientProvider'
+import { ClientProvider, EvitaSessionClient } from './service/ClientProvider'
 import { EntityConverter } from './service/EntityConverter'
 import { EvitaValueConvert } from './service/EvitaValueConverter'
 import { ExtraResultConverter } from './service/ExtraResultConverter'
@@ -48,7 +42,11 @@ import { TaskSimplifiedStateConverter } from './service/TaskSimplifiedStateConve
 import { GrpcDefineCatalogResponse } from '@/modules/connection/driver/grpc/gen/GrpcEvitaAPI_pb'
 import { EvitaSessionProvider } from '@/modules/connection/driver/grpc/service/EvitaSessionProvider'
 import { Uuid } from '../../model/data-type/Uuid'
-import { GrpcUuid } from './gen/GrpcEvitaDataTypes_pb'
+import {
+    GrpcRestoreCatalogRequest,
+    GrpcRestoreCatalogResponse
+} from '@/modules/connection/driver/grpc/gen/GrpcEvitaManagementAPI_pb'
+import { EventType } from '@/modules/connection/model/data/EventType'
 
 //TODO: Add docs and add header 'X-EvitaDB-ClientID': this.getClientIdHeaderValue()
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
@@ -95,8 +93,8 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                                 { nameVariants: true },
                                 {
                                     headers: {
-                                        sessionId,
-                                    },
+                                        sessionId
+                                    }
                                 }
                             )
                     }
@@ -138,8 +136,8 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                         const entityTypesResponse =
                             await evitaSessionClient.getAllEntityTypes(Empty, {
                                 headers: {
-                                    sessionId,
-                                },
+                                    sessionId
+                                }
                             })
 
                         const entitySchemas: EntitySchema[] = []
@@ -149,12 +147,12 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                                 await evitaSessionClient.getEntitySchema(
                                     {
                                         nameVariants: true,
-                                        entityType: type,
+                                        entityType: type
                                     },
                                     {
                                         headers: {
-                                            sessionId,
-                                        },
+                                            sessionId
+                                        }
                                     }
                                 )
                             const schema = entitySchemaResult.entitySchema
@@ -192,12 +190,12 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                             .getEvitaSessionClient(connection)
                             .queryUnsafe(
                                 {
-                                    query,
+                                    query
                                 },
                                 {
                                     headers: {
-                                        sessionId,
-                                    },
+                                        sessionId
+                                    }
                                 }
                             )
                     }
@@ -257,7 +255,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
             lab: apiStatus.apis.lab,
             observability: apiStatus.apis.observability,
             rest: apiStatus.apis.rest,
-            system: apiStatus.apis.system,
+            system: apiStatus.apis.system
         })
     }
 
@@ -308,7 +306,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         const response = await this.clientProvider
             .getEvitaClient(connection)
             .deleteCatalogIfExists({
-                catalogName,
+                catalogName
             })
         return response.success
     }
@@ -322,7 +320,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
             .getEvitaClient(connection)
             .renameCatalog({
                 catalogName,
-                newCatalogName,
+                newCatalogName
             })
         return response.success
     }
@@ -336,7 +334,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
             .getEvitaClient(connection)
             .replaceCatalog({
                 catalogNameToBeReplaced,
-                catalogNameToBeReplacedWith,
+                catalogNameToBeReplacedWith
             })
         return response.success
     }
@@ -355,12 +353,12 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                         .getEvitaSessionClient(connection)
                         .defineEntitySchema(
                             {
-                                entityType,
+                                entityType
                             },
                             {
                                 headers: {
-                                    sessionId,
-                                },
+                                    sessionId
+                                }
                             }
                         )
 
@@ -391,12 +389,12 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                     .renameCollection(
                         {
                             entityType,
-                            newName,
+                            newName
                         },
                         {
                             headers: {
-                                sessionId,
-                            },
+                                sessionId
+                            }
                         }
                     )
 
@@ -424,12 +422,12 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                         .getEvitaSessionClient(connection)
                         .deleteCollection(
                             {
-                                entityType,
+                                entityType
                             },
                             {
                                 headers: {
-                                    sessionId,
-                                },
+                                    sessionId
+                                }
                             }
                         )
 
@@ -453,8 +451,8 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                 .getEvitaManagementClient(connection)
                 .getCatalogStatistics(Empty, {
                     headers: {
-                        sessionId,
-                    },
+                        sessionId
+                    }
                 })
         ).catalogStatistics
         return resultData.map((x) => this.catalogConverter.convert(x))
@@ -476,13 +474,13 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                     includingWAL,
                     pastMoment: {
                         offset: pastMoment.offset,
-                        timestamp: pastMoment.timestamp,
-                    },
+                        timestamp: pastMoment.timestamp
+                    }
                 },
                 {
                     headers: {
-                        sessionId: res.sessionId,
-                    },
+                        sessionId: res.sessionId
+                    }
                 }
             )
         return this.backupConverter.convertBackupCatalog(result)
@@ -501,8 +499,8 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                 {},
                 {
                     headers: {
-                        sessionId: res.sessionId,
-                    },
+                        sessionId: res.sessionId
+                    }
                 }
             )
         return new CatalogVersionAtResponse(
@@ -524,7 +522,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
             .listFilesToFetch({
                 origin: 'BackupTask',
                 pageNumber,
-                pageSize,
+                pageSize
             })
         return this.backupConverter.convertFilesTofetch(result)
     }
@@ -547,10 +545,57 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                 pageNumber,
                 pageSize,
                 taskType,
-                simplifiedState: params,
+                simplifiedState: params
             })
         const jobs = this.jobsConverter.convertJobs(result)
         return jobs
+    }
+
+    async getJfrRecords(connection: Connection, pageNumber: number, pageSize: number): Promise<FilesToFetch> {
+        const result = await this.clientProvider.getEvitaManagementClient(connection).listFilesToFetch({
+            origin: 'JfrRecorderTask',
+            pageNumber,
+            pageSize
+        })
+
+        return this.backupConverter.convertFilesTofetch(result)
+    }
+
+    async stopJfrRecording(connection: Connection):Promise<boolean> {
+        return (await ky.post(connection.observabilityUrl + '/stopRecording')).ok
+    }
+
+    async downloadFile(connection: Connection, fileId: Uuid): Promise<Blob> {
+        const res = this.clientProvider.getEvitaManagementClient(connection).fetchFile({
+            fileId: {
+                leastSignificantBits: fileId.leastSignificantBits,
+                mostSignificantBits: fileId.mostSignificantBits
+            }
+        })
+        const data: Uint8Array[] = []
+
+        for await (const job of res) {
+            data.push(job.fileContents)
+        }
+        return new Blob(data)
+    }
+
+    async uploadFile(connection: Connection, stream: AsyncIterable<GrpcRestoreCatalogRequest>): Promise<GrpcRestoreCatalogResponse> {
+        const res = await this.clientProvider.getEvitaManagementClient(connection).restoreCatalog(stream)
+        return res
+    }
+
+    async downloadRecordingEventTypes(connection: Connection):Promise<EventType[]>{
+        const result = await ky.get(connection.observabilityUrl + '/getRecordingEventTypes')
+        return (await result.json()) as EventType[]
+    }
+
+    async startJrfRecording(connection: Connection, allowedEvents: string[]):Promise<boolean> {
+        const result = await ky.post(connection.observabilityUrl + '/startRecording', {
+            json: { allowedEvents: allowedEvents }
+            
+        })
+        return result.ok
     }
 
     async restoreCatalog(
@@ -564,13 +609,13 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                 catalogName,
                 fileId: {
                     leastSignificantBits: fileId.leastSignificantBits,
-                    mostSignificantBits: fileId.mostSignificantBits,
-                },
+                    mostSignificantBits: fileId.mostSignificantBits
+                }
             })
         return this.jobsConverter.convertJob(result.task!)
     }
 
-    async cancelJob(connection: Connection, taskId: Uuid):Promise<boolean>{
+    async cancelJob(connection: Connection, taskId: Uuid): Promise<boolean> {
         const result = await this.clientProvider.getEvitaManagementClient(connection).cancelTask({
             taskId: {
                 leastSignificantBits: taskId.leastSignificantBits,

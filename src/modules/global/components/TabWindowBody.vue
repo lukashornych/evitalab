@@ -3,9 +3,9 @@
         <VTabToolbar :prepend-icon="icon" :path="path">
             <template #append>
                 <VBtn
-                    icon
                     v-if="visibleButton"
                     density="compact"
+                    variant="outlined"
                     class="me-4"
                     @click="
                         () => {
@@ -14,6 +14,7 @@
                     "
                 >
                     <VIcon>{{ icon }}</VIcon>
+                    {{ buttonText }}
                 </VBtn>
             </template>
         </VTabToolbar>
@@ -30,7 +31,8 @@ import { List } from 'immutable';
 const props = defineProps<{
     path: List<string>
     icon: string
-    visibleButton: boolean
+    visibleButton: boolean,
+    buttonText?: string
 }>()
 const emit = defineEmits<{
     (e: 'topButtonClick'): void

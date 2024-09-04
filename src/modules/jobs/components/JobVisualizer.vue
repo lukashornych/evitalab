@@ -1,24 +1,37 @@
 <template>
     <div>
         <VList>
-            <VListItem
-                v-for="item in jobs"
-                :key="item.taskId.code"
-            >
+            <VListItem v-for="item in jobs" :key="item.taskId.code">
                 <VRow class="align-center">
                     <VCol>
                         <div class="d-flex align-center">
-                            <div :class="['circle', item.progress < 100 ? 'processing' : 'done']">
-
-                            </div>
+                            <div
+                                :class="[
+                                    'circle',
+                                    item.progress < 100 ? 'processing' : 'done',
+                                ]"
+                            ></div>
                             <template v-if="item.taskType === 'BackupTask'">
-                                <VIcon class="mx-4" icon="mdi-cloud-download-outline"></VIcon>
+                                <VIcon
+                                    class="mx-4"
+                                    icon="mdi-cloud-download-outline"
+                                ></VIcon>
                             </template>
-                            <template v-else-if="item.taskType === 'JfrRecorderTask'">
-                                <VIcon class="mx-4" icon="mdi-chart-timeline"></VIcon>
+                            <template
+                                v-else-if="item.taskType === 'JfrRecorderTask'"
+                            >
+                                <VIcon
+                                    class="mx-4"
+                                    icon="mdi-chart-timeline"
+                                ></VIcon>
                             </template>
-                            <template v-else-if="item.taskType === 'MetricTask'">
-                                <VIcon class="mx-4" icon="mdi-folder-information-outline"></VIcon>
+                            <template
+                                v-else-if="item.taskType === 'MetricTask'"
+                            >
+                                <VIcon
+                                    class="mx-4"
+                                    icon="mdi-folder-information-outline"
+                                ></VIcon>
                             </template>
                             <VListItemTitle>{{ item.taskName }}</VListItemTitle>
                         </div>
@@ -35,8 +48,15 @@
                                 :model-value="item.progress"
                             ></VProgressLinear>
                         </div>
-                        <VBtn icon variant="flat" @click="cancelTask(item.taskId)" v-if="item.progress < 100">
-                            <VIcon @click="cancelTask(item.taskId)">mdi-window-close</VIcon>
+                        <VBtn
+                            icon
+                            variant="flat"
+                            @click="cancelTask(item.taskId, item.taskType)"
+                            v-if="item.progress < 100"
+                        >
+                            <VIcon @click="cancelTask(item.taskId, item.taskType)"
+                                >mdi-window-close</VIcon
+                            >
                         </VBtn>
                         <VBtn icon variant="flat" disabled v-else>
                             <VIcon>mdi-check</VIcon>
@@ -50,8 +70,12 @@
                                 indeterminate
                             />
                         </div>
-                        <VBtn icon variant="flat" @click="cancelTask(item.taskId)">
-                            <VIcon>mdi-window-close</VIcon>
+                        <VBtn
+                            icon
+                            variant="flat"
+                            @click="cancelTask(item.taskId, item.taskType)"
+                        >
+                            <VIcon @click="cancelTask(item.taskId, item.taskType)">mdi-window-close</VIcon>
                         </VBtn>
                     </VCol>
                 </VRow>
@@ -78,6 +102,7 @@ import { TaskStatuses } from '@/modules/connection/model/data/TaskStatuses'
 import { TaskSimplifiedState } from '@/modules/connection/model/data/TaskSimplifiedState'
 import { Uuid } from '@/modules/connection/model/data-type/Uuid'
 import { TaskStatus } from '@/modules/connection/model/data/TaskStatus'
+import { onUnmounted } from 'vue'
 
 const jobService: JobService = useJobService()
 const props = defineProps<{
@@ -86,7 +111,8 @@ const props = defineProps<{
     taskType?: string
 }>()
 const emit = defineEmits<{
-    (e: 'taskEnded', taskId: string): void
+    (e: 'taskEnded', taskId: string): void,
+    (e: 'stopJfr'):void
 }>()
 
 const pageNumber = ref<number>(1)
@@ -105,7 +131,6 @@ async function getJobs() {
         props.simplifiedState,
         props.taskType
     )
-    console.log(newJobs.taskStatus)
     const endedJobs = newJobs.taskStatus.filter(
         (x) =>
             !taskStatuses.value?.taskStatus.some(
@@ -123,16 +148,24 @@ async function getJobs() {
     loadedTaskStatuses.value = true
 }
 
-async function cancelTask(jobId: Uuid) {
-    const result = await jobService.cancelJob(props.connection, jobId)
-    if (result) {
-        jobs.value = taskStatuses.value?.taskStatus
-            .filter((x) => x.taskId.code === jobId.code)
-            .toArray()
+async function cancelTask(jobId: Uuid, taskType: string) {
+    if (taskType === '') {
+        const result = await jobService.cancelJob(props.connection, jobId)
+        if (result) {
+            jobs.value = taskStatuses.value?.taskStatus
+                .filter((x) => x.taskId.code === jobId.code)
+                .toArray()
+        }
+    } else {
+        emit('stopJfr')
     }
 }
 
-setInterval(getJobs, 100)
+const jobIntervalId = setInterval(getJobs, 100)
+
+onUnmounted(() => {
+    clearInterval(jobIntervalId)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -172,6 +205,5 @@ setInterval(getJobs, 100)
     border-radius: 50%;
 }
 .white-space {
-
 }
 </style>

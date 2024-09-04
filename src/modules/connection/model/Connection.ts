@@ -14,12 +14,14 @@ export class Connection {
     readonly grpcUrl: string
     readonly gqlUrl?: string
     readonly restUrl?: string
+    readonly observabilityUrl: string
 
     constructor(id: ConnectionId | undefined,
                 name: string,
                 preconfigured: boolean,
                 systemUrl: string,
                 grpcUrl: string,
+                observabilityUrl: string,
                 gqlUrl?: string,
                 restUrl?: string) {
         this.id = id ? id : hasher.update(name).digest().toString(16)
@@ -29,6 +31,7 @@ export class Connection {
         this.grpcUrl = this.normalizeApiUrl(grpcUrl)!
         this.gqlUrl = this.normalizeApiUrl(gqlUrl)
         this.restUrl = this.normalizeApiUrl(restUrl)
+        this.observabilityUrl = observabilityUrl
     }
 
     static fromJson(json: any, preconfigured: boolean): Connection {
@@ -37,6 +40,7 @@ export class Connection {
             json.name,
             preconfigured,
             json.systemUrl,
+            json.observabilityUrl,
             json.grpcUrl,
             json.gqlUrl,
             json.restUrl

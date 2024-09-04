@@ -1,5 +1,5 @@
 import { TaskStatuses } from '@/modules/connection/model/data/TaskStatuses'
-import { GrpcTaskStatusesResponse } from '../gen/GrpcEvitaManagementAPI_pb'
+import { GrpcFilesToFetchResponse, GrpcTaskStatusesResponse } from '../gen/GrpcEvitaManagementAPI_pb'
 import { TaskStatus } from '@/modules/connection/model/data/TaskStatus'
 import { GrpcFile, GrpcTaskStatus } from '../gen/GrpcEvitaDataTypes_pb'
 import { Uuid } from '@/modules/connection/model/data-type/Uuid'
@@ -22,10 +22,6 @@ export class JobsConverter {
         const newFiles: TaskStatus[] = []
 
         for (const oldFile of files) {
-            const file = this.convertResultFile(
-                oldFile.result.case,
-                oldFile.result.value
-            )
                 newFiles.push(
                     this.convertJob(oldFile)
                 )
@@ -37,6 +33,10 @@ export class JobsConverter {
             List(newFiles),
             job.totalNumberOfRecords
         )
+    }
+
+    convertFilesToFetch(files: GrpcFilesToFetchResponse){
+
     }
 
     convertJob(oldFile: GrpcTaskStatus): TaskStatus {

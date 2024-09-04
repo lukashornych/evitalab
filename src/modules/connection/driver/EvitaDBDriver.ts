@@ -13,6 +13,10 @@ import { FilesToFetch } from '../model/data/FilesToFetch'
 import { TaskStatuses } from '../model/data/TaskStatuses'
 import { TaskSimplifiedState } from '../model/data/TaskSimplifiedState'
 import { Uuid } from '../model/data-type/Uuid'
+import {
+    GrpcRestoreCatalogRequest, GrpcRestoreCatalogResponse
+} from '@/modules/connection/driver/grpc/gen/GrpcEvitaManagementAPI_pb'
+import { EventType } from '@/modules/connection/model/data/EventType'
 
 /**
  * evitaDB version-agnostic driver to access data from connected evitaDB server
@@ -95,6 +99,18 @@ export interface EvitaDBDriver {
     ): Promise<TaskStatus>
     //TODO: Add doc
     cancelJob(connection: Connection, taskId: Uuid): Promise<boolean>
+    //TODO: Add doc
+    getJfrRecords(connection: Connection, pageNumber: number, pageSize: number): Promise<FilesToFetch>
+    //TODO: Add doc
+    downloadFile(connection:Connection, fileId: Uuid):Promise<Blob>
+    //TODO: Add doc
+    uploadFile(connection: Connection, stream: AsyncIterable<GrpcRestoreCatalogRequest>):Promise<GrpcRestoreCatalogResponse>
+    //TODO: Add doc
+    downloadRecordingEventTypes(connection: Connection):Promise<EventType[]>
+    //TODO: Add doc
+    startJrfRecording(connection: Connection, allowedEvents: string[]):Promise<boolean>
+    //TODO: Add doc
+    stopJfrRecording(connection: Connection):Promise<boolean>
     /**
      * Which versions of evitaDB server this driver supports. Can be any string supported by https://www.npmjs.com/package/semver.
      * Comparison is done using the `.satisfies(...)` method

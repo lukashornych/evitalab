@@ -62,6 +62,7 @@ export class ConnectionService {
                 true,
                 'http://demo.evitadb.io:5555/system',
                 'https://demo.evitadb.io:5555/',
+                'http://demo.evitadb.io:5555/observability',
                 'http://demo.evitadb.io:5555/gql',
                 'http://demo.evitadb.io:5555/rest'
             ))
@@ -71,6 +72,7 @@ export class ConnectionService {
                 true,
                 'http://localhost:5555/system',
                 'https://localhost:5555/',
+                'http://localhost:5555/observability',
                 'http://localhost:5555/gql',
                 'http://localhost:5555/rest'
             ))

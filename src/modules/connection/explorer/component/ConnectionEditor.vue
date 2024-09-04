@@ -114,6 +114,30 @@ const gqlUrlRules = [
     }
 ]
 
+const observabilityUrlRules = [
+    (value: any) => {
+        if (value) return true
+        return t('explorer.connection.editor.form.observability.validations.required')
+    },
+    (value: any) => {
+        try {
+            new URL(value)
+            return true
+        } catch (e) {
+            return t('explorer.connection.editor.form.observability.validations.invalidUrl')
+        }
+    },
+    async (value: any) => {
+        const result = await testObservabilityApiConnection()
+        if (result) {
+            modifiedConnection.value.gqlUrlTested = ApiTestResult.Success
+            return true
+        }
+        modifiedConnection.value.gqlUrlTested = ApiTestResult.Failure
+        return t('explorer.connection.editor.form.observability.validations.unreachable')
+    }
+]
+
 const form = ref<HTMLFormElement | null>(null)
 const mode = computed<Mode>(() => props.connection ? Mode.Modify : Mode.Add)
 const modifiedConnection = ref<{
@@ -123,7 +147,9 @@ const modifiedConnection = ref<{
     grpcUrl: string
     grpcUrlTested: ApiTestResult
     gqlUrl: string,
-    gqlUrlTested: ApiTestResult
+    gqlUrlTested: ApiTestResult,
+    observabilityUrl: string,
+    observabilityUrlTested: ApiTestResult,
 }>({
     name: '',
     systemApiUrl: '',
@@ -131,7 +157,9 @@ const modifiedConnection = ref<{
     grpcUrl: '',
     grpcUrlTested: ApiTestResult.NotTested,
     gqlUrl: '',
-    gqlUrlTested: ApiTestResult.NotTested
+    gqlUrlTested: ApiTestResult.NotTested,
+    observabilityUrl: '',
+    observabilityUrlTested: ApiTestResult.NotTested
 })
 
 function getApiTestedIndicator(result: ApiTestResult): any  {
@@ -189,6 +217,10 @@ async function testGqlApiConnection(): Promise<boolean> {
     }
 }
 
+async function testObservabilityApiConnection():Promise<boolean>{
+    return (await ky.get(modifiedConnection.value.observabilityUrl + '/metrics')).ok
+}
+
 async function testConnection(): Promise<boolean> {
     let success: boolean = true
 
@@ -236,7 +268,9 @@ function cancel(): void {
         grpcUrl: '',
         grpcUrlTested: ApiTestResult.NotTested,
         gqlUrl: '',
-        gqlUrlTested: ApiTestResult.NotTested
+        gqlUrlTested: ApiTestResult.NotTested,
+        observabilityUrl: '',
+        observabilityUrlTested: ApiTestResult.NotTested
     }
     emit('update:modelValue', false)
 }
@@ -255,6 +289,7 @@ async function storeConnection(): Promise<void> {
             false,
             modifiedConnection.value.systemApiUrl,
             modifiedConnection.value.grpcUrl!,
+            modifiedConnection.value.observabilityUrl,
             modifiedConnection.value.gqlUrl!,
             'https://localhost:5555/rest' // todo lho implement rest
         ))
@@ -323,6 +358,15 @@ async function storeConnection(): Promise<void> {
                         required
                         :rules="gqlUrlRules"
                         :append-inner-icon="getApiTestedIndicator(modifiedConnection.gqlUrlTested)"
+                    />
+                    <VTextField
+                        v-model="modifiedConnection.observabilityUrl"
+                        :label="t('explorer.connection.editor.form.observability.label')"
+                        placeholder="https://{evitadb-server}:5555/observability"
+                        variant="solo-filled"
+                        required
+                        :rules="observabilityUrlRules"
+                        :append-inner-icon="getApiTestedIndicator(modifiedConnection.observabilityUrlTested)"
                     />
                 </VForm>
             </VCardText>

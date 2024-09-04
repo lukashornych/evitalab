@@ -33,6 +33,7 @@ import {
 } from '@/modules/server-status/service/ServerStatusTabFactory'
 import { BackupsTabFactory, backupsTabFactoryInjectionKey } from '../backups/service/BackupsTabFactory'
 import { JobTabFactory, jobTabFactoryInjectionKey } from '@/modules/jobs/services/JobTabFactory'
+import { JfrTabFactory, jfrTabFactoryInjectionKey } from '@/modules/jfr-recording/service/JfrTabFactory'
 
 export class WorkspaceModuleRegistrar implements ModuleRegistrar {
 
@@ -57,9 +58,10 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
         builder.provide(serverStatusTabFactoryInjectionKey, serverStatusTabFactory)
         const jobTabFactory: JobTabFactory = new JobTabFactory(connectionService)
         builder.provide(jobTabFactoryInjectionKey, jobTabFactory)
-
-        const backupsTabfactory: BackupsTabFactory = new BackupsTabFactory(connectionService)
-        builder.provide(backupsTabFactoryInjectionKey, backupsTabfactory)
+        const jfrTabFactory: JfrTabFactory = new JfrTabFactory(connectionService)
+        builder.provide(jfrTabFactoryInjectionKey, jfrTabFactory)
+        const backupsTabFactory: BackupsTabFactory = new BackupsTabFactory(connectionService)
+        builder.provide(backupsTabFactoryInjectionKey, backupsTabFactory)
         // todo lho fix circular dep
         // const entityViewerTabFactory: EntityViewerTabFactory = builder.inject(entityViewerTabFactoryInjectionKey)
         // const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory = builder.inject(evitaQLConsoleTabFactoryInjectionKey)
@@ -78,7 +80,8 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
                 schemaViewerTabFactory,
                 keymapViewerTabFactory,
                 serverStatusTabFactory,
-                jobTabFactory
+                jobTabFactory,
+
             )
         )
         builder.provide(

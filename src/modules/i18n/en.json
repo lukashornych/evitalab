@@ -25,7 +25,9 @@
       "rename": "Rename",
       "replace": "Replace",
       "backup": "Backup",
-      "restore": "Restore"
+      "restore": "Restore",
+      "startRecording": "Start recording",
+      "stopRecording": "Stop recording"
     },
     "notification": {
       "copiedToClipboard": "Copied to clipboard",
@@ -261,7 +263,8 @@
         "remove": "Remove connection",
         "detail": "Status",
         "createCatalog": "Create catalog",
-        "jobs": "Jobs"
+        "jobs": "Jobs",
+        "jfrRecordings": "JFR recordings"
       },
       "subheader": {
         "modify": "Modify"
@@ -299,6 +302,14 @@
               "required": "GraphQL API URL is required.",
               "invalidUrl": "GraphQL API URL is not a valid URL.",
               "unreachable": "GraphQL API URL is not reachable."
+            }
+          },
+          "observability": {
+            "label": "Observability API URL",
+            "validations": {
+              "required": "Observability API URL is required.",
+              "invalidUrl": "Observability API URL is not a valid URL.",
+              "unreachable": "Observability API URL is not reachable."
             }
           }
         },
@@ -859,5 +870,13 @@
   },
   "jobs": {
     "path": "Jobs"
+  },
+  "jfr": {
+    "path": "JFR Recordings",
+    "startRecordingDialog": {
+      "title": "Start JFR recording",
+      "input": "Events to record",
+      "info": "This will start recording process in background which will be active until you stop it manually. Note that there can be only one recording active at the same time."
+    }
   }
 }

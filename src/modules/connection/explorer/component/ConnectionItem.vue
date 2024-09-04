@@ -31,6 +31,7 @@ import {
 } from '@/modules/server-status/service/ServerStatusTabFactory'
 import CreateCatalog from '@/modules/connection/explorer/component/CreateCatalog.vue'
 import { JobTabFactory, useJobTabFactory } from '@/modules/jobs/services/JobTabFactory'
+import { JfrTabFactory, useJfrTabFactory } from '@/modules/jfr-recording/service/JfrTabFactory'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
@@ -38,6 +39,7 @@ const connectionService: ConnectionService = useConnectionService()
 const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = useGraphQLConsoleTabFactory()
 const serverStatusTabFactory: ServerStatusTabFactory = useServerStatusTabFactory()
 const jobTabFactory: JobTabFactory = useJobTabFactory()
+const jfrTabFactory: JfrTabFactory = useJfrTabFactory()
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -126,6 +128,17 @@ function createActions(): Map<
         () => {
             workspaceService.createTab(
                 jobTabFactory.createNew(
+                    props.connection
+                )
+            )
+        }
+    ))
+    actions.set(ConnectionActionType.JfrRecordings, createMenuAction(
+        ConnectionActionType.JfrRecordings,
+        'mdi-chart-timeline',
+        () => {
+            workspaceService.createTab(
+                jfrTabFactory.createNew(
                     props.connection
                 )
             )

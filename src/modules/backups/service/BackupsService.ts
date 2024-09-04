@@ -7,6 +7,10 @@ import { FilesToFetch } from '@/modules/connection/model/data/FilesToFetch'
 import { TaskStatus } from '@/modules/connection/model/data/TaskStatus'
 import { mandatoryInject } from '@/utils/reactivity'
 import { InjectionKey } from 'vue'
+import {
+    GrpcRestoreCatalogRequest,
+    GrpcRestoreCatalogResponse
+} from '@/modules/connection/driver/grpc/gen/GrpcEvitaManagementAPI_pb'
 
 export const backupsServiceInjectionKey: InjectionKey<BackupsService> =
     Symbol('backupsService')
@@ -65,6 +69,16 @@ export class BackupsService {
             connection
         )
         return await driver.restoreCatalog(connection, catalogName, fileId)
+    }
+
+    async downloadBackup(connection: Connection, fileId: Uuid){
+        const driver = await this.evitaDBDriverResolver.resolveDriver(connection)
+        return await driver.downloadFile(connection, fileId)
+    }
+
+    async uploadBackup(connection: Connection, stream: AsyncIterable<GrpcRestoreCatalogRequest>):Promise<GrpcRestoreCatalogResponse>{
+        const driver = await this.evitaDBDriverResolver.resolveDriver(connection)
+        return await driver.uploadFile(connection, stream)
     }
 }
 

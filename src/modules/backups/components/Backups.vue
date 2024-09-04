@@ -14,7 +14,6 @@
             ]"
             task-type="BackupTask"
         />
-
         <VList>
             <VListItem
                 v-for="item in backupFiles?.filesToFetch"
@@ -28,7 +27,8 @@
                                 color="grey"
                                 text-color="white"
                                 class="ml-2 small-chip"
-                                >finished</VChip
+                            >finished
+                            </VChip
                             >
                         </div>
                     </VCol>
@@ -37,10 +37,9 @@
                         cols="auto"
                         v-if="item.created"
                     >
-                        <!--<VBtn icon variant="flat">
-                                <VIcon>mdi-download</VIcon>
-                            </VBtn>
-                            -->
+                        <VBtn icon variant="flat" @click="downloadBackup(item.fileId, item.name)">
+                            <VIcon>mdi-download</VIcon>
+                        </VBtn>
                         <VBtn
                             icon
                             variant="flat"
@@ -103,6 +102,8 @@ import { TaskSimplifiedState } from '@/modules/connection/model/data/TaskSimplif
 import BackupDialog from './BackupDialog.vue'
 import RestoreCatalog from './RestoreCatalog.vue'
 import { Uuid } from '@/modules/connection/model/data-type/Uuid'
+import { GrpcRestoreCatalogRequest } from '@/modules/connection/driver/grpc/gen/GrpcEvitaManagementAPI_pb'
+import { onUnmounted } from 'vue'
 
 const emit = defineEmits<TabComponentEvents>()
 const props = defineProps<TabComponentProps<BackupTabParams, VoidTabData>>()
@@ -120,6 +121,7 @@ const backupFiles = ref<FilesToFetch>()
 const includingWAL = ref<boolean>(false)
 const pageNumber = ref<number>(1)
 const pageSize = ref<number>(10)
+const file = ref<File>()
 
 getMinimalDate().then(() => checkAllDataLoaded())
 getAllBackupFiles().then(() => checkAllDataLoaded())
@@ -182,7 +184,79 @@ async function restoreBackup(catalogName: string) {
     } else throw new UnexpectedError(result.exception)
 }
 
-setInterval(getAllBackupFiles, 2000)
+async function downloadBackup(fileId: Uuid, name: string){
+    const blob = await backupService.downloadBackup(props.params.connection, fileId)
+    const downloadUrl = URL.createObjectURL(blob)
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = name;
+    document.body.appendChild(link);
+    link.click();
+}
+
+async function upload(){
+    await backupService.uploadBackup(props.params.connection, sendCatalogChunks())
+}
+
+async function* sendCatalogChunks(): AsyncIterable<GrpcRestoreCatalogRequest> {
+    if (!file.value) {
+        return;
+    }
+
+    const CHUNK_SIZE = 64 * 1024; // 64 KB chunks
+    const fileReader = new FileReader();
+    let offset = 0;
+    const totalSize = file.value.size;
+
+    // Helper function to read a chunk
+    function readChunk() {
+        if (offset >= totalSize) {
+            fileReader.abort();
+            return;
+        }
+        const chunk = file.value!.slice(offset, offset + CHUNK_SIZE);
+        fileReader.readAsArrayBuffer(chunk);
+    }
+
+    // Promise to handle the load of one chunk
+    const onLoadPromise = () => {
+        return new Promise<Uint8Array>((resolve, reject) => {
+            fileReader.onload = (event: ProgressEvent<FileReader>) => {
+                if (event.target?.result) {
+                    const arrayBuffer = event.target.result as ArrayBuffer;
+                    const fileChunk = new Uint8Array(arrayBuffer);
+                    offset += CHUNK_SIZE;
+                    resolve(fileChunk);
+                }
+            };
+
+            fileReader.onerror = () => {
+                console.error('Error reading file.');
+                fileReader.abort();
+                reject(new Error('Error reading file'));
+            };
+        });
+    };
+
+    try {
+        while (offset < totalSize) {
+            readChunk();
+            const chunk = await onLoadPromise();
+            yield new GrpcRestoreCatalogRequest({
+                catalogName: 'random',
+                backupFile: chunk
+            }); // Yield the chunk here
+        }
+    } catch (error) {
+        console.error('Error during file upload:', error);
+    }
+}
+
+const backupsIntervalId = setInterval(getAllBackupFiles, 2000)
+
+onUnmounted(() => {
+    clearInterval(backupsIntervalId)
+})
 </script>
 
 <style scoped></style>
