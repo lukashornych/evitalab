@@ -40,8 +40,8 @@ export class Connection {
             json.name,
             preconfigured,
             json.systemUrl,
-            json.observabilityUrl,
             json.grpcUrl,
+            json.observabilityUrl,
             json.gqlUrl,
             json.restUrl
         )
