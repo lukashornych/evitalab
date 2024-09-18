@@ -11,6 +11,7 @@ import {
 } from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
 import { List } from 'immutable'
 import SchemaContainerSectionListItem from '@/modules/schema-viewer/viewer/component/SchemaContainerSectionListItem.vue'
+import { computed, ComputedRef } from 'vue'
 
 const workspaceService: WorkspaceService = useWorkspaceService()
 const schemaViewerTabFactory: SchemaViewerTabFactory = useSchemaViewerTabFactory()
@@ -20,7 +21,7 @@ const props = defineProps<{
     schema: ReferenceSchema
 }>()
 
-const flags: List<string> = props.schema.getRepresentativeFlags()
+const flags: ComputedRef<List<string>> = computed(() => props.schema.representativeFlags)
 
 function openReferenceSchema(): void {
     if (!(props.dataPointer.schemaPointer instanceof EntitySchemaPointer)) {

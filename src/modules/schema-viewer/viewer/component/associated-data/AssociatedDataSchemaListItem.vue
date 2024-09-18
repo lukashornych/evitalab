@@ -12,6 +12,7 @@ import {
 import { AssociatedDataSchemaPointer } from '@/modules/schema-viewer/viewer/model/AssociatedDataSchemaPointer'
 import { List } from 'immutable'
 import SchemaContainerSectionListItem from '@/modules/schema-viewer/viewer/component/SchemaContainerSectionListItem.vue'
+import { computed, ComputedRef } from 'vue'
 
 const workspaceService: WorkspaceService = useWorkspaceService()
 const schemaViewerTabFactory: SchemaViewerTabFactory = useSchemaViewerTabFactory()
@@ -21,7 +22,7 @@ const props = defineProps<{
     schema: AssociatedDataSchema
 }>()
 
-const flags: List<string> = props.schema.getRepresentativeFlags()
+const flags: ComputedRef<List<string>> = computed(() => props.schema.representativeFlags)
 
 function openAssociatedDataSchema(): void {
     if (!(props.dataPointer.schemaPointer instanceof EntitySchemaPointer)) {

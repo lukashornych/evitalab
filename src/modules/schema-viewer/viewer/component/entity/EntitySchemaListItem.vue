@@ -12,6 +12,7 @@ import {
 } from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
 import { EntitySchemaPointer } from '@/modules/schema-viewer/viewer/model/EntitySchemaPointer'
 import SchemaContainerSectionListItem from '@/modules/schema-viewer/viewer/component/SchemaContainerSectionListItem.vue'
+import { computed, ComputedRef } from 'vue'
 
 const workspaceService: WorkspaceService = useWorkspaceService()
 const schemaViewerTabFactory: SchemaViewerTabFactory = useSchemaViewerTabFactory()
@@ -21,7 +22,7 @@ const props = defineProps<{
     schema: EntitySchema
 }>()
 
-const flags: List<string> = props.schema.getRepresentativeFlags()
+const flags: ComputedRef<List<string>> = computed(() => props.schema.representativeFlags)
 
 function openEntitySchema(): void {
     if (!(props.dataPointer.schemaPointer instanceof CatalogSchemaPointer)) {

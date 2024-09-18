@@ -69,7 +69,7 @@ export class EntitySchema extends AbstractSchema {
     readonly associatedData: Value<Map<string, AssociatedDataSchema>>
     readonly references: Value<Map<string, ReferenceSchema>>
 
-    private representativeFlags?: List<string>
+    private _representativeFlags?: List<string>
 
     constructor(version: Value<number>,
                 name: string,
@@ -110,13 +110,13 @@ export class EntitySchema extends AbstractSchema {
             Map(it.map(reference => [reference.name, reference])))
     }
 
-    getRepresentativeFlags(): List<string> {
-        if (this.representativeFlags == undefined) {
+    get representativeFlags(): List<string> {
+        if (this._representativeFlags == undefined) {
             const representativeFlags: string[] = []
             if (this.withHierarchy.getOrElse(false)) representativeFlags.push(EntitySchemaFlag.Hierarchical)
-            this.representativeFlags = List(representativeFlags)
+            this._representativeFlags = List(representativeFlags)
         }
-        return this.representativeFlags
+        return this._representativeFlags
     }
 }
 

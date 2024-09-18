@@ -41,6 +41,7 @@ import { TaskSimplifiedState } from '../../model/data/TaskSimplifiedState'
 import { TaskSimplifiedStateConverter } from './service/TaskSimplifiedStateConverter'
 import { GrpcDefineCatalogResponse } from '@/modules/connection/driver/grpc/gen/GrpcEvitaAPI_pb'
 import { EvitaSessionProvider } from '@/modules/connection/driver/grpc/service/EvitaSessionProvider'
+import { ConnectError } from '@connectrpc/connect'
 import { Uuid } from '../../model/data-type/Uuid'
 import {
     GrpcRestoreCatalogRequest,
@@ -593,7 +594,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
     async startJrfRecording(connection: Connection, allowedEvents: string[]):Promise<boolean> {
         const result = await ky.post(connection.observabilityUrl + '/startRecording', {
             json: { allowedEvents: allowedEvents }
-            
+
         })
         return result.ok
     }
@@ -626,7 +627,9 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
     }
 
     private handleCallError(e: any, connection?: Connection): LabError {
-        if (e.name === 'HTTPError') {
+        if (e instanceof ConnectError) {
+            return new UnexpectedError(`${e.code}: ${e.message}`)
+        } else if (e.name === 'HTTPError') {
             const statusCode: number = e.response.status
             if (statusCode >= 500) {
                 return new EvitaDBInstanceServerError(connection)
