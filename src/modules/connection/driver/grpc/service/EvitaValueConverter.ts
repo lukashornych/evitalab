@@ -280,8 +280,8 @@ export class EvitaValueConvert {
         return new Currency(value.code)
     }
 
-    private handleUUID(value: GrpcUuid): Uuid {
-        return { code: value.toJsonString() }
+    private handleUUID(grpcUuid: GrpcUuid): Uuid {
+        return new Uuid(grpcUuid.toJsonString(), grpcUuid.mostSignificantBits, grpcUuid.leastSignificantBits)
     }
 
     private handlePredecessor(value: GrpcPredecessor): Predecessor {
@@ -479,12 +479,12 @@ export class EvitaValueConvert {
         return Immutable.List(currencyArray)
     }
 
-    private handleUUIDArray(value: GrpcUuidArray): Immutable.List<Uuid> {
-        const uuidArray: Uuid[] = []
-        for (const uuid of value.value) {
-            uuidArray.push({ code: uuid.toJsonString() })
+    private handleUUIDArray(grpcUuids: GrpcUuidArray): Immutable.List<Uuid> {
+        const uuids: Uuid[] = []
+        for (const grpcUuid of grpcUuids.value) {
+            uuids.push(new Uuid(grpcUuid.toJsonString(), grpcUuid.mostSignificantBits, grpcUuid.leastSignificantBits))
         }
-        return Immutable.List(uuidArray)
+        return Immutable.List(uuids)
     }
 
     private convertDate(offsetDateTime: GrpcOffsetDateTime): LocalDate {
