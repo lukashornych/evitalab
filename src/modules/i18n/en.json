@@ -25,7 +25,11 @@
       "confirm": "Confirm",
       "rename": "Rename",
       "replace": "Replace",
-      "switch": "Switch"
+      "switch": "Switch",
+      "backup": "Backup",
+      "restore": "Restore",
+      "startRecording": "Start recording",
+      "stopRecording": "Stop recording"
     },
     "notification": {
       "copiedToClipboard": "Copied to clipboard",
@@ -267,7 +271,9 @@
         "edit": "Edit connection",
         "remove": "Remove connection",
         "detail": "Status",
-        "createCatalog": "Create catalog"
+        "createCatalog": "Create catalog",
+        "jobs": "Jobs",
+        "jfrRecordings": "JFR recordings"
       },
       "subheader": {
         "catalogs": "Catalogs"
@@ -306,6 +312,14 @@
               "invalidUrl": "GraphQL API URL is not a valid URL.",
               "unreachable": "GraphQL API URL is not reachable."
             }
+          },
+          "observability": {
+            "label": "Observability API URL",
+            "validations": {
+              "required": "Observability API URL is required.",
+              "invalidUrl": "Observability API URL is not a valid URL.",
+              "unreachable": "Observability API URL is not reachable."
+            }
           }
         },
         "notification": {
@@ -329,7 +343,8 @@
     "catalog": {
       "subheader": {
         "modify": "Modify",
-        "collections": "Collections"
+        "collections": "Collections",
+        "backup": "Backup"
       },
       "actions": {
         "openEvitaQLConsole": "Open evitaQL console",
@@ -339,8 +354,9 @@
         "dropCatalog": "Drop catalog",
         "renameCatalog": "Rename catalog",
         "replaceCatalog": "Replace catalog",
+        "createCollection": "Create collection",
         "switchCatalogToAliveState": "Switch catalog to alive state",
-        "createCollection": "Create collection"
+        "backup": "Backups"
       },
       "errors": {
         "couldNotLoad": "This catalog couldn't be loaded because it's corrupted."
@@ -935,6 +951,29 @@
       "runtimeConfig": {
         "title": "Runtime configuration"
       }
+    }
+  },
+  "backups": {
+    "path": "Backups",
+    "createDialog": {
+      "titleFirst": "Back up ",
+      "titleSecond": " catalog",
+      "includeWal": "Will apply all mutations from WAL during restoration resulting in the latest version of catalog",
+      "information": "The back up process may take a while. Therefore it will be started asynchronously. You can find it’s progress and backup file to download in job listing."
+    },
+    "restoreDialog": {
+      "catalogName": "New catalog name"
+    }
+  },
+  "jobs": {
+    "path": "Jobs"
+  },
+  "jfr": {
+    "path": "JFR Recordings",
+    "startRecordingDialog": {
+      "title": "Start JFR recording",
+      "input": "Events to record",
+      "info": "This will start recording process in background which will be active until you stop it manually. Note that there can be only one recording active at the same time."
     }
   }
 }

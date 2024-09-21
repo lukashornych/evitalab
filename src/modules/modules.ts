@@ -11,7 +11,10 @@ import { ConfigModuleRegistrar } from '@/modules/config/ConfigModuleRegistrar'
 import { StorageModuleRegistrar } from '@/modules/storage/StorageModuleRegistrar'
 import { WelcomeScreenModuleRegistrar } from '@/modules/welcome-screen/WelcomeScreenModuleRegistrar'
 import { KeymapModuleRegistrar } from '@/modules/keymap/KeymapModuleRegistrar'
+import { BackupsModuleRegistrar } from './backups/BackupsModuleRegistrar'
+import { JobModuleRegistrar } from '@/modules/jobs/JobModuleRegistrar'
 import { ServerActionsModuleRegistrar } from '@/modules/server-status/ServerActionsModuleRegistrar'
+import { JfrModuleRegistrar } from '@/modules/jfr-recording/JfrModuleRegistrar'
 
 // todo docs
 export const modules: ModuleRegistrar[] = [
@@ -30,5 +33,8 @@ export const modules: ModuleRegistrar[] = [
     new GraphQLConsoleModuleRegistrar(),
     new EntityViewerModuleRegistrar(),
     new SchemaViewerModuleRegistrar(),
-    new ServerActionsModuleRegistrar()
+    new ServerActionsModuleRegistrar(),
+    new BackupsModuleRegistrar(),
+    new JobModuleRegistrar(),
+    new JfrModuleRegistrar()
 ]

@@ -4,7 +4,6 @@ import { ServerStatusTabParams } from '../model/ServerStatusTabParams'
 import { mandatoryInject } from '@/utils/reactivity'
 import { InjectionKey } from 'vue'
 import { TabParamsDto } from '@/modules/workspace/tab/model/TabParamsDto'
-import { TabDataDto } from '@/modules/workspace/tab/model/TabDataDto'
 import { ServerStatusTabParamsDto } from '../model/ServerStatusTabParamsDto'
 import { ConnectionService } from '@/modules/connection/service/ConnectionService'
 

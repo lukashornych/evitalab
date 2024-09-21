@@ -31,6 +31,9 @@ import {
     ServerStatusTabFactory,
     serverStatusTabFactoryInjectionKey
 } from '@/modules/server-status/service/ServerStatusTabFactory'
+import { BackupsTabFactory, backupsTabFactoryInjectionKey } from '../backups/service/BackupsTabFactory'
+import { JobTabFactory, jobTabFactoryInjectionKey } from '@/modules/jobs/services/JobTabFactory'
+import { JfrTabFactory, jfrTabFactoryInjectionKey } from '@/modules/jfr-recording/service/JfrTabFactory'
 
 export class WorkspaceModuleRegistrar implements ModuleRegistrar {
 
@@ -53,7 +56,12 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
         builder.provide(keymapViewerTabFactoryInjectionKey, keymapViewerTabFactory)
         const serverStatusTabFactory: ServerStatusTabFactory = new ServerStatusTabFactory(connectionService)
         builder.provide(serverStatusTabFactoryInjectionKey, serverStatusTabFactory)
-
+        const jobTabFactory: JobTabFactory = new JobTabFactory(connectionService)
+        builder.provide(jobTabFactoryInjectionKey, jobTabFactory)
+        const jfrTabFactory: JfrTabFactory = new JfrTabFactory(connectionService)
+        builder.provide(jfrTabFactoryInjectionKey, jfrTabFactory)
+        const backupsTabFactory: BackupsTabFactory = new BackupsTabFactory(connectionService)
+        builder.provide(backupsTabFactoryInjectionKey, backupsTabFactory)
         // todo lho fix circular dep
         // const entityViewerTabFactory: EntityViewerTabFactory = builder.inject(entityViewerTabFactoryInjectionKey)
         // const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory = builder.inject(evitaQLConsoleTabFactoryInjectionKey)
@@ -71,7 +79,9 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
                 graphQLConsoleTabFactory,
                 schemaViewerTabFactory,
                 keymapViewerTabFactory,
-                serverStatusTabFactory
+                serverStatusTabFactory,
+                jobTabFactory,
+
             )
         )
         builder.provide(
@@ -89,7 +99,8 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
                 evitaQLConsoleTabFactory,
                 graphQLConsoleTabFactory,
                 schemaViewerTabFactory,
-                serverStatusTabFactory
+                serverStatusTabFactory,
+                jobTabFactory
             )
         )
     }

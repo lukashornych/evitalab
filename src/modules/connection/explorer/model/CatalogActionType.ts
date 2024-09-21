@@ -10,5 +10,9 @@ export enum CatalogActionType {
     SwitchCatalogToAliveState = 'switchCatalogToAliveState',
     ModifySubheader = 'modifySubheader',
     CollectionsSubheader = 'collectionsSubheader',
+    JobsSubheader = 'jobsSubheader',
     CreateCollection = 'createCollection',
+    BackupSubheader = 'backupSubheader',
+    Backup = 'backup',
+    Jobs = 'jobs'
 }

@@ -104,8 +104,8 @@ const historyListItems = computed<any[]>(() => {
         }
     }) || []
 })
-function pickHistoryRecord(selected: unknown[]): void {
-    if (selected.length > 0) {
+function pickHistoryRecord(selected: unknown): void {
+    if (selected instanceof Array && selected.length > 0) {
         const historyRecord: string = selected[0] as string
         emit('update:modelValue', historyRecord)
         historyListButton.value?.$el?.click()

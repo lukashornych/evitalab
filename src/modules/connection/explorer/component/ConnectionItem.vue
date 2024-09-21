@@ -30,12 +30,17 @@ import {
     useServerStatusTabFactory
 } from '@/modules/server-status/service/ServerStatusTabFactory'
 import CreateCatalogDialog from '@/modules/connection/explorer/component/CreateCatalogDialog.vue'
+import { JobTabFactory, useJobTabFactory } from '@/modules/jobs/services/JobTabFactory'
+import { JfrTabFactory, useJfrTabFactory } from '@/modules/jfr-recording/service/JfrTabFactory'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const connectionService: ConnectionService = useConnectionService()
 const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = useGraphQLConsoleTabFactory()
 const serverStatusTabFactory: ServerStatusTabFactory = useServerStatusTabFactory()
+const jobTabFactory: JobTabFactory = useJobTabFactory()
+const jfrTabFactory: JfrTabFactory = useJfrTabFactory()
+
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
@@ -114,6 +119,28 @@ function createActions(): Map<ConnectionActionType, MenuItem<ConnectionActionTyp
                 )
         )
     )
+    actions.set(ConnectionActionType.Jobs, createMenuAction(
+        ConnectionActionType.Jobs,
+        'mdi-chart-gantt',
+        () => {
+            workspaceService.createTab(
+                jobTabFactory.createNew(
+                    props.connection
+                )
+            )
+        }
+    ))
+    actions.set(ConnectionActionType.JfrRecordings, createMenuAction(
+        ConnectionActionType.JfrRecordings,
+        'mdi-chart-timeline',
+        () => {
+            workspaceService.createTab(
+                jfrTabFactory.createNew(
+                    props.connection
+                )
+            )
+        }
+    ))
     if (!evitaLabConfig.readOnly) {
         if (!props.connection.preconfigured) {
             // todo lho implement

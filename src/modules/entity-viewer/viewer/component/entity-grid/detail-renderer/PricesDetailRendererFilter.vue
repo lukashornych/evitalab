@@ -22,10 +22,10 @@ const props = defineProps<{
     selectedInnerRecordIds: number[]
 }>()
 const emit = defineEmits<{
-    (e: 'update:selectedPriceIds', value: string[]): void,
+    (e: 'update:selectedPriceIds', value: number[]): void,
     (e: 'update:selectedPriceLists', value: string[]): void,
     (e: 'update:selectedCurrencies', value: string[]): void,
-    (e: 'update:selectedInnerRecordIds', value: string[]): void
+    (e: 'update:selectedInnerRecordIds', value: number[]): void
 }>()
 </script>
 

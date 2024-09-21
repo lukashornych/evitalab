@@ -4,7 +4,6 @@
  */
 
 import { Pane, Splitpanes } from 'splitpanes'
-import { VDataTableServer } from 'vuetify/labs/VDataTable'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
@@ -177,7 +176,7 @@ function closePropertyDetail(): void {
                     <tr>
                         <EntityGridColumnHeader
                             v-for="column in columns"
-                            :key="column.key"
+                            :key="column.key!"
                             :column="column"
                             :is-sorted="isSorted"
                             :get-sort-icon="getSortIcon"
@@ -185,10 +184,10 @@ function closePropertyDetail(): void {
                         />
                     </tr>
                 </template>
-                <template #item="{ item, index }">
+                <template #item="{ internalItem, index }">
                     <tr>
                         <EntityGridCell
-                            v-for="(propertyValue, propertyKey) in item.columns"
+                            v-for="(propertyValue, propertyKey) in internalItem.columns"
                             :key="propertyKey"
                             :property-descriptor="entityPropertyDescriptorIndex.get(propertyKey as string)"
                             :property-value="propertyValue"

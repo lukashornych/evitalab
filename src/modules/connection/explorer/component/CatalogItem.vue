@@ -37,12 +37,17 @@ import ReplaceCatalogDialog from '@/modules/connection/explorer/component/Replac
 import CreateCollectionDialog from '@/modules/connection/explorer/component/CreateCollectionDialog.vue'
 import SwitchCatalogToAliveStateDialog
     from '@/modules/connection/explorer/component/SwitchCatalogToAliveStateDialog.vue'
+import {
+    BackupsTabFactory,
+    useBackupsTabFactory,
+} from '@/modules/backups/service/BackupsTabFactory'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory = useEvitaQLConsoleTabFactory()
 const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = useGraphQLConsoleTabFactory()
 const schemaViewerTabFactory: SchemaViewerTabFactory = useSchemaViewerTabFactory()
+const backupsService: BackupsTabFactory = useBackupsTabFactory()
 const { t } = useI18n()
 
 const props = defineProps<{
@@ -137,6 +142,24 @@ function createActions(): Map<CatalogActionType, MenuItem<CatalogActionType>> {
         )
     )
     if (!evitaLabConfig.readOnly) {
+        actions.set(
+            CatalogActionType.BackupSubheader,
+            new MenuSubheader(t('explorer.catalog.subheader.backup'))
+        )
+
+        actions.set(
+            CatalogActionType.Backup,
+            createMenuAction(
+                CatalogActionType.Backup,
+                'mdi-cloud-download-outline',
+                () => {
+                    workspaceService.createTab(
+                        backupsService.createNew(connection, props.catalog.name, false)
+                    )
+                }
+            )
+        )
+
         actions.set(
             CatalogActionType.ModifySubheader,
             new MenuSubheader(t('explorer.catalog.subheader.modify'))
