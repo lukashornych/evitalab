@@ -14,6 +14,7 @@ import { List } from 'immutable'
 import { useI18n } from 'vue-i18n'
 import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
 import RuntimeConfigurationDialog from '@/modules/server-status/component/RuntimeConfigurationDialog.vue'
+import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
 
 const emit = defineEmits<TabComponentEvents>()
 const props = defineProps<TabComponentProps<ServerStatusTabParams, VoidTabData>>()
@@ -32,6 +33,7 @@ const runtimeConfig = ref<string>()
 
 const path: List<string> = List([t('serverStatus.toolbar.title')])
 const serverStatusService = useServerStatusService()
+const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 
 serverStatusService
     .getServerStatistics(props.params.connection)
@@ -242,7 +244,9 @@ function refresh() {
                                         </VChip>
                                     </VChipGroup>
                                 </p>
+                                <!-- todo lho: temporary disable flag, we will later introduce some kind of "demo" mode instead -->
                                 <VChip
+                                    :disabled="evitaLabConfig.readOnly"
                                     @click="visibleYamlDialog = true"
                                     variant="outlined"
                                     class="w-75 bottom-title"
