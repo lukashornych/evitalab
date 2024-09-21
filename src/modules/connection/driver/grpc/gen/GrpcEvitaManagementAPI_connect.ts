@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { GrpcCancelTaskRequest, GrpcCancelTaskResponse, GrpcDeleteFileToFetchRequest, GrpcDeleteFileToFetchResponse, GrpcEvitaCatalogStatisticsResponse, GrpcEvitaConfigurationResponse, GrpcEvitaServerStatusResponse, GrpcFetchFileRequest, GrpcFetchFileResponse, GrpcFilesToFetchRequest, GrpcFilesToFetchResponse, GrpcFileToFetchRequest, GrpcFileToFetchResponse, GrpcRestoreCatalogFromServerFileRequest, GrpcRestoreCatalogRequest, GrpcRestoreCatalogResponse, GrpcSpecifiedTaskStatusesRequest, GrpcSpecifiedTaskStatusesResponse, GrpcTaskStatusesRequest, GrpcTaskStatusesResponse, GrpcTaskStatusRequest, GrpcTaskStatusResponse } from "./GrpcEvitaManagementAPI_pb.js";
+import { GrpcCancelTaskRequest, GrpcCancelTaskResponse, GrpcDeleteFileToFetchRequest, GrpcDeleteFileToFetchResponse, GrpcEvitaCatalogStatisticsResponse, GrpcEvitaConfigurationResponse, GrpcEvitaServerStatusResponse, GrpcFetchFileRequest, GrpcFetchFileResponse, GrpcFilesToFetchRequest, GrpcFilesToFetchResponse, GrpcFileToFetchRequest, GrpcFileToFetchResponse, GrpcReservedKeywordsResponse, GrpcRestoreCatalogFromServerFileRequest, GrpcRestoreCatalogRequest, GrpcRestoreCatalogResponse, GrpcRestoreCatalogUnaryRequest, GrpcSpecifiedTaskStatusesRequest, GrpcSpecifiedTaskStatusesResponse, GrpcTaskStatusesRequest, GrpcTaskStatusesResponse, GrpcTaskStatusRequest, GrpcTaskStatusResponse } from "./GrpcEvitaManagementAPI_pb.js";
 
 /**
  * This service contains RPCs that could be called by gRPC clients on evitaDB. Main purpose of this service is to provide
@@ -58,6 +58,17 @@ export const EvitaManagementService = {
       I: GrpcRestoreCatalogRequest,
       O: GrpcRestoreCatalogResponse,
       kind: MethodKind.ClientStreaming,
+    },
+    /**
+     * Procedure used to restore a catalog from backup (unary version for gRPC/web).
+     *
+     * @generated from rpc io.evitadb.externalApi.grpc.generated.EvitaManagementService.RestoreCatalogUnary
+     */
+    restoreCatalogUnary: {
+      name: "RestoreCatalogUnary",
+      I: GrpcRestoreCatalogUnaryRequest,
+      O: GrpcRestoreCatalogResponse,
+      kind: MethodKind.Unary,
     },
     /**
      * Procedure used to restore a catalog from backup.
@@ -156,6 +167,17 @@ export const EvitaManagementService = {
       name: "DeleteFile",
       I: GrpcDeleteFileToFetchRequest,
       O: GrpcDeleteFileToFetchResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * List reserved keywords
+     *
+     * @generated from rpc io.evitadb.externalApi.grpc.generated.EvitaManagementService.ListReservedKeywords
+     */
+    listReservedKeywords: {
+      name: "ListReservedKeywords",
+      I: Empty,
+      O: GrpcReservedKeywordsResponse,
       kind: MethodKind.Unary,
     },
   }

@@ -7,6 +7,14 @@ these practices.
 
 ## Code architecture
 
+### SFC structure
+
+TODO script, template, style
+
+### Component setup structure
+
+TODO import, services, props, emits, refs, functions
+
 ### Dependency injection
 
 Each service that should be injectable should export an injection key:
@@ -26,13 +34,68 @@ export function useService(): Service {
 For component tree dependency injection a `dependecies.ts` file should be created where the components for a feature are 
 places with proper injection keys and `provideX` and `injectX` methods so that the keys are not spread across components.
 
-### UI components
+### UI
 
 Complex components that access data should adhere to the [Model-View-ViewModel architecture](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel),
 preferably in conjunction with the [mediator pattern](https://en.wikipedia.org/wiki/Mediator_pattern) in form of 
 custom service for the component to abstract access to generic services.
 
 ![Component-service hierarchy](assets/component-service-hierarchy.svg)
+
+#### Base UI components
+
+##### Dialogs
+
+Use `VLabDialog` for each new dialog that you are creating.
+
+For texts within dialogs, use `VCardText`.
+
+VAlternativeActionDialogButton
+VCancelDialogButton
+VConfirmDialogButton
+
+##### Tab windows
+
+Use `VTabToolbar` for toolbars within tab window content.
+
+##### Lists
+
+Use `VListItemDivider` for delimiting list items in **each** non-menu lists.
+
+Use `VListItemLazyIterator` if you need client-side with "load next" pagination for lists. Usually useful for 
+optimizing GUI rendering for lots of components.
+
+##### Expansion panels
+
+Use `VExpansionPanelLazyIterator` if you need client-side with "load next" pagination for expansion panels. Usually useful for
+optimizing GUI rendering for lots of components.
+
+##### Markdown
+
+Use `VMarkdown` for rendering markdown texts.
+
+##### Properties
+
+Use `VPropertiesTable` for displaying properties of object etc.
+
+##### Trees
+
+Use `VTreeViewItem` and `VTreeViewEmptyItem` for constructing tree menu structures.
+
+##### Code editor
+
+Use `VQueryEditor`, `VInlineQueryEditor` or `VPreviewEditor` for code/text editor behaviour.
+
+Use `VExecuteQueryButton` as special button for executing queries in conjunction with query editor.
+
+### Toast notifications and handling errors
+
+TODO
+
+### Forms
+
+#### Validations
+TODO
 
 ## Git
 

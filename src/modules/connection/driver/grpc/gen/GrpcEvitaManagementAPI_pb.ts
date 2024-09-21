@@ -6,6 +6,7 @@
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3, protoInt64, StringValue } from "@bufbuild/protobuf";
 import { GrpcCatalogStatistics, GrpcFile, GrpcOffsetDateTime, GrpcTaskStatus, GrpcUuid } from "./GrpcEvitaDataTypes_pb.js";
+import { GrpcClassifierType, GrpcHealthProblem, GrpcReadiness, GrpcTaskSimplifiedState } from "./GrpcEnums_pb.js";
 
 /**
  * Response to a server status request.
@@ -55,6 +56,27 @@ export class GrpcEvitaServerStatusResponse extends Message<GrpcEvitaServerStatus
    */
   catalogsOk = 0;
 
+  /**
+   * Health problems
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcHealthProblem healthProblems = 7;
+   */
+  healthProblems: GrpcHealthProblem[] = [];
+
+  /**
+   * Overall readiness of the evitaDB server
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcReadiness readiness = 8;
+   */
+  readiness = GrpcReadiness.API_STARTING;
+
+  /**
+   * Information about all available APIs
+   *
+   * @generated from field: map<string, io.evitadb.externalApi.grpc.generated.GrpcApiStatus> api = 9;
+   */
+  api: { [key: string]: GrpcApiStatus } = {};
+
   constructor(data?: PartialMessage<GrpcEvitaServerStatusResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -69,6 +91,9 @@ export class GrpcEvitaServerStatusResponse extends Message<GrpcEvitaServerStatus
     { no: 4, name: "instanceId", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "catalogsCorrupted", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 6, name: "catalogsOk", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 7, name: "healthProblems", kind: "enum", T: proto3.getEnumType(GrpcHealthProblem), repeated: true },
+    { no: 8, name: "readiness", kind: "enum", T: proto3.getEnumType(GrpcReadiness) },
+    { no: 9, name: "api", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: GrpcApiStatus} },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcEvitaServerStatusResponse {
@@ -85,6 +110,121 @@ export class GrpcEvitaServerStatusResponse extends Message<GrpcEvitaServerStatus
 
   static equals(a: GrpcEvitaServerStatusResponse | PlainMessage<GrpcEvitaServerStatusResponse> | undefined, b: GrpcEvitaServerStatusResponse | PlainMessage<GrpcEvitaServerStatusResponse> | undefined): boolean {
     return proto3.util.equals(GrpcEvitaServerStatusResponse, a, b);
+  }
+}
+
+/**
+ * Status of the external API
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GrpcApiStatus
+ */
+export class GrpcApiStatus extends Message<GrpcApiStatus> {
+  /**
+   * True if the API is enabled
+   *
+   * @generated from field: bool enabled = 1;
+   */
+  enabled = false;
+
+  /**
+   * API readiness status
+   *
+   * @generated from field: bool ready = 2;
+   */
+  ready = false;
+
+  /**
+   * list of base url of the web API
+   *
+   * @generated from field: repeated string baseUrl = 3;
+   */
+  baseUrl: string[] = [];
+
+  /**
+   * list of specific endpoints of particular API
+   * currently only system API provides list of endpoints
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcEndpoint endpoints = 4;
+   */
+  endpoints: GrpcEndpoint[] = [];
+
+  constructor(data?: PartialMessage<GrpcApiStatus>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "io.evitadb.externalApi.grpc.generated.GrpcApiStatus";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "enabled", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 2, name: "ready", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 3, name: "baseUrl", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 4, name: "endpoints", kind: "message", T: GrpcEndpoint, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcApiStatus {
+    return new GrpcApiStatus().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GrpcApiStatus {
+    return new GrpcApiStatus().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GrpcApiStatus {
+    return new GrpcApiStatus().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GrpcApiStatus | PlainMessage<GrpcApiStatus> | undefined, b: GrpcApiStatus | PlainMessage<GrpcApiStatus> | undefined): boolean {
+    return proto3.util.equals(GrpcApiStatus, a, b);
+  }
+}
+
+/**
+ * Information about a system endpoint of particular purpose derived from name
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GrpcEndpoint
+ */
+export class GrpcEndpoint extends Message<GrpcEndpoint> {
+  /**
+   * logical name of the endpoint
+   *
+   * @generated from field: string name = 1;
+   */
+  name = "";
+
+  /**
+   * absolute URL of the endpoint
+   *
+   * @generated from field: repeated string url = 2;
+   */
+  url: string[] = [];
+
+  constructor(data?: PartialMessage<GrpcEndpoint>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "io.evitadb.externalApi.grpc.generated.GrpcEndpoint";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcEndpoint {
+    return new GrpcEndpoint().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GrpcEndpoint {
+    return new GrpcEndpoint().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GrpcEndpoint {
+    return new GrpcEndpoint().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GrpcEndpoint | PlainMessage<GrpcEndpoint> | undefined, b: GrpcEndpoint | PlainMessage<GrpcEndpoint> | undefined): boolean {
+    return proto3.util.equals(GrpcEndpoint, a, b);
   }
 }
 
@@ -223,6 +363,72 @@ export class GrpcRestoreCatalogRequest extends Message<GrpcRestoreCatalogRequest
 /**
  * Request to restore a catalog.
  *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GrpcRestoreCatalogUnaryRequest
+ */
+export class GrpcRestoreCatalogUnaryRequest extends Message<GrpcRestoreCatalogUnaryRequest> {
+  /**
+   * Name of the catalog where the backup will be restored
+   * The name must not clash with any of existing catalogs
+   *
+   * @generated from field: string catalogName = 1;
+   */
+  catalogName = "";
+
+  /**
+   * Binary contents of the backup file.
+   *
+   * @generated from field: bytes backupFile = 2;
+   */
+  backupFile = new Uint8Array(0);
+
+  /**
+   * Identification of the task (for continuation purpose)
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcUuid fileId = 3;
+   */
+  fileId?: GrpcUuid;
+
+  /**
+   * Total size of uploaded file in Bytes, when the size is reached, restore automatically starts
+   *
+   * @generated from field: int64 totalSizeInBytes = 4;
+   */
+  totalSizeInBytes = protoInt64.zero;
+
+  constructor(data?: PartialMessage<GrpcRestoreCatalogUnaryRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "io.evitadb.externalApi.grpc.generated.GrpcRestoreCatalogUnaryRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "catalogName", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "backupFile", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
+    { no: 3, name: "fileId", kind: "message", T: GrpcUuid },
+    { no: 4, name: "totalSizeInBytes", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcRestoreCatalogUnaryRequest {
+    return new GrpcRestoreCatalogUnaryRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GrpcRestoreCatalogUnaryRequest {
+    return new GrpcRestoreCatalogUnaryRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GrpcRestoreCatalogUnaryRequest {
+    return new GrpcRestoreCatalogUnaryRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GrpcRestoreCatalogUnaryRequest | PlainMessage<GrpcRestoreCatalogUnaryRequest> | undefined, b: GrpcRestoreCatalogUnaryRequest | PlainMessage<GrpcRestoreCatalogUnaryRequest> | undefined): boolean {
+    return proto3.util.equals(GrpcRestoreCatalogUnaryRequest, a, b);
+  }
+}
+
+/**
+ * Request to restore a catalog.
+ *
  * @generated from message io.evitadb.externalApi.grpc.generated.GrpcRestoreCatalogFromServerFileRequest
  */
 export class GrpcRestoreCatalogFromServerFileRequest extends Message<GrpcRestoreCatalogFromServerFileRequest> {
@@ -339,6 +545,22 @@ export class GrpcTaskStatusesRequest extends Message<GrpcTaskStatusesRequest> {
    */
   pageSize = 0;
 
+  /**
+   * Optional taskType of the listed task, passing non-null value
+   * in this argument filters the returned status to only those that are related to the tasks of specified type
+   *
+   * @generated from field: google.protobuf.StringValue taskType = 3;
+   */
+  taskType?: string;
+
+  /**
+   * Optional set of simplified task states, passing list of enums in this argument
+   * filters the returned statuses to only those that match this simplified status
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcTaskSimplifiedState simplifiedState = 4;
+   */
+  simplifiedState: GrpcTaskSimplifiedState[] = [];
+
   constructor(data?: PartialMessage<GrpcTaskStatusesRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -349,6 +571,8 @@ export class GrpcTaskStatusesRequest extends Message<GrpcTaskStatusesRequest> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "pageNumber", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 2, name: "pageSize", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 3, name: "taskType", kind: "message", T: StringValue },
+    { no: 4, name: "simplifiedState", kind: "enum", T: proto3.getEnumType(GrpcTaskSimplifiedState), repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcTaskStatusesRequest {
@@ -1053,6 +1277,104 @@ export class GrpcDeleteFileToFetchResponse extends Message<GrpcDeleteFileToFetch
 
   static equals(a: GrpcDeleteFileToFetchResponse | PlainMessage<GrpcDeleteFileToFetchResponse> | undefined, b: GrpcDeleteFileToFetchResponse | PlainMessage<GrpcDeleteFileToFetchResponse> | undefined): boolean {
     return proto3.util.equals(GrpcDeleteFileToFetchResponse, a, b);
+  }
+}
+
+/**
+ * Single reserved keyword
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GrpcReservedKeyword
+ */
+export class GrpcReservedKeyword extends Message<GrpcReservedKeyword> {
+  /**
+   * Type of the keyword
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcClassifierType classifierType = 1;
+   */
+  classifierType = GrpcClassifierType.CLASSIFIER_TYPE_SERVER_NAME;
+
+  /**
+   * Reserved keyword
+   *
+   * @generated from field: string classifier = 2;
+   */
+  classifier = "";
+
+  /**
+   * List of words that are part of the keyword
+   *
+   * @generated from field: repeated string words = 3;
+   */
+  words: string[] = [];
+
+  constructor(data?: PartialMessage<GrpcReservedKeyword>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "io.evitadb.externalApi.grpc.generated.GrpcReservedKeyword";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "classifierType", kind: "enum", T: proto3.getEnumType(GrpcClassifierType) },
+    { no: 2, name: "classifier", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "words", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcReservedKeyword {
+    return new GrpcReservedKeyword().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GrpcReservedKeyword {
+    return new GrpcReservedKeyword().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GrpcReservedKeyword {
+    return new GrpcReservedKeyword().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GrpcReservedKeyword | PlainMessage<GrpcReservedKeyword> | undefined, b: GrpcReservedKeyword | PlainMessage<GrpcReservedKeyword> | undefined): boolean {
+    return proto3.util.equals(GrpcReservedKeyword, a, b);
+  }
+}
+
+/**
+ * Response that returns information about reserved keywords.
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GrpcReservedKeywordsResponse
+ */
+export class GrpcReservedKeywordsResponse extends Message<GrpcReservedKeywordsResponse> {
+  /**
+   * List of reserved keywords
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcReservedKeyword keywords = 1;
+   */
+  keywords: GrpcReservedKeyword[] = [];
+
+  constructor(data?: PartialMessage<GrpcReservedKeywordsResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "io.evitadb.externalApi.grpc.generated.GrpcReservedKeywordsResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "keywords", kind: "message", T: GrpcReservedKeyword, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcReservedKeywordsResponse {
+    return new GrpcReservedKeywordsResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GrpcReservedKeywordsResponse {
+    return new GrpcReservedKeywordsResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GrpcReservedKeywordsResponse {
+    return new GrpcReservedKeywordsResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GrpcReservedKeywordsResponse | PlainMessage<GrpcReservedKeywordsResponse> | undefined, b: GrpcReservedKeywordsResponse | PlainMessage<GrpcReservedKeywordsResponse> | undefined): boolean {
+    return proto3.util.equals(GrpcReservedKeywordsResponse, a, b);
   }
 }
 

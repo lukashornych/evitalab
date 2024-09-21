@@ -7,6 +7,7 @@ import { useI18n } from 'vue-i18n'
 import { ConnectionService, useConnectionService } from '@/modules/connection/service/ConnectionService'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
 import { Connection } from '@/modules/connection/model/Connection'
+import VFormDialog from '@/modules/base/component/VFormDialog.vue'
 
 const connectionService: ConnectionService = useConnectionService()
 const toaster: Toaster = useToaster()
@@ -21,56 +22,58 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void
 }>()
 
-function cancel() {
-    emit('update:modelValue', false)
-}
-
-function removeConnection(): void {
+async function removeConnection(): Promise<boolean> {
     try {
         connectionService.removeConnection(props.connection.id)
+        toaster.success(t(
+            'explorer.connection.remove.notification.connectionRemoved',
+            {
+                connectionName: props.connection.name
+            }
+        ))
+        return true
     } catch (e: any) {
-        toaster.error(e)
-        return
+        toaster.error(t(
+            'explorer.connection.remove.notification.couldNotRemoveConnection',
+            {
+                connectionName: props.connection.name,
+                reason: e.message
+            }
+        ))
+        return false
     }
-    toaster.success('Connection removed.')
-    emit('update:modelValue', false)
 }
 </script>
 
 <template>
-    <VDialog
+    <VFormDialog
         :model-value="modelValue"
-        max-width="30rem"
-        @update:model-value="$emit('update:modelValue', $event)"
+        dangerous
+        changed
+        confirm-button-icon="mdi-delete-outline"
+        :confirm="removeConnection"
+        @update:model-value="emit('update:modelValue', $event)"
     >
         <template #activator="{ props }">
             <slot name="activator" v-bind="props"/>
         </template>
 
-        <VCard class="py-8 px-4">
-            <VCardTitle>{{ t('explorer.connection.remove.title') }}</VCardTitle>
-            <VCardText class="mb-4">
-                <I18nT keypath="explorer.connection.remove.question">
-                    <template #connectionName>
-                        <strong>{{ connection.name }}</strong>
-                    </template>
-                </I18nT>
-            </VCardText>
-            <VCardActions>
-                <VSpacer/>
-                <VBtn @click="cancel" variant="tonal">
-                    {{ t('common.button.cancel') }}
-                </VBtn>
-                <VBtn
-                    variant="outlined"
-                    prepend-icon="mdi-delete"
-                    @click="removeConnection"
-                >
-                    {{ t('common.button.remove') }}
-                </VBtn>
-            </VCardActions>
-        </VCard>
-    </VDialog>
+        <template #title>
+            {{ t('explorer.connection.remove.title') }}
+        </template>
+
+        <template #prepend-form>
+            <I18nT keypath="explorer.connection.remove.question">
+                <template #connectionName>
+                    <strong>{{ connection.name }}</strong>
+                </template>
+            </I18nT>
+        </template>
+
+        <template #confirm-button-body>
+            {{ t('common.button.remove') }}
+        </template>
+    </VFormDialog>
 </template>
 
 <style lang="scss" scoped>

@@ -36,12 +36,22 @@ export class GrpcEntityReference extends Message<GrpcEntityReference> {
   primaryKey = 0;
 
   /**
-   * Contains version of this entity and gets increased with any entity type update. Allows to execute
-   * optimistic locking i.e. avoiding parallel modifications.
+   * value is deprecated, it was available only for entity references used in entity body, in other use-cases it was left
+   * as zero - which was a mistake in the design.
+   * in order to get the entity version you need to fetch the entity itself (with entity body).
    *
-   * @generated from field: int32 version = 3;
+   * @generated from field: int32 version = 3 [deprecated = true];
+   * @deprecated
    */
   version = 0;
+
+  /**
+   * Contains version of this reference and gets increased with any entity type update. Allows to execute
+   * optimistic locking i.e. avoiding parallel modifications.
+   *
+   * @generated from field: google.protobuf.Int32Value referenceVersion = 4;
+   */
+  referenceVersion?: number;
 
   constructor(data?: PartialMessage<GrpcEntityReference>) {
     super();
@@ -54,6 +64,7 @@ export class GrpcEntityReference extends Message<GrpcEntityReference> {
     { no: 1, name: "entityType", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "primaryKey", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 3, name: "version", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 4, name: "referenceVersion", kind: "message", T: Int32Value },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcEntityReference {
@@ -74,25 +85,42 @@ export class GrpcEntityReference extends Message<GrpcEntityReference> {
 }
 
 /**
+ * Entity reference which contains information about parent entity.
+ *
  * @generated from message io.evitadb.externalApi.grpc.generated.GrpcEntityReferenceWithParent
  */
 export class GrpcEntityReferenceWithParent extends Message<GrpcEntityReferenceWithParent> {
   /**
+   * Type of entity.
+   * Entity type is main sharding key - all data of entities with same type are stored in separated collections. Within the
+   * entity type entity is uniquely represented by primary key.
+   *
    * @generated from field: string entityType = 1;
    */
   entityType = "";
 
   /**
+   * Unique Integer positive number representing the entity. Can be used for fast lookup for
+   * entity (entities). Primary key must be unique within the same entity type.
+   *
    * @generated from field: int32 primaryKey = 2;
    */
   primaryKey = 0;
 
   /**
-   * @generated from field: int32 version = 3;
+   * Contains version of this entity and gets increased with any entity type update. Allows to execute
+   * optimistic locking i.e. avoiding parallel modifications.
+   * value is deprecated, it was never available in the first place - it was a mistake in the design.
+   * in order to get the entity version you need to fetch the entity itself (with entity body).
+   *
+   * @generated from field: int32 version = 3 [deprecated = true];
+   * @deprecated
    */
   version = 0;
 
   /**
+   * Recursive pointer to parent entity.
+   *
    * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcEntityReferenceWithParent parent = 4;
    */
   parent?: GrpcEntityReferenceWithParent;

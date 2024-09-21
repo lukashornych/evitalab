@@ -60,6 +60,10 @@ export default createVuetify({
             variant: 'solo-filled',
             density: 'compact'
         },
+        VAutocomplete: {
+            variant: 'solo-filled',
+            density: 'compact'
+        },
         VTextField: {
             variant: 'solo-filled',
             density: 'compact'

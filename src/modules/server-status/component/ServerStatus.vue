@@ -1,3 +1,117 @@
+<script setup lang="ts">
+import { TabComponentEvents } from '@/modules/workspace/tab/model/TabComponentEvents'
+import { useServerStatusService } from '../service/ServerStatusService'
+import { ref } from 'vue'
+import { ServerStatus } from '@/modules/connection/model/data/ServerStatus'
+import { TabComponentProps } from '@/modules/workspace/tab/model/TabComponentProps'
+import { ServerStatusTabParams } from '../model/ServerStatusTabParams'
+import { VoidTabData } from '@/modules/workspace/tab/model/void/VoidTabData'
+import { Duration } from 'luxon'
+import { ApiReadiness } from '@/modules/connection/model/data/ApiReadiness'
+import { ApiServerStatus } from '@/modules/connection/model/data/ApiServerStatus'
+import { ApiEndpoint } from '@/modules/connection/model/data/ApiEndpoint'
+import { List } from 'immutable'
+import { useI18n } from 'vue-i18n'
+import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
+import RuntimeConfigurationDialog from '@/modules/server-status/component/RuntimeConfigurationDialog.vue'
+
+const emit = defineEmits<TabComponentEvents>()
+const props = defineProps<TabComponentProps<ServerStatusTabParams, VoidTabData>>()
+
+const { t } = useI18n()
+
+const serverDetailLoaded = ref<boolean>(false)
+const serverDetail = ref<ServerStatus>()
+const apiReadinessLoaded = ref<boolean>(false)
+const apiReadiness = ref<ApiReadiness>()
+const apiStatus = ref<ApiServerStatus>()
+const apiStatusLoaded = ref<boolean>()
+const visibleYamlDialog = ref<boolean>(false)
+const runtimeConfigLoaded = ref<boolean>(false)
+const runtimeConfig = ref<string>()
+
+const path: List<string> = List([t('serverStatus.toolbar.title')])
+const serverStatusService = useServerStatusService()
+
+serverStatusService
+    .getServerStatistics(props.params.connection)
+    .then((x) => loadedServerStatus(x))
+serverStatusService
+    .getApiReadiness(props.params.connection)
+    .then((x) => loadedApiReadiness(x))
+serverStatusService
+    .getRuntimeConfiguration(props.params.connection)
+    .then((x) => loadedRuntimeConfig(x))
+serverStatusService
+    .getServerStatus(props.params.connection)
+    .then((x) => loadedApiServerStatus(x))
+
+function loadedServerStatus(serverStatus: ServerStatus) {
+    serverDetail.value = serverStatus
+    serverDetailLoaded.value = true
+    checkAllDataLoaded()
+}
+
+function loadedApiReadiness(apiStatusValue: ApiReadiness) {
+    apiReadiness.value = apiStatusValue
+    apiReadinessLoaded.value = true
+    checkAllDataLoaded()
+}
+
+function loadedApiServerStatus(serverStatus: ApiServerStatus) {
+    apiStatus.value = serverStatus
+    apiStatusLoaded.value = true
+    checkAllDataLoaded()
+}
+
+function getFormattedUptime(uptime: bigint | undefined): string {
+    if (!uptime) return ''
+    return Duration.fromObject({ seconds: Number(uptime) }).toFormat(
+        "y'y ' M'm ' d'd 'h'h ' m'min ' s's '"
+    )
+}
+
+function loadedRuntimeConfig(config: string) {
+    runtimeConfig.value = config
+    runtimeConfigLoaded.value = true
+    checkAllDataLoaded()
+}
+
+function checkAllDataLoaded(): void {
+    if (
+        serverDetailLoaded.value === true &&
+        apiReadinessLoaded.value === true &&
+        runtimeConfigLoaded.value === true &&
+        apiStatusLoaded.value === true
+    ) {
+        emit('ready')
+    }
+}
+
+function findApiUrls(apiName: keyof ApiEndpoint): string[] | undefined {
+    return apiStatus.value?.apis.find((api) => api[apiName])?.[apiName]
+}
+
+function formatUrl(url: string): string {
+    return url.replace('0.0.0.0', '127.0.0.1')
+}
+
+function refresh() {
+    serverStatusService
+        .getServerStatistics(props.params.connection)
+        .then((x) => loadedServerStatus(x))
+    serverStatusService
+        .getApiReadiness(props.params.connection)
+        .then((x) => loadedApiReadiness(x))
+    serverStatusService
+        .getRuntimeConfiguration(props.params.connection)
+        .then((x) => loadedRuntimeConfig(x))
+    serverStatusService
+        .getServerStatus(props.params.connection)
+        .then((x) => loadedApiServerStatus(x))
+}
+</script>
+
 <template>
     <div class="server-status">
         <!--TODO: LHO fix entension whitespace-->
@@ -139,164 +253,15 @@
                         </div>
                     </VCardText>
                 </VCard>
-                <VDialog
+                <RuntimeConfigurationDialog
+                    v-if="runtimeConfigLoaded"
                     v-model="visibleYamlDialog"
-                    max-width="75rem"
-                    height="75%"
-                >
-                    <template #activator="{ props }">
-                        <slot name="activator" v-bind="props" class="h-100" />
-                    </template>
-                    <VCard class="py-8 px-8 h-100 card">
-                        <VCardTitleWithActions>
-                            <template #default>
-                                {{ t('serverStatus.detail.runtimeConfig.title') }}
-                            </template>
-                            <template #actions>
-                                <VBtn
-                                    icon
-                                    variant="flat"
-                                    density="compact"
-                                    @click="visibleYamlDialog = false"
-                                >
-                                    <VIcon>mdi-close</VIcon>
-                                    <VTooltip activator="parent">
-                                        {{ t('common.button.close') }}
-                                    </VTooltip>
-                                </VBtn>
-                            </template>
-                        </VCardTitleWithActions>
-                        <VCardText class="selector-body pt-0 pl-4 mt-4">
-                            <VPreviewEditor
-                                :model-value="runtimeConfig ?? ''"
-                                :additional-extensions="extensions"
-                                read-only
-                            >
-                            </VPreviewEditor>
-                        </VCardText>
-                    </VCard>
-                </VDialog>
+                    :runtime-configuration="runtimeConfig!"
+                />
             </div>
         </VSheet>
     </div>
 </template>
-
-<script setup lang="ts">
-import { TabComponentEvents } from '@/modules/workspace/tab/model/TabComponentEvents'
-import { useServerStatusService } from '../service/ServerStatusService'
-import { ref } from 'vue'
-import { ServerStatus } from '@/modules/connection/model/data/ServerStatus'
-import { TabComponentProps } from '@/modules/workspace/tab/model/TabComponentProps'
-import { ServerStatusTabParams } from '../model/ServerStatusTabParams'
-import { VoidTabData } from '@/modules/workspace/tab/model/void/VoidTabData'
-import { Duration } from 'luxon'
-import { ApiReadiness } from '@/modules/connection/model/data/ApiReadiness'
-import VPreviewEditor from '@/modules/code-editor/component/VPreviewEditor.vue'
-import { ApiServerStatus } from '@/modules/connection/model/data/ApiServerStatus'
-import { ApiEndpoint } from '@/modules/connection/model/data/ApiEndpoint'
-import { Extension } from '@codemirror/state'
-import { yaml } from '@codemirror/lang-yaml'
-import { List } from 'immutable'
-import { useI18n } from 'vue-i18n'
-import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
-import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithActions.vue'
-
-const emit = defineEmits<TabComponentEvents>()
-const props = defineProps<TabComponentProps<ServerStatusTabParams, VoidTabData>>()
-
-const { t } = useI18n()
-
-const serverDetailLoaded = ref<boolean>(false)
-const serverDetail = ref<ServerStatus>()
-const apiReadinessLoaded = ref<boolean>(false)
-const apiReadiness = ref<ApiReadiness>()
-const apiStatus = ref<ApiServerStatus>()
-const apiStatusLoaded = ref<boolean>()
-const visibleYamlDialog = ref<boolean>(false)
-const runtimeConfigLoaded = ref<boolean>(false)
-const runtimeConfig = ref<string>()
-const extensions: Extension[] = [yaml()]
-const path: List<string> = List([t('serverStatus.toolbar.title')])
-const serverStatusService = useServerStatusService()
-
-serverStatusService
-    .getServerStatistics(props.params.connection)
-    .then((x) => loadedServerStatus(x))
-serverStatusService
-    .getApiReadiness(props.params.connection)
-    .then((x) => loadedApiReadiness(x))
-serverStatusService
-    .getRuntimeConfiguration(props.params.connection)
-    .then((x) => loadedRuntimeConfig(x))
-serverStatusService
-    .getServerStatus(props.params.connection)
-    .then((x) => loadedApiServerStatus(x))
-
-function loadedServerStatus(serverStatus: ServerStatus) {
-    serverDetail.value = serverStatus
-    serverDetailLoaded.value = true
-    checkAllDataLoaded()
-}
-
-function loadedApiReadiness(apiStatusValue: ApiReadiness) {
-    apiReadiness.value = apiStatusValue
-    apiReadinessLoaded.value = true
-    checkAllDataLoaded()
-}
-
-function loadedApiServerStatus(serverStatus: ApiServerStatus) {
-    apiStatus.value = serverStatus
-    apiStatusLoaded.value = true
-    checkAllDataLoaded()
-}
-
-function getFormattedUptime(uptime: bigint | undefined): string {
-    if (!uptime) return ''
-    return Duration.fromObject({ seconds: Number(uptime) }).toFormat(
-        "y'y ' M'm ' d'd 'h'h ' m'min ' s's '"
-    )
-}
-
-function loadedRuntimeConfig(config: string) {
-    runtimeConfig.value = config
-    runtimeConfigLoaded.value = true
-    checkAllDataLoaded()
-}
-
-function checkAllDataLoaded(): void {
-    if (
-        serverDetailLoaded.value === true &&
-        apiReadinessLoaded.value === true &&
-        runtimeConfigLoaded.value === true &&
-        apiStatusLoaded.value === true
-    ) {
-        emit('ready')
-    }
-}
-
-function findApiUrls(apiName: keyof ApiEndpoint): string[] | undefined {
-    return apiStatus.value?.apis.find((api) => api[apiName])?.[apiName]
-}
-
-function formatUrl(url: string): string {
-    return url.replace('0.0.0.0', '127.0.0.1')
-}
-
-function refresh() {
-    serverStatusService
-        .getServerStatistics(props.params.connection)
-        .then((x) => loadedServerStatus(x))
-    serverStatusService
-        .getApiReadiness(props.params.connection)
-        .then((x) => loadedApiReadiness(x))
-    serverStatusService
-        .getRuntimeConfiguration(props.params.connection)
-        .then((x) => loadedRuntimeConfig(x))
-    serverStatusService
-        .getServerStatus(props.params.connection)
-        .then((x) => loadedApiServerStatus(x))
-}
-</script>
 
 <style lang="scss" scoped>
 @import '@/styles/colors.scss';
@@ -386,9 +351,4 @@ function refresh() {
 .card {
     overflow-y: hidden !important;
 }
-
-.selector-body {
-    position: relative;
-}
-
 </style>

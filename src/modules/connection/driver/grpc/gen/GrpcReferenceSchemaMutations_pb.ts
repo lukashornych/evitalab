@@ -4,8 +4,8 @@
 // @ts-nocheck
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
-import { Message, proto3, StringValue } from "@bufbuild/protobuf";
-import { GrpcCardinality } from "./GrpcEnums_pb.js";
+import { BoolValue, Message, proto3, StringValue } from "@bufbuild/protobuf";
+import { GrpcAttributeInheritanceBehavior, GrpcCardinality } from "./GrpcEnums_pb.js";
 import { GrpcAttributeSchemaMutation } from "./GrpcAttributeSchemaMutations_pb.js";
 import { GrpcSortableAttributeCompoundSchemaMutation } from "./GrpcSortableAttributeCompoundSchemaMutations_pb.js";
 
@@ -86,7 +86,7 @@ export class GrpcCreateReferenceSchemaMutation extends Message<GrpcCreateReferen
    * Whether the index for this reference should be created and maintained allowing to filter by
    * `referenceHaving` filtering constraints. Index is also required when reference is
    * `faceted`.
-   * 
+   *
    * Do not mark reference as faceted unless you know that you'll need to filter/sort entities by this reference.
    * Each indexed reference occupies (memory/disk) space in the form of index. When reference is not indexed,
    * the entity cannot be looked up by reference attributes or relation existence itself, but the data is loaded
@@ -100,7 +100,7 @@ export class GrpcCreateReferenceSchemaMutation extends Message<GrpcCreateReferen
    * Whether the statistics data for this reference should be maintained and this allowing to get
    * `facetSummary` for this reference or use `facetInSet`
    * filtering query.
-   * 
+   *
    * Do not mark reference as faceted unless you want it among `FacetStatistics`. Each faceted reference
    * occupies (memory/disk) space in the form of index.
    * Reference that was marked as faceted is called Facet.
@@ -143,6 +143,128 @@ export class GrpcCreateReferenceSchemaMutation extends Message<GrpcCreateReferen
 
   static equals(a: GrpcCreateReferenceSchemaMutation | PlainMessage<GrpcCreateReferenceSchemaMutation> | undefined, b: GrpcCreateReferenceSchemaMutation | PlainMessage<GrpcCreateReferenceSchemaMutation> | undefined): boolean {
     return proto3.util.equals(GrpcCreateReferenceSchemaMutation, a, b);
+  }
+}
+
+/**
+ * Mutation is responsible for setting up a new `ReflectedReferenceSchema` in the `EntitySchema`.
+ * Mutation can be used for altering also the existing `ReflectedReferenceSchema` alone.
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GrpcCreateReflectedReferenceSchemaMutation
+ */
+export class GrpcCreateReflectedReferenceSchemaMutation extends Message<GrpcCreateReflectedReferenceSchemaMutation> {
+  /**
+   * Name of the reference the mutation is targeting.
+   *
+   * @generated from field: string name = 1;
+   */
+  name = "";
+
+  /**
+   * Contains description of the model is optional but helps authors of the schema / client API to better
+   * explain the original purpose of the model to the consumers.
+   *
+   * @generated from field: google.protobuf.StringValue description = 2;
+   */
+  description?: string;
+
+  /**
+   * Deprecation notice contains information about planned removal of this schema from the model / client API.
+   * This allows to plan and evolve the schema allowing clients to adapt early to planned breaking changes.
+   *
+   * @generated from field: google.protobuf.StringValue deprecationNotice = 3;
+   */
+  deprecationNotice?: string;
+
+  /**
+   * Cardinality describes the expected count of relations of this type. In evitaDB we define only one-way
+   * relationship from the perspective of the entity. We stick to the ERD modelling
+   * [standards](https://www.gleek.io/blog/crows-foot-notation.html) here. Cardinality affect the design
+   * of the client API (returning only single reference or collections) and also help us to protect the consistency
+   * of the data so that conforms to the creator mental model.
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcCardinality cardinality = 4;
+   */
+  cardinality = GrpcCardinality.NOT_SPECIFIED;
+
+  /**
+   * Reference to `EntitySchema.name` of the referenced entity. Might be also any `String`
+   * that identifies type some external resource not maintained by Evita.
+   *
+   * @generated from field: string referencedEntityType = 5;
+   */
+  referencedEntityType = "";
+
+  /**
+   * Name of the reflected reference of the target referencedEntityType(). The referenced entity must contain reference
+   * of such name and this reference must target the entity where the reflected reference is defined, and the target
+   * entity must be managed on both sides of the relation.
+   *
+   * @generated from field: string reflectedReferenceName = 6;
+   */
+  reflectedReferenceName = "";
+
+  /**
+   * Whether the statistics data for this reference should be maintained and this allowing to get
+   * `facetSummary` for this reference or use `facetInSet`
+   * filtering query.
+   *
+   * Do not mark reference as faceted unless you want it among `FacetStatistics`. Each faceted reference
+   * occupies (memory/disk) space in the form of index.
+   * Reference that was marked as faceted is called Facet.
+   *
+   * @generated from field: google.protobuf.BoolValue faceted = 7;
+   */
+  faceted?: boolean;
+
+  /**
+   * Contains true if the attributes of the reflected reference are inherited from the target reference.
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcAttributeInheritanceBehavior attributeInheritanceBehavior = 8;
+   */
+  attributeInheritanceBehavior = GrpcAttributeInheritanceBehavior.INHERIT_ALL_EXCEPT;
+
+  /**
+   * The array of attribute names that are inherited / excluded from inheritance based on the value of
+   * attributeInheritanceBehavior property.
+   *
+   * @generated from field: repeated string attributeInheritanceFilter = 9;
+   */
+  attributeInheritanceFilter: string[] = [];
+
+  constructor(data?: PartialMessage<GrpcCreateReflectedReferenceSchemaMutation>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "io.evitadb.externalApi.grpc.generated.GrpcCreateReflectedReferenceSchemaMutation";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "description", kind: "message", T: StringValue },
+    { no: 3, name: "deprecationNotice", kind: "message", T: StringValue },
+    { no: 4, name: "cardinality", kind: "enum", T: proto3.getEnumType(GrpcCardinality) },
+    { no: 5, name: "referencedEntityType", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "reflectedReferenceName", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "faceted", kind: "message", T: BoolValue },
+    { no: 8, name: "attributeInheritanceBehavior", kind: "enum", T: proto3.getEnumType(GrpcAttributeInheritanceBehavior) },
+    { no: 9, name: "attributeInheritanceFilter", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcCreateReflectedReferenceSchemaMutation {
+    return new GrpcCreateReflectedReferenceSchemaMutation().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GrpcCreateReflectedReferenceSchemaMutation {
+    return new GrpcCreateReflectedReferenceSchemaMutation().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GrpcCreateReflectedReferenceSchemaMutation {
+    return new GrpcCreateReflectedReferenceSchemaMutation().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GrpcCreateReflectedReferenceSchemaMutation | PlainMessage<GrpcCreateReflectedReferenceSchemaMutation> | undefined, b: GrpcCreateReflectedReferenceSchemaMutation | PlainMessage<GrpcCreateReflectedReferenceSchemaMutation> | undefined): boolean {
+    return proto3.util.equals(GrpcCreateReflectedReferenceSchemaMutation, a, b);
   }
 }
 
@@ -567,6 +689,66 @@ export class GrpcModifyReferenceSchemaRelatedEntityMutation extends Message<Grpc
 }
 
 /**
+ * Mutation is responsible for setting value to a `ReflectedReferenceSchema.attributesInherited` and
+ * `ReflectedReferenceSchema.attributesExcludedFromInheritance` in `ReferenceSchema`.
+ * Mutation can be used for altering also the existing `ReferenceSchemaContract` alone.
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation
+ */
+export class GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation extends Message<GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation> {
+  /**
+   * Name of the reference the mutation is targeting.
+   *
+   * @generated from field: string name = 1;
+   */
+  name = "";
+
+  /**
+   * Contains true if the attributes of the reflected reference are inherited from the target reference.
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcAttributeInheritanceBehavior attributeInheritanceBehavior = 2;
+   */
+  attributeInheritanceBehavior = GrpcAttributeInheritanceBehavior.INHERIT_ALL_EXCEPT;
+
+  /**
+   * The array of attribute names that are inherited / excluded from inheritance based on the value of
+   * attributeInheritanceBehavior property.
+   *
+   * @generated from field: repeated string attributeInheritanceFilter = 3;
+   */
+  attributeInheritanceFilter: string[] = [];
+
+  constructor(data?: PartialMessage<GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "io.evitadb.externalApi.grpc.generated.GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "attributeInheritanceBehavior", kind: "enum", T: proto3.getEnumType(GrpcAttributeInheritanceBehavior) },
+    { no: 3, name: "attributeInheritanceFilter", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation {
+    return new GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation {
+    return new GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation {
+    return new GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation | PlainMessage<GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation> | undefined, b: GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation | PlainMessage<GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation> | undefined): boolean {
+    return proto3.util.equals(GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation, a, b);
+  }
+}
+
+/**
  * Mutation is responsible for removing an existing `ReferenceSchema` in the `EntitySchema`.
  * Mutation can be used for altering also the existing `ReferenceSchema` alone.
  *
@@ -626,7 +808,7 @@ export class GrpcSetReferenceSchemaFacetedMutation extends Message<GrpcSetRefere
    * Whether the statistics data for this reference should be maintained and this allowing to get
    * `facetSummary` for this reference or use `facet_{reference name}_inSet`
    * filtering query.
-   * 
+   *
    * Do not mark reference as faceted unless you want it among `FacetStatistics`. Each faceted reference
    * occupies (memory/disk) space in the form of index.
    * Reference that was marked as faceted is called Facet.
@@ -634,6 +816,15 @@ export class GrpcSetReferenceSchemaFacetedMutation extends Message<GrpcSetRefere
    * @generated from field: bool faceted = 2;
    */
   faceted = false;
+
+  /**
+   * Set to true when the faceted property should be inherited from the original.
+   * This property makes sense only for inherited reference attributes on reflected reference. For all other cases it
+   * must be left as false. When set to TRUE the value of `faceted` field is ignored.
+   *
+   * @generated from field: bool inherited = 3;
+   */
+  inherited = false;
 
   constructor(data?: PartialMessage<GrpcSetReferenceSchemaFacetedMutation>) {
     super();
@@ -645,6 +836,7 @@ export class GrpcSetReferenceSchemaFacetedMutation extends Message<GrpcSetRefere
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "faceted", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 3, name: "inherited", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcSetReferenceSchemaFacetedMutation {
@@ -681,7 +873,7 @@ export class GrpcSetReferenceSchemaFilterableMutation extends Message<GrpcSetRef
   /**
    * Whether the index for this reference should be created and maintained allowing to filter by
    * `referenceHaving` filtering constraints. Index is also required when reference is `faceted`.
-   * 
+   *
    * Do not mark reference as faceted unless you know that you'll need to filter / sort entities by this reference.
    * Each indexed reference occupies (memory/disk) space in the form of index. When reference is not indexed,
    * the entity cannot be looked up by reference attributes or relation existence itself, but the data is loaded
@@ -690,6 +882,15 @@ export class GrpcSetReferenceSchemaFilterableMutation extends Message<GrpcSetRef
    * @generated from field: bool filterable = 2;
    */
   filterable = false;
+
+  /**
+   * Set to true when the filterable property should be inherited from the original.
+   * This property makes sense only for inherited reference attributes on reflected reference. For all other cases it
+   * must be left as false. When set to TRUE the value of `filterable` field is ignored.
+   *
+   * @generated from field: bool inherited = 3;
+   */
+  inherited = false;
 
   constructor(data?: PartialMessage<GrpcSetReferenceSchemaFilterableMutation>) {
     super();
@@ -701,6 +902,7 @@ export class GrpcSetReferenceSchemaFilterableMutation extends Message<GrpcSetRef
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "filterable", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 3, name: "inherited", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcSetReferenceSchemaFilterableMutation {

@@ -7,10 +7,10 @@
 <template>
     <VCardTitle>
         <div class="title-container">
-            <span>
+            <div>
                 <slot />
-            </span>
-            <div class="title-container__actions">
+            </div>
+            <div v-if="$slots['actions']" class="title-container__actions">
                 <slot name="actions" />
             </div>
         </div>

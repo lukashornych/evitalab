@@ -8,7 +8,7 @@ import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
 import { CatalogPointer } from '@/modules/connection/model/CatalogPointer'
 import { ResultVisualiserService } from '@/modules/console/result-visualiser/service/ResultVisualiserService'
 import { Result } from '@/modules/console/result-visualiser/model/Result'
-import { VCombobox } from 'vuetify/components'
+import { VAutocomplete } from 'vuetify/components'
 import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
 import { VisualiserType } from '@/modules/console/result-visualiser/model/VisualiserType'
 import { VisualiserTypeType } from '@/modules/console/result-visualiser/model/VisualiserTypeType'
@@ -33,7 +33,7 @@ const props = defineProps<{
     result: Response | undefined
 }>()
 
-const querySelectRef = ref<InstanceType<typeof VCombobox> | undefined>()
+const querySelectRef = ref<InstanceType<typeof VAutocomplete> | undefined>()
 const selectedQuery = ref<string | undefined>()
 
 const selectedVisualiserType = ref<VisualiserTypeType | undefined>()
@@ -115,7 +115,7 @@ watch(selectedQuery, async () => {
 }, { immediate: true })
 
 
-const visualiserTypesRef = ref<InstanceType<typeof VCombobox> | undefined>()
+const visualiserTypesRef = ref<InstanceType<typeof VAutocomplete> | undefined>()
 const visualiserTypes = computed<VisualiserType[]>(() => {
     if (selectedQuery.value == undefined || selectedQueryResult.value == undefined) {
         return []
@@ -179,7 +179,7 @@ defineExpose<{
 <template>
     <div class="visualiser">
         <header>
-            <VCombobox
+            <VAutocomplete
                 v-if="supportsMultipleQueries"
                 ref="querySelectRef"
                 v-model="selectedQuery"
@@ -190,7 +190,7 @@ defineExpose<{
                 class="visualiser__select"
                 hide-details
             />
-            <VCombobox
+            <VAutocomplete
                 ref="visualiserTypesRef"
                 v-model="selectedVisualiserType"
                 :disabled="selectedQuery == undefined"

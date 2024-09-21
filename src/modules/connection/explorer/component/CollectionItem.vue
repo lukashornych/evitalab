@@ -22,11 +22,10 @@ import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
 import { EntityCollection } from '../../model/EntityCollection'
 import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
 import { computed, ComputedRef, markRaw, ref, shallowRef } from 'vue'
-import { Catalog } from '../../model/Catalog'
 import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
 import { MenuItem } from '@/modules/base/model/menu/MenuItem'
-import DropCollection from '@/modules/connection/explorer/component/DropCollection.vue'
-import RenameCollection from '@/modules/connection/explorer/component/RenameCollection.vue'
+import DropCollectionDialog from '@/modules/connection/explorer/component/DropCollectionDialog.vue'
+import RenameCollectionDialog from '@/modules/connection/explorer/component/RenameCollectionDialog.vue'
 
 const workspaceService: WorkspaceService = useWorkspaceService()
 const entityViewerTabFactory: EntityViewerTabFactory =
@@ -38,19 +37,20 @@ const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 
 const props = defineProps<{
     entityCollection: EntityCollection
-    catalogName: string
+}>()
+const emit = defineEmits<{
+    (e: 'change'): void
 }>()
 
-const emits = defineEmits<{ (e: 'changed', value?: Catalog[] | undefined): void }>()
-const popupComponentVisible = ref<boolean>(false)
-const PopupComponent = shallowRef(DropCollection || RenameCollection)
+const showDropCollectionDialog = ref<boolean>(false)
+const showRenameCollectionDialog = ref<boolean>(false)
 
 const connection: Connection = useConnection()
 const catalog = useCatalog()
-const actions: ComputedRef<Map<CollectionActionType, MenuItem<CollectionActionType>>> = computed(() => createActions())
+const actions: ComputedRef<Map<CollectionActionType, MenuItem<CollectionActionType>>> = computed(() =>
+    createActions())
 const actionList: ComputedRef<MenuItem<CollectionActionType>[]> = computed(() => Array.from(
-    actions.value.values()
-))
+    actions.value.values()))
 
 if (catalog.value == undefined) {
     throw new UnexpectedError(
@@ -62,7 +62,7 @@ function openDataGrid() {
     workspaceService.createTab(
         entityViewerTabFactory.createNew(
             connection as Connection,
-            catalog.value!.name,
+            catalog.value.name,
             props.entityCollection.entityType,
             undefined,
             true // we want to display data to user right away, there is no malicious code here
@@ -103,7 +103,7 @@ function createActions(): Map<
                     schemaViewerTabFactory.createNew(
                         connection,
                         new EntitySchemaPointer(
-                            props.catalogName,
+                            catalog.value.name,
                             props.entityCollection.entityType
                         )
                     )
@@ -116,25 +116,19 @@ function createActions(): Map<
             new MenuSubheader(t('explorer.collection.subheader.modify'))
         )
         actions.set(
+            CollectionActionType.RenameCollection,
+            createMenuAction(
+                CollectionActionType.RenameCollection,
+                'mdi-pencil-outline',
+                () => showRenameCollectionDialog.value = true
+            )
+        )
+        actions.set(
             CollectionActionType.DropCollection,
             createMenuAction(
                 CollectionActionType.DropCollection,
                 'mdi-delete-outline',
-                () => {
-                    PopupComponent.value = markRaw(DropCollection)
-                    popupComponentVisible.value = true
-                }
-            )
-        )
-        actions.set(
-            CollectionActionType.RenameCollection,
-            createMenuAction(
-                CollectionActionType.RenameCollection,
-                'mdi-delete-outline',
-                () => {
-                    PopupComponent.value = markRaw(RenameCollection)
-                    popupComponentVisible.value = true
-                }
+                () => showDropCollectionDialog.value = true
             )
         )
     }
@@ -169,22 +163,22 @@ function createMenuAction(
                 {{ entityCollection.entityType }}
             </VTooltip>
         </VTreeViewItem>
-        <PopupComponent
-            v-if="popupComponentVisible"
-            :visible="true"
-            :collection-name="entityCollection.entityType"
-            :catalog-name="catalogName"
+
+        <RenameCollectionDialog
+            v-if="showRenameCollectionDialog"
+            v-model="showRenameCollectionDialog"
             :connection="connection"
-            @visible-changed="
-                () => {
-                    popupComponentVisible = false
-                }
-            "
-            @confirmed="
-                (value?: Catalog[] | undefined) => {
-                    emits('changed', value)
-                }
-            "
+            :catalog-name="catalog.name"
+            :entity-type="entityCollection.entityType"
+            @rename="emit('change')"
+        />
+        <DropCollectionDialog
+            v-if="showDropCollectionDialog"
+            v-model="showDropCollectionDialog"
+            :connection="connection"
+            :catalog-name="catalog.name"
+            :entity-type="entityCollection.entityType"
+            @drop="emit('change')"
         />
     </div>
 </template>

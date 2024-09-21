@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { GrpcCatalogNamesResponse, GrpcDefineCatalogRequest, GrpcDefineCatalogResponse, GrpcDeleteCatalogIfExistsRequest, GrpcDeleteCatalogIfExistsResponse, GrpcEvitaSessionRequest, GrpcEvitaSessionResponse, GrpcEvitaSessionTerminationRequest, GrpcEvitaSessionTerminationResponse, GrpcRenameCatalogRequest, GrpcRenameCatalogResponse, GrpcReplaceCatalogRequest, GrpcReplaceCatalogResponse, GrpcUpdateEvitaRequest } from "./GrpcEvitaAPI_pb.js";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
+import { GrpcCatalogNamesResponse, GrpcDefineCatalogRequest, GrpcDefineCatalogResponse, GrpcDeleteCatalogIfExistsRequest, GrpcDeleteCatalogIfExistsResponse, GrpcEvitaSessionRequest, GrpcEvitaSessionResponse, GrpcEvitaSessionTerminationRequest, GrpcEvitaSessionTerminationResponse, GrpcReadyResponse, GrpcRenameCatalogRequest, GrpcRenameCatalogResponse, GrpcReplaceCatalogRequest, GrpcReplaceCatalogResponse, GrpcUpdateEvitaRequest } from "./GrpcEvitaAPI_pb.js";
 
 /**
  * This service contains RPCs that could be called by gRPC clients on evitaDB. Main purpose of this service is to provide
@@ -15,6 +15,17 @@ import { Empty, MethodKind } from "@bufbuild/protobuf";
 export const EvitaService = {
   typeName: "io.evitadb.externalApi.grpc.generated.EvitaService",
   methods: {
+    /**
+     * Procedure used to check readiness of the API
+     *
+     * @generated from rpc io.evitadb.externalApi.grpc.generated.EvitaService.IsReady
+     */
+    isReady: {
+      name: "IsReady",
+      I: Empty,
+      O: GrpcReadyResponse,
+      kind: MethodKind.Unary,
+    },
     /**
      * Procedure used to create read only sessions.
      *

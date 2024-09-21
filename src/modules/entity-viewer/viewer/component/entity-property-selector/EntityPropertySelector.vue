@@ -15,7 +15,6 @@ import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { Command } from '@/modules/keymap/model/Command'
 import { propertySelectorScope } from '@/modules/entity-viewer/viewer/keymap/scopes'
 import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
-import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithActions.vue'
 import PropertySection from '@/modules/entity-viewer/viewer/component/entity-property-selector/PropertySection.vue'
 import PropertySectionEntityItem
     from '@/modules/entity-viewer/viewer/component/entity-property-selector/PropertySectionEntityItem.vue'
@@ -37,6 +36,7 @@ import {
     useEntityPropertyDescriptorIndex,
     useTabProps
 } from '@/modules/entity-viewer/viewer/component/dependencies'
+import VLabDialog from '@/modules/base/component/VLabDialog.vue'
 
 const topLevelSections: EntityPropertyType[] = [
     EntityPropertyType.Entity,
@@ -242,7 +242,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <VDialog
+    <VLabDialog
         :model-value="modelValue"
         @update:model-value="emit('update:modelValue', $event)"
         max-width="60rem"
@@ -261,153 +261,146 @@ onUnmounted(() => {
             </VBtn>
         </template>
 
-        <VCard class="py-8 px-4">
-            <VCardTitleWithActions>
-                <template #default>
-                    {{ t('entityViewer.propertySelector.title') }}
-                </template>
-                <template #actions>
-                    <VBtn
-                        icon
-                        variant="flat"
-                        density="compact"
-                        @click="emit('update:modelValue', false)"
-                    >
-                        <VIcon>mdi-close</VIcon>
-                        <VTooltip activator="parent">
-                            {{ t('common.button.close') }}
-                        </VTooltip>
-                    </VBtn>
-                </template>
-            </VCardTitleWithActions>
-            <VCardText class="selector-body pt-0 pl-4 mt-4">
-                <VTextField
-                    ref="filterInput"
-                    :model-value="filter"
-                    :label="t('entityViewer.propertySelector.label.filterProperties')"
-                    variant="solo-filled"
-                    density="compact"
-                    autofocus
-                    :append-inner-icon="filter ? 'mdi-close-circle-outline' : null as any"
-                    @update:model-value="handleFilterUpdate($event)"
-                    @click:append-inner="handleFilterUpdate('')"
-                    class="filter-input"
-                />
+        <template #title>
+            {{ t('entityViewer.propertySelector.title') }}
+        </template>
+        <template #title-actions>
+            <VBtn
+                icon
+                variant="flat"
+                density="compact"
+                @click="emit('update:modelValue', false)"
+            >
+                <VIcon>mdi-close</VIcon>
+                <VTooltip activator="parent">
+                    {{ t('common.button.close') }}
+                </VTooltip>
+            </VBtn>
+        </template>
 
-                <VList
-                    :selected="selected"
-                    @update:selected="emit('update:selected', $event as EntityPropertyKey[])"
-                    v-model:opened="openedPropertySections"
-                    lines="two"
-                    open-strategy="multiple"
-                    select-strategy="classic"
-                    class="property-list"
+        <template #default>
+            <VTextField
+                ref="filterInput"
+                :model-value="filter"
+                :label="t('entityViewer.propertySelector.label.filterProperties')"
+                variant="solo-filled"
+                density="compact"
+                autofocus
+                :append-inner-icon="filter ? 'mdi-close-circle-outline' : null as any"
+                @update:model-value="handleFilterUpdate($event)"
+                @click:append-inner="handleFilterUpdate('')"
+                class="filter-input"
+            />
+
+            <VList
+                :selected="selected"
+                @update:selected="emit('update:selected', $event as EntityPropertyKey[])"
+                v-model:opened="openedPropertySections"
+                lines="two"
+                open-strategy="multiple"
+                select-strategy="classic"
+                class="property-list"
+            >
+                <PropertySection
+                    :property-type="EntityPropertyType.Entity"
+                    :selected="sectionedSelected.get(EntityPropertyType.Entity) || []"
+                    :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.Entity) || []"
+                    :property-descriptors="sectionedPropertyDescriptors.get(EntityPropertyType.Entity) || []"
+                    :selection="propertySectionSelections.get(EntityPropertyType.Entity) || EntityPropertySectionSelection.None"
+                    @toggle="togglePropertySectionSelection(EntityPropertyType.Entity, $event)"
                 >
-                    <PropertySection
-                        :property-type="EntityPropertyType.Entity"
-                        :selected="sectionedSelected.get(EntityPropertyType.Entity) || []"
-                        :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.Entity) || []"
-                        :property-descriptors="sectionedPropertyDescriptors.get(EntityPropertyType.Entity) || []"
-                        :selection="propertySectionSelections.get(EntityPropertyType.Entity) || EntityPropertySectionSelection.None"
-                        @toggle="togglePropertySectionSelection(EntityPropertyType.Entity, $event)"
-                    >
-                        <template #default="{ property }">
-                            <PropertySectionEntityItem
-                                :property-descriptor="property"
-                                @schema-open="emit('schemaOpen')"
-                            />
-                        </template>
-                    </PropertySection>
-                    <VListItemDivider />
-                    <PropertySection
-                        :property-type="EntityPropertyType.Attributes"
-                        :selected="sectionedSelected.get(EntityPropertyType.Attributes) || []"
-                        :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.Attributes) || []"
-                        :property-descriptors="sectionedPropertyDescriptors.get(EntityPropertyType.Attributes) || []"
-                        :selection="propertySectionSelections.get(EntityPropertyType.Attributes) || EntityPropertySectionSelection.None"
-                        @toggle="togglePropertySectionSelection(EntityPropertyType.Attributes, $event)"
-                    >
-                        <template #default="{ property }">
-                            <PropertySectionAttributeItem
-                                :property-descriptor="property"
-                                @schema-open="emit('schemaOpen')"
-                            />
-                        </template>
-                    </PropertySection>
-                    <VListItemDivider />
-                    <PropertySection
-                        :property-type="EntityPropertyType.AssociatedData"
-                        :selected="sectionedSelected.get(EntityPropertyType.AssociatedData) || []"
-                        :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.AssociatedData) || []"
-                        :property-descriptors="sectionedPropertyDescriptors.get(EntityPropertyType.AssociatedData) || []"
-                        :selection="propertySectionSelections.get(EntityPropertyType.AssociatedData) || EntityPropertySectionSelection.None"
-                        @toggle="togglePropertySectionSelection(EntityPropertyType.AssociatedData, $event)"
-                    >
-                        <template #default="{ property }">
-                            <PropertySectionAssociatedDataItem
-                                :property-descriptor="property"
-                                @schema-open="emit('schemaOpen')"
-                            />
-                        </template>
-                    </PropertySection>
-                    <template v-if="(sectionedPropertyDescriptors.get(EntityPropertyType.Prices)?.length || 0) > 0 && (filteredSectionedPropertyDescriptors.get(EntityPropertyType.Prices)?.length || 0) > 0">
-                        <VListItemDivider />
-                        <PropertySectionPricesItem
-                            :property-descriptor="sectionedPropertyDescriptors.get(EntityPropertyType.Prices)![0]"
+                    <template #default="{ property }">
+                        <PropertySectionEntityItem
+                            :property-descriptor="property"
+                            @schema-open="emit('schemaOpen')"
                         />
                     </template>
+                </PropertySection>
+                <VListItemDivider />
+                <PropertySection
+                    :property-type="EntityPropertyType.Attributes"
+                    :selected="sectionedSelected.get(EntityPropertyType.Attributes) || []"
+                    :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.Attributes) || []"
+                    :property-descriptors="sectionedPropertyDescriptors.get(EntityPropertyType.Attributes) || []"
+                    :selection="propertySectionSelections.get(EntityPropertyType.Attributes) || EntityPropertySectionSelection.None"
+                    @toggle="togglePropertySectionSelection(EntityPropertyType.Attributes, $event)"
+                >
+                    <template #default="{ property }">
+                        <PropertySectionAttributeItem
+                            :property-descriptor="property"
+                            @schema-open="emit('schemaOpen')"
+                        />
+                    </template>
+                </PropertySection>
+                <VListItemDivider />
+                <PropertySection
+                    :property-type="EntityPropertyType.AssociatedData"
+                    :selected="sectionedSelected.get(EntityPropertyType.AssociatedData) || []"
+                    :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.AssociatedData) || []"
+                    :property-descriptors="sectionedPropertyDescriptors.get(EntityPropertyType.AssociatedData) || []"
+                    :selection="propertySectionSelections.get(EntityPropertyType.AssociatedData) || EntityPropertySectionSelection.None"
+                    @toggle="togglePropertySectionSelection(EntityPropertyType.AssociatedData, $event)"
+                >
+                    <template #default="{ property }">
+                        <PropertySectionAssociatedDataItem
+                            :property-descriptor="property"
+                            @schema-open="emit('schemaOpen')"
+                        />
+                    </template>
+                </PropertySection>
+                <template v-if="(sectionedPropertyDescriptors.get(EntityPropertyType.Prices)?.length || 0) > 0 && (filteredSectionedPropertyDescriptors.get(EntityPropertyType.Prices)?.length || 0) > 0">
                     <VListItemDivider />
-                    <PropertySection
-                        :property-type="EntityPropertyType.References"
-                        :selected="sectionedSelected.get(EntityPropertyType.References) || []"
-                        :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.References) || []"
-                        :property-descriptors="sectionedPropertyDescriptors.get(EntityPropertyType.References) || []"
-                        :selection="propertySectionSelections.get(EntityPropertyType.References) || EntityPropertySectionSelection.None"
-                        @toggle="togglePropertySectionSelection(EntityPropertyType.References, $event)"
-                    >
-                        <template #default="{ property }">
-                            <PropertySectionReferenceItem
-                                v-if="property.children.size === 0"
-                                :property-descriptor="property"
-                                @schema-open="emit('schemaOpen')"
-                            />
+                    <PropertySectionPricesItem
+                        :property-descriptor="sectionedPropertyDescriptors.get(EntityPropertyType.Prices)![0]"
+                    />
+                </template>
+                <VListItemDivider />
+                <PropertySection
+                    :property-type="EntityPropertyType.References"
+                    :selected="sectionedSelected.get(EntityPropertyType.References) || []"
+                    :filtered-property-descriptors="filteredSectionedPropertyDescriptors.get(EntityPropertyType.References) || []"
+                    :property-descriptors="sectionedPropertyDescriptors.get(EntityPropertyType.References) || []"
+                    :selection="propertySectionSelections.get(EntityPropertyType.References) || EntityPropertySectionSelection.None"
+                    @toggle="togglePropertySectionSelection(EntityPropertyType.References, $event)"
+                >
+                    <template #default="{ property }">
+                        <PropertySectionReferenceItem
+                            v-if="property.children.size === 0"
+                            :property-descriptor="property"
+                            @schema-open="emit('schemaOpen')"
+                        />
 
-                            <PropertySectionItemGroup
-                                v-else
-                                :filtered-property-descriptors="property.children"
-                                :property-descriptors="property.children"
-                            >
-                                <template #activator="{ props }">
-                                    <PropertySectionReferenceItem
-                                        :property-descriptor="property"
-                                        v-bind="props"
-                                        group-parent
-                                        @toggle="togglePropertySelection(property.key)"
-                                        @schema-open="emit('schemaOpen')"
-                                    />
-                                </template>
+                        <PropertySectionItemGroup
+                            v-else
+                            :filtered-property-descriptors="property.children"
+                            :property-descriptors="property.children"
+                        >
+                            <template #activator="{ props }">
+                                <PropertySectionReferenceItem
+                                    :property-descriptor="property"
+                                    v-bind="props"
+                                    group-parent
+                                    @toggle="togglePropertySelection(property.key)"
+                                    @schema-open="emit('schemaOpen')"
+                                />
+                            </template>
 
-                                <template #child="{ childProperty }">
-                                    <PropertySectionReferenceAttributeItem
-                                        :reference-property-descriptor="property"
-                                        :attribute-property-descriptor="childProperty"
-                                        @toggle="toggleReferenceAttributeProperty(property, $event.selected)"
-                                    />
-                                </template>
-                            </PropertySectionItemGroup>
-                        </template>
-                    </PropertySection>
-                </VList>
-            </VCardText>
-        </VCard>
-    </VDialog>
+                            <template #child="{ childProperty }">
+                                <PropertySectionReferenceAttributeItem
+                                    :reference-property-descriptor="property"
+                                    :attribute-property-descriptor="childProperty"
+                                    @toggle="toggleReferenceAttributeProperty(property, $event.selected)"
+                                />
+                            </template>
+                        </PropertySectionItemGroup>
+                    </template>
+                </PropertySection>
+            </VList>
+        </template>
+    </VLabDialog>
 </template>
 
 <style lang="scss" scoped>
-.selector-body {
-    position: relative;
-}
-
 .filter-input {
     position: -webkit-sticky;
     position: sticky;

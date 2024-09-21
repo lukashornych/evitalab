@@ -6,6 +6,9 @@
 import { useI18n } from 'vue-i18n'
 import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
 import { TabDefinition } from '@/modules/workspace/tab/model/TabDefinition'
+import VLabDialog from '@/modules/base/component/VLabDialog.vue'
+import VRejectDialogButton from '@/modules/base/component/VRejectDialogButton.vue'
+import VConfirmDialogButton from '@/modules/base/component/VConfirmDialogButton.vue'
 
 const workspaceService: WorkspaceService = useWorkspaceService()
 const { t } = useI18n()
@@ -28,13 +31,16 @@ function rejectSharedTab(): void {
 </script>
 
 <template>
-    <VDialog
+    <VLabDialog
         :model-value="true"
         max-width="36rem"
         @update:model-value="rejectSharedTab"
     >
-        <VCard class="py-8 px-4">
-            <VCardTitle>{{ t('tabShare.sharedDialog.title') }}</VCardTitle>
+        <template #title>
+            {{ t('tabShare.sharedDialog.title') }}
+        </template>
+
+        <template #default>
 
             <VCardText>
                 <template v-if="tabRequest.initialData != undefined">
@@ -52,25 +58,19 @@ function rejectSharedTab(): void {
                     <span v-html="t('tabShare.sharedDialog.warning.potentiallyUnsafe')" />
                 </VAlert>
             </VCardText>
+        </template>
 
-            <VCardActions class="px-6">
-                <VSpacer/>
-                <VBtn
-                    variant="tonal"
-                    @click="rejectSharedTab">
-                    {{ t('tabShare.sharedDialog.button.reject') }}
-                </VBtn>
-                <VBtn
-                    variant="outlined"
-                    prepend-icon="mdi-check"
-                    @click="acceptSharedTab"
-                    class="ml-4"
-                >
-                    {{ t('tabShare.sharedDialog.button.accept') }}
-                </VBtn>
-            </VCardActions>
-        </VCard>
-    </VDialog>
+        <template #reject-button>
+            <VRejectDialogButton @reject="rejectSharedTab">
+                {{ t('tabShare.sharedDialog.button.reject') }}
+            </VRejectDialogButton>
+        </template>
+        <template #confirm-button>
+            <VConfirmDialogButton icon="mdi-check" @confirm="acceptSharedTab">
+                {{ t('tabShare.sharedDialog.button.accept') }}
+            </VConfirmDialogButton>
+        </template>
+    </VLabDialog>
 </template>
 
 <style lang="scss" scoped>

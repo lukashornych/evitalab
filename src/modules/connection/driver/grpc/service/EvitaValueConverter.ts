@@ -42,8 +42,12 @@ import { DateTime } from 'luxon'
 import { Range } from '@/modules/connection/model/data-type/Range'
 import { GrpcEvitaDataType } from '../gen/GrpcEnums_pb'
 
-export class EvitaValueConvert {
-    convertEvitaValue(value: string | GrpcEvitaValue | undefined): any {
+/**
+ * Convert gRPC evita value server representation into local evitaLab typescript representation
+ */
+export class EvitaValueConverter {
+
+    convert(value: string | GrpcEvitaValue | undefined): any {
         if (typeof value === 'string') {
             return value
         } else if (value == undefined) {

@@ -3,7 +3,7 @@
  * Explorer tree item representing a single catalog in evitaDB.
  */
 
-import { markRaw, ref, Ref, shallowRef } from 'vue'
+import { computed, ref, Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import { Connection } from '@/modules/connection/model/Connection'
@@ -11,63 +11,54 @@ import { MenuAction } from '@/modules/base/model/menu/MenuAction'
 import { CatalogActionType } from '@/modules/connection/explorer/model/CatalogActionType'
 import { GraphQLInstanceType } from '@/modules/graphql-console/console/model/GraphQLInstanceType'
 import { CatalogSchemaPointer } from '@/modules/schema-viewer/viewer/model/CatalogSchemaPointer'
-import {
-    useWorkspaceService,
-    WorkspaceService,
-} from '@/modules/workspace/service/WorkspaceService'
+import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
 import {
     EvitaQLConsoleTabFactory,
-    useEvitaQLConsoleTabFactory,
+    useEvitaQLConsoleTabFactory
 } from '@/modules/evitaql-console/console/workspace/service/EvitaQLConsoleTabFactory'
 import {
     GraphQLConsoleTabFactory,
-    useGraphQLConsoleTabFactory,
+    useGraphQLConsoleTabFactory
 } from '@/modules/graphql-console/console/workspace/service/GraphQLConsoleTabFactory'
 import {
     SchemaViewerTabFactory,
-    useSchemaViewerTabFactory,
+    useSchemaViewerTabFactory
 } from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
 import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
 import VTreeViewEmptyItem from '@/modules/base/component/VTreeViewEmptyItem.vue'
 import CollectionItem from '@/modules/connection/explorer/component/CollectionItem.vue'
-import {
-    provideCatalog,
-    useConnection,
-} from '@/modules/connection/explorer/component/dependecies'
+import { provideCatalog, useConnection } from '@/modules/connection/explorer/component/dependecies'
 import { MenuItem } from '@/modules/base/model/menu/MenuItem'
 import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
-import {
-    EvitaLabConfig,
-    useEvitaLabConfig,
-} from '@/modules/config/EvitaLabConfig'
-import DropCatalog from '@/modules/connection/explorer/component/DropCatalog.vue'
-import RenameCatalog from '@/modules/connection/explorer/component/RenameCatalog.vue'
-import ReplaceCatalog from '@/modules/connection/explorer/component/ReplaceCatalog.vue'
-import CreateCollection from '@/modules/connection/explorer/component/CreateCollection.vue'
+import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
+import RenameCatalogDialog from '@/modules/connection/explorer/component/RenameCatalogDialog.vue'
+import DropCatalogDialog from '@/modules/connection/explorer/component/DropCatalogDialog.vue'
+import ReplaceCatalogDialog from '@/modules/connection/explorer/component/ReplaceCatalogDialog.vue'
+import CreateCollectionDialog from '@/modules/connection/explorer/component/CreateCollectionDialog.vue'
+import SwitchCatalogToAliveStateDialog
+    from '@/modules/connection/explorer/component/SwitchCatalogToAliveStateDialog.vue'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
-const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory =
-    useEvitaQLConsoleTabFactory()
-const graphQLConsoleTabFactory: GraphQLConsoleTabFactory =
-    useGraphQLConsoleTabFactory()
-const schemaViewerTabFactory: SchemaViewerTabFactory =
-    useSchemaViewerTabFactory()
+const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory = useEvitaQLConsoleTabFactory()
+const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = useGraphQLConsoleTabFactory()
+const schemaViewerTabFactory: SchemaViewerTabFactory = useSchemaViewerTabFactory()
 const { t } = useI18n()
-const componentVisible = ref<boolean>(false)
-const PopupComponent = shallowRef(DropCatalog || RenameCatalog || CreateCollection || ReplaceCatalog)
-const emits = defineEmits<{ (e: 'changed', value?: Catalog[] | undefined): void }>()
 
 const props = defineProps<{
     catalog: Catalog
 }>()
+const emit = defineEmits<{ (e: 'change'): void }>()
+
+const showRenameCatalogDialog = ref<boolean>(false)
+const showReplaceCatalogDialog = ref<boolean>(false)
+const showSwitchCatalogToAliveStateDialog = ref<boolean>(false)
+const showDropCatalogDialog = ref<boolean>(false)
+const showCreateCollectionDialog = ref<boolean>(false)
 
 const connection: Connection = useConnection()
-const actions: Map<
-    CatalogActionType,
-    MenuItem<CatalogActionType>
-> = createActions()
-const actionList: MenuItem<CatalogActionType>[] = Array.from(actions.values())
+const actions = computed<Map<CatalogActionType, MenuItem<CatalogActionType>>>(() => createActions())
+const actionList = computed<MenuItem<CatalogActionType>[]>(() => Array.from(actions.value.values()))
 
 const catalogRef = ref(props.catalog)
 provideCatalog(catalogRef as Ref<Catalog>)
@@ -75,20 +66,14 @@ provideCatalog(catalogRef as Ref<Catalog>)
 const loading = ref<boolean>(false)
 
 function handleAction(action: string): void {
-    const foundedAction = actions.get(action as CatalogActionType)
+    const foundedAction = actions.value?.get(action as CatalogActionType)
     if (foundedAction && foundedAction instanceof MenuAction) {
         (foundedAction as MenuAction<CatalogActionType>).execute()
     }
 }
 
-function createActions(): Map<
-    CatalogActionType,
-    MenuItem<CatalogActionType>
-> {
-    const actions: Map<
-        CatalogActionType,
-        MenuItem<CatalogActionType>
-    > = new Map()
+function createActions(): Map<CatalogActionType, MenuItem<CatalogActionType>> {
+    const actions: Map<CatalogActionType, MenuItem<CatalogActionType>> = new Map()
     actions.set(
         CatalogActionType.OpenEvitaQLConsole,
         createMenuAction(
@@ -157,38 +142,37 @@ function createActions(): Map<
             new MenuSubheader(t('explorer.catalog.subheader.modify'))
         )
         actions.set(
-            CatalogActionType.DropCatalog,
-            createMenuAction(
-                CatalogActionType.DropCatalog,
-                'mdi-delete-outline',
-                () => {
-                    PopupComponent.value = markRaw(DropCatalog)
-                    componentVisible.value = true
-                }
-            )
-        )
-
-        actions.set(
             CatalogActionType.RenameCatalog,
             createMenuAction(
                 CatalogActionType.RenameCatalog,
                 'mdi-pencil-outline',
-                () => {
-                    PopupComponent.value = markRaw(RenameCatalog)
-                    componentVisible.value = true
-                }
+                () => showRenameCatalogDialog.value = true
             )
         )
-
         actions.set(
             CatalogActionType.ReplaceCatalog,
             createMenuAction(
                 CatalogActionType.ReplaceCatalog,
                 'mdi-file-replace-outline',
-                () => {
-                    PopupComponent.value = markRaw(ReplaceCatalog)
-                    componentVisible.value = true
-                }
+                () => showReplaceCatalogDialog.value = true
+            )
+        )
+        if (props.catalog.isInWarmup) {
+            actions.set(
+                CatalogActionType.SwitchCatalogToAliveState,
+                createMenuAction(
+                    CatalogActionType.SwitchCatalogToAliveState,
+                    'mdi-toggle-switch-outline',
+                    () => showSwitchCatalogToAliveStateDialog.value = true
+                )
+            )
+        }
+        actions.set(
+            CatalogActionType.DropCatalog,
+            createMenuAction(
+                CatalogActionType.DropCatalog,
+                'mdi-delete-outline',
+                () => showDropCatalogDialog.value = true
             )
         )
 
@@ -202,10 +186,7 @@ function createActions(): Map<
             createMenuAction(
                 CatalogActionType.CreateCollection,
                 'mdi-plus',
-                () => {
-                    PopupComponent.value = markRaw(CreateCollection)
-                    componentVisible.value = true
-                }
+                () => showCreateCollectionDialog.value = true
             )
         )
     }
@@ -223,14 +204,6 @@ function createMenuAction(
         prependIcon,
         execute
     )
-}
-
-function changeVisibility(visible: boolean) {
-    componentVisible.value = visible
-}
-
-function confirmed(value?: Catalog[] | undefined) {
-    emits('changed', value)
 }
 </script>
 
@@ -273,23 +246,50 @@ function confirmed(value?: Catalog[] | undefined) {
                     v-for="entityCollection in catalog.entityCollections"
                     :key="entityCollection.entityType"
                     :entity-collection="entityCollection"
-                    :catalog-name="catalog.name"
-                    @changed="confirmed"
+                    @change="emit('change')"
                 />
             </template>
             <template v-else>
                 <VTreeViewEmptyItem />
             </template>
         </div>
+
+        <RenameCatalogDialog
+            v-if="showRenameCatalogDialog"
+            v-model="showRenameCatalogDialog"
+            :connection="connection"
+            :catalog-name="catalog.name"
+            @rename="emit('change')"
+        />
+        <ReplaceCatalogDialog
+            v-if="showReplaceCatalogDialog"
+            v-model="showReplaceCatalogDialog"
+            :connection="connection"
+            :catalog-name="catalog.name"
+            @replace="emit('change')"
+        />
+        <SwitchCatalogToAliveStateDialog
+            v-if="showSwitchCatalogToAliveStateDialog"
+            v-model="showSwitchCatalogToAliveStateDialog"
+            :connection="connection"
+            :catalog-name="catalog.name"
+            @switch="emit('change')"
+        />
+        <DropCatalogDialog
+            v-if="showDropCatalogDialog"
+            v-model="showDropCatalogDialog"
+            :connection="connection"
+            :catalog-name="catalog.name"
+            @drop="emit('change')"
+        />
+        <CreateCollectionDialog
+            v-if="showCreateCollectionDialog"
+            v-model="showCreateCollectionDialog"
+            :connection="connection"
+            :catalog-name="catalog.name"
+            @create="emit('change')"
+        />
     </VListGroup>
-    <PopupComponent
-        v-if="componentVisible"
-        :visible="true"
-        :connection="connection"
-        :catalog-name="catalog.name"
-        @visible-changed="changeVisibility"
-        @confirmed="confirmed"
-    />
 </template>
 
 <style scoped></style>

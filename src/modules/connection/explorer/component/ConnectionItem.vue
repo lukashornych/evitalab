@@ -3,7 +3,7 @@
  * Explorer tree item representing a single connection to evitaDB.
  */
 
-import { computed, ComputedRef, markRaw, ref, shallowRef } from 'vue'
+import { computed, ComputedRef, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
 import { ConnectionService, useConnectionService } from '@/modules/connection/service/ConnectionService'
@@ -29,7 +29,7 @@ import {
     ServerStatusTabFactory,
     useServerStatusTabFactory
 } from '@/modules/server-status/service/ServerStatusTabFactory'
-import CreateCatalog from '@/modules/connection/explorer/component/CreateCatalog.vue'
+import CreateCatalogDialog from '@/modules/connection/explorer/component/CreateCatalogDialog.vue'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
@@ -51,19 +51,14 @@ const actionList: ComputedRef<MenuItem<ConnectionActionType>[]> = computed(
     () => Array.from(actions.value.values())
 )
 
-const removeConnectionDialogOpen = ref<boolean>(false)
 const catalogs = ref<Catalog[]>()
 const loading = ref<boolean>(false)
 
-const createCatalogDialogOpen = ref<boolean>(false)
+const showRemoveConnectionDialog = ref<boolean>(false)
+const showCreateCatalogDialog = ref<boolean>(false)
 
-async function loadCatalogs(value?: Catalog[]): Promise<void> {
+async function loadCatalogs(): Promise<void> {
     loading.value = true
-    if (value) {
-        catalogs.value = value
-        loading.value = false
-        return
-    }
     try {
         catalogs.value = await connectionService.getCatalogs(
             props.connection,
@@ -83,14 +78,16 @@ function handleAction(action: string): void {
 }
 
 // todo lho these should be some kind of factories
-function createActions(): Map<
-    ConnectionActionType,
-    MenuItem<ConnectionActionType>
-> {
-    const actions: Map<
-        ConnectionActionType,
-        MenuItem<ConnectionActionType>
-    > = new Map()
+function createActions(): Map<ConnectionActionType, MenuItem<ConnectionActionType>> {
+    const actions: Map<ConnectionActionType, MenuItem<ConnectionActionType>> = new Map()
+    actions.set(
+        ConnectionActionType.Refresh,
+        createMenuAction(
+            ConnectionActionType.Refresh,
+            'mdi-refresh',
+            () => loadCatalogs()
+        )
+    )
     actions.set(
         ConnectionActionType.OpenGraphQLSystemAPIConsole,
         createMenuAction(
@@ -135,18 +132,18 @@ function createActions(): Map<
                 createMenuAction(
                     ConnectionActionType.Remove,
                     'mdi-delete-outline',
-                    () => (removeConnectionDialogOpen.value = true)
+                    () => (showRemoveConnectionDialog.value = true)
                 )
             )
         }
         actions.set(
-            ConnectionActionType.ModifySubheader,
-            new MenuSubheader(t('explorer.connection.subheader.modify'))
+            ConnectionActionType.CatalogsSubheader,
+            new MenuSubheader(t('explorer.connection.subheader.catalogs'))
         )
         actions.set(
-            ConnectionActionType.Create,
-            createMenuAction(ConnectionActionType.Create, 'mdi-plus', () => {
-                createCatalogDialogOpen.value = true
+            ConnectionActionType.CreateCatalog,
+            createMenuAction(ConnectionActionType.CreateCatalog, 'mdi-plus', () => {
+                showCreateCatalogDialog.value = true
             })
         )
     }
@@ -194,7 +191,7 @@ function createMenuAction(
                         v-for="catalog in catalogs"
                         :key="catalog.name"
                         :catalog="catalog"
-                        @changed="(e) => loadCatalogs(e)"
+                        @change="loadCatalogs"
                     />
                 </template>
                 <template v-else>
@@ -203,20 +200,18 @@ function createMenuAction(
             </div>
 
             <RemoveConnectionDialog
-                v-model="removeConnectionDialogOpen"
+                v-if="showRemoveConnectionDialog"
+                v-model="showRemoveConnectionDialog"
                 :connection="connection"
+            />
+            <CreateCatalogDialog
+                v-if="showCreateCatalogDialog"
+                v-model="showCreateCatalogDialog"
+                :connection="connection"
+                @create="loadCatalogs"
             />
         </VListGroup>
     </div>
-    <CreateCatalog
-        v-if="createCatalogDialogOpen"
-        :visible="true"
-        :connection="props.connection"
-        @confirmed="loadCatalogs"
-        @visible-changed="() => {
-            createCatalogDialogOpen = false
-        }"
-    />
 </template>
 
 <style lang="scss" scoped></style>

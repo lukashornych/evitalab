@@ -30,15 +30,15 @@ import { EntityReference } from '@/modules/connection/model/data/EntityReference
 import { Cardinality } from '@/modules/connection/model/schema/Cardinality'
 import Immutable from 'immutable'
 import { Currency } from '@/modules/connection/model/data/Currency'
-import { EvitaValueConvert } from './EvitaValueConverter'
+import { EvitaValueConverter } from './EvitaValueConverter'
 import { AssociatedData } from '@/modules/connection/model/data/AssociatedData'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 
 //TODO: Add documentation
 export class EntityConverter {
-    private readonly evitaValueConverter: EvitaValueConvert;
+    private readonly evitaValueConverter: EvitaValueConverter;
 
-    constructor(evitaValueConverter: EvitaValueConvert){
+    constructor(evitaValueConverter: EvitaValueConverter){
         this.evitaValueConverter = evitaValueConverter
     }
 
@@ -118,7 +118,7 @@ export class EntityConverter {
             if (attributeValue.value.value != undefined) {
                 attributeMap.set(
                     attributeName,
-                    this.evitaValueConverter.convertEvitaValue(attributeValue)
+                    this.evitaValueConverter.convert(attributeValue)
                 )
             }
         }
@@ -240,7 +240,7 @@ export class EntityConverter {
         ) {
             return JSON.parse(value.value.value as string)
         } else {
-            return this.evitaValueConverter.convertEvitaValue(value.value.value)
+            return this.evitaValueConverter.convert(value.value.value)
         }
     }
 

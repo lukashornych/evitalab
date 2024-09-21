@@ -17,6 +17,6 @@ const catalogInjectionKey: InjectionKey<Ref<Catalog | undefined>> = Symbol('cata
 export function provideCatalog(catalog: Ref<Catalog | undefined>): void {
     provide(catalogInjectionKey, catalog)
 }
-export function useCatalog(): Ref<Catalog | undefined> {
-    return mandatoryInject(catalogInjectionKey)
+export function useCatalog(): Ref<Catalog> {
+    return mandatoryInject(catalogInjectionKey) as Ref<Catalog>
 }

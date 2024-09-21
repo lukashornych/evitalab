@@ -12,6 +12,9 @@ import { TabParams } from '@/modules/workspace/tab/model/TabParams'
 import { TabData } from '@/modules/workspace/tab/model/TabData'
 import { ShareTabObject } from '@/modules/workspace/tab/model/ShareTabObject'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import VLabDialog from '@/modules/base/component/VLabDialog.vue'
+import VRejectDialogButton from '@/modules/base/component/VRejectDialogButton.vue'
+import VConfirmDialogButton from '@/modules/base/component/VConfirmDialogButton.vue'
 
 /**
  * Smallest possible number of characters in a URL valid across all browser. Usually browser support more characters.
@@ -57,7 +60,7 @@ function copyLink(): void {
 </script>
 
 <template>
-    <VDialog
+    <VLabDialog
         :model-value="modelValue"
         @update:model-value="$emit('update:modelValue', $event)"
         max-width="36rem"
@@ -66,9 +69,11 @@ function copyLink(): void {
             <slot name="activator" v-bind="props"/>
         </template>
 
-        <VCard class="py-8 px-4">
-            <VCardTitle>{{ t('tabShare.shareDialog.title') }}</VCardTitle>
+        <template #title>
+            {{ t('tabShare.shareDialog.title') }}
+        </template>
 
+        <template #default>
             <VCardText>
                 {{ t('tabShare.shareDialog.text') }}
             </VCardText>
@@ -82,25 +87,19 @@ function copyLink(): void {
                     <span v-html="t('tabShare.shareDialog.warning.linkMayNotWork', { urlCharacterLimit })" />
                 </VAlert>
             </VCardText>
+        </template>
 
-            <VCardActions class="px-6">
-                <VSpacer/>
-                <VBtn
-                    variant="tonal"
-                    @click="cancel">
-                    {{ t('common.button.cancel') }}
-                </VBtn>
-                <VBtn
-                    variant="outlined"
-                    prepend-icon="mdi-content-copy"
-                    @click="copyLink"
-                    class="ml-4"
-                >
-                    {{ t('tabShare.shareDialog.button.copyLink') }}
-                </VBtn>
-            </VCardActions>
-        </VCard>
-    </VDialog>
+        <template #reject-button>
+            <VRejectDialogButton @reject="cancel">
+                {{ t('common.button.cancel') }}
+            </VRejectDialogButton>
+        </template>
+        <template #confirm-button>
+            <VConfirmDialogButton icon="mdi-content-copy" @confirm="copyLink">
+                {{ t('tabShare.shareDialog.button.copyLink') }}
+            </VConfirmDialogButton>
+        </template>
+    </VLabDialog>
 </template>
 
 <style lang="scss" scoped>

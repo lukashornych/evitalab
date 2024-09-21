@@ -50,13 +50,13 @@ import { Currency } from '@/modules/connection/model/data/Currency'
 import { Locale } from '@/modules/connection/model/data-type/Locale'
 import { ScalarConverter } from './ScalarConverter'
 import { MapUtil } from '../utils/MapUtil'
-import { EvitaValueConvert } from './EvitaValueConverter'
+import { EvitaValueConverter } from './EvitaValueConverter'
 
 //TODO: Add documentation
 export class CatalogSchemaConverter {
-    private readonly evitaValueConverter:EvitaValueConvert
+    private readonly evitaValueConverter:EvitaValueConverter
 
-    constructor(evitaValueConverter: EvitaValueConvert){
+    constructor(evitaValueConverter: EvitaValueConverter){
         this.evitaValueConverter = evitaValueConverter
     }
 
@@ -116,7 +116,7 @@ export class CatalogSchemaConverter {
                 Value.of(attribute.filterable),
                 Value.of(attribute.sortable),
                 Value.of(attribute.nullable),
-                Value.of(this.evitaValueConverter.convertEvitaValue(attribute.defaultValue)),
+                Value.of(this.evitaValueConverter.convert(attribute.defaultValue)),
                 Value.of(attribute.localized),
                 Value.of(attribute.indexedDecimalPlaces)
             )
@@ -133,7 +133,7 @@ export class CatalogSchemaConverter {
                 Value.of(attribute.filterable),
                 Value.of(attribute.sortable),
                 Value.of(attribute.nullable),
-                Value.of(this.evitaValueConverter.convertEvitaValue(attribute.defaultValue)),
+                Value.of(this.evitaValueConverter.convert(attribute.defaultValue)),
                 Value.of(attribute.localized),
                 Value.of(attribute.indexedDecimalPlaces),
                 Value.of(attribute.representative)
@@ -174,7 +174,7 @@ export class CatalogSchemaConverter {
         )
 
         const defaultValue: Value<any | any[] | null> = Value.of(
-            this.evitaValueConverter.convertEvitaValue(globalAttributeSchema.defaultValue)
+            this.evitaValueConverter.convert(globalAttributeSchema.defaultValue)
         )
         const localized: Value<boolean> = Value.of(
             globalAttributeSchema.localized

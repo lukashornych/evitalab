@@ -17,13 +17,15 @@
       "save": "Save",
       "run": "Run",
       "add": "Add",
+      "create": "Create",
       "drop": "Drop",
       "executeQuery": "Execute query",
       "showMore": "Show more",
       "copy": "Copy",
       "confirm": "Confirm",
       "rename": "Rename",
-      "replace": "Replace"
+      "replace": "Replace",
+      "switch": "Switch"
     },
     "notification": {
       "copiedToClipboard": "Copied to clipboard",
@@ -37,6 +39,12 @@
         "cursorPosition": "Ln {line}, Col {column}",
         "selectionRange": "{charsCount} chars",
         "selectionRanges": "{linesCount} line breaks"
+      }
+    },
+    "dialog": {
+      "confirmDialog": {
+        "title": "Dangerous operation",
+        "message": "Warning! You are about to do dangerous operation. Are you sure you want to proceed?"
       }
     }
   },
@@ -252,6 +260,7 @@
     },
     "connection": {
       "actions": {
+        "refresh": "Refresh",
         "openGraphQLSystemApiConsole": "Open GraphQL System API console",
         "add": "Add connection",
         "create": "Create catalog",
@@ -261,7 +270,7 @@
         "createCatalog": "Create catalog"
       },
       "subheader": {
-        "modify": "Modify"
+        "catalogs": "Catalogs"
       },
       "editor": {
         "addTitle": "Add connection",
@@ -299,21 +308,22 @@
             }
           }
         },
-        "button": {
-          "testConnection": "Test connection"
-        },
         "notification": {
           "connectionSuccess": "Successfully connected.",
-          "connectionError": "Connection test failed."
+          "connectionError": "Connection test failed.",
+          "connectionAdded": "The {connectionName} connection has been successfully added.",
+          "connectionEdited": "The {connectionName} connection was successfully edited.",
+          "couldNotAddConnection": "Could not add the connection: {reason}",
+          "couldNotEditConnection": "Could not edit the connection: {reason}"
         }
       },
       "remove": {
         "title": "Remove connection",
-        "question": "Are you sure you want to remove the connection {connectionName}?"
-      },
-      "createCatalog": {
-        "title": "Create catalog",
-        "description": "Write the name of the new catalog:"
+        "question": "Do you want to remove {connectionName} connection?",
+        "notification": {
+          "connectionRemoved": "The {connectionName} connection has been successfully removed.",
+          "couldNotRemoveConnection": "Could not remove the {connectionName} connection: {reason}"
+        }
       }
     },
     "catalog": {
@@ -329,44 +339,92 @@
         "dropCatalog": "Drop catalog",
         "renameCatalog": "Rename catalog",
         "replaceCatalog": "Replace catalog",
+        "switchCatalogToAliveState": "Switch catalog to alive state",
         "createCollection": "Create collection"
       },
       "errors": {
         "couldNotLoad": "This catalog couldn't be loaded because it's corrupted."
       },
-      "dropCatalog": {
+      "create": {
+        "title": "Create catalog",
+        "description": "Create a new catalog:",
+        "form": {
+          "catalogName": {
+            "label": "Catalog name",
+            "validations": {
+              "required": "Catalog name is required.",
+              "empty": "Catalog name is required.",
+              "leadingTrailingWhiteSpace": "Catalog name cannot have leading or trailing whitespace characters.",
+              "keyword": "Catalog name is same as a reserved keyword.",
+              "format": "Catalog name doesn't match supported format.",
+              "notAvailable": "Catalog with this name already exists."
+            }
+          }
+        },
+        "notification": {
+          "catalogCreated": "The {catalogName} catalog has been successfully created.",
+          "couldNotCreateCatalog": "Could not create the {catalogName} catalog: {reason}"
+        }
+      },
+      "drop": {
         "title": "Drop catalog",
-        "description": "Do you really want to drop this catalog?"
+        "question": "Do you want to drop {catalogName} catalog?",
+        "notification": {
+          "catalogDropped": "The {catalogName} catalog has been successfully dropped.",
+          "catalogNotDropped": "The {catalogName} catalog has been already dropped.",
+          "couldNotDropCatalog": "Could not drop the {catalogName} catalog: {reason}"
+        }
       },
-      "renameCatalog": {
+      "rename": {
         "title": "Rename catalog",
-        "description": "Do you really want to rename this catalog?",
+        "description": "Rename catalog {catalogName} to:",
         "form": {
-          "rename": {
-            "label": "Rename"
+          "newName": {
+            "label": "New name",
+            "validations": {
+              "required": "New name is required.",
+              "empty": "New name is required.",
+              "leadingTrailingWhiteSpace": "New name cannot have leading or trailing whitespace characters.",
+              "keyword": "New name is same as a reserved keyword.",
+              "format": "New name doesn't match supported format.",
+              "notAvailable": "Catalog with this new name already exists."
+            }
           }
+        },
+        "notification": {
+          "catalogRenamed": "The {catalogName} catalog has been successfully renamed to {newName}.",
+          "catalogNotRenamed": "The {catalogName} catalog has not been renamed.",
+          "couldNotRenameCatalog": "Could not rename catalog {catalogName}: {reason}"
         }
       },
-      "replaceCatalog": {
+      "replace": {
         "title": "Replace catalog",
+        "description": "Replace {catalogNameToBeReplaced} catalog with:",
+        "info": "The {catalogNameToBeReplaced} catalog's data will be replaced with a data from the {catalogNameToBeReplacedWith} catalog under the {catalogNameToBeReplaced} name. The {catalogNameToBeReplacedWith} catalog will be deleted.",
         "form": {
-          "fromCatalog": {
-            "label": "Catalog from",
-            "help": "Please select which catalog you want to take data from:"
-          },
-          "toCatalog": {
-            "label": "Catalog to",
-            "help": "Please select to which catalog the data should be inserted:"
+          "catalogNameToBeReplacedWith": {
+            "label": "Source catalog",
+            "validations": {
+              "required": "Catalog is required.",
+              "notExists": "This catalog doesn't exist anymore."
+            }
           }
+        },
+        "notification": {
+          "catalogReplaced": "The {catalogNameToBeReplaced} catalog has been successfully replaced with {catalogToBeReplacedWith}.",
+          "catalogNotReplaced": "The {catalogNameToBeReplaced} catalog has not been replaced.",
+          "couldNotReplaceCatalog": "Could not replace the {catalogNameToBeReplaced} catalog: {reason}"
         }
       },
-      "createCollection": {
-        "title": "Create collection",
-        "newCatalogName": "Please write catalog name:"
-      },
-      "confirmCatalog": {
-        "title": "Operation confirmation",
-        "description": "This operation is dangerous. Do you really want to do it?"
+      "switchToAliveState": {
+        "title": "Switch catalog to alive state",
+        "description": "Switch the {catalogName} catalog from the warm up state to the alive state.",
+        "warning": "Catalog in the alive state will no longer support bulk indexing. Instead, the catalog will use incremental indexing. However, it will support transactions and multiple parallel sessions.",
+        "notification": {
+          "catalogSwitched": "The {catalogName} catalog has been switched from the warm up state to the alive state.",
+          "catalogNotSwitched": "The {catalogName} catalog has not been switched to alive state. Probably it already is in the alive state.",
+          "couldNotSwitchCatalog": "Could not switch the {catalogName} catalog to the alive state: {reason}"
+        }
       }
     },
     "collection": {
@@ -379,17 +437,56 @@
         "dropCollection": "Drop collection",
         "renameCollection": "Rename collection"
       },
-      "dropCollection": {
-        "title": "Drop collection",
-        "description": "Do you really want to drop this collection?"
-      },
-      "renameCollection": {
-        "title": "Rename collection",
-        "description": "Do you really want to rename this collection?",
+      "create": {
+        "title": "Create collection",
+        "description": "Create a collection for the {catalogName} catalog:",
         "form": {
-          "rename": {
-            "label": "Rename"
+          "entityType": {
+            "label": "Entity type",
+            "validations": {
+              "required": "Entity type is required.",
+              "empty": "Entity type is required.",
+              "leadingTrailingWhiteSpace": "Entity type cannot have leading or trailing whitespace characters.",
+              "keyword": "Entity type is same as a reserved keyword.",
+              "format": "Entity type doesn't match supported format.",
+              "notAvailable": "Collection with this entity type already exists."
+            }
           }
+        },
+        "notification": {
+          "collectionCreated": "The {entityType} collection has been successfully created.",
+          "couldNotCreateCollection": "Could not create the {entityType} collection: {reason}"
+        }
+      },
+      "drop": {
+        "title": "Drop collection",
+        "question": "Do you want to drop the {entityType} collection?",
+        "notification": {
+          "collectionDropped": "The {entityType} collection has been successfully dropped.",
+          "collectionNotDropped": "The {entityType} collection has been already dropped.",
+          "couldNotDropCollection": "Could not drop the {entityType} collection: {reason}"
+        }
+      },
+      "rename": {
+        "title": "Rename collection",
+        "description": "Rename the {entityType} collection to:",
+        "form": {
+          "newName": {
+            "label": "New name",
+            "validations": {
+              "required": "New name is required.",
+              "empty": "New name is required.",
+              "leadingTrailingWhiteSpace": "New name cannot have leading or trailing whitespace characters.",
+              "keyword": "New name is same as a reserved keyword.",
+              "format": "New name doesn't match supported format.",
+              "notAvailable": "Collection with this new name already exists."
+            }
+          }
+        },
+        "notification": {
+          "collectionRenamed": "The {entityType} collection has been successfully renamed to {newName}.",
+          "collectionNotRenamed": "The {entityType} collection has not been renamed.",
+          "couldNotRenameCollection": "Could not rename the {entityType} collection: {reason}"
         }
       }
     }

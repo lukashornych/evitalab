@@ -10,9 +10,13 @@ import { EvitaDBServerProbe, evitaDBServerProbeInjectionKey } from '@/modules/co
 import { EvitaLabConfig, evitaLabConfigInjectionKey } from '@/modules/config/EvitaLabConfig'
 import { ModuleContextBuilder } from '@/ModuleContextBuilder'
 import {
-    ModifyActionService,
-    modifyActionServiceInjectionKey
-} from '@/modules/connection/explorer/service/ModifyActionService'
+    CatalogItemService,
+    catalogItemServiceInjectionKey
+} from '@/modules/connection/explorer/service/CatalogItemService'
+import {
+    CollectionItemService,
+    collectionItemServiceInjectionKey
+} from '@/modules/connection/explorer/service/CollectionItemService'
 
 // todo docs
 export class ConnectionModuleRegistrar implements ModuleRegistrar {
@@ -32,11 +36,13 @@ export class ConnectionModuleRegistrar implements ModuleRegistrar {
             labStorage,
             evitaDBDriverResolver
         )
-        const modifyActionService: ModifyActionService = new ModifyActionService(connectionService)
+        const catalogItemService: CatalogItemService = new CatalogItemService(connectionService)
+        const collectionItemService: CollectionItemService = new CollectionItemService(connectionService)
 
         builder.provide(connectionServiceInjectionKey, connectionService)
         builder.provide(evitaDBDriverResolverInjectionKey, evitaDBDriverResolver)
         builder.provide(evitaDBServerProbeInjectionKey, evitaDBServerProbe)
-        builder.provide(modifyActionServiceInjectionKey, modifyActionService)
+        builder.provide(catalogItemServiceInjectionKey, catalogItemService)
+        builder.provide(collectionItemServiceInjectionKey, collectionItemService)
     }
 }

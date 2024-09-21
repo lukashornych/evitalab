@@ -8,6 +8,6 @@ plugins:
     opt: target=ts
   # This will invoke protoc-gen-connect-es
   - local: protoc-gen-connect-es
-    out: src/gen
+    out: src/modules/connection/driver/grpc/gen
     # Add more plugin options here
     opt: target=ts

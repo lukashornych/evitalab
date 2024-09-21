@@ -70,7 +70,7 @@ export class ConnectionService {
                 'Localhost (dev)',
                 true,
                 'http://localhost:5555/system',
-                'https://localhost:5555/',
+                'http://localhost:5555/',
                 'http://localhost:5555/gql',
                 'http://localhost:5555/rest'
             ))

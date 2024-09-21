@@ -48,9 +48,7 @@ const connections = computed<Connection[]>(() => connectionService.getConnection
                 v-if="!evitaLabConfig.readOnly"
                 class="pa-2"
             >
-                <ConnectionEditor
-                    v-model="addConnectionDialogOpen"
-                >
+                <ConnectionEditor v-model="addConnectionDialogOpen">
                     <template #activator="{ props }">
                         <VBtn
                             prepend-icon="mdi-plus"

@@ -8,7 +8,7 @@ import { Message, proto3 } from "@bufbuild/protobuf";
 import { GrpcCreateAssociatedDataSchemaMutation, GrpcModifyAssociatedDataSchemaDeprecationNoticeMutation, GrpcModifyAssociatedDataSchemaDescriptionMutation, GrpcModifyAssociatedDataSchemaNameMutation, GrpcModifyAssociatedDataSchemaTypeMutation, GrpcRemoveAssociatedDataSchemaMutation, GrpcSetAssociatedDataSchemaLocalizedMutation, GrpcSetAssociatedDataSchemaNullableMutation } from "./GrpcAssociatedDataSchemaMutations_pb.js";
 import { GrpcCreateAttributeSchemaMutation, GrpcModifyAttributeSchemaDefaultValueMutation, GrpcModifyAttributeSchemaDeprecationNoticeMutation, GrpcModifyAttributeSchemaDescriptionMutation, GrpcModifyAttributeSchemaNameMutation, GrpcModifyAttributeSchemaTypeMutation, GrpcRemoveAttributeSchemaMutation, GrpcSetAttributeSchemaFilterableMutation, GrpcSetAttributeSchemaLocalizedMutation, GrpcSetAttributeSchemaNullableMutation, GrpcSetAttributeSchemaRepresentativeMutation, GrpcSetAttributeSchemaSortableMutation, GrpcSetAttributeSchemaUniqueMutation, GrpcUseGlobalAttributeSchemaMutation } from "./GrpcAttributeSchemaMutations_pb.js";
 import { GrpcAllowCurrencyInEntitySchemaMutation, GrpcAllowEvolutionModeInEntitySchemaMutation, GrpcAllowLocaleInEntitySchemaMutation, GrpcDisallowCurrencyInEntitySchemaMutation, GrpcDisallowEvolutionModeInEntitySchemaMutation, GrpcDisallowLocaleInEntitySchemaMutation, GrpcModifyEntitySchemaDeprecationNoticeMutation, GrpcModifyEntitySchemaDescriptionMutation, GrpcSetEntitySchemaWithGeneratedPrimaryKeyMutation, GrpcSetEntitySchemaWithHierarchyMutation, GrpcSetEntitySchemaWithPriceMutation } from "./GrpcEntitySchemaMutations_pb.js";
-import { GrpcCreateReferenceSchemaMutation, GrpcModifyReferenceAttributeSchemaMutation, GrpcModifyReferenceSchemaCardinalityMutation, GrpcModifyReferenceSchemaDeprecationNoticeMutation, GrpcModifyReferenceSchemaDescriptionMutation, GrpcModifyReferenceSchemaNameMutation, GrpcModifyReferenceSchemaRelatedEntityGroupMutation, GrpcModifyReferenceSchemaRelatedEntityMutation, GrpcRemoveReferenceSchemaMutation, GrpcSetReferenceSchemaFacetedMutation, GrpcSetReferenceSchemaFilterableMutation } from "./GrpcReferenceSchemaMutations_pb.js";
+import { GrpcCreateReferenceSchemaMutation, GrpcCreateReflectedReferenceSchemaMutation, GrpcModifyReferenceAttributeSchemaMutation, GrpcModifyReferenceSchemaCardinalityMutation, GrpcModifyReferenceSchemaDeprecationNoticeMutation, GrpcModifyReferenceSchemaDescriptionMutation, GrpcModifyReferenceSchemaNameMutation, GrpcModifyReferenceSchemaRelatedEntityGroupMutation, GrpcModifyReferenceSchemaRelatedEntityMutation, GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation, GrpcRemoveReferenceSchemaMutation, GrpcSetReferenceSchemaFacetedMutation, GrpcSetReferenceSchemaFilterableMutation } from "./GrpcReferenceSchemaMutations_pb.js";
 
 /**
  * Contains all possible entity schema mutations.
@@ -401,6 +401,25 @@ export class GrpcEntitySchemaMutation extends Message<GrpcEntitySchemaMutation> 
      */
     value: GrpcSetReferenceSchemaFilterableMutation;
     case: "setReferenceSchemaIndexedMutation";
+  } | {
+    /**
+     * Mutation is responsible for setting up a new `ReflectedReferenceSchema` in the `EntitySchema`.
+     * Mutation can be used for altering also the existing `ReflectedReferenceSchema` alone.
+     *
+     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcCreateReflectedReferenceSchemaMutation createReflectedReferenceSchemaMutation = 91;
+     */
+    value: GrpcCreateReflectedReferenceSchemaMutation;
+    case: "createReflectedReferenceSchemaMutation";
+  } | {
+    /**
+     * Mutation is responsible for setting value to a `ReflectedReferenceSchema.attributesInherited` and
+     * `ReflectedReferenceSchema.attributesExcludedFromInheritance` in `ReferenceSchema`.
+     * Mutation can be used for altering also the existing `ReferenceSchemaContract` alone.
+     *
+     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation modifyReflectedReferenceAttributeInheritanceSchemaMutation = 92;
+     */
+    value: GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation;
+    case: "modifyReflectedReferenceAttributeInheritanceSchemaMutation";
   } | { case: undefined; value?: undefined } = { case: undefined };
 
   constructor(data?: PartialMessage<GrpcEntitySchemaMutation>) {
@@ -455,6 +474,8 @@ export class GrpcEntitySchemaMutation extends Message<GrpcEntitySchemaMutation> 
     { no: 88, name: "removeReferenceSchemaMutation", kind: "message", T: GrpcRemoveReferenceSchemaMutation, oneof: "mutation" },
     { no: 89, name: "setReferenceSchemaFacetedMutation", kind: "message", T: GrpcSetReferenceSchemaFacetedMutation, oneof: "mutation" },
     { no: 90, name: "setReferenceSchemaIndexedMutation", kind: "message", T: GrpcSetReferenceSchemaFilterableMutation, oneof: "mutation" },
+    { no: 91, name: "createReflectedReferenceSchemaMutation", kind: "message", T: GrpcCreateReflectedReferenceSchemaMutation, oneof: "mutation" },
+    { no: 92, name: "modifyReflectedReferenceAttributeInheritanceSchemaMutation", kind: "message", T: GrpcModifyReflectedReferenceAttributeInheritanceSchemaMutation, oneof: "mutation" },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcEntitySchemaMutation {

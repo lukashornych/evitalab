@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import ky from 'ky'
 import { useI18n } from 'vue-i18n'
 import { ConnectionService, useConnectionService } from '@/modules/connection/service/ConnectionService'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
 import { Connection } from '@/modules/connection/model/Connection'
+import VFormDialog from '@/modules/base/component/VFormDialog.vue'
 
 enum Mode {
     Add,
@@ -114,7 +115,6 @@ const gqlUrlRules = [
     }
 ]
 
-const form = ref<HTMLFormElement | null>(null)
 const mode = computed<Mode>(() => props.connection ? Mode.Modify : Mode.Add)
 const modifiedConnection = ref<{
     name: string,
@@ -132,6 +132,10 @@ const modifiedConnection = ref<{
     grpcUrlTested: ApiTestResult.NotTested,
     gqlUrl: '',
     gqlUrlTested: ApiTestResult.NotTested
+})
+const changed = ref<boolean>(false)
+watch(modifiedConnection, (): void => {
+    changed.value = true
 })
 
 function getApiTestedIndicator(result: ApiTestResult): any  {
@@ -189,46 +193,7 @@ async function testGqlApiConnection(): Promise<boolean> {
     }
 }
 
-async function testConnection(): Promise<boolean> {
-    let success: boolean = true
-
-    // test system API
-    const systemApiResult = await testSystemApiConnection()
-    if (systemApiResult) {
-        modifiedConnection.value.systemApiUrlTested = ApiTestResult.Success
-    } else {
-        modifiedConnection.value.systemApiUrlTested = ApiTestResult.Failure
-    }
-
-    // test lab API
-    const labApiResult = await testLabApiConnection()
-    if (labApiResult) {
-        modifiedConnection.value.grpcUrlTested = ApiTestResult.Success
-    } else {
-        success = false
-        modifiedConnection.value.grpcUrlTested = ApiTestResult.Failure
-    }
-
-    // test GQL API
-    const gqlApiResult = await testGqlApiConnection()
-    if (gqlApiResult) {
-        modifiedConnection.value.gqlUrlTested = ApiTestResult.Success
-    } else {
-        success = false
-        modifiedConnection.value.gqlUrlTested = ApiTestResult.Failure
-    }
-
-    if (success) {
-        toaster.success(t('explorer.connection.editor.notification.connectionSuccess'))
-    } else {
-        toaster.error(t('explorer.connection.editor.notification.connectionError'))
-    }
-    return success
-}
-
-function cancel(): void {
-    //@ts-ignore
-    form.value.reset()
+function reset(): void {
     modifiedConnection.value = {
         name: '',
         systemApiUrl: '',
@@ -238,16 +203,10 @@ function cancel(): void {
         gqlUrl: '',
         gqlUrlTested: ApiTestResult.NotTested
     }
-    emit('update:modelValue', false)
+    changed.value = false
 }
 
-async function storeConnection(): Promise<void> {
-    //@ts-ignore
-    const { valid }: any = await form.value.validate()
-    if (!valid) {
-        return
-    }
-
+async function storeConnection(): Promise<boolean> {
     try {
         connectionService.addConnection(new Connection(
             undefined,
@@ -258,100 +217,94 @@ async function storeConnection(): Promise<void> {
             modifiedConnection.value.gqlUrl!,
             'https://localhost:5555/rest' // todo lho implement rest
         ))
-    } catch (e: any) {
-        toaster.error(e)
-        return
-    }
 
-    //@ts-ignore
-    form.value.reset()
-    emit('update:modelValue', false)
+        toaster.success(t(
+            mode.value === Mode.Add
+                ? 'explorer.connection.editor.notification.connectionAdded'
+                : 'explorer.connection.editor.notification.connectionEdited',
+            { connectionName: modifiedConnection.value.name! }
+        ))
+        return true
+    } catch (e: any) {
+        toaster.error(t(
+            mode.value === Mode.Add
+                ? 'explorer.connection.editor.notification.couldNotAddConnection'
+                : 'explorer.connection.editor.notification.couldNotEditConnection',
+            { reason: e.message }
+        ))
+        return false
+    }
 }
 </script>
 
 <template>
-    <VDialog
+    <VFormDialog
         :model-value="modelValue"
-        @update:model-value="$emit('update:modelValue', $event)"
-        persistent
-        max-width="36rem"
+        :changed="changed"
+        :confirm-button-icon="mode === Mode.Add ? 'mdi-plus' : 'mdi-pencil-outline'"
+        :confirm="storeConnection"
+        :reset="reset"
+        @update:model-value="emit('update:modelValue', $event)"
     >
         <template #activator="{ props }">
-            <slot name="activator" v-bind="props"/>
+            <slot name="activator" v-bind="{ props }"/>
         </template>
 
-        <VCard class="py-8 px-4">
-            <VCardTitle v-if="mode === Mode.Add">{{ t('explorer.connection.editor.addTitle') }}</VCardTitle>
-            <VCardTitle v-if="mode === Mode.Modify">{{ t('explorer.connection.editor.editTitle') }}</VCardTitle>
+        <template #title>
+            <template v-if="mode === Mode.Add">
+                {{ t('explorer.connection.editor.addTitle') }}
+            </template>
+            <template v-else-if="mode === Mode.Modify">
+                {{ t('explorer.connection.editor.editTitle') }}
+            </template>
+        </template>
 
-            <VCardText>
-                <VForm
-                    ref="form"
-                    validate-on="submit"
-                >
-                    <VTextField
-                        v-model="modifiedConnection.name"
-                        :label="t('explorer.connection.editor.form.connectionName.label')"
-                        placeholder="evitaDB"
-                        variant="solo-filled"
-                        :rules="nameRules"
-                        required
-                    />
-                    <VTextField
-                        v-model="modifiedConnection.systemApiUrl"
-                        :label="t('explorer.connection.editor.form.systemApiUrl.label')"
-                        placeholder="https://{evitadb-server}:5555/system"
-                        variant="solo-filled"
-                        required
-                        :rules="systemApiUrlRules"
-                        :append-inner-icon="getApiTestedIndicator(modifiedConnection.systemApiUrlTested)"
-                    />
-                    <VTextField
-                        v-model="modifiedConnection.grpcUrl"
-                        :label="t('explorer.connection.editor.form.grpcUrl.label')"
-                        placeholder="https://{evitadb-server}:5555/lab/api"
-                        variant="solo-filled"
-                        required
-                        :rules="grpcUrlRules"
-                        :append-inner-icon="getApiTestedIndicator(modifiedConnection.grpcUrlTested)"
-                    />
-                    <VTextField
-                        v-model="modifiedConnection.gqlUrl"
-                        :label="t('explorer.connection.editor.form.graphQLApiUrl.label')"
-                        placeholder="https://{evitadb-server}:5555/gql"
-                        variant="solo-filled"
-                        required
-                        :rules="gqlUrlRules"
-                        :append-inner-icon="getApiTestedIndicator(modifiedConnection.gqlUrlTested)"
-                    />
-                </VForm>
-            </VCardText>
+        <template #default>
+            <VTextField
+                v-model="modifiedConnection.name"
+                :label="t('explorer.connection.editor.form.connectionName.label')"
+                placeholder="evitaDB"
+                :rules="nameRules"
+                required
+            />
+            <VTextField
+                v-model="modifiedConnection.systemApiUrl"
+                :label="t('explorer.connection.editor.form.systemApiUrl.label')"
+                placeholder="https://{evitadb-server}:5555/system"
+                variant="solo-filled"
+                required
+                :rules="systemApiUrlRules"
+                :append-inner-icon="getApiTestedIndicator(modifiedConnection.systemApiUrlTested)"
+            />
+            <VTextField
+                v-model="modifiedConnection.grpcUrl"
+                :label="t('explorer.connection.editor.form.grpcUrl.label')"
+                placeholder="https://{evitadb-server}:5555/"
+                variant="solo-filled"
+                required
+                :rules="grpcUrlRules"
+                :append-inner-icon="getApiTestedIndicator(modifiedConnection.grpcUrlTested)"
+            />
+            <VTextField
+                v-model="modifiedConnection.gqlUrl"
+                :label="t('explorer.connection.editor.form.graphQLApiUrl.label')"
+                placeholder="https://{evitadb-server}:5555/gql"
+                variant="solo-filled"
+                required
+                :rules="gqlUrlRules"
+                :append-inner-icon="getApiTestedIndicator(modifiedConnection.gqlUrlTested)"
+            />
+        </template>
 
-            <VCardActions class="px-6">
-                <VBtn
-                    variant="plain"
-                    prepend-icon="mdi-connection"
-                    @click="testConnection"
-                >
-                    {{ t('explorer.connection.editor.button.testConnection') }}
-                </VBtn>
-                <VSpacer/>
-                <VBtn
-                    variant="tonal"
-                    @click="cancel">
-                    {{ t('common.button.cancel') }}
-                </VBtn>
-                <VBtn
-                    variant="outlined"
-                    prepend-icon="mdi-content-save"
-                    @click="storeConnection"
-                    class="ml-4"
-                >
-                    {{ t('common.button.save') }}
-                </VBtn>
-            </VCardActions>
-        </VCard>
-    </VDialog>
+        <template #confirm-button-body>
+            <template v-if="mode === Mode.Add">
+                {{ t('common.button.add') }}
+            </template>
+            <template v-else-if="mode === Mode.Modify">
+                {{ t('common.button.edit') }}
+            </template>
+        </template>
+    </VFormDialog>
 </template>
 
 <style lang="scss" scoped>

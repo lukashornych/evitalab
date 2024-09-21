@@ -1,4 +1,4 @@
-import { List } from 'immutable'
+import Immutable, { List } from 'immutable'
 import { EvitaDBDriver } from '../EvitaDBDriver'
 import { Catalog } from '../../model/Catalog'
 import { Connection } from '../../model/Connection'
@@ -12,20 +12,17 @@ import { Value } from '../../model/Value'
 import { EntitySchema } from '../../model/schema/EntitySchema'
 import {
     GrpcCatalogSchemaResponse,
-    GrpcDefineEntitySchemaResponse, GrpcDeleteCollectionResponse
+    GrpcDefineEntitySchemaResponse,
+    GrpcDeleteCollectionResponse, GrpcGoLiveAndCloseResponse, GrpcRenameCollectionResponse
 } from '@/modules/connection/driver/grpc/gen/GrpcEvitaSessionAPI_pb'
 import { EvitaDBInstanceServerError } from '@/modules/driver-support/exception/EvitaDBInstanceServerError'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { TimeoutError } from '../../exception/TimeoutError'
 import { EvitaDBInstanceNetworkError } from '@/modules/driver-support/exception/EvitaDBInstanceNetworkError'
 import { LabError } from '@/modules/base/exception/LabError'
-import {
-    ClientProvider,
-    EvitaClient,
-    EvitaSessionClient,
-} from './service/ClientProvider'
+import { ClientProvider, EvitaSessionClient } from './service/ClientProvider'
 import { EntityConverter } from './service/EntityConverter'
-import { EvitaValueConvert } from './service/EvitaValueConverter'
+import { EvitaValueConverter } from './service/EvitaValueConverter'
 import { ExtraResultConverter } from './service/ExtraResultConverter'
 import { ServerStatus } from '../../model/data/ServerStatus'
 import { ServerStatusConverter } from './service/ServerStatusConverter'
@@ -35,20 +32,32 @@ import { ApiServerStatus } from '../../model/data/ApiServerStatus'
 import { GrpcDefineCatalogResponse } from '@/modules/connection/driver/grpc/gen/GrpcEvitaAPI_pb'
 import { EvitaSessionProvider } from '@/modules/connection/driver/grpc/service/EvitaSessionProvider'
 import { ConnectError } from '@connectrpc/connect'
+import { ClassifierValidationErrorType } from '@/modules/connection/model/data-type/ClassifierValidationErrorType'
+import { ClassifierType } from '@/modules/connection/model/data-type/ClassifierType'
+import { GrpcReservedKeywordsResponse } from '@/modules/connection/driver/grpc/gen/GrpcEvitaManagementAPI_pb'
+import { ReservedKeywordsConverter } from '@/modules/connection/driver/grpc/service/ReservedKeywordsConverter'
+import { splitStringWithCaseIntoWords } from '@/utils/string'
+import { Keyword } from '@/modules/connection/driver/grpc/model/Keyword'
 
 //TODO: Add docs and add header 'X-EvitaDB-ClientID': this.getClientIdHeaderValue()
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
 
-    private readonly evitaValueConverter: EvitaValueConvert = new EvitaValueConvert()
-    private readonly entityConverter: EntityConverter = new EntityConverter(this.evitaValueConverter)
-    private readonly extraResultConverter: ExtraResultConverter = new ExtraResultConverter(this.entityConverter)
-    private readonly catalogSchemaConverter: CatalogSchemaConverter = new CatalogSchemaConverter(this.evitaValueConverter)
-    private readonly catalogConverter: CatalogConverter = new CatalogConverter()
-    private readonly responseConverter: ResponseConverter = new ResponseConverter(this.entityConverter, this.extraResultConverter)
-    private readonly serverStatusConverter: ServerStatusConverter = new ServerStatusConverter()
+    private readonly classifierFormatPattern: RegExp = /^[A-Za-z][A-Za-z0-9_.\-~]{0,254}$/
 
-    private readonly clientProvider: ClientProvider = new ClientProvider()
-    private readonly evitaSessionProvider: EvitaSessionProvider = new EvitaSessionProvider(this.clientProvider)
+    private _clientProvider?: ClientProvider
+    private _evitaSessionProvider?: EvitaSessionProvider
+
+    private _evitaValueConverter?: EvitaValueConverter
+    private _entityConverter?: EntityConverter
+    private _extraResultConverter?: ExtraResultConverter
+    private _catalogSchemaConverter?: CatalogSchemaConverter
+    private _catalogConverter?: CatalogConverter
+
+    private _responseConverter?: ResponseConverter
+    private _serverStatusConverter?: ServerStatusConverter
+    private _reservedKeywordsConverter?: ReservedKeywordsConverter
+
+    private reservedKeywords?: Immutable.Map<ClassifierType, Immutable.List<Keyword>>
 
     async getCatalogSchema(connection: Connection, catalogName: string): Promise<CatalogSchema> {
         try {
@@ -234,6 +243,33 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         )
     }
 
+    async isClassifierValid(connection: Connection, classifierType: ClassifierType, classifier: string): Promise<ClassifierValidationErrorType | undefined> {
+        if (this.reservedKeywords == undefined) {
+            try {
+                const response: GrpcReservedKeywordsResponse = await this.clientProvider.getEvitaManagementClient(connection)
+                    .listReservedKeywords(Empty)
+                this.reservedKeywords = this.reservedKeywordsConverter.convert(response.keywords)
+            } catch (e) {
+                this.handleCallError(e, connection)
+            }
+        }
+
+        if (classifier.trim().length === 0) {
+            return ClassifierValidationErrorType.Empty
+        }
+        if (classifier !== classifier.trim()) {
+            return ClassifierValidationErrorType.LeadingTrailingWhiteSpace
+        }
+        if (this.isClassifierKeyword(classifierType, classifier)) {
+            return ClassifierValidationErrorType.Keyword
+        }
+        if (!this.classifierFormatPattern.test(classifier)) {
+            return ClassifierValidationErrorType.Format
+        }
+
+        return undefined
+    }
+
     async createCatalog(
         connection: Connection,
         catalogName: string
@@ -277,28 +313,48 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
 
     async replaceCatalog(
         connection: Connection,
-        catalogNameToBeReplaced: string,
-        catalogNameToBeReplacedWith: string
+        catalogNameToBeReplacedWith: string,
+        catalogNameToBeReplaced: string
     ): Promise<boolean> {
         const response = await this.clientProvider
             .getEvitaClient(connection)
             .replaceCatalog({
-                catalogNameToBeReplaced,
                 catalogNameToBeReplacedWith,
+                catalogNameToBeReplaced
             })
         return response.success
     }
 
-    async createCollection(
-        connection: Connection,
-        entityType: string,
-        catalogName: string
-    ): Promise<Catalog[] | undefined> {
+    async switchCatalogToAliveState(connection: Connection, catalogName: string): Promise<boolean> {
         return this.evitaSessionProvider.executeInReadWriteSession(
             connection,
             await this.getCatalog(connection, catalogName),
             async (sessionId) => {
-                const response: GrpcDefineEntitySchemaResponse = await this.clientProvider
+                const response: GrpcGoLiveAndCloseResponse = await this.clientProvider
+                    .getEvitaSessionClient(connection)
+                    .goLiveAndClose(
+                        Empty,
+                        {
+                            headers: {
+                                sessionId
+                            }
+                        }
+                    )
+                return response.success
+            }
+        )
+    }
+
+    async createCollection(
+        connection: Connection,
+        catalogName: string,
+        entityType: string
+    ): Promise<void> {
+        return this.evitaSessionProvider.executeInReadWriteSession(
+            connection,
+            await this.getCatalog(connection, catalogName),
+            async (sessionId) => {
+                await this.clientProvider
                     .getEvitaSessionClient(connection)
                     .defineEntitySchema(
                         {
@@ -310,35 +366,26 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                             },
                         }
                     )
-
-                if (response.entitySchema) {
-                    return await this.downloadCtalogsSameSession(
-                        connection,
-                        sessionId
-                    )
-                } else {
-                    return undefined
-                }
             }
         )
     }
 
     async renameCollection(
         connection: Connection,
+        catalogName: string,
         entityType: string,
-        newName: string,
-        catalogName: string
-    ): Promise<Catalog[] | undefined> {
+        newName: string
+    ): Promise<boolean> {
         return await this.evitaSessionProvider.executeInReadWriteSession(
             connection,
             await this.getCatalog(connection, catalogName),
             async (sessionId) => {
-                const response = await this.clientProvider
+                const response: GrpcRenameCollectionResponse = await this.clientProvider
                     .getEvitaSessionClient(connection)
                     .renameCollection(
                         {
                             entityType,
-                            newName,
+                            newName
                         },
                         {
                             headers: {
@@ -347,21 +394,16 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                         }
                     )
 
-                if (response)
-                    return await this.downloadCtalogsSameSession(
-                        connection,
-                        sessionId
-                    )
-                else return undefined
+                return response.renamed
             }
         )
     }
 
     async dropCollection(
         connection: Connection,
-        entityType: string,
-        catalogName: string
-    ): Promise<Catalog[] | undefined> {
+        catalogName: string,
+        entityType: string
+    ): Promise<boolean> {
         return await this.evitaSessionProvider.executeInReadWriteSession(
             connection,
             await this.getCatalog(connection, catalogName),
@@ -379,14 +421,98 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                         }
                     )
 
-                if (response)
-                    return await this.downloadCtalogsSameSession(
-                        connection,
-                        sessionId
-                    )
-                else return undefined
+                return response.deleted
             }
         )
+    }
+
+    private get evitaValueConverter(): EvitaValueConverter {
+        if (this._evitaValueConverter == undefined) {
+            this._evitaValueConverter = new EvitaValueConverter()
+        }
+        return this._evitaValueConverter
+    }
+
+    private get entityConverter(): EntityConverter {
+        if (this._entityConverter == undefined) {
+            this._entityConverter = new EntityConverter(this.evitaValueConverter)
+        }
+        return this._entityConverter
+    }
+
+    private get extraResultConverter(): ExtraResultConverter {
+        if (this._extraResultConverter == undefined) {
+            this._extraResultConverter = new ExtraResultConverter(this.entityConverter)
+        }
+        return this._extraResultConverter
+    }
+
+    private get catalogSchemaConverter(): CatalogSchemaConverter {
+        if (this._catalogSchemaConverter == undefined) {
+            this._catalogSchemaConverter = new CatalogSchemaConverter(this.evitaValueConverter)
+        }
+        return this._catalogSchemaConverter
+    }
+
+    private get catalogConverter(): CatalogConverter {
+        if (this._catalogConverter == undefined) {
+            this._catalogConverter = new CatalogConverter()
+        }
+        return this._catalogConverter
+    }
+
+    private get responseConverter(): ResponseConverter {
+        if (this._responseConverter == undefined) {
+            this._responseConverter = new ResponseConverter(this.entityConverter, this.extraResultConverter)
+        }
+        return this._responseConverter
+    }
+
+    private get serverStatusConverter(): ServerStatusConverter {
+        if (this._serverStatusConverter == undefined) {
+            this._serverStatusConverter = new ServerStatusConverter()
+        }
+        return this._serverStatusConverter
+    }
+
+    private get clientProvider(): ClientProvider {
+        if (this._clientProvider == undefined) {
+            this._clientProvider = new ClientProvider()
+        }
+        return this._clientProvider
+    }
+
+    private get evitaSessionProvider(): EvitaSessionProvider {
+        if (this._evitaSessionProvider == undefined) {
+            this._evitaSessionProvider = new EvitaSessionProvider(this.clientProvider)
+        }
+        return this._evitaSessionProvider
+    }
+
+    private get reservedKeywordsConverter(): ReservedKeywordsConverter {
+        if (this._reservedKeywordsConverter == undefined) {
+            this._reservedKeywordsConverter = new ReservedKeywordsConverter()
+        }
+        return this._reservedKeywordsConverter
+    }
+
+    private isClassifierKeyword(classifierType: ClassifierType, classifier: string): boolean {
+        if (classifier.trim().length === 0) {
+            return false
+        }
+        const normalizedClassifier: Keyword = new Keyword(
+            splitStringWithCaseIntoWords(classifier)
+                .map(it => it.toLowerCase())
+                .toArray()
+        )
+        if (this.reservedKeywords == undefined) {
+            throw new UnexpectedError('Missing reserved keywords.')
+        }
+        const reservedKeywords: Immutable.List<Keyword> | undefined = this.reservedKeywords.get(classifierType)
+        if (reservedKeywords == undefined) {
+            return false
+        }
+        return reservedKeywords.findIndex(it => it.equals(normalizedClassifier)) > -1
     }
 
     // todo lho this shouldnt exist, component should call getCatalogs on new session

@@ -1293,7 +1293,7 @@ export enum GrpcCommitBehavior {
    * may decide to fsync changes from multiple transactions at once, so the transaction may wait longer than
    * necessary. This behaviour still does not guarantee that the changes will be visible immediately after
    * the commit - because they still need to be propagated to indexes in order new data can be found by queries.
-   * 
+   *
    * This behaviour is default.
    *
    * @generated from enum value: WAIT_FOR_LOG_PERSISTENCE = 1;
@@ -1366,6 +1366,298 @@ proto3.util.setEnumType(GrpcNamingConvention, "io.evitadb.externalApi.grpc.gener
   { no: 2, name: "SNAKE_CASE" },
   { no: 3, name: "UPPER_SNAKE_CASE" },
   { no: 4, name: "KEBAB_CASE" },
+]);
+
+/**
+ * This enum represents the possible health problems that can be signaled by the server.
+ *
+ * @generated from enum io.evitadb.externalApi.grpc.generated.GrpcHealthProblem
+ */
+export enum GrpcHealthProblem {
+  /**
+   * *
+   * Signalized when the consumed memory never goes below 85% of the maximum heap size and the GC tries to free
+   * old generation at least once (this situation usually leads to repeated attempts of expensive old generation GC
+   * and pressure on system CPUs).
+   *
+   * @generated from enum value: MEMORY_SHORTAGE = 0;
+   */
+  MEMORY_SHORTAGE = 0,
+
+  /**
+   * *
+   * Signalized when the readiness probe signals that at least one external API, that is configured to be enabled
+   * doesn't respond to internal HTTP check call.
+   *
+   * @generated from enum value: EXTERNAL_API_UNAVAILABLE = 1;
+   */
+  EXTERNAL_API_UNAVAILABLE = 1,
+
+  /**
+   * *
+   * Signalized when the input queues are full and the server is not able to process incoming requests. The problem
+   * is reported when there is ration of rejected tasks to accepted tasks >= 2. This flag is cleared when the rejection
+   * ratio decreases below the specified threshold, which signalizes that server is able to process incoming requests
+   * again.
+   *
+   * @generated from enum value: INPUT_QUEUES_OVERLOADED = 2;
+   */
+  INPUT_QUEUES_OVERLOADED = 2,
+
+  /**
+   * *
+   * Signaled when there are occurrences of Java internal errors. These errors are usually caused by the server
+   * itself and are not related to the client's requests. Java errors signal fatal problems inside the JVM.
+   *
+   * @generated from enum value: JAVA_INTERNAL_ERRORS = 3;
+   */
+  JAVA_INTERNAL_ERRORS = 3,
+}
+// Retrieve enum metadata with: proto3.getEnumType(GrpcHealthProblem)
+proto3.util.setEnumType(GrpcHealthProblem, "io.evitadb.externalApi.grpc.generated.GrpcHealthProblem", [
+  { no: 0, name: "MEMORY_SHORTAGE" },
+  { no: 1, name: "EXTERNAL_API_UNAVAILABLE" },
+  { no: 2, name: "INPUT_QUEUES_OVERLOADED" },
+  { no: 3, name: "JAVA_INTERNAL_ERRORS" },
+]);
+
+/**
+ * Enum representing overall readiness state of the server API.
+ *
+ * @generated from enum io.evitadb.externalApi.grpc.generated.GrpcReadiness
+ */
+export enum GrpcReadiness {
+  /**
+   * *
+   * At least one API is not ready.
+   *
+   * @generated from enum value: API_STARTING = 0;
+   */
+  API_STARTING = 0,
+
+  /**
+   * *
+   * All APIs are ready.
+   *
+   * @generated from enum value: API_READY = 1;
+   */
+  API_READY = 1,
+
+  /**
+   * *
+   * At least one API that was ready is not ready anymore.
+   *
+   * @generated from enum value: API_STALLING = 2;
+   */
+  API_STALLING = 2,
+
+  /**
+   * *
+   * Server is shutting down. None of the APIs are ready.
+   *
+   * @generated from enum value: API_SHUTDOWN = 3;
+   */
+  API_SHUTDOWN = 3,
+
+  /**
+   * *
+   * Unknown state - cannot determine the state of the APIs (should not happen).
+   *
+   * @generated from enum value: API_UNKNOWN = 4;
+   */
+  API_UNKNOWN = 4,
+}
+// Retrieve enum metadata with: proto3.getEnumType(GrpcReadiness)
+proto3.util.setEnumType(GrpcReadiness, "io.evitadb.externalApi.grpc.generated.GrpcReadiness", [
+  { no: 0, name: "API_STARTING" },
+  { no: 1, name: "API_READY" },
+  { no: 2, name: "API_STALLING" },
+  { no: 3, name: "API_SHUTDOWN" },
+  { no: 4, name: "API_UNKNOWN" },
+]);
+
+/**
+ * State aggregates the possible states of a task into a simple enumeration.
+ *
+ * @generated from enum io.evitadb.externalApi.grpc.generated.GrpcTaskSimplifiedState
+ */
+export enum GrpcTaskSimplifiedState {
+  /**
+   * *
+   * Task is waiting in the queue to be executed.
+   *
+   * @generated from enum value: TASK_QUEUED = 0;
+   */
+  TASK_QUEUED = 0,
+
+  /**
+   * *
+   * Task is currently running.
+   *
+   * @generated from enum value: TASK_RUNNING = 1;
+   */
+  TASK_RUNNING = 1,
+
+  /**
+   * *
+   * Task has finished successfully.
+   *
+   * @generated from enum value: TASK_FINISHED = 2;
+   */
+  TASK_FINISHED = 2,
+
+  /**
+   * *
+   * Task has failed.
+   *
+   * @generated from enum value: TASK_FAILED = 3;
+   */
+  TASK_FAILED = 3,
+}
+// Retrieve enum metadata with: proto3.getEnumType(GrpcTaskSimplifiedState)
+proto3.util.setEnumType(GrpcTaskSimplifiedState, "io.evitadb.externalApi.grpc.generated.GrpcTaskSimplifiedState", [
+  { no: 0, name: "TASK_QUEUED" },
+  { no: 1, name: "TASK_RUNNING" },
+  { no: 2, name: "TASK_FINISHED" },
+  { no: 3, name: "TASK_FAILED" },
+]);
+
+/**
+ * Enum specifies different modes for reference attributes inheritance in reflected schema.
+ *
+ * @generated from enum io.evitadb.externalApi.grpc.generated.GrpcAttributeInheritanceBehavior
+ */
+export enum GrpcAttributeInheritanceBehavior {
+  /**
+   * *
+   * Inherit all attributes by default except those listed in the {@link #getAttributeInheritanceFilter()} array.
+   *
+   * @generated from enum value: INHERIT_ALL_EXCEPT = 0;
+   */
+  INHERIT_ALL_EXCEPT = 0,
+
+  /**
+   * *
+   * Do not inherit any attributes by default except those listed in the {@link #getAttributeInheritanceFilter()} array.
+   *
+   * @generated from enum value: INHERIT_ONLY_SPECIFIED = 1;
+   */
+  INHERIT_ONLY_SPECIFIED = 1,
+}
+// Retrieve enum metadata with: proto3.getEnumType(GrpcAttributeInheritanceBehavior)
+proto3.util.setEnumType(GrpcAttributeInheritanceBehavior, "io.evitadb.externalApi.grpc.generated.GrpcAttributeInheritanceBehavior", [
+  { no: 0, name: "INHERIT_ALL_EXCEPT" },
+  { no: 1, name: "INHERIT_ONLY_SPECIFIED" },
+]);
+
+/**
+ * Enum describes traits of a GrpcTask task.
+ *
+ * @generated from enum io.evitadb.externalApi.grpc.generated.GrpcTaskTrait
+ */
+export enum GrpcTaskTrait {
+  /**
+   * *
+   * Task can be manually started by the user.
+   *
+   * @generated from enum value: TASK_CAN_BE_STARTED = 0;
+   */
+  TASK_CAN_BE_STARTED = 0,
+
+  /**
+   * *
+   * Task can be manually cancelled by the user.
+   *
+   * @generated from enum value: TASK_CAN_BE_CANCELLED = 1;
+   */
+  TASK_CAN_BE_CANCELLED = 1,
+
+  /**
+   * *
+   * Task needs to be manually stopped by the user (otherwise it will run indefinitely).
+   *
+   * @generated from enum value: TASK_NEEDS_TO_BE_STOPPED = 2;
+   */
+  TASK_NEEDS_TO_BE_STOPPED = 2,
+}
+// Retrieve enum metadata with: proto3.getEnumType(GrpcTaskTrait)
+proto3.util.setEnumType(GrpcTaskTrait, "io.evitadb.externalApi.grpc.generated.GrpcTaskTrait", [
+  { no: 0, name: "TASK_CAN_BE_STARTED" },
+  { no: 1, name: "TASK_CAN_BE_CANCELLED" },
+  { no: 2, name: "TASK_NEEDS_TO_BE_STOPPED" },
+]);
+
+/**
+ * Enum describes possible classifier types used in reserved keywords listing
+ *
+ * @generated from enum io.evitadb.externalApi.grpc.generated.GrpcClassifierType
+ */
+export enum GrpcClassifierType {
+  /**
+   * *
+   * Identification of the server instance.
+   *
+   * @generated from enum value: CLASSIFIER_TYPE_SERVER_NAME = 0;
+   */
+  CLASSIFIER_TYPE_SERVER_NAME = 0,
+
+  /**
+   * *
+   * Identification of the catalog.
+   *
+   * @generated from enum value: CLASSIFIER_TYPE_CATALOG = 1;
+   */
+  CLASSIFIER_TYPE_CATALOG = 1,
+
+  /**
+   * *
+   * Identification of the entity type.
+   *
+   * @generated from enum value: CLASSIFIER_TYPE_ENTITY = 2;
+   */
+  CLASSIFIER_TYPE_ENTITY = 2,
+
+  /**
+   * *
+   * Identification of the attribute.
+   *
+   * @generated from enum value: CLASSIFIER_TYPE_ATTRIBUTE = 3;
+   */
+  CLASSIFIER_TYPE_ATTRIBUTE = 3,
+
+  /**
+   * *
+   * Identification of the associated data (rich content).
+   *
+   * @generated from enum value: CLASSIFIER_TYPE_ASSOCIATED_DATA = 4;
+   */
+  CLASSIFIER_TYPE_ASSOCIATED_DATA = 4,
+
+  /**
+   * *
+   * Identification of the reference.
+   *
+   * @generated from enum value: CLASSIFIER_TYPE_REFERENCE = 5;
+   */
+  CLASSIFIER_TYPE_REFERENCE = 5,
+
+  /**
+   * *
+   * Identification of the reference attribute.
+   *
+   * @generated from enum value: CLASSIFIER_TYPE_REFERENCE_ATTRIBUTE = 6;
+   */
+  CLASSIFIER_TYPE_REFERENCE_ATTRIBUTE = 6,
+}
+// Retrieve enum metadata with: proto3.getEnumType(GrpcClassifierType)
+proto3.util.setEnumType(GrpcClassifierType, "io.evitadb.externalApi.grpc.generated.GrpcClassifierType", [
+  { no: 0, name: "CLASSIFIER_TYPE_SERVER_NAME" },
+  { no: 1, name: "CLASSIFIER_TYPE_CATALOG" },
+  { no: 2, name: "CLASSIFIER_TYPE_ENTITY" },
+  { no: 3, name: "CLASSIFIER_TYPE_ATTRIBUTE" },
+  { no: 4, name: "CLASSIFIER_TYPE_ASSOCIATED_DATA" },
+  { no: 5, name: "CLASSIFIER_TYPE_REFERENCE" },
+  { no: 6, name: "CLASSIFIER_TYPE_REFERENCE_ATTRIBUTE" },
 ]);
 
 /**

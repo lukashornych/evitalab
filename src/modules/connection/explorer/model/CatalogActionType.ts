@@ -7,6 +7,7 @@ export enum CatalogActionType {
     DropCatalog = 'dropCatalog',
     RenameCatalog = 'renameCatalog',
     ReplaceCatalog = 'replaceCatalog',
+    SwitchCatalogToAliveState = 'switchCatalogToAliveState',
     ModifySubheader = 'modifySubheader',
     CollectionsSubheader = 'collectionsSubheader',
     CreateCollection = 'createCollection',

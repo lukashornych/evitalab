@@ -32,7 +32,7 @@ const emit = defineEmits<{
 <template>
     <div class="price-renderer-all-prices-filter">
         <div class="price-renderer-all-prices-filter__inputs">
-            <VCombobox
+            <VAutocomplete
                 :model-value="selectedPriceIds"
                 :disabled="filterData.priceIds.length === 0"
                 prepend-inner-icon="mdi-identifier"
@@ -44,7 +44,7 @@ const emit = defineEmits<{
                 hide-details
                 @update:model-value="emit('update:selectedPriceIds', $event)"
             />
-            <VCombobox
+            <VAutocomplete
                 :model-value="selectedPriceLists"
                 :disabled="filterData.priceLists.length === 0"
                 prepend-inner-icon="mdi-format-list-bulleted"
@@ -65,8 +65,8 @@ const emit = defineEmits<{
                         <span v-html="t('entityViewer.grid.priceRenderer.filter.help.priceListOrder')" />
                     </VTooltip>
                 </template>
-            </VCombobox>
-            <VCombobox
+            </VAutocomplete>
+            <VAutocomplete
                 :model-value="selectedCurrencies"
                 :disabled="filterData.currencies.length === 0"
                 prepend-inner-icon="mdi-currency-usd"
@@ -78,7 +78,7 @@ const emit = defineEmits<{
                 hide-details
                 @update:model-value="emit('update:selectedCurrencies', $event)"
             />
-            <VCombobox
+            <VAutocomplete
                 :model-value="selectedInnerRecordIds"
                 :disabled="filterData.innerRecordIds.length === 0"
                 prepend-inner-icon="mdi-format-list-group"

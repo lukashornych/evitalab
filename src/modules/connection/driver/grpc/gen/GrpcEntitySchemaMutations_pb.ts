@@ -351,7 +351,7 @@ export class GrpcSetEntitySchemaWithGeneratedPrimaryKeyMutation extends Message<
   /**
    * Whether primary keys of entities of this type will not be provided by the external systems and Evita
    * is responsible for generating unique primary keys for the entity on insertion.
-   * 
+   *
    * Generated key is guaranteed to be unique, but may not represent continuous ascending series. Generated key
    * will be always greater than zero.
    *
@@ -396,11 +396,11 @@ export class GrpcSetEntitySchemaWithHierarchyMutation extends Message<GrpcSetEnt
   /**
    * Whether entities of this type are organized in a tree like structure (hierarchy) where certain entities
    * are subordinate of other entities.
-   * 
+   *
    * Entities may be organized in hierarchical fashion. That means that entity may refer to single parent entity and may be
    * referred by multiple child entities. Hierarchy is always composed of entities of same type.
    * Each entity must be part of at most single hierarchy (tree).
-   * 
+   *
    * Hierarchy can limit returned entities by using filtering constraints `hierarchy_{reference name}_within`. It's also used for
    * computation of extra data - such as `hierarchyParents`.
    *
@@ -444,12 +444,12 @@ export class GrpcSetEntitySchemaWithHierarchyMutation extends Message<GrpcSetEnt
 export class GrpcSetEntitySchemaWithPriceMutation extends Message<GrpcSetEntitySchemaWithPriceMutation> {
   /**
    * Whether entities of this type holds price information.
-   * 
+   *
    * Prices are specific to a very few entities, but because correct price computation is very complex in e-commerce
    * systems and highly affects performance of the entities filtering and sorting, they deserve first class support
    * in entity model. It is pretty common in B2B systems single product has assigned dozens of prices for the different
    * customers.
-   * 
+   *
    * Specifying prices on entity allows usage of `priceValidIn`, `priceInCurrency`
    * `priceBetween`, and `priceInPriceLists` filtering constraints and also price
    * ordering of the entities. Additional requirements
