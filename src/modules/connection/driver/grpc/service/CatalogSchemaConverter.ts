@@ -12,8 +12,7 @@ import { AttributeSchema } from '@/modules/connection/model/schema/AttributeSche
 import {
     GrpcAttributeSchemaType,
     GrpcAttributeUniquenessType,
-    GrpcCardinality, GrpcEvitaAssociatedDataDataType, GrpcEvitaAssociatedDataDataType_GrpcEvitaDataType,
-    GrpcEvitaDataType,
+    GrpcCardinality,
     GrpcEvolutionMode,
     GrpcGlobalAttributeUniquenessType,
     GrpcOrderBehaviour,
@@ -46,11 +45,11 @@ import {
     SortableAttributeCompoundSchema
 } from '@/modules/connection/model/schema/SortableAttributeCompoundSchema'
 import { AssociatedDataSchema } from '@/modules/connection/model/schema/AssociatedDataSchema'
-import { Currency } from '@/modules/connection/model/data/Currency'
 import { Locale } from '@/modules/connection/model/data-type/Locale'
 import { ScalarConverter } from './ScalarConverter'
 import { MapUtil } from '../utils/MapUtil'
 import { EvitaValueConverter } from './EvitaValueConverter'
+import { Currency } from '@/modules/connection/model/data-type/Currency'
 
 //TODO: Add documentation
 export class CatalogSchemaConverter {

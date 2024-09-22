@@ -30,16 +30,16 @@ import {
     useServerStatusTabFactory
 } from '@/modules/server-status/service/ServerStatusTabFactory'
 import CreateCatalogDialog from '@/modules/connection/explorer/component/CreateCatalogDialog.vue'
-import { JobTabFactory, useJobTabFactory } from '@/modules/jobs/services/JobTabFactory'
-import { JfrTabFactory, useJfrTabFactory } from '@/modules/jfr-recording/service/JfrTabFactory'
+import { TaskViewerTabFactory, useTaskViewerTabFactory } from '@/modules/task-viewer/services/TaskViewerTabFactory'
+import { JfrViewerTabFactory, useJfrViewerTabFactory } from '@/modules/jfr-viewer/service/JfrViewerTabFactory'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const connectionService: ConnectionService = useConnectionService()
 const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = useGraphQLConsoleTabFactory()
 const serverStatusTabFactory: ServerStatusTabFactory = useServerStatusTabFactory()
-const jobTabFactory: JobTabFactory = useJobTabFactory()
-const jfrTabFactory: JfrTabFactory = useJfrTabFactory()
+const taskViewerTabFactory: TaskViewerTabFactory = useTaskViewerTabFactory()
+const jfrViewerTabFactory: JfrViewerTabFactory = useJfrViewerTabFactory()
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -119,12 +119,12 @@ function createActions(): Map<ConnectionActionType, MenuItem<ConnectionActionTyp
                 )
         )
     )
-    actions.set(ConnectionActionType.Jobs, createMenuAction(
-        ConnectionActionType.Jobs,
+    actions.set(ConnectionActionType.Tasks, createMenuAction(
+        ConnectionActionType.Tasks,
         'mdi-chart-gantt',
         () => {
             workspaceService.createTab(
-                jobTabFactory.createNew(
+                taskViewerTabFactory.createNew(
                     props.connection
                 )
             )
@@ -135,7 +135,7 @@ function createActions(): Map<ConnectionActionType, MenuItem<ConnectionActionTyp
         'mdi-chart-timeline',
         () => {
             workspaceService.createTab(
-                jfrTabFactory.createNew(
+                jfrViewerTabFactory.createNew(
                     props.connection
                 )
             )

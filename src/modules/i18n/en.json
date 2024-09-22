@@ -25,11 +25,7 @@
       "confirm": "Confirm",
       "rename": "Rename",
       "replace": "Replace",
-      "switch": "Switch",
-      "backup": "Backup",
-      "restore": "Restore",
-      "startRecording": "Start recording",
-      "stopRecording": "Stop recording"
+      "switch": "Switch"
     },
     "notification": {
       "copiedToClipboard": "Copied to clipboard",
@@ -272,7 +268,7 @@
         "remove": "Remove connection",
         "detail": "Status",
         "createCatalog": "Create catalog",
-        "jobs": "Jobs",
+        "tasks": "Tasks",
         "jfrRecordings": "JFR recordings"
       },
       "subheader": {
@@ -953,27 +949,128 @@
       }
     }
   },
-  "backups": {
+  "backupViewer": {
     "path": "Backups",
-    "createDialog": {
-      "titleFirst": "Back up ",
-      "titleSecond": " catalog",
-      "includeWal": "Will apply all mutations from WAL during restoration resulting in the latest version of catalog",
-      "information": "The back up process may take a while. Therefore it will be started asynchronously. You can find it’s progress and backup file to download in job listing."
+    "button": {
+      "backupCatalog": "Backup catalog"
     },
-    "restoreDialog": {
-      "catalogName": "New catalog name"
+    "tasks": {
+      "title": "Backups in preparation"
+    },
+    "list": {
+      "title": "Finished backups"
+    },
+    "notification": {
+      "couldNotLoadBackupFiles": "Could not load backup files: {reason}",
+      "couldNotDownloadBackupFile": "Could not download backup file {fileName}: {reason}"
+    },
+    "backup": {
+      "title": "Backup catalog",
+      "description": "Request a new backup for the {catalogName} catalog:",
+      "info": "The back up process may take a while. Therefore it will be started asynchronously. You can find it’s progress and backup file to download in task listing.",
+      "form": {
+        "pastMoment": {
+          "label": "Past moment",
+          "validations": {
+            "required": "Past moment is required."
+          }
+        },
+        "includeWal": {
+          "label": "Include WAL",
+          "description": "Will apply all mutations from WAL during restoration resulting in the latest version of catalog"
+        }
+      },
+      "button": {
+        "backup": "Backup"
+      },
+      "notification": {
+        "backupRequested": "A backup for the {catalogName} catalog requested.",
+        "couldNotRequestBackup": "Could not request a backup for the {catalogName} catalog: {reason}"
+      }
+    },
+    "restore": {
+      "title": "Restore catalog",
+      "description": "Restore the {fileName} backup file into catalog:",
+      "info": "The restore process may take a while. Therefore, it will be started asynchronously. You can find it's progress in backups or tasks.",
+      "button": {
+        "restore": "Restore"
+      },
+      "form": {
+        "catalogName": {
+          "label": "Catalog name",
+          "validations": {
+            "required": "Catalog name is required.",
+            "empty": "Catalog name is required.",
+            "leadingTrailingWhiteSpace": "Catalog name cannot have leading or trailing whitespace characters.",
+            "keyword": "Catalog name is same as a reserved keyword.",
+            "format": "Catalog name doesn't match supported format.",
+            "notAvailable": "Catalog with this name already exists."
+          }
+        }
+      },
+      "notification": {
+        "restoreRequested": "A restoration of the {fileName} backup file has been requested.",
+        "couldNotRestoreBackupFile": "Could not restore backup file {fileName}: {reason}"
+      }
     }
   },
-  "jobs": {
-    "path": "Jobs"
+  "taskViewer": {
+    "path": "Tasks",
+    "tasksVisualizer": {
+      "notification": {
+        "couldNotLoadTaskStatuses": "Could not load task statuses: {reason}",
+        "taskCancelled": "The {taskName} task has been cancelled.",
+        "taskNotCancelled": "The {taskName} task has not been cancelled. Probably because it is already finished",
+        "couldNotCancelTask": "Could not cancel the {taskName} task: {reason}"
+      }
+    }
   },
-  "jfr": {
+  "jfrViewer": {
     "path": "JFR Recordings",
-    "startRecordingDialog": {
+    "button": {
+      "startRecording": "Start recording"
+    },
+    "tasks": {
+      "title": "Running recordings"
+    },
+    "list": {
+      "title": "Finished recordings"
+    },
+    "notification": {
+      "couldNotDownloadRecordingFile": "Could not download recording file {fileName}: {reason}"
+    },
+    "startRecording": {
       "title": "Start JFR recording",
-      "input": "Events to record",
-      "info": "This will start recording process in background which will be active until you stop it manually. Note that there can be only one recording active at the same time."
+      "info": "This will start recording process in background which will be active until you stop it manually. Note that there can be only one recording active at the same time.",
+      "form": {
+        "events": {
+          "label": "Events to record",
+          "validations": {
+            "required": "Events are required."
+          }
+        }
+      },
+      "button": {
+        "startRecording": "Start recording"
+      },
+      "notification": {
+        "couldNotLoadEventTypes": "Could not load available event types for JFR recording: {reason}",
+        "couldNotStartRecording": "Could not start JFR recording: {reason}",
+        "recordingStarted": "JFR recording has been started.",
+        "recordingNotStarted": "JFR recording has not been started."
+      }
+    },
+    "stopRecording": {
+      "title": "Stop JFR recording",
+      "info": "This will stop the active recording process. The final recording will be available in the JFR recording listing.",
+      "button": {
+        "stopRecording": "Stop recording"
+      },
+      "notification": {
+        "couldNotStopRecording": "Could not stop JFR recording: {reason}",
+        "recordingStopped": "JFR recording has been stopped.",
+        "recordingNotStopped": "JFR recording has not been stopped."
+      }
     }
   }
 }

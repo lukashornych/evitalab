@@ -1,7 +1,6 @@
 import { BigDecimal } from "../data-type/BigDecimal";
 import { DateTimeRange } from "../data-type/DateTimeRange";
-import { Value } from "../Value";
-import { Currency } from "./Currency";
+import { Currency } from '@/modules/connection/model/data-type/Currency'
 
 //TODO: Add documentation
 export class Price {

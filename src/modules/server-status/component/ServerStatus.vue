@@ -2,19 +2,19 @@
 import { TabComponentEvents } from '@/modules/workspace/tab/model/TabComponentEvents'
 import { useServerStatusService } from '../service/ServerStatusService'
 import { ref } from 'vue'
-import { ServerStatus } from '@/modules/connection/model/data/ServerStatus'
 import { TabComponentProps } from '@/modules/workspace/tab/model/TabComponentProps'
 import { ServerStatusTabParams } from '../model/ServerStatusTabParams'
 import { VoidTabData } from '@/modules/workspace/tab/model/void/VoidTabData'
 import { Duration } from 'luxon'
-import { ApiReadiness } from '@/modules/connection/model/data/ApiReadiness'
-import { ApiServerStatus } from '@/modules/connection/model/data/ApiServerStatus'
-import { ApiEndpoint } from '@/modules/connection/model/data/ApiEndpoint'
 import { List } from 'immutable'
 import { useI18n } from 'vue-i18n'
 import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
 import RuntimeConfigurationDialog from '@/modules/server-status/component/RuntimeConfigurationDialog.vue'
 import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
+import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
+import { ApiReadiness } from '@/modules/connection/model/status/ApiReadiness'
+import { ApiServerStatus } from '@/modules/connection/model/status/ApiServerStatus'
+import { ApiEndpoint } from '@/modules/connection/model/status/ApiEndpoint'
 
 const emit = defineEmits<TabComponentEvents>()
 const props = defineProps<TabComponentProps<ServerStatusTabParams, VoidTabData>>()

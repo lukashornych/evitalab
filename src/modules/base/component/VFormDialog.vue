@@ -17,6 +17,7 @@ const props = withDefaults(
         modelValue: boolean,
         changed?: boolean,
         dangerous?: boolean,
+        scrollable?: boolean,
         confirmButtonIcon?: string,
         confirm: () => Promise<boolean>,
         reset?: () => void,
@@ -24,6 +25,7 @@ const props = withDefaults(
     }>(),
     {
         changed: false,
+        scrollable: false,
         dangerous: false,
         confirmButtonIcon: 'mdi-check',
         reset: () => {},
@@ -71,7 +73,12 @@ async function confirm(): Promise<void> {
 </script>
 
 <template>
-    <VLabDialog :model-value="modelValue" :max-width="maxWidth" persistent>
+    <VLabDialog
+        :model-value="modelValue"
+        :max-width="maxWidth"
+        :scrollable="scrollable"
+        persistent
+    >
         <template #activator="{ props }">
             <slot name="activator" v-bind="{ props }"/>
         </template>

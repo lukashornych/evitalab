@@ -29,10 +29,10 @@ import { PriceInnerRecordHandling } from '@/modules/connection/model/data-type/P
 import { EntityReference } from '@/modules/connection/model/data/EntityReference'
 import { Cardinality } from '@/modules/connection/model/schema/Cardinality'
 import Immutable from 'immutable'
-import { Currency } from '@/modules/connection/model/data/Currency'
 import { EvitaValueConverter } from './EvitaValueConverter'
 import { AssociatedData } from '@/modules/connection/model/data/AssociatedData'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { Currency } from '@/modules/connection/model/data-type/Currency'
 
 //TODO: Add documentation
 export class EntityConverter {

@@ -1,4 +1,3 @@
-import { Schema } from '@/modules/connection/model/schema/Schema'
 import { List, Map } from 'immutable'
 import { NamingConvention } from '../NamingConvetion'
 import { AssociatedDataSchema } from '@/modules/connection/model/schema/AssociatedDataSchema'
@@ -8,8 +7,8 @@ import { EntityAttributeSchema } from '@/modules/connection/model/schema/EntityA
 import { Value } from '@/modules/connection/model/Value'
 import { EvolutionMode } from '@/modules/connection/model/schema/EvolutionMode'
 import { AbstractSchema } from '@/modules/connection/model/schema/AbstractSchema'
-import { Currency } from '../data/Currency'
 import { Locale } from '../data-type/Locale'
+import { Currency } from '@/modules/connection/model/data-type/Currency'
 
 /**
  * evitaLab's representation of a single evitaDB entity schema independent of specific evitaDB version

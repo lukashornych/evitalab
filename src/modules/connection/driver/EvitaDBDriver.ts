@@ -3,22 +3,22 @@ import { Connection } from '@/modules/connection/model/Connection'
 import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
 import { Response } from '@/modules/connection/model/data/Response'
 import { List } from 'immutable'
-import { ServerStatus } from '../model/data/ServerStatus'
-import { ApiReadiness } from '../model/data/ApiReadiness'
-import { ApiServerStatus } from '../model/data/ApiServerStatus'
 import { ClassifierValidationErrorType } from '@/modules/connection/model/data-type/ClassifierValidationErrorType'
 import { ClassifierType } from '@/modules/connection/model/data-type/ClassifierType'
-import { CatalogVersionAtResponse } from '../model/data/CatalogVersionAtResponse'
 import { OffsetDateTime } from '../model/data-type/OffsetDateTime'
-import { TaskStatus } from '../model/data/TaskStatus'
-import { FilesToFetch } from '../model/data/FilesToFetch'
-import { TaskStatuses } from '../model/data/TaskStatuses'
-import { TaskSimplifiedState } from '../model/data/TaskSimplifiedState'
 import { Uuid } from '../model/data-type/Uuid'
 import {
     GrpcRestoreCatalogRequest, GrpcRestoreCatalogResponse
 } from '@/modules/connection/driver/grpc/gen/GrpcEvitaManagementAPI_pb'
-import { EventType } from '@/modules/connection/model/data/EventType'
+import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
+import { ApiReadiness } from '@/modules/connection/model/status/ApiReadiness'
+import { ApiServerStatus } from '@/modules/connection/model/status/ApiServerStatus'
+import { CatalogVersionAtResponse } from '@/modules/connection/model/CatalogVersionAtResponse'
+import { TaskStatus } from '@/modules/connection/model/task/TaskStatus'
+import { FilesToFetch } from '@/modules/connection/model/file/FilesToFetch'
+import { TaskState } from '@/modules/connection/model/task/TaskState'
+import { TaskStatuses } from '@/modules/connection/model/task/TaskStatuses'
+import { EventType } from '@/modules/connection/model/jfr/EventType'
 
 /**
  * evitaDB version-agnostic driver to access data from connected evitaDB server
@@ -85,10 +85,7 @@ export interface EvitaDBDriver {
     replaceCatalog(connection: Connection, catalogNameToBeReplacedWith: string, catalogNameToBeReplaced: string): Promise<boolean>
     switchCatalogToAliveState(connection: Connection, catalogName: string): Promise<boolean>
 //TODO: Add doc
-    getMinimalBackupDate(
-        connection: Connection,
-        catalogName: string
-    ): Promise<CatalogVersionAtResponse>
+    getMinimalBackupDate(connection: Connection, catalogName: string): Promise<CatalogVersionAtResponse>
     //TODO: Add doc
     createBackup(
         connection: Connection,
@@ -97,27 +94,19 @@ export interface EvitaDBDriver {
         pastMoment: OffsetDateTime
     ): Promise<TaskStatus>
     //TODO: Add doc
-    getBackups(
-        connection: Connection,
-        pageNumber: number,
-        pageSize: number
-    ): Promise<FilesToFetch>
+    getFilesToFetch(connection: Connection, origin: string, pageNumber: number, pageSize: number): Promise<FilesToFetch>
     //TODO: Add doc
-    getActiveJobs(
+    getTaskStatuses(
         connection: Connection,
         pageNumber: number,
         pageSize: number,
-        simplifiedState?: TaskSimplifiedState[],
+        states?: TaskState[],
         taskType?: string
     ): Promise<TaskStatuses>
     //TODO: Add doc
-    restoreCatalog(
-        connection: Connection,
-        catalogName: string,
-        fileId: Uuid
-    ): Promise<TaskStatus>
+    restoreCatalog(connection: Connection, fileId: Uuid, catalogName: string): Promise<TaskStatus>
     //TODO: Add doc
-    cancelJob(connection: Connection, taskId: Uuid): Promise<boolean>
+    cancelTask(connection: Connection, taskId: Uuid): Promise<boolean>
     //TODO: Add doc
     getJfrRecords(connection: Connection, pageNumber: number, pageSize: number): Promise<FilesToFetch>
     //TODO: Add doc

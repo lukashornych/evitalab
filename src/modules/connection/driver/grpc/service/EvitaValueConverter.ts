@@ -10,7 +10,6 @@ import { LocalTime } from '@/modules/connection/model/data-type/LocalTime'
 import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateTime'
 import { Predecessor } from '@/modules/connection/model/data-type/Predecessor'
 import { Uuid } from '@/modules/connection/model/data-type/Uuid'
-import { Currency } from '@/modules/connection/model/data/Currency'
 import Immutable from 'immutable'
 import {
     GrpcBigDecimal,
@@ -41,6 +40,7 @@ import {
 import { DateTime } from 'luxon'
 import { Range } from '@/modules/connection/model/data-type/Range'
 import { GrpcEvitaDataType } from '../gen/GrpcEnums_pb'
+import { Currency } from '@/modules/connection/model/data-type/Currency'
 
 /**
  * Convert gRPC evita value server representation into local evitaLab typescript representation

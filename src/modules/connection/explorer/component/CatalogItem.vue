@@ -38,16 +38,16 @@ import CreateCollectionDialog from '@/modules/connection/explorer/component/Crea
 import SwitchCatalogToAliveStateDialog
     from '@/modules/connection/explorer/component/SwitchCatalogToAliveStateDialog.vue'
 import {
-    BackupsTabFactory,
+    BackupViewerTabFactory,
     useBackupsTabFactory,
-} from '@/modules/backups/service/BackupsTabFactory'
+} from '@/modules/backup-viewer/service/BackupViewerTabFactory'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory = useEvitaQLConsoleTabFactory()
 const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = useGraphQLConsoleTabFactory()
 const schemaViewerTabFactory: SchemaViewerTabFactory = useSchemaViewerTabFactory()
-const backupsService: BackupsTabFactory = useBackupsTabFactory()
+const backupsService: BackupViewerTabFactory = useBackupsTabFactory()
 const { t } = useI18n()
 
 const props = defineProps<{

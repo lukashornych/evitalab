@@ -25,7 +25,7 @@ import { KeymapViewerTabDefinition } from '@/modules/keymap/viewer/workspace/mod
 import { mandatoryInject } from '@/utils/reactivity'
 import { ServerStatusTabFactory } from '@/modules/server-status/service/ServerStatusTabFactory'
 import { ServerStatusTabDefinition } from '@/modules/server-status/model/ServerStatusTabDefinition'
-import { JobTabFactory } from '@/modules/jobs/services/JobTabFactory'
+import { TaskViewerTabFactory } from '@/modules/task-viewer/services/TaskViewerTabFactory'
 
 const openedTabsStorageKey: string = 'openedTabs'
 const tabHistoryStorageKey: string = 'tabHistory'
@@ -45,7 +45,7 @@ export class WorkspaceService {
     private readonly schemaViewerTabFactory: SchemaViewerTabFactory
     private readonly keymapViewerTabFactory: KeymapViewerTabFactory
     private readonly serverStatusTabFactory: ServerStatusTabFactory
-    private readonly jobTabFactory: JobTabFactory
+    private readonly jobTabFactory: TaskViewerTabFactory
 
     constructor(store: WorkspaceStore,
                 labStorage: LabStorage,
@@ -55,7 +55,7 @@ export class WorkspaceService {
                 schemaViewerTabFactory: SchemaViewerTabFactory,
                 keymapViewerTabFactory: KeymapViewerTabFactory,
                 serverStatusTabFactory: ServerStatusTabFactory,
-                jobTabFactory: JobTabFactory) {
+                jobTabFactory: TaskViewerTabFactory) {
         this.store = store
         this.labStorage = labStorage
         this.entityViewerTabFactory = entityViewerTabFactory

@@ -3,7 +3,6 @@ import { BigDecimal } from '@/modules/connection/model/data-type/BigDecimal'
 import { LocalDateTime } from '@/modules/connection/model/data-type/LocalDateTime'
 import { Range } from '@/modules/connection/model/data-type/Range'
 import { Locale } from '@/modules/connection/model/data-type/Locale'
-import { Currency } from '@/modules/connection/model/data/Currency'
 import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateTime'
 import { LocalDate } from '@/modules/connection/model/data-type/LocalDate'
 import { LocalTime } from '@/modules/connection/model/data-type/LocalTime'
@@ -11,6 +10,7 @@ import { Predecessor } from '@/modules/connection/model/data-type/Predecessor'
 import { DateTimeRange } from '@/modules/connection/model/data-type/DateTimeRange'
 import { PrettyPrintable } from '@/modules/connection/model/data-type/PrettyPrintable'
 import { Attributes } from '@/modules/connection/model/data/Attributes'
+import { Currency } from '@/modules/connection/model/data-type/Currency'
 
 /**
  * Represents a single entity property value that is a scalar (native to JavaScript). Cannot be an array, each array item

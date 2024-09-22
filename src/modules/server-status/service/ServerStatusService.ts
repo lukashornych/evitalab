@@ -1,10 +1,10 @@
 import { EvitaDBDriverResolver } from '@/modules/connection/driver/EvitaDBDriverResolver'
 import { Connection } from '@/modules/connection/model/Connection'
-import { ApiReadiness } from '@/modules/connection/model/data/ApiReadiness'
-import { ApiServerStatus } from '@/modules/connection/model/data/ApiServerStatus'
-import { ServerStatus } from '@/modules/connection/model/data/ServerStatus'
 import { mandatoryInject } from '@/utils/reactivity'
 import { InjectionKey } from 'vue'
+import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
+import { ApiReadiness } from '@/modules/connection/model/status/ApiReadiness'
+import { ApiServerStatus } from '@/modules/connection/model/status/ApiServerStatus'
 
 export const serverStatusServiceInjectionKey: InjectionKey<ServerStatusService> = Symbol('serverStatusService')
 

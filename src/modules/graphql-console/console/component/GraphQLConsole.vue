@@ -249,14 +249,8 @@ function focusResultVisualiser(): void {
 </script>
 
 <template>
-    <div
-        v-if="initialized"
-        class="graphql-editor"
-    >
-        <VTabToolbar
-            prepend-icon="mdi-graphql"
-            :path="immutablePath"
-        >
+    <div v-if="initialized" class="graphql-editor">
+        <VTabToolbar prepend-icon="mdi-graphql" :path="immutablePath">
             <template #append>
                 <ShareTabButton
                     ref="shareTabButtonRef"

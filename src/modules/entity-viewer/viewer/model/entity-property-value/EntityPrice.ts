@@ -5,8 +5,8 @@ import {
 } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityPropertyValuePreviewStringContext'
 import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
 import { DateTimeRange } from '@/modules/connection/model/data-type/DateTimeRange'
-import { Currency } from '@/modules/connection/model/data/Currency'
 import { Price } from '@/modules/connection/model/data/Price'
+import { Currency } from '@/modules/connection/model/data-type/Currency'
 
 /**
  * Represents a single entity price.

@@ -11,10 +11,10 @@ import { ConfigModuleRegistrar } from '@/modules/config/ConfigModuleRegistrar'
 import { StorageModuleRegistrar } from '@/modules/storage/StorageModuleRegistrar'
 import { WelcomeScreenModuleRegistrar } from '@/modules/welcome-screen/WelcomeScreenModuleRegistrar'
 import { KeymapModuleRegistrar } from '@/modules/keymap/KeymapModuleRegistrar'
-import { BackupsModuleRegistrar } from './backups/BackupsModuleRegistrar'
-import { JobModuleRegistrar } from '@/modules/jobs/JobModuleRegistrar'
+import { BackupViewerModuleRegistrar } from '@/modules/backup-viewer/BackupViewerModuleRegistrar'
+import { TaskViewerModuleRegistrar } from '@/modules/task-viewer/TaskViewerModuleRegistrar'
 import { ServerActionsModuleRegistrar } from '@/modules/server-status/ServerActionsModuleRegistrar'
-import { JfrModuleRegistrar } from '@/modules/jfr-recording/JfrModuleRegistrar'
+import { JfrViewerModuleRegistrar } from '@/modules/jfr-viewer/JfrViewerModuleRegistrar'
 
 // todo docs
 export const modules: ModuleRegistrar[] = [
@@ -34,7 +34,7 @@ export const modules: ModuleRegistrar[] = [
     new EntityViewerModuleRegistrar(),
     new SchemaViewerModuleRegistrar(),
     new ServerActionsModuleRegistrar(),
-    new BackupsModuleRegistrar(),
-    new JobModuleRegistrar(),
-    new JfrModuleRegistrar()
+    new BackupViewerModuleRegistrar(),
+    new TaskViewerModuleRegistrar(),
+    new JfrViewerModuleRegistrar()
 ]

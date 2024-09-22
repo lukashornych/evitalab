@@ -1,21 +1,22 @@
 import { Uuid } from "@/modules/connection/model/data-type/Uuid"
 import { GrpcFilesToFetchResponse } from "../gen/GrpcEvitaManagementAPI_pb"
 import Immutable from "immutable"
-import { FilesToFetch } from "@/modules/connection/model/data/FilesToFetch"
-import { File } from "@/modules/connection/model/data/File"
 import { OffsetDateTime } from "@/modules/connection/model/data-type/OffsetDateTime"
 import { GrpcBackupCatalogResponse } from "../gen/GrpcEvitaSessionAPI_pb"
-import { TaskStatus } from "@/modules/connection/model/data/TaskStatus"
-import { TaskSimplifiedStateConverter } from "./TaskSimplifiedStateConverter"
+import { TaskStateConverter } from "./TaskStateConverter"
+import { FilesToFetch } from '@/modules/connection/model/file/FilesToFetch'
+import { File } from '@/modules/connection/model/file/File'
+import { TaskStatus } from '@/modules/connection/model/task/TaskStatus'
 
+// todo lho revise and refactor
 export class BackupConverter {
-    readonly taskConverter: TaskSimplifiedStateConverter
+    readonly taskConverter: TaskStateConverter
 
-    constructor(taskConverter: TaskSimplifiedStateConverter) {
+    constructor(taskConverter: TaskStateConverter) {
         this.taskConverter = taskConverter
     }
 
-    convertFilesTofetch(result: GrpcFilesToFetchResponse) {
+    convertFilesToFetch(result: GrpcFilesToFetchResponse) {
         const files: File[] = []
         for (const file of result.filesToFetch) {
             files.push(
@@ -44,7 +45,7 @@ export class BackupConverter {
 
     convertBackupCatalog(result: GrpcBackupCatalogResponse){
         const status = result.taskStatus?.result
-        let value: File | string
+        let value: File | string | undefined
         if (status?.case === 'text') {
             value = status.value.value
         } else {

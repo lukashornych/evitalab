@@ -31,9 +31,9 @@ import {
     ServerStatusTabFactory,
     serverStatusTabFactoryInjectionKey
 } from '@/modules/server-status/service/ServerStatusTabFactory'
-import { BackupsTabFactory, backupsTabFactoryInjectionKey } from '../backups/service/BackupsTabFactory'
-import { JobTabFactory, jobTabFactoryInjectionKey } from '@/modules/jobs/services/JobTabFactory'
-import { JfrTabFactory, jfrTabFactoryInjectionKey } from '@/modules/jfr-recording/service/JfrTabFactory'
+import { BackupViewerTabFactory, backupsTabFactoryInjectionKey } from '@/modules/backup-viewer/service/BackupViewerTabFactory'
+import { TaskViewerTabFactory, taskViewerTabFactoryInjectionKey } from '@/modules/task-viewer/services/TaskViewerTabFactory'
+import { JfrViewerTabFactory, jfrViewerTabFactoryInjectionKey } from '@/modules/jfr-viewer/service/JfrViewerTabFactory'
 
 export class WorkspaceModuleRegistrar implements ModuleRegistrar {
 
@@ -56,11 +56,11 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
         builder.provide(keymapViewerTabFactoryInjectionKey, keymapViewerTabFactory)
         const serverStatusTabFactory: ServerStatusTabFactory = new ServerStatusTabFactory(connectionService)
         builder.provide(serverStatusTabFactoryInjectionKey, serverStatusTabFactory)
-        const jobTabFactory: JobTabFactory = new JobTabFactory(connectionService)
-        builder.provide(jobTabFactoryInjectionKey, jobTabFactory)
-        const jfrTabFactory: JfrTabFactory = new JfrTabFactory(connectionService)
-        builder.provide(jfrTabFactoryInjectionKey, jfrTabFactory)
-        const backupsTabFactory: BackupsTabFactory = new BackupsTabFactory(connectionService)
+        const jobTabFactory: TaskViewerTabFactory = new TaskViewerTabFactory(connectionService)
+        builder.provide(taskViewerTabFactoryInjectionKey, jobTabFactory)
+        const jfrTabFactory: JfrViewerTabFactory = new JfrViewerTabFactory(connectionService)
+        builder.provide(jfrViewerTabFactoryInjectionKey, jfrTabFactory)
+        const backupsTabFactory: BackupViewerTabFactory = new BackupViewerTabFactory(connectionService)
         builder.provide(backupsTabFactoryInjectionKey, backupsTabFactory)
         // todo lho fix circular dep
         // const entityViewerTabFactory: EntityViewerTabFactory = builder.inject(entityViewerTabFactoryInjectionKey)

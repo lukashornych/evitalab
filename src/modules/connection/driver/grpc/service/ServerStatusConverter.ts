@@ -1,7 +1,7 @@
-import { ServerStatus } from "@/modules/connection/model/data/ServerStatus";
 import { GrpcEvitaServerStatusResponse } from "../gen/GrpcEvitaManagementAPI_pb";
 import { OffsetDateTime } from "@/modules/connection/model/data-type/OffsetDateTime";
 import { GrpcOffsetDateTime } from "../gen/GrpcEvitaDataTypes_pb";
+import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
 
 export class ServerStatusConverter {
     convert(serverStatus: GrpcEvitaServerStatusResponse):ServerStatus{

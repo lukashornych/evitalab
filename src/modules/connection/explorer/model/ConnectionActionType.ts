@@ -5,7 +5,7 @@ export enum ConnectionActionType {
     Edit = 'edit',
     Remove = 'remove',
     Detail = 'detail',
-    Jobs = 'jobs',
+    Tasks = 'tasks',
     JfrRecordings = 'jfrRecordings',
     CatalogsSubheader = 'catalogsSubheader',
     CreateCatalog = 'createCatalog'

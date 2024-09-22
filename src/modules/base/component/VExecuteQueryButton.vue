@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { useI18n } from 'vue-i18n'
+import VTabMainActionButton from '@/modules/base/component/VTabMainActionButton.vue'
 
 const { t } = useI18n()
 
@@ -18,12 +19,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <VBtn
-        :loading="loading"
-        density="compact"
-        @click="emit('click')"
-        class="v-btn--variant-primary ml-3"
-    >
+    <VTabMainActionButton :loading="loading" @click="emit('click')">
         <VIcon>mdi-play-outline</VIcon>
 
         <slot>
@@ -32,7 +28,7 @@ const emit = defineEmits<{
             </VTooltip>
             {{ t('common.button.run') }}
         </slot>
-    </VBtn>
+    </VTabMainActionButton>
 </template>
 
 <style lang="scss" scoped>

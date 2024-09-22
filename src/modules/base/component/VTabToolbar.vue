@@ -67,7 +67,7 @@ const normalizedFlags = computed<List<Flag>>(() => {
         <template #append>
             <slot name="append"/>
         </template>
-        <template #extension>
+        <template v-if="$slots['extension']" #extension>
             <slot name="extension"/>
         </template>
     </VToolbar>
