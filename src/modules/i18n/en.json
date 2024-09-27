@@ -272,6 +272,7 @@
         "jfrRecordings": "JFR recordings"
       },
       "subheader": {
+        "modify": "Modify",
         "catalogs": "Catalogs"
       },
       "editor": {
@@ -352,7 +353,7 @@
         "replaceCatalog": "Replace catalog",
         "createCollection": "Create collection",
         "switchCatalogToAliveState": "Switch catalog to alive state",
-        "backup": "Backups"
+        "backups": "Backups"
       },
       "errors": {
         "couldNotLoad": "This catalog couldn't be loaded because it's corrupted."

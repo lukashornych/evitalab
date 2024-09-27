@@ -1,5 +1,5 @@
 // todo docs
-export enum ConnectionActionType {
+export enum ConnectionItemType {
     Refresh = 'refresh',
     OpenGraphQLSystemAPIConsole = 'openGraphQLSystemApiConsole',
     Edit = 'edit',
@@ -7,6 +7,7 @@ export enum ConnectionActionType {
     Detail = 'detail',
     Tasks = 'tasks',
     JfrRecordings = 'jfrRecordings',
+    ModifySubheader = 'modifySubheader',
     CatalogsSubheader = 'catalogsSubheader',
     CreateCatalog = 'createCatalog'
 }

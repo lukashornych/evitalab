@@ -21,7 +21,7 @@ import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
 import { EntityCollection } from '../../model/EntityCollection'
 import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
-import { computed, ComputedRef, markRaw, ref, shallowRef } from 'vue'
+import { computed, ComputedRef, ref } from 'vue'
 import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
 import { MenuItem } from '@/modules/base/model/menu/MenuItem'
 import DropCollectionDialog from '@/modules/connection/explorer/component/DropCollectionDialog.vue'
@@ -81,10 +81,7 @@ function createActions(): Map<
     CollectionActionType,
     MenuItem<CollectionActionType>
 > {
-    const actions: Map<
-        CollectionActionType,
-        MenuItem<CollectionActionType>
-    > = new Map()
+    const actions: Map<CollectionActionType, MenuItem<CollectionActionType>> = new Map()
     actions.set(
         CollectionActionType.ViewEntities,
         createMenuAction(
@@ -110,41 +107,45 @@ function createActions(): Map<
                 )
         )
     )
-    if (!evitaLabConfig.readOnly) {
-        actions.set(
-            CollectionActionType.ModifySubheader,
-            new MenuSubheader(t('explorer.collection.subheader.modify'))
-        )
-        actions.set(
+
+    actions.set(
+        CollectionActionType.ModifySubheader,
+        new MenuSubheader(t('explorer.collection.subheader.modify'))
+    )
+    actions.set(
+        CollectionActionType.RenameCollection,
+        createMenuAction(
             CollectionActionType.RenameCollection,
-            createMenuAction(
-                CollectionActionType.RenameCollection,
-                'mdi-pencil-outline',
-                () => showRenameCollectionDialog.value = true
-            )
+            'mdi-pencil-outline',
+            () => showRenameCollectionDialog.value = true,
+            evitaLabConfig.readOnly
         )
-        actions.set(
+    )
+    actions.set(
+        CollectionActionType.DropCollection,
+        createMenuAction(
             CollectionActionType.DropCollection,
-            createMenuAction(
-                CollectionActionType.DropCollection,
-                'mdi-delete-outline',
-                () => showDropCollectionDialog.value = true
-            )
+            'mdi-delete-outline',
+            () => showDropCollectionDialog.value = true,
+            evitaLabConfig.readOnly
         )
-    }
+    )
     return actions
 }
 
 function createMenuAction(
     actionType: CollectionActionType,
     prependIcon: string,
-    execute: () => void
+    execute: () => void,
+    disabled?: boolean
 ): MenuAction<CollectionActionType> {
     return new MenuAction(
         actionType,
         t(`explorer.collection.actions.${actionType}`),
         prependIcon,
-        execute
+        execute,
+        undefined,
+        disabled
     )
 }
 </script>

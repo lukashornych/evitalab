@@ -8,7 +8,7 @@ import { useI18n } from 'vue-i18n'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import { Connection } from '@/modules/connection/model/Connection'
 import { MenuAction } from '@/modules/base/model/menu/MenuAction'
-import { CatalogActionType } from '@/modules/connection/explorer/model/CatalogActionType'
+import { CatalogItemType } from '@/modules/connection/explorer/model/CatalogItemType'
 import { GraphQLInstanceType } from '@/modules/graphql-console/console/model/GraphQLInstanceType'
 import { CatalogSchemaPointer } from '@/modules/schema-viewer/viewer/model/CatalogSchemaPointer'
 import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
@@ -62,8 +62,8 @@ const showDropCatalogDialog = ref<boolean>(false)
 const showCreateCollectionDialog = ref<boolean>(false)
 
 const connection: Connection = useConnection()
-const actions = computed<Map<CatalogActionType, MenuItem<CatalogActionType>>>(() => createActions())
-const actionList = computed<MenuItem<CatalogActionType>[]>(() => Array.from(actions.value.values()))
+const actions = computed<Map<CatalogItemType, MenuItem<CatalogItemType>>>(() => createActions())
+const actionList = computed<MenuItem<CatalogItemType>[]>(() => Array.from(actions.value.values()))
 
 const catalogRef = ref(props.catalog)
 provideCatalog(catalogRef as Ref<Catalog>)
@@ -71,18 +71,18 @@ provideCatalog(catalogRef as Ref<Catalog>)
 const loading = ref<boolean>(false)
 
 function handleAction(action: string): void {
-    const foundedAction = actions.value?.get(action as CatalogActionType)
+    const foundedAction = actions.value?.get(action as CatalogItemType)
     if (foundedAction && foundedAction instanceof MenuAction) {
-        (foundedAction as MenuAction<CatalogActionType>).execute()
+        (foundedAction as MenuAction<CatalogItemType>).execute()
     }
 }
 
-function createActions(): Map<CatalogActionType, MenuItem<CatalogActionType>> {
-    const actions: Map<CatalogActionType, MenuItem<CatalogActionType>> = new Map()
+function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
+    const actions: Map<CatalogItemType, MenuItem<CatalogItemType>> = new Map()
     actions.set(
-        CatalogActionType.OpenEvitaQLConsole,
+        CatalogItemType.OpenEvitaQLConsole,
         createMenuAction(
-            CatalogActionType.OpenEvitaQLConsole,
+            CatalogItemType.OpenEvitaQLConsole,
             'mdi-variable',
             () => {
                 workspaceService.createTab(
@@ -95,9 +95,9 @@ function createActions(): Map<CatalogActionType, MenuItem<CatalogActionType>> {
         )
     )
     actions.set(
-        CatalogActionType.OpenGraphQLDataAPIConsole,
+        CatalogItemType.OpenGraphQLDataAPIConsole,
         createMenuAction(
-            CatalogActionType.OpenGraphQLDataAPIConsole,
+            CatalogItemType.OpenGraphQLDataAPIConsole,
             'mdi-graphql',
             () => {
                 workspaceService.createTab(
@@ -111,9 +111,9 @@ function createActions(): Map<CatalogActionType, MenuItem<CatalogActionType>> {
         )
     )
     actions.set(
-        CatalogActionType.OpenGraphQLSchemaAPIConsole,
+        CatalogItemType.OpenGraphQLSchemaAPIConsole,
         createMenuAction(
-            CatalogActionType.OpenGraphQLSchemaAPIConsole,
+            CatalogItemType.OpenGraphQLSchemaAPIConsole,
             'mdi-graphql',
             () => {
                 workspaceService.createTab(
@@ -127,9 +127,9 @@ function createActions(): Map<CatalogActionType, MenuItem<CatalogActionType>> {
         )
     )
     actions.set(
-        CatalogActionType.ViewSchema,
+        CatalogItemType.ViewSchema,
         createMenuAction(
-            CatalogActionType.ViewSchema,
+            CatalogItemType.ViewSchema,
             'mdi-file-code-outline',
             () => {
                 workspaceService.createTab(
@@ -141,91 +141,100 @@ function createActions(): Map<CatalogActionType, MenuItem<CatalogActionType>> {
             }
         )
     )
-    if (!evitaLabConfig.readOnly) {
-        actions.set(
-            CatalogActionType.BackupSubheader,
-            new MenuSubheader(t('explorer.catalog.subheader.backup'))
-        )
 
-        actions.set(
-            CatalogActionType.Backup,
-            createMenuAction(
-                CatalogActionType.Backup,
-                'mdi-cloud-download-outline',
-                () => {
-                    workspaceService.createTab(
-                        backupsService.createNew(connection, props.catalog.name, false)
-                    )
-                }
-            )
-        )
+    actions.set(
+        CatalogItemType.BackupSubheader,
+        new MenuSubheader(t('explorer.catalog.subheader.backup'))
+    )
 
-        actions.set(
-            CatalogActionType.ModifySubheader,
-            new MenuSubheader(t('explorer.catalog.subheader.modify'))
-        )
-        actions.set(
-            CatalogActionType.RenameCatalog,
-            createMenuAction(
-                CatalogActionType.RenameCatalog,
-                'mdi-pencil-outline',
-                () => showRenameCatalogDialog.value = true
-            )
-        )
-        actions.set(
-            CatalogActionType.ReplaceCatalog,
-            createMenuAction(
-                CatalogActionType.ReplaceCatalog,
-                'mdi-file-replace-outline',
-                () => showReplaceCatalogDialog.value = true
-            )
-        )
-        if (props.catalog.isInWarmup) {
-            actions.set(
-                CatalogActionType.SwitchCatalogToAliveState,
-                createMenuAction(
-                    CatalogActionType.SwitchCatalogToAliveState,
-                    'mdi-toggle-switch-outline',
-                    () => showSwitchCatalogToAliveStateDialog.value = true
+    actions.set(
+        CatalogItemType.Backups,
+        createMenuAction(
+            CatalogItemType.Backups,
+            'mdi-cloud-download-outline',
+            () => {
+                workspaceService.createTab(
+                    backupsService.createNew(connection, props.catalog.name, false)
                 )
-            )
-        }
-        actions.set(
-            CatalogActionType.DropCatalog,
-            createMenuAction(
-                CatalogActionType.DropCatalog,
-                'mdi-delete-outline',
-                () => showDropCatalogDialog.value = true
-            )
+            },
+            // todo lho: discuss if we want to disable backuping without restoring
+            evitaLabConfig.readOnly
         )
+    )
 
-        actions.set(
-            CatalogActionType.CollectionsSubheader,
-            new MenuSubheader(t('explorer.catalog.subheader.collections'))
+    actions.set(
+        CatalogItemType.ModifySubheader,
+        new MenuSubheader(t('explorer.catalog.subheader.modify'))
+    )
+    actions.set(
+        CatalogItemType.RenameCatalog,
+        createMenuAction(
+            CatalogItemType.RenameCatalog,
+            'mdi-pencil-outline',
+            () => showRenameCatalogDialog.value = true,
+            evitaLabConfig.readOnly
         )
-
+    )
+    actions.set(
+        CatalogItemType.ReplaceCatalog,
+        createMenuAction(
+            CatalogItemType.ReplaceCatalog,
+            'mdi-file-replace-outline',
+            () => showReplaceCatalogDialog.value = true,
+            evitaLabConfig.readOnly
+        )
+    )
+    if (props.catalog.isInWarmup) {
         actions.set(
-            CatalogActionType.CreateCollection,
+            CatalogItemType.SwitchCatalogToAliveState,
             createMenuAction(
-                CatalogActionType.CreateCollection,
-                'mdi-plus',
-                () => showCreateCollectionDialog.value = true
+                CatalogItemType.SwitchCatalogToAliveState,
+                'mdi-toggle-switch-outline',
+                () => showSwitchCatalogToAliveStateDialog.value = true,
+                evitaLabConfig.readOnly
             )
         )
     }
+    actions.set(
+        CatalogItemType.DropCatalog,
+        createMenuAction(
+            CatalogItemType.DropCatalog,
+            'mdi-delete-outline',
+            () => showDropCatalogDialog.value = true,
+            evitaLabConfig.readOnly
+        )
+    )
+
+    actions.set(
+        CatalogItemType.CollectionsSubheader,
+        new MenuSubheader(t('explorer.catalog.subheader.collections'))
+    )
+
+    actions.set(
+        CatalogItemType.CreateCollection,
+        createMenuAction(
+            CatalogItemType.CreateCollection,
+            'mdi-plus',
+            () => showCreateCollectionDialog.value = true,
+            evitaLabConfig.readOnly
+        )
+    )
     return new Map(actions)
 }
 
 function createMenuAction(
-    actionType: CatalogActionType,
+    actionType: CatalogItemType,
     prependIcon: string,
-    execute: () => void
-): MenuItem<CatalogActionType> {
+    execute: () => void,
+    disabled?: boolean
+): MenuItem<CatalogItemType> {
     return new MenuAction(
         actionType,
         t(`explorer.catalog.actions.${actionType}`),
         prependIcon,
-        execute
+        execute,
+        undefined,
+        disabled
     )
 }
 </script>

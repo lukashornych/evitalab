@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import VLoadingCircular from '@/modules/base/component/VLoadingCircular.vue'
+import { MenuItem } from '@/modules/base/model/menu/MenuItem'
 
 export interface Props {
     openable?: boolean,
     isOpen?: boolean,
     prependIcon: string,
     loading?: boolean,
-    actions?: object[]
+    actions?: MenuItem<any>[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -78,8 +79,18 @@ function openActions(): void {
                 <VList
                     density="compact"
                     :items="actions"
-                    @click:select="$emit('click:action', $event.id)"
-                />
+                    @click:select="$emit('click:action', $event.id as string)"
+                >
+                    <template #item="{ props }">
+                        <VListItem
+                            :prepend-icon="props.prependIcon"
+                            :value="props.value"
+                            :disabled="props.disabled"
+                        >
+                            {{ props.title }}
+                        </VListItem>   
+                    </template>
+                </VList>
             </VMenu>
         </div>
     </VListItem>

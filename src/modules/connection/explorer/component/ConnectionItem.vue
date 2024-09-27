@@ -16,7 +16,7 @@ import {
     useGraphQLConsoleTabFactory
 } from '@/modules/graphql-console/console/workspace/service/GraphQLConsoleTabFactory'
 import { GraphQLInstanceType } from '@/modules/graphql-console/console/model/GraphQLInstanceType'
-import { ConnectionActionType } from '@/modules/connection/explorer/model/ConnectionActionType'
+import { ConnectionItemType } from '@/modules/connection/explorer/model/ConnectionItemType'
 import { MenuAction } from '@/modules/base/model/menu/MenuAction'
 import { provideConnection } from '@/modules/connection/explorer/component/dependecies'
 import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
@@ -50,9 +50,9 @@ const props = defineProps<{
 provideConnection(props.connection)
 
 const actions: ComputedRef<
-    Map<ConnectionActionType, MenuItem<ConnectionActionType>>
+    Map<ConnectionItemType, MenuItem<ConnectionItemType>>
 > = computed(() => createActions())
-const actionList: ComputedRef<MenuItem<ConnectionActionType>[]> = computed(
+const actionList: ComputedRef<MenuItem<ConnectionItemType>[]> = computed(
     () => Array.from(actions.value.values())
 )
 
@@ -76,27 +76,27 @@ async function loadCatalogs(): Promise<void> {
 }
 
 function handleAction(action: string): void {
-    const item: MenuItem<ConnectionActionType> | undefined = actions.value.get(action as ConnectionActionType)
+    const item: MenuItem<ConnectionItemType> | undefined = actions.value.get(action as ConnectionItemType)
     if (item instanceof MenuAction) {
         item.execute()
     }
 }
 
 // todo lho these should be some kind of factories
-function createActions(): Map<ConnectionActionType, MenuItem<ConnectionActionType>> {
-    const actions: Map<ConnectionActionType, MenuItem<ConnectionActionType>> = new Map()
+function createActions(): Map<ConnectionItemType, MenuItem<ConnectionItemType>> {
+    const actions: Map<ConnectionItemType, MenuItem<ConnectionItemType>> = new Map()
     actions.set(
-        ConnectionActionType.Refresh,
+        ConnectionItemType.Refresh,
         createMenuAction(
-            ConnectionActionType.Refresh,
+            ConnectionItemType.Refresh,
             'mdi-refresh',
             () => loadCatalogs()
         )
     )
     actions.set(
-        ConnectionActionType.OpenGraphQLSystemAPIConsole,
+        ConnectionItemType.OpenGraphQLSystemAPIConsole,
         createMenuAction(
-            ConnectionActionType.OpenGraphQLSystemAPIConsole,
+            ConnectionItemType.OpenGraphQLSystemAPIConsole,
             'mdi-graphql',
             () =>
                 workspaceService.createTab(
@@ -109,9 +109,9 @@ function createActions(): Map<ConnectionActionType, MenuItem<ConnectionActionTyp
         )
     )
     actions.set(
-        ConnectionActionType.Detail,
+        ConnectionItemType.Detail,
         createMenuAction(
-            ConnectionActionType.Detail,
+            ConnectionItemType.Detail,
             'mdi-database-outline',
             () =>
                 workspaceService.createTab(
@@ -119,8 +119,8 @@ function createActions(): Map<ConnectionActionType, MenuItem<ConnectionActionTyp
                 )
         )
     )
-    actions.set(ConnectionActionType.Tasks, createMenuAction(
-        ConnectionActionType.Tasks,
+    actions.set(ConnectionItemType.Tasks, createMenuAction(
+        ConnectionItemType.Tasks,
         'mdi-chart-gantt',
         () => {
             workspaceService.createTab(
@@ -130,8 +130,8 @@ function createActions(): Map<ConnectionActionType, MenuItem<ConnectionActionTyp
             )
         }
     ))
-    actions.set(ConnectionActionType.JfrRecordings, createMenuAction(
-        ConnectionActionType.JfrRecordings,
+    actions.set(ConnectionItemType.JfrRecordings, createMenuAction(
+        ConnectionItemType.JfrRecordings,
         'mdi-chart-timeline',
         () => {
             workspaceService.createTab(
@@ -141,51 +141,59 @@ function createActions(): Map<ConnectionActionType, MenuItem<ConnectionActionTyp
             )
         }
     ))
-    if (!evitaLabConfig.readOnly) {
-        if (!props.connection.preconfigured) {
-            // todo lho implement
-            // actions.set(
-            //     ConnectionActionType.Edit,
-            //     createMenuAction(
-            //         ConnectionActionType.Edit,
-            //         'mdi-pencil',
-            //         () => {
-            //             throw new UnexpectedError('Not implemented yet.')
-            //         }
-            //     )
-            // )
-            actions.set(
-                ConnectionActionType.Remove,
-                createMenuAction(
-                    ConnectionActionType.Remove,
-                    'mdi-delete-outline',
-                    () => (showRemoveConnectionDialog.value = true)
-                )
-            )
-        }
-        actions.set(
-            ConnectionActionType.CatalogsSubheader,
-            new MenuSubheader(t('explorer.connection.subheader.catalogs'))
+    actions.set(
+        ConnectionItemType.ModifySubheader,
+        new MenuSubheader(t('explorer.connection.subheader.modify'))
+    )
+    // todo lho implement
+    // actions.set(
+    //     ConnectionActionType.Edit,
+    //     createMenuAction(
+    //         ConnectionActionType.Edit,
+    //         'mdi-pencil',
+    //         () => {
+    //             throw new UnexpectedError('Not implemented yet.')
+    //         },
+    //          props.connection.preconfigured
+    //     )
+    // )
+    actions.set(
+        ConnectionItemType.Remove,
+        createMenuAction(
+            ConnectionItemType.Remove,
+            'mdi-delete-outline',
+            () => (showRemoveConnectionDialog.value = true),
+            props.connection.preconfigured
         )
-        actions.set(
-            ConnectionActionType.CreateCatalog,
-            createMenuAction(ConnectionActionType.CreateCatalog, 'mdi-plus', () => {
-                showCreateCatalogDialog.value = true
-            })
+    )
+    actions.set(
+        ConnectionItemType.CatalogsSubheader,
+        new MenuSubheader(t('explorer.connection.subheader.catalogs'))
+    )
+    actions.set(
+        ConnectionItemType.CreateCatalog,
+        createMenuAction(
+            ConnectionItemType.CreateCatalog,
+            'mdi-plus',
+            () => showCreateCatalogDialog.value = true,
+            evitaLabConfig.readOnly
         )
-    }
+    )
     return actions
 }
 function createMenuAction(
-    actionType: ConnectionActionType,
+    actionType: ConnectionItemType,
     prependIcon: string,
-    execute: () => void
-): MenuAction<ConnectionActionType> {
+    execute: () => void,
+    disabled?: boolean
+): MenuAction<ConnectionItemType> {
     return new MenuAction(
         actionType,
         t(`explorer.connection.actions.${actionType}`),
         prependIcon,
-        execute
+        execute,
+        undefined,
+        disabled
     )
 }
 </script>

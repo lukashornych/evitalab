@@ -1,5 +1,5 @@
 // todo docs
-export enum CatalogActionType {
+export enum CatalogItemType {
     OpenEvitaQLConsole = 'openEvitaQLConsole',
     OpenGraphQLDataAPIConsole = 'openGraphQLDataApiConsole',
     OpenGraphQLSchemaAPIConsole = 'openGraphQLSchemaApiConsole',
@@ -13,6 +13,6 @@ export enum CatalogActionType {
     JobsSubheader = 'jobsSubheader',
     CreateCollection = 'createCollection',
     BackupSubheader = 'backupSubheader',
-    Backup = 'backup',
+    Backups = 'backups',
     Jobs = 'jobs'
 }
