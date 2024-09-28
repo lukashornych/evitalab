@@ -21,7 +21,7 @@ import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
 import { EntityCollection } from '../../model/EntityCollection'
 import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
-import { computed, ComputedRef, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
 import { MenuItem } from '@/modules/base/model/menu/MenuItem'
 import DropCollectionDialog from '@/modules/connection/explorer/component/DropCollectionDialog.vue'
@@ -47,9 +47,9 @@ const showRenameCollectionDialog = ref<boolean>(false)
 
 const connection: Connection = useConnection()
 const catalog = useCatalog()
-const actions: ComputedRef<Map<CollectionActionType, MenuItem<CollectionActionType>>> = computed(() =>
+const actions = computed<Map<CollectionActionType, MenuItem<CollectionActionType>>>(() =>
     createActions())
-const actionList: ComputedRef<MenuItem<CollectionActionType>[]> = computed(() => Array.from(
+const actionList = computed<MenuItem<CollectionActionType>[]>(() => Array.from(
     actions.value.values()))
 
 if (catalog.value == undefined) {
@@ -160,9 +160,6 @@ function createMenuAction(
             class="text-gray-light text-sm-body-2"
         >
             {{ entityCollection.entityType }}
-            <VTooltip activator="parent">
-                {{ entityCollection.entityType }}
-            </VTooltip>
         </VTreeViewItem>
 
         <RenameCollectionDialog

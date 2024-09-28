@@ -256,13 +256,15 @@
   "explorer": {
     "title": "Connections Explorer",
     "button": {
-      "addConnection": "Add connection"
+      "connect": "Connect"
     },
     "connection": {
+      "flag": {
+        "preconfigured": "preconfigured"
+      },
       "actions": {
         "refresh": "Refresh",
         "openGraphQLSystemApiConsole": "Open GraphQL System API console",
-        "add": "Add connection",
         "create": "Create catalog",
         "edit": "Edit connection",
         "remove": "Remove connection",
@@ -338,6 +340,10 @@
       }
     },
     "catalog": {
+      "flag": {
+        "corrupted": "corrupted",
+        "warmingUp": "warming up"
+      },
       "subheader": {
         "modify": "Modify",
         "collections": "Collections",

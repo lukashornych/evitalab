@@ -55,6 +55,7 @@ const emit = defineEmits<{
                     <VChip
                         v-for="flag in flags"
                         :key="flag"
+                        density="compact"
                         class="text-sm-body-2"
                     >
                         {{ flag.startsWith('_') ? t(`schemaViewer.section.flag.${flag.substring(1)}`) : flag }}

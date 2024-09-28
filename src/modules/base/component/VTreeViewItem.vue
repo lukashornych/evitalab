@@ -2,12 +2,14 @@
 import { ref } from 'vue'
 import VLoadingCircular from '@/modules/base/component/VLoadingCircular.vue'
 import { MenuItem } from '@/modules/base/model/menu/MenuItem'
+import { ItemFlag } from '@/modules/base/model/tree-view/ItemFlag'
 
 export interface Props {
     openable?: boolean,
     isOpen?: boolean,
     prependIcon: string,
     loading?: boolean,
+    flags?: ItemFlag[],
     actions?: MenuItem<any>[]
 }
 
@@ -15,6 +17,7 @@ const props = withDefaults(defineProps<Props>(), {
     openable: false,
     isOpen: false,
     loading: false,
+    flags: () => [],
     actions: () => []
 })
 
@@ -37,9 +40,7 @@ function openActions(): void {
         :append-icon="null as any"
         @contextmenu.prevent="openActions"
     >
-        <div
-            class="tree-view-item__content"
-        >
+        <div class="tree-view-item__content">
             <VIcon
                 v-if="openable"
             >
@@ -55,13 +56,44 @@ function openActions(): void {
             <VIcon v-else>
                 {{ prependIcon }}
             </VIcon>
-            <span class="text-truncate">
-                <slot>
-                    <span class="text-disabled">
-                        No items found
+
+            <VTooltip>
+                <template #activator="{ props }">
+                    <span v-bind="props" class="tree-view-item__text text-truncate">
+                        <slot>
+                            <span class="text-disabled">
+                                No items found
+                            </span>
+                        </slot>
+
+                        <span v-if="flags.length > 0" class="tree-view-item__flags">
+                            <span
+                                v-for="flag in flags"
+                                :key="flag.value"
+                                :class="['tree-view-item__flag', `tree-view-item__flag--${flag.type}`]"
+                            >
+                                {{ flag.value }}
+                            </span>
+                        </span>
                     </span>
-                </slot>
-            </span>
+                </template>
+
+                <template #default>
+                    <slot />
+
+                    <!-- couldn't use VChips because custom colors didn't work on them -->
+                    <span v-if="flags.length > 0" class="tree-view-item__flags">
+                        <span
+                            v-for="flag in flags"
+                            :key="flag.value"
+                            :class="['tree-view-item__flag', 'tree-view-item__lg-flag', `tree-view-item__flag--${flag.type}`]"
+                        >
+                            {{ flag.value }}
+                        </span>
+                    </span>
+                </template>
+            </VTooltip>
+
             <VMenu
                 v-if="actions && actions.length > 0"
                 :menu-items="actions"
@@ -88,7 +120,7 @@ function openActions(): void {
                             :disabled="props.disabled"
                         >
                             {{ props.title }}
-                        </VListItem>   
+                        </VListItem>
                     </template>
                 </VList>
             </VMenu>
@@ -97,14 +129,55 @@ function openActions(): void {
 </template>
 
 <style lang="scss" scoped>
+@import "@/styles/colors.scss";
+
 .tree-view-item {
     &__content {
         width: 100%;
-        height: 2rem;
+        min-height: 2rem;
         display: inline-grid;
         grid-template-columns: 1.5rem 1.5rem 1fr 1.5rem;
         column-gap: 0.5rem;
         align-items: center;
+    }
+
+    &__text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__flags {
+        margin-top: 0.25rem;
+        margin-bottom: 0.25rem;
+        display: flex;
+        gap: 0.25rem;
+    }
+
+    &__flag {
+        color: $gray-light;
+        background-color: $gray-dark;
+        border-radius: 9999px;
+        font-weight: normal;
+        font-size: 0.6rem;
+        padding: 0 0.5rem;
+        line-height: 1rem;
+        height: min-content;
+
+        &--warning {
+            color: $warning;
+            background-color: $warning-background;
+        }
+
+        &--error {
+            color: $error;
+            background-color: $error-background;
+        }
+    }
+
+    &__lg-flag {
+        font-size: 0.875rem;
+        line-height: 1.5rem;
+        padding: 0 0.75rem;
     }
 }
 </style>

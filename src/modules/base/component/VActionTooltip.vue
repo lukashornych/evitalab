@@ -30,7 +30,7 @@ const keyboardShortcut = computed<string | undefined>(() => {
             {{ command != undefined ? t(`command.${command}`) : '' }}
         </slot>
 
-        <VChip v-if="command != undefined" class="ml-2">{{ keyboardShortcut }}</VChip>
+        <VChip v-if="command != undefined" density="compact" class="ml-2">{{ keyboardShortcut }}</VChip>
     </VTooltip>
 </template>
 

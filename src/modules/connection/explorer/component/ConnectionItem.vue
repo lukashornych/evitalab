@@ -32,6 +32,8 @@ import {
 import CreateCatalogDialog from '@/modules/connection/explorer/component/CreateCatalogDialog.vue'
 import { TaskViewerTabFactory, useTaskViewerTabFactory } from '@/modules/task-viewer/services/TaskViewerTabFactory'
 import { JfrViewerTabFactory, useJfrViewerTabFactory } from '@/modules/jfr-viewer/service/JfrViewerTabFactory'
+import { ItemFlag } from '@/modules/base/model/tree-view/ItemFlag'
+import { ItemFlagType } from '@/modules/base/model/tree-view/ItemFlagType'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
@@ -49,12 +51,19 @@ const props = defineProps<{
 }>()
 provideConnection(props.connection)
 
-const actions: ComputedRef<
-    Map<ConnectionItemType, MenuItem<ConnectionItemType>>
-> = computed(() => createActions())
-const actionList: ComputedRef<MenuItem<ConnectionItemType>[]> = computed(
-    () => Array.from(actions.value.values())
-)
+const flags = computed<ItemFlag[]>(() => {
+    const flags: ItemFlag[] = []
+    if (props.connection.preconfigured) {
+        flags.push(ItemFlag.info(
+            t('explorer.connection.flag.preconfigured')
+        ))
+    }
+    return flags
+})
+const actions = computed<Map<ConnectionItemType, MenuItem<ConnectionItemType>>>(() =>
+    createActions())
+const actionList = computed<MenuItem<ConnectionItemType>[]>(
+    () => Array.from(actions.value.values()))
 
 const catalogs = ref<Catalog[]>()
 const loading = ref<boolean>(false)
@@ -208,15 +217,12 @@ function createMenuAction(
                     :is-open="isOpen"
                     prepend-icon="mdi-power-plug-outline"
                     :loading="loading"
+                    :flags="flags"
                     :actions="actionList"
                     @click="loadCatalogs()"
                     @click:action="handleAction"
-                    class="font-weight-bold"
                 >
                     {{ connection.name }}
-                    <VTooltip activator="parent">
-                        {{ connection.name }}
-                    </VTooltip>
                 </VTreeViewItem>
             </template>
 

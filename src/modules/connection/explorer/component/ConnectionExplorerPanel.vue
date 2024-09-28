@@ -27,6 +27,7 @@ const connections = computed<Connection[]>(() => connectionService.getConnection
     <VNavigationDrawer
         permanent
         :model-value="modelValue"
+        :width="325"
         @update:model-value="$emit('update:modelValue', $event)"
         class="bg-primary"
     >
@@ -51,13 +52,13 @@ const connections = computed<Connection[]>(() => connectionService.getConnection
                 <ConnectionEditor v-model="addConnectionDialogOpen">
                     <template #activator="{ props }">
                         <VBtn
-                            prepend-icon="mdi-plus"
+                            prepend-icon="mdi-power-plug-outline"
                             block
                             variant="outlined"
                             v-bind="props"
                             @click="addConnectionDialogOpen = true"
                         >
-                            {{ t('explorer.button.addConnection') }}
+                            {{ t('explorer.button.connect') }}
                         </VBtn>
                     </template>
                 </ConnectionEditor>

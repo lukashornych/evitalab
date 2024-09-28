@@ -41,6 +41,7 @@ import {
     BackupViewerTabFactory,
     useBackupsTabFactory,
 } from '@/modules/backup-viewer/service/BackupViewerTabFactory'
+import { ItemFlag } from '@/modules/base/model/tree-view/ItemFlag'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
@@ -62,6 +63,16 @@ const showDropCatalogDialog = ref<boolean>(false)
 const showCreateCollectionDialog = ref<boolean>(false)
 
 const connection: Connection = useConnection()
+const flags = computed<ItemFlag[]>(() => {
+    const flags: ItemFlag[] = []
+    if (props.catalog.corrupted) {
+        flags.push(ItemFlag.error(t('explorer.catalog.flag.corrupted')))
+    }
+    if (props.catalog.isInWarmup) {
+        flags.push(ItemFlag.warning(t('explorer.catalog.flag.warmingUp')))
+    }
+    return flags
+})
 const actions = computed<Map<CatalogItemType, MenuItem<CatalogItemType>>>(() => createActions())
 const actionList = computed<MenuItem<CatalogItemType>[]>(() => Array.from(actions.value.values()))
 
@@ -91,7 +102,8 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
                         props.catalog.name
                     )
                 )
-            }
+            },
+            !props.catalog.corrupted
         )
     )
     actions.set(
@@ -107,7 +119,8 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
                         GraphQLInstanceType.Data
                     )
                 )
-            }
+            },
+            !props.catalog.corrupted
         )
     )
     actions.set(
@@ -123,7 +136,8 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
                         GraphQLInstanceType.Schema
                     )
                 )
-            }
+            },
+            !props.catalog.corrupted
         )
     )
     actions.set(
@@ -138,7 +152,8 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
                         new CatalogSchemaPointer(props.catalog.name)
                     )
                 )
-            }
+            },
+            !props.catalog.corrupted
         )
     )
 
@@ -158,7 +173,8 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
                 )
             },
             // todo lho: discuss if we want to disable backuping without restoring
-            evitaLabConfig.readOnly
+            // todo lho: readonly flag must be on connection
+            !props.catalog.corrupted && !evitaLabConfig.readOnly
         )
     )
 
@@ -172,7 +188,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
             CatalogItemType.RenameCatalog,
             'mdi-pencil-outline',
             () => showRenameCatalogDialog.value = true,
-            evitaLabConfig.readOnly
+            !props.catalog.corrupted && !evitaLabConfig.readOnly
         )
     )
     actions.set(
@@ -191,7 +207,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
                 CatalogItemType.SwitchCatalogToAliveState,
                 'mdi-toggle-switch-outline',
                 () => showSwitchCatalogToAliveStateDialog.value = true,
-                evitaLabConfig.readOnly
+                !props.catalog.corrupted && !evitaLabConfig.readOnly
             )
         )
     }
@@ -201,7 +217,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
             CatalogItemType.DropCatalog,
             'mdi-delete-outline',
             () => showDropCatalogDialog.value = true,
-            evitaLabConfig.readOnly
+            !evitaLabConfig.readOnly
         )
     )
 
@@ -216,7 +232,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
             CatalogItemType.CreateCollection,
             'mdi-plus',
             () => showCreateCollectionDialog.value = true,
-            evitaLabConfig.readOnly
+            !props.catalog.corrupted && !evitaLabConfig.readOnly
         )
     )
     return new Map(actions)
@@ -226,7 +242,7 @@ function createMenuAction(
     actionType: CatalogItemType,
     prependIcon: string,
     execute: () => void,
-    disabled?: boolean
+    enabled: boolean = true
 ): MenuItem<CatalogItemType> {
     return new MenuAction(
         actionType,
@@ -234,7 +250,7 @@ function createMenuAction(
         prependIcon,
         execute,
         undefined,
-        disabled
+        !enabled
     )
 }
 </script>
@@ -243,32 +259,17 @@ function createMenuAction(
     <VListGroup :value="`${connection.name}|${catalog.name}`">
         <template #activator="{ isOpen, props }">
             <VTreeViewItem
-                v-if="!catalog.corrupted"
                 v-bind="props"
-                openable
+                :openable="!catalog.corrupted"
                 :is-open="isOpen"
                 prepend-icon="mdi-menu"
                 :loading="loading"
+                :flags="flags"
                 :actions="actionList"
                 @click:action="handleAction"
-                class="font-weight-bold"
+                class="text-gray-light text-sm-body-2"
             >
                 {{ catalog.name }}
-                <VTooltip activator="parent">
-                    {{ catalog.name }}
-                </VTooltip>
-            </VTreeViewItem>
-
-            <VTreeViewItem
-                v-else
-                v-bind="props"
-                prepend-icon="mdi-menu"
-                class="text-red"
-            >
-                {{ catalog.name }}
-                <VTooltip activator="parent">
-                    {{ t('explorer.catalog.errors.couldNotLoad') }}
-                </VTooltip>
             </VTreeViewItem>
         </template>
 
