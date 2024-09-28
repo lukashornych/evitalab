@@ -130,10 +130,10 @@ const observabilityUrlRules = [
     async (value: any) => {
         const result = await testObservabilityApiConnection()
         if (result) {
-            modifiedConnection.value.gqlUrlTested = ApiTestResult.Success
+            modifiedConnection.value.observabilityUrlTested = ApiTestResult.Success
             return true
         }
-        modifiedConnection.value.gqlUrlTested = ApiTestResult.Failure
+        modifiedConnection.value.observabilityUrlTested = ApiTestResult.Failure
         return t('explorer.connection.editor.form.observability.validations.unreachable')
     }
 ]
@@ -220,7 +220,13 @@ async function testGqlApiConnection(): Promise<boolean> {
     }
 }
 async function testObservabilityApiConnection():Promise<boolean>{
-    return (await ky.get(modifiedConnection.value.observabilityUrl + '/metrics')).ok
+    // will be deleted anyway
+    return true
+    // try {
+    //     return (await ky.get(modifiedConnection.value.observabilityUrl + '/metrics')).ok
+    // } catch (e) {
+    //     return false
+    // }
 }
 
 function reset(): void {

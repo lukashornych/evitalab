@@ -5,6 +5,7 @@ import { ConnectionId } from '@/modules/connection/model/ConnectionId'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
 import { UnwrapNestedRefs } from '@vue/reactivity'
+import Immutable from 'immutable'
 
 /**
  * Defines Pinia store for evitaDB connections
@@ -21,10 +22,11 @@ export const useConnectionStore = defineStore('connections', () => {
     /**
      * All connections
      */
-    const connections: ComputedRef<Connection[]> = computed<Connection[]>(() => [
-        ...(preconfiguredConnections.value as Connection[]),
-        ...(userConnections.value as Connection[]),
-    ])
+    const connections: ComputedRef<Immutable.List<Connection>> = computed<Immutable.List<Connection>>(() =>
+        Immutable.List.of(
+            ...(preconfiguredConnections.value as Connection[]),
+            ...(userConnections.value as Connection[])
+        ))
 
     function replacePreconfiguredConnections(newConnections: Connection[]): void {
         preconfiguredConnections.value.splice(0, preconfiguredConnections.value.length)

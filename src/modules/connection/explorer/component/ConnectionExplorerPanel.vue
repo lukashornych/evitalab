@@ -6,6 +6,7 @@ import { Connection } from '@/modules/connection/model/Connection'
 import ConnectionItem from '@/modules/connection/explorer/component/ConnectionItem.vue'
 import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
 import ConnectionEditor from '@/modules/connection/explorer/component/ConnectionEditor.vue'
+import Immutable from 'immutable'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const connectionService: ConnectionService = useConnectionService()
@@ -20,7 +21,16 @@ const emit = defineEmits<{
 }>()
 
 const addConnectionDialogOpen = ref<boolean>(false)
-const connections = computed<Connection[]>(() => connectionService.getConnections())
+const connections = computed<Immutable.List<Connection>>(() => connectionService.getConnections()
+    .sort((a: Connection, b: Connection) => {
+        if (a.preconfigured && !b.preconfigured) {
+            return -1
+        }
+        if (b.preconfigured && !a.preconfigured) {
+            return 1
+        }
+        return a.name.localeCompare(b.name)
+    }))
 </script>
 
 <template>

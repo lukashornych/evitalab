@@ -108,8 +108,8 @@ export class ConnectionService {
     /**
      * Returns all connections: preconfigured and user ones.
      */
-    getConnections(): Connection[] {
-        return this.store.connections as Connection[]
+    getConnections(): Immutable.List<Connection> {
+        return this.store.connections
     }
 
     isConnectionExists(connectionName: string): boolean {
