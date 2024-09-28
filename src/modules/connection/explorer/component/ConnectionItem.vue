@@ -34,6 +34,7 @@ import { TaskViewerTabFactory, useTaskViewerTabFactory } from '@/modules/task-vi
 import { JfrViewerTabFactory, useJfrViewerTabFactory } from '@/modules/jfr-viewer/service/JfrViewerTabFactory'
 import { ItemFlag } from '@/modules/base/model/tree-view/ItemFlag'
 import { ItemFlagType } from '@/modules/base/model/tree-view/ItemFlagType'
+import Immutable from 'immutable'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
@@ -65,7 +66,7 @@ const actions = computed<Map<ConnectionItemType, MenuItem<ConnectionItemType>>>(
 const actionList = computed<MenuItem<ConnectionItemType>[]>(
     () => Array.from(actions.value.values()))
 
-const catalogs = ref<Catalog[]>()
+const catalogs = ref<Immutable.List<Catalog>>()
 const loading = ref<boolean>(false)
 
 const showRemoveConnectionDialog = ref<boolean>(false)
@@ -74,10 +75,10 @@ const showCreateCatalogDialog = ref<boolean>(false)
 async function loadCatalogs(): Promise<void> {
     loading.value = true
     try {
-        catalogs.value = await connectionService.getCatalogs(
-            props.connection,
-            true
-        )
+        catalogs.value = (await connectionService.getCatalogs(props.connection, true))
+            .sort((a: Catalog, b: Catalog) => {
+                return a.name.localeCompare(b.name)
+            })
     } catch (e: any) {
         toaster.error(e)
     }
@@ -227,7 +228,7 @@ function createMenuAction(
             </template>
 
             <div v-if="catalogs !== undefined">
-                <template v-if="catalogs.length > 0">
+                <template v-if="catalogs.size > 0">
                     <CatalogItem
                         v-for="catalog in catalogs"
                         :key="catalog.name"

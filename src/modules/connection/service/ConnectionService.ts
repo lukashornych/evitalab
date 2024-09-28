@@ -12,6 +12,7 @@ import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
 import { mandatoryInject } from '@/utils/reactivity'
 import { EvitaDBDriverResolver } from '@/modules/connection/driver/EvitaDBDriverResolver'
 import { EvitaDBDriver } from '@/modules/connection/driver/EvitaDBDriver'
+import Immutable from 'immutable'
 
 /**
  * Cookie containing preconfigured connections. These will be displayed next to the user-defined connections.
@@ -154,13 +155,13 @@ export class ConnectionService {
         return catalog
     }
 
-    async getCatalogs(connection: Connection, forceReload?: boolean): Promise<Catalog[]> {
+    async getCatalogs(connection: Connection, forceReload?: boolean): Promise<Immutable.List<Catalog>> {
         const cachedCatalogs: IterableIterator<Catalog> | undefined = this.store.cachedCatalogs.get(connection.id)?.values() as IterableIterator<Catalog>
         if (cachedCatalogs == undefined || forceReload === true) {
             await this.fetchCatalogs(connection)
-            return this.store.catalogs(connection.id)
+            return Immutable.List(this.store.catalogs(connection.id))
         } else {
-            return this.store.catalogs(connection.id)
+            return Immutable.List(this.store.catalogs(connection.id))
         }
     }
 

@@ -42,6 +42,8 @@ import {
     useBackupsTabFactory,
 } from '@/modules/backup-viewer/service/BackupViewerTabFactory'
 import { ItemFlag } from '@/modules/base/model/tree-view/ItemFlag'
+import { EntityCollection } from '@/modules/connection/model/EntityCollection'
+import Immutable from 'immutable'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
@@ -75,6 +77,12 @@ const flags = computed<ItemFlag[]>(() => {
 })
 const actions = computed<Map<CatalogItemType, MenuItem<CatalogItemType>>>(() => createActions())
 const actionList = computed<MenuItem<CatalogItemType>[]>(() => Array.from(actions.value.values()))
+
+const entityCollections = computed<Immutable.List<EntityCollection>>(() => {
+    return props.catalog.entityCollections.sort((a: EntityCollection, b: EntityCollection) => {
+        return a.entityType.localeCompare(b.entityType)
+    })
+})
 
 const catalogRef = ref(props.catalog)
 provideCatalog(catalogRef as Ref<Catalog>)
@@ -276,7 +284,7 @@ function createMenuAction(
         <div v-if="!catalog.corrupted">
             <template v-if="catalog.entityCollections.size > 0">
                 <CollectionItem
-                    v-for="entityCollection in catalog.entityCollections"
+                    v-for="entityCollection in entityCollections"
                     :key="entityCollection.entityType"
                     :entity-collection="entityCollection"
                     @change="emit('change')"
