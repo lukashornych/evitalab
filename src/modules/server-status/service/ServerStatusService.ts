@@ -33,7 +33,7 @@ export class ServerStatusService {
 
     async getRuntimeConfiguration(connection: Connection):Promise<string> {
         const driver = await this.evitaDBDriverResolver.resolveDriver(connection)
-        return await driver.getRuntimeConfig(connection)
+        return await driver.getRuntimeConfiguration(connection)
     }
 }
 

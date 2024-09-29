@@ -277,9 +277,11 @@
         "modify": "Modify",
         "catalogs": "Catalogs"
       },
-      "editor": {
-        "addTitle": "Add connection",
-        "editTitle": "Edit connection",
+      "connect": {
+        "title": "Connect to evitaDB server",
+        "button": {
+          "connect": "Connect"
+        },
         "form": {
           "connectionName": {
             "label": "Connection name",
@@ -288,36 +290,17 @@
               "duplicate": "Connection with this name already exists."
             }
           },
-          "systemApiUrl": {
-            "label": "System API URL",
+          "serverUrl": {
+            "label": "Server URL",
+            "hint": "Base scheme://hostname:port of evitaLab API configured on the server you want to connect to.",
             "validations": {
-              "required": "System API URL is required.",
-              "invalidUrl": "System API URL is not a valid URL.",
-              "unreachable": "System API URL is not reachable."
-            }
-          },
-          "grpcUrl": {
-            "label": "gRPC API URL",
-            "validations": {
-              "required": "gRPC API URL is required.",
-              "invalidUrl": "gRPC API URL is not a valid URL.",
-              "unreachable": "gRPC API URL is not reachable."
-            }
-          },
-          "graphQLApiUrl": {
-            "label": "GraphQL API URL",
-            "validations": {
-              "required": "GraphQL API URL is required.",
-              "invalidUrl": "GraphQL API URL is not a valid URL.",
-              "unreachable": "GraphQL API URL is not reachable."
-            }
-          },
-          "observability": {
-            "label": "Observability API URL",
-            "validations": {
-              "required": "Observability API URL is required.",
-              "invalidUrl": "Observability API URL is not a valid URL.",
-              "unreachable": "Observability API URL is not reachable."
+              "required": "Server URL is required.",
+              "invalidUrl": "Server URL is not a valid URL.",
+              "notReady": "Server is not ready yet.",
+              "labApiMissing": "evitaLab API is not enabled on the server.",
+              "notLabUrl": "Server URL is not URL of evitaLab API.",
+              "grpcApiMissing": "gRPC API is not enabled on the server.",
+              "unreachable": "Server is not reachable."
             }
           }
         },
@@ -325,14 +308,12 @@
           "connectionSuccess": "Successfully connected.",
           "connectionError": "Connection test failed.",
           "connectionAdded": "The {connectionName} connection has been successfully added.",
-          "connectionEdited": "The {connectionName} connection was successfully edited.",
-          "couldNotAddConnection": "Could not add the connection: {reason}",
-          "couldNotEditConnection": "Could not edit the connection: {reason}"
+          "couldNotAddConnection": "Could not add the connection: {reason}"
         }
       },
       "remove": {
-        "title": "Remove connection",
-        "question": "Do you want to remove {connectionName} connection?",
+        "title": "Remove {connectionName} connection",
+        "question": "Do you want to remove the connection?",
         "notification": {
           "connectionRemoved": "The {connectionName} connection has been successfully removed.",
           "couldNotRemoveConnection": "Could not remove the {connectionName} connection: {reason}"
@@ -366,7 +347,6 @@
       },
       "create": {
         "title": "Create catalog",
-        "description": "Create a new catalog:",
         "form": {
           "catalogName": {
             "label": "Catalog name",
@@ -386,8 +366,8 @@
         }
       },
       "drop": {
-        "title": "Drop catalog",
-        "question": "Do you want to drop {catalogName} catalog?",
+        "title": "Drop {catalogName} catalog",
+        "question": "Do you want to drop the catalog?",
         "notification": {
           "catalogDropped": "The {catalogName} catalog has been successfully dropped.",
           "catalogNotDropped": "The {catalogName} catalog has been already dropped.",
@@ -395,8 +375,7 @@
         }
       },
       "rename": {
-        "title": "Rename catalog",
-        "description": "Rename catalog {catalogName} to:",
+        "title": "Rename {catalogName} catalog",
         "form": {
           "newName": {
             "label": "New name",
@@ -417,12 +396,11 @@
         }
       },
       "replace": {
-        "title": "Replace catalog",
-        "description": "Replace {catalogNameToBeReplaced} catalog with:",
+        "title": "Replace {catalogNameToBeReplaced} catalog",
         "info": "The {catalogNameToBeReplaced} catalog's data will be replaced with a data from the {catalogNameToBeReplacedWith} catalog under the {catalogNameToBeReplaced} name. The {catalogNameToBeReplacedWith} catalog will be deleted.",
         "form": {
           "catalogNameToBeReplacedWith": {
-            "label": "Source catalog",
+            "label": "With catalog",
             "validations": {
               "required": "Catalog is required.",
               "notExists": "This catalog doesn't exist anymore."
@@ -436,8 +414,8 @@
         }
       },
       "switchToAliveState": {
-        "title": "Switch catalog to alive state",
-        "description": "Switch the {catalogName} catalog from the warm up state to the alive state.",
+        "title": "Switch {catalogName} catalog state",
+        "description": "Switch the catalog's state from the warm up to the alive.",
         "warning": "Catalog in the alive state will no longer support bulk indexing. Instead, the catalog will use incremental indexing. However, it will support transactions and multiple parallel sessions.",
         "notification": {
           "catalogSwitched": "The {catalogName} catalog has been switched from the warm up state to the alive state.",
@@ -457,8 +435,7 @@
         "renameCollection": "Rename collection"
       },
       "create": {
-        "title": "Create collection",
-        "description": "Create a collection for the {catalogName} catalog:",
+        "title": "Create collection in {catalogName} catalog",
         "form": {
           "entityType": {
             "label": "Entity type",
@@ -478,8 +455,8 @@
         }
       },
       "drop": {
-        "title": "Drop collection",
-        "question": "Do you want to drop the {entityType} collection?",
+        "title": "Drop {entityType} collection",
+        "question": "Do you want to drop the collection?",
         "notification": {
           "collectionDropped": "The {entityType} collection has been successfully dropped.",
           "collectionNotDropped": "The {entityType} collection has been already dropped.",
@@ -487,8 +464,7 @@
         }
       },
       "rename": {
-        "title": "Rename collection",
-        "description": "Rename the {entityType} collection to:",
+        "title": "Rename {entityType} collection",
         "form": {
           "newName": {
             "label": "New name",
@@ -972,8 +948,8 @@
       "couldNotDownloadBackupFile": "Could not download backup file {fileName}: {reason}"
     },
     "backup": {
-      "title": "Backup catalog",
-      "description": "Request a new backup for the {catalogName} catalog:",
+      "title": "Backup {catalogName} catalog",
+      "description": "Request a new backup for the catalog:",
       "info": "The back up process may take a while. Therefore it will be started asynchronously. You can find it’s progress and backup file to download in task listing.",
       "form": {
         "pastMoment": {
@@ -996,8 +972,8 @@
       }
     },
     "restore": {
-      "title": "Restore catalog",
-      "description": "Restore the {fileName} backup file into catalog:",
+      "title": "Restore catalog from {fileName}",
+      "description": "Restore the backup file into catalog:",
       "info": "The restore process may take a while. Therefore, it will be started asynchronously. You can find it's progress in backups or tasks.",
       "button": {
         "restore": "Restore"

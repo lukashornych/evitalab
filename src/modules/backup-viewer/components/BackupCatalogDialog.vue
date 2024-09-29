@@ -97,15 +97,15 @@ loadMinimalDate().then((catalogVersionAt) => {
         @update:model-value="emit('update:modelValue', $event)"
     >
         <template #title>
-            {{ t('backupViewer.backup.title') }}
-        </template>
-
-        <template #prepend-form>
-            <I18nT keypath="backupViewer.backup.description">
+            <I18nT keypath="backupViewer.backup.title">
                 <template #catalogName>
                     <strong>{{ catalogName }}</strong>
                 </template>
             </I18nT>
+        </template>
+
+        <template #prepend-form>
+            {{ t('backupViewer.backup.description') }}
         </template>
 
         <template #default>

@@ -12,7 +12,7 @@ const hasher: HashObject = XXH.h64()
  * Because every new version requires empty storage, this version should be increased only with breaking changes
  * to storage format.
  */
-const buildVersion = 2
+const buildVersion: number = 3
 
 export const labStorageInjectionKey: InjectionKey<LabStorage> = Symbol('labStorage')
 

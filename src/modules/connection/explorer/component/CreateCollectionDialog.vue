@@ -85,11 +85,7 @@ async function create(): Promise<boolean> {
         @update:model-value="emit('update:modelValue', $event)"
     >
         <template #title>
-            {{ t('explorer.collection.create.title') }}
-        </template>
-
-        <template #prepend-form>
-            <I18nT keypath="explorer.collection.create.description">
+            <I18nT keypath="explorer.collection.create.title">
                 <template #catalogName>
                     <strong>{{ catalogName }}</strong>
                 </template>

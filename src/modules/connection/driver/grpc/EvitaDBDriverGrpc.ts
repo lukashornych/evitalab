@@ -33,7 +33,10 @@ import { EvitaSessionProvider } from '@/modules/connection/driver/grpc/service/E
 import { ConnectError } from '@connectrpc/connect'
 import { ClassifierValidationErrorType } from '@/modules/connection/model/data-type/ClassifierValidationErrorType'
 import { ClassifierType } from '@/modules/connection/model/data-type/ClassifierType'
-import { GrpcReservedKeywordsResponse } from '@/modules/connection/driver/grpc/gen/GrpcEvitaManagementAPI_pb'
+import {
+    GrpcEvitaServerStatusResponse,
+    GrpcReservedKeywordsResponse
+} from '@/modules/connection/driver/grpc/gen/GrpcEvitaManagementAPI_pb'
 import { ReservedKeywordsConverter } from '@/modules/connection/driver/grpc/service/ReservedKeywordsConverter'
 import { splitStringWithCaseIntoWords } from '@/utils/string'
 import { Keyword } from '@/modules/connection/driver/grpc/model/Keyword'
@@ -44,15 +47,13 @@ import {
 } from '@/modules/connection/driver/grpc/gen/GrpcEvitaManagementAPI_pb'
 import { BackupConverter } from '@/modules/connection/driver/grpc/service/BackupConverter'
 import { TaskStatusConverter } from '@/modules/connection/driver/grpc/service/TaskStatusConverter'
-import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
-import { ApiReadiness } from '@/modules/connection/model/status/ApiReadiness'
-import { ApiServerStatus } from '@/modules/connection/model/status/ApiServerStatus'
 import { TaskStatus } from '@/modules/connection/model/task/TaskStatus'
 import { CatalogVersionAtResponse } from '@/modules/connection/model/CatalogVersionAtResponse'
 import { FilesToFetch } from '@/modules/connection/model/file/FilesToFetch'
 import { TaskStatuses } from '@/modules/connection/model/task/TaskStatuses'
 import { EventType } from '@/modules/connection/model/jfr/EventType'
 import { TaskState } from '@/modules/connection/model/task/TaskState'
+import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
 
 //TODO: Add docs and add header 'X-EvitaDB-ClientID': this.getClientIdHeaderValue()
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
@@ -234,29 +235,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         return List(['all'])
     }
 
-    async getServerDetails(connection: Connection): Promise<ServerStatus> {
-        // todo lho reimplement
-        const grpcServerStatus = await this.clientProvider
-            .getEvitaManagementClient(connection)
-            .serverStatus(Empty)
-        await this.clientProvider.getEvitaManagementClient(connection)
-        return this.serverStatusConverter.convert(grpcServerStatus)
-    }
-
-    async getApiReadiness(connection: Connection): Promise<ApiReadiness> {
-        const apiResponse = await ky.get(connection.systemUrl + '/readiness')
-        const apiStatus = (await apiResponse.json()) as any
-        return new ApiReadiness(apiStatus.status, {
-            graphQL: apiStatus.apis.graphQL,
-            gRPC: apiStatus.apis.gRPC,
-            lab: apiStatus.apis.lab,
-            observability: apiStatus.apis.observability,
-            rest: apiStatus.apis.rest,
-            system: apiStatus.apis.system
-        })
-    }
-
-    async getRuntimeConfig(connection: Connection): Promise<string> {
+    async getRuntimeConfiguration(connection: Connection): Promise<string> {
         return (
             await this.clientProvider
                 .getEvitaManagementClient(connection)
@@ -264,20 +243,11 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         ).configuration
     }
 
-    async getServerStatus(connection: Connection): Promise<ApiServerStatus> {
-        const apiResponse = await ky.get(connection.systemUrl + '/status')
-        const apiStatus = (await apiResponse.json()) as any
-        return new ApiServerStatus(
-            apiStatus.serverName,
-            apiStatus.version,
-            apiStatus.startedAt,
-            apiStatus.uptime,
-            apiStatus.uptimeForHuman,
-            apiStatus.catalogsCorrupted,
-            apiStatus.catalogsOk,
-            apiStatus.healthProblems,
-            apiStatus.apis
-        )
+    async getServerStatus(connection: Connection): Promise<ServerStatus> {
+        const grpcServerStatus: GrpcEvitaServerStatusResponse = await this.clientProvider
+            .getEvitaManagementClient(connection)
+            .serverStatus(Empty)
+        return this.serverStatusConverter.convert(grpcServerStatus)
     }
 
     async isClassifierValid(connection: Connection, classifierType: ClassifierType, classifier: string): Promise<ClassifierValidationErrorType | undefined> {
@@ -690,7 +660,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
 
     private get serverStatusConverter(): ServerStatusConverter {
         if (this._serverStatusConverter == undefined) {
-            this._serverStatusConverter = new ServerStatusConverter()
+            this._serverStatusConverter = new ServerStatusConverter(this.evitaValueConverter)
         }
         return this._serverStatusConverter
     }

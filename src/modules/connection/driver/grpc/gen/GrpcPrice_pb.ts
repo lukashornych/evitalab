@@ -86,8 +86,10 @@ export class GrpcPrice extends Message<GrpcPrice> {
    * entity but won't be considered when evaluating search. These prices may be
    * used for "informational" prices such as reference price (the crossed out price often found on e-commerce sites
    * as "usual price") but are not considered as the "selling" price.
+   * RENAMED TO "indexed"
    *
-   * @generated from field: bool sellable = 9;
+   * @generated from field: bool sellable = 9 [deprecated = true];
+   * @deprecated
    */
   sellable = false;
 
@@ -98,6 +100,16 @@ export class GrpcPrice extends Message<GrpcPrice> {
    * @generated from field: int32 version = 10;
    */
   version = 0;
+
+  /**
+   * Controls whether price is subject to filtering / sorting logic, non-sellable prices will be fetched along with
+   * entity but won't be considered when evaluating search. These prices may be
+   * used for "informational" prices such as reference price (the crossed out price often found on e-commerce sites
+   * as "usual price") but are not considered as the "selling" price.
+   *
+   * @generated from field: bool indexed = 11;
+   */
+  indexed = false;
 
   constructor(data?: PartialMessage<GrpcPrice>) {
     super();
@@ -117,6 +129,7 @@ export class GrpcPrice extends Message<GrpcPrice> {
     { no: 8, name: "validity", kind: "message", T: GrpcDateTimeRange },
     { no: 9, name: "sellable", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 10, name: "version", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 11, name: "indexed", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcPrice {

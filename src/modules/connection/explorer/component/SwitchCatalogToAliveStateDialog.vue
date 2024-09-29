@@ -62,15 +62,15 @@ async function switchCatalog(): Promise<boolean> {
         @update:model-value="emit('update:modelValue', $event)"
     >
         <template #title>
-            {{ t('explorer.catalog.switchToAliveState.title') }}
-        </template>
-
-        <template #prepend-form>
-            <I18nT keypath="explorer.catalog.switchToAliveState.description">
+            <I18nT keypath="explorer.catalog.switchToAliveState.title">
                 <template #catalogName>
                     <strong>{{ catalogName }}</strong>
                 </template>
             </I18nT>
+        </template>
+
+        <template #prepend-form>
+            {{ t('explorer.catalog.switchToAliveState.description') }}
         </template>
 
         <template #append-form>

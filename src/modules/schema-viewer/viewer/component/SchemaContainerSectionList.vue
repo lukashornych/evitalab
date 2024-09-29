@@ -30,8 +30,6 @@ const filteredItems = computed(() => {
         <VTextField
             :model-value="filter"
             :label="t('schemaViewer.section.label.filter')"
-            variant="solo-filled"
-            density="compact"
             :append-inner-icon="filter ? 'mdi-close-circle-outline' : null as any"
             @update:model-value="filter = $event.toLowerCase()"
             @click:append-inner="filter = ''"

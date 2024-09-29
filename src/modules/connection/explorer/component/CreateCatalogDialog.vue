@@ -81,10 +81,6 @@ async function create(): Promise<boolean> {
             {{ t('explorer.catalog.create.title') }}
         </template>
 
-        <template #prepend-form>
-            {{ t('explorer.catalog.create.description') }}
-        </template>
-
         <template #default>
             <VTextField
                 v-model="catalogName"

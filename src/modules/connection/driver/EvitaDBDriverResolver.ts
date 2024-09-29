@@ -1,11 +1,9 @@
 import { Connection } from '@/modules/connection/model/Connection'
 import { EvitaDBDriver } from '@/modules/connection/driver/EvitaDBDriver'
-import { ConnectionServerInfo } from '@/modules/connection/model/ConnectionServerInfo'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { InjectionKey } from 'vue'
 import { mandatoryInject } from '@/utils/reactivity'
 import { EvitaLabConfig } from '@/modules/config/EvitaLabConfig'
-import { EvitaDBServerProbe } from '@/modules/connection/service/EvitaDBServerProbe'
 import { EvitaDBDriverGrpc } from './grpc/EvitaDBDriverGrpc'
 
 export const evitaDBDriverResolverInjectionKey: InjectionKey<EvitaDBDriverResolver> = Symbol('evitaDBDriverResolver')
@@ -20,13 +18,10 @@ export class EvitaDBDriverResolver {
      */
     private readonly driverIndex: EvitaDBDriver[]
 
-    private readonly evitaDBServerProbe: EvitaDBServerProbe
-
-    constructor(evitaLabConfig: EvitaLabConfig, evitaDBServerProbe: EvitaDBServerProbe) {
+    constructor(evitaLabConfig: EvitaLabConfig) {
         this.driverIndex = [
             new EvitaDBDriverGrpc()
         ]
-        this.evitaDBServerProbe = evitaDBServerProbe
     }
 
     /**
@@ -35,7 +30,6 @@ export class EvitaDBDriverResolver {
      * @param connection
      */
     async resolveDriver(connection: Connection): Promise<EvitaDBDriver> {
-        const serverInfo: ConnectionServerInfo = await this.evitaDBServerProbe.fetchServerInfo(connection)
         for (const driver of this.driverIndex) {
             // todo lho this is just hack for snapshots
             if (driver.getSupportedVersions().contains('all')) {
@@ -45,7 +39,8 @@ export class EvitaDBDriverResolver {
             //     return driver
             // }
         }
-        throw new UnexpectedError(`Could not find driver for connection '${connection.name}' with evitaDB version '${serverInfo.version}'.`)
+        // throw new UnexpectedError(`Could not find driver for connection '${connection.name}' with evitaDB version '${serverInfo.version}'.`)
+        throw new UnexpectedError(`Could not find driver for connection '${connection.name}'.`)
     }
 }
 

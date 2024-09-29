@@ -82,15 +82,15 @@ async function restore(): Promise<boolean> {
         @update:model-value="emit('update:modelValue', $event)"
     >
         <template #title>
-            {{ t('backupViewer.restore.title') }}
-        </template>
-
-        <template #prepend-form>
-            <I18nT keypath="backupViewer.restore.description">
+            <I18nT keypath="backupViewer.restore.title">
                 <template #fileName>
                     <strong>{{ file.name }}</strong>
                 </template>
             </I18nT>
+        </template>
+
+        <template #prepend-form>
+            {{ t('backupViewer.restore.description') }}
         </template>
 
         <template #default>

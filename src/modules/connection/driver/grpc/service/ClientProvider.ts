@@ -13,7 +13,9 @@ export type EvitaClient = PromiseClient<typeof EvitaService>
 export type EvitaSessionClient = PromiseClient<typeof EvitaSessionService>
 export type EvitaManagementClient = PromiseClient<typeof EvitaManagementService>
 
-//TODO: Add docs
+/**
+ * Creates and caches gRPC clients for connections
+ */
 export class ClientProvider {
 
     private readonly transportProvider: TransportProvider = new TransportProvider()
@@ -22,6 +24,9 @@ export class ClientProvider {
     private readonly evitaManagementClients: Map<ConnectionId, EvitaManagementClient> = new Map<ConnectionId, EvitaManagementClient>
     private readonly evitaSessionClients: Map<ConnectionId, EvitaSessionClient> = new Map<ConnectionId, EvitaSessionClient>
 
+    /**
+     * Returns client for Evita API of gRPC. Creates new one if missing.
+     */
     public getEvitaClient(connection: Connection): EvitaClient {
         let evitaClient : EvitaClient | undefined = this.evitaClients.get(connection.id);
         if (!evitaClient) {
@@ -32,7 +37,9 @@ export class ClientProvider {
         return evitaClient;
     }
 
-
+    /**
+     * Returns client for management API of gRPC. Creates new one if missing.
+     */
     public getEvitaManagementClient(connection: Connection): EvitaManagementClient {
         let managementClient : EvitaManagementClient | undefined = this.evitaManagementClients?.get(connection.id);
         if (managementClient == undefined) {
@@ -41,7 +48,9 @@ export class ClientProvider {
         return managementClient
     }
 
-
+    /**
+     * Returns client for session API of gRPC. Creates new one if missing.
+     */
     public getEvitaSessionClient(connection: Connection): EvitaSessionClient {
         let sessionClient : EvitaSessionClient | undefined = this.evitaSessionClients?.get(connection.id);
         if (sessionClient == undefined) {

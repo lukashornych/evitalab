@@ -13,6 +13,7 @@ import { mandatoryInject } from '@/utils/reactivity'
 import { EvitaDBDriverResolver } from '@/modules/connection/driver/EvitaDBDriverResolver'
 import { EvitaDBDriver } from '@/modules/connection/driver/EvitaDBDriver'
 import Immutable from 'immutable'
+import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
 
 /**
  * Cookie containing preconfigured connections. These will be displayed next to the user-defined connections.
@@ -49,7 +50,7 @@ export class ConnectionService {
         if (preconfiguredConnectionsCookie != undefined) {
             try {
                 preconfiguredConnections = (JSON.parse(atob(preconfiguredConnectionsCookie)) as Array<any>)
-                    .map(connection => Connection.fromJson(connection, true))
+                    .map(connection => Connection.preconfiguredFromJson(connection))
                 // todo validate duplicate connections, move this to Lab component to have access to Toaster
             } catch (e) {
                 console.error('Failed to load preconfigured connections cookie', e)
@@ -57,31 +58,21 @@ export class ConnectionService {
         }
         // automatic demo connection configuration for easier development
         if (import.meta.env.DEV) {
-            preconfiguredConnections.push(new Connection(
-                'demo',
+            preconfiguredConnections.push(Connection.preconfigured(
+                'dev-demo',
                 'Demo (dev)',
-                true,
-                'http://demo.evitadb.io:5555/system',
-                'https://demo.evitadb.io:5555/',
-                'http://demo.evitadb.io:5555/observability',
-                'http://demo.evitadb.io:5555/gql',
-                'http://demo.evitadb.io:5555/rest'
+                'https://demo.evitadb.io'
             ))
-            preconfiguredConnections.push(new Connection(
-                'localhost',
+            preconfiguredConnections.push(Connection.preconfigured(
+                'dev-localhost',
                 'Localhost (dev)',
-                true,
-                'http://localhost:5555/system',
-                'http://localhost:5555/',
-                'http://localhost:5555/observability',
-                'http://localhost:5555/gql',
-                'http://localhost:5555/rest'
+                'http://localhost:5555'
             ))
         }
 
         // load user-defined connections from local storage
         const userConnections: Connection[] = labStorage.get(userConnectionsStorageKey, [])
-            .map((it: any) => Connection.fromJson(it, false))
+            .map((it: any) => Connection.userFromJson(it))
 
         // inject connections into the lab
         store.replacePreconfiguredConnections(preconfiguredConnections)
@@ -131,12 +122,29 @@ export class ConnectionService {
     /**
      * Removes connection from UI and lab storage
      */
-    removeConnection(connectionName: string): void {
+    removeConnection(connectionId: ConnectionId): void {
         this.store.userConnections.splice(
-            this.store.userConnections.findIndex(connection => connection.name === connectionName),
+            this.store.userConnections.findIndex(connection => connection.id === connectionId),
             1
         )
         this.labStorage.set(userConnectionsStorageKey, this.store.userConnections)
+    }
+
+    /**
+     * Returns cached server status with info about the server for a connection.
+     * Can be reloaded and re-cached.
+     */
+    async getServerStatus(connection: Connection, forceReload: boolean = true): Promise<ServerStatus> {
+        if (forceReload) {
+            return await this.fetchAndCacheServerStatus(connection)
+        }
+
+        let serverStatus: ServerStatus | undefined = this.store.cachedServerStatuses.get(connection.id)
+        if (serverStatus == undefined) {
+            serverStatus = await this.fetchAndCacheServerStatus(connection)
+            this.store.cachedServerStatuses.set(connection.id, serverStatus)
+        }
+        return serverStatus
     }
 
     /**
@@ -145,7 +153,7 @@ export class ConnectionService {
     async getCatalog(connection: Connection, catalogName: string): Promise<Catalog> {
         let catalog: Catalog | undefined = this.store.cachedCatalogs.get(connection.id)?.get(catalogName) as Catalog
         if (catalog == undefined) {
-            await this.fetchCatalogs(connection)
+            await this.fetchAndCacheCatalogs(connection)
 
             catalog = this.store.cachedCatalogs.get(connection.id)?.get(catalogName) as Catalog
             if (catalog == undefined) {
@@ -158,7 +166,7 @@ export class ConnectionService {
     async getCatalogs(connection: Connection, forceReload?: boolean): Promise<Immutable.List<Catalog>> {
         const cachedCatalogs: IterableIterator<Catalog> | undefined = this.store.cachedCatalogs.get(connection.id)?.values() as IterableIterator<Catalog>
         if (cachedCatalogs == undefined || forceReload === true) {
-            await this.fetchCatalogs(connection)
+            await this.fetchAndCacheCatalogs(connection)
             return Immutable.List(this.store.catalogs(connection.id))
         } else {
             return Immutable.List(this.store.catalogs(connection.id))
@@ -168,7 +176,7 @@ export class ConnectionService {
     async getCatalogSchema(connection: Connection, catalogName: string): Promise<CatalogSchema> {
         let catalogSchema: CatalogSchema | undefined = this.store.cachedCatalogSchemas.get(connection.id)?.get(catalogName) as CatalogSchema
         if (catalogSchema == undefined) {
-            catalogSchema = await this.fetchCatalogSchema(connection, catalogName)
+            catalogSchema = await this.fetchAndCacheCatalogSchema(connection, catalogName)
         }
         return catalogSchema
     }
@@ -184,7 +192,14 @@ export class ConnectionService {
         return entitySchema
     }
 
-    private async fetchCatalogs(connection: Connection): Promise<Catalog[]> {
+    private async fetchAndCacheServerStatus(connection: Connection): Promise<ServerStatus> {
+        const driver: EvitaDBDriver = await this.getDriver(connection)
+        const serverStatus: ServerStatus = await driver.getServerStatus(connection)
+        this.store.cachedServerStatuses.set(connection.id, serverStatus)
+        return serverStatus
+    }
+
+    private async fetchAndCacheCatalogs(connection: Connection): Promise<Catalog[]> {
         const fetchedCatalogs: Catalog[] = await (await this.getDriver(connection)).getCatalogs(connection)
         this.store.cachedCatalogs.set(
             connection.id,
@@ -195,7 +210,7 @@ export class ConnectionService {
         return Array.from(this.store.cachedCatalogs.get(connection.id)!.values())
     }
 
-    private async fetchCatalogSchema(connection: Connection, catalogName: string): Promise<CatalogSchema> {
+    private async fetchAndCacheCatalogSchema(connection: Connection, catalogName: string): Promise<CatalogSchema> {
         const catalog: Catalog = await this.getCatalog(connection, catalogName)
 
         const fetchedCatalogSchema: CatalogSchema = await (await this.getDriver(connection)).getCatalogSchema(connection, catalog.name)

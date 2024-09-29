@@ -283,8 +283,6 @@ onUnmounted(() => {
                 ref="filterInput"
                 :model-value="filter"
                 :label="t('entityViewer.propertySelector.label.filterProperties')"
-                variant="solo-filled"
-                density="compact"
                 autofocus
                 :append-inner-icon="filter ? 'mdi-close-circle-outline' : null as any"
                 @update:model-value="handleFilterUpdate($event)"

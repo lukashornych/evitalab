@@ -110,11 +110,7 @@ async function replace(): Promise<boolean> {
         @update:model-value="emit('update:modelValue', $event)"
     >
         <template #title>
-            {{ t('explorer.catalog.replace.title') }}
-        </template>
-
-        <template #prepend-form>
-            <I18nT keypath="explorer.catalog.replace.description">
+            <I18nT keypath="explorer.catalog.replace.title">
                 <template #catalogNameToBeReplaced>
                     <strong>{{ catalogName }}</strong>
                 </template>

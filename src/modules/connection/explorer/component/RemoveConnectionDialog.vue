@@ -59,15 +59,15 @@ async function removeConnection(): Promise<boolean> {
         </template>
 
         <template #title>
-            {{ t('explorer.connection.remove.title') }}
-        </template>
-
-        <template #prepend-form>
-            <I18nT keypath="explorer.connection.remove.question">
+            <I18nT keypath="explorer.connection.remove.title">
                 <template #connectionName>
                     <strong>{{ connection.name }}</strong>
                 </template>
             </I18nT>
+        </template>
+
+        <template #prepend-form>
+            {{ t('explorer.connection.remove.question') }}
         </template>
 
         <template #confirm-button-body>

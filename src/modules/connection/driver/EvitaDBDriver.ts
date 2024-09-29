@@ -11,8 +11,6 @@ import {
     GrpcRestoreCatalogRequest, GrpcRestoreCatalogResponse
 } from '@/modules/connection/driver/grpc/gen/GrpcEvitaManagementAPI_pb'
 import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
-import { ApiReadiness } from '@/modules/connection/model/status/ApiReadiness'
-import { ApiServerStatus } from '@/modules/connection/model/status/ApiServerStatus'
 import { CatalogVersionAtResponse } from '@/modules/connection/model/CatalogVersionAtResponse'
 import { TaskStatus } from '@/modules/connection/model/task/TaskStatus'
 import { FilesToFetch } from '@/modules/connection/model/file/FilesToFetch'
@@ -62,13 +60,12 @@ export interface EvitaDBDriver {
     // queryGraphQL(connection: Connection, path: string, query: string, variables: any = {}): Promise<GraphQLResponse>
 
     //TODO: Add doc
-    getServerDetails(connection: Connection): Promise<ServerStatus>
-    //TODO: Add doc
-    getApiReadiness(connection: Connection): Promise<ApiReadiness>
-    //TODO: Add doc
-    getRuntimeConfig(connection: Connection): Promise<string>
-    //TODO: Add doc
-    getServerStatus(connection: Connection): Promise<ApiServerStatus>
+    getRuntimeConfiguration(connection: Connection): Promise<string>
+
+    /**
+     * Fetches server status from server represented by the connection
+     */
+    getServerStatus(connection: Connection): Promise<ServerStatus>
 
     /**
      * Validates a classifier against evitaDB. Returns `undefined` if valid, otherwise returns reason.

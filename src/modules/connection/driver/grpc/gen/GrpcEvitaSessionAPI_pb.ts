@@ -27,7 +27,7 @@ export class GrpcCatalogStateResponse extends Message<GrpcCatalogStateResponse> 
    *
    * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcCatalogState state = 1;
    */
-  state = GrpcCatalogState.WARMING_UP;
+  state = GrpcCatalogState.UNKNOWN_CATALOG_STATE;
 
   constructor(data?: PartialMessage<GrpcCatalogStateResponse>) {
     super();

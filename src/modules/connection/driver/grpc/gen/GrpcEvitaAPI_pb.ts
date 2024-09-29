@@ -138,7 +138,7 @@ export class GrpcEvitaSessionResponse extends Message<GrpcEvitaSessionResponse> 
    *
    * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcCatalogState catalogState = 4;
    */
-  catalogState = GrpcCatalogState.WARMING_UP;
+  catalogState = GrpcCatalogState.UNKNOWN_CATALOG_STATE;
 
   /**
    * UUID of the catalog the session is bound to.

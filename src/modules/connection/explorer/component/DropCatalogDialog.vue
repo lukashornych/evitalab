@@ -58,15 +58,15 @@ async function drop(): Promise<boolean> {
         @update:model-value="emit('update:modelValue', $event)"
     >
         <template #title>
-            {{ t('explorer.catalog.drop.title') }}
-        </template>
-
-        <template #prepend-form>
-            <I18nT keypath="explorer.catalog.drop.question">
+            <I18nT keypath="explorer.catalog.drop.title">
                 <template #catalogName>
                     <strong>{{ catalogName }}</strong>
                 </template>
             </I18nT>
+        </template>
+
+        <template #prepend-form>
+            {{ t('explorer.catalog.drop.question') }}
         </template>
 
         <template #confirm-button-body>

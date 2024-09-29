@@ -5,8 +5,8 @@ import { ConnectionService, useConnectionService } from '@/modules/connection/se
 import { Connection } from '@/modules/connection/model/Connection'
 import ConnectionItem from '@/modules/connection/explorer/component/ConnectionItem.vue'
 import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
-import ConnectionEditor from '@/modules/connection/explorer/component/ConnectionEditor.vue'
 import Immutable from 'immutable'
+import ConnectToServerDialog from '@/modules/connection/explorer/component/ConnectToServerDialog.vue'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const connectionService: ConnectionService = useConnectionService()
@@ -20,7 +20,7 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void
 }>()
 
-const addConnectionDialogOpen = ref<boolean>(false)
+const showConnectToServerDialog = ref<boolean>(false)
 const connections = computed<Immutable.List<Connection>>(() => connectionService.getConnections()
     .sort((a: Connection, b: Connection) => {
         if (a.preconfigured && !b.preconfigured) {
@@ -59,19 +59,19 @@ const connections = computed<Immutable.List<Connection>>(() => connectionService
                 v-if="!evitaLabConfig.readOnly"
                 class="pa-2"
             >
-                <ConnectionEditor v-model="addConnectionDialogOpen">
+                <ConnectToServerDialog v-model="showConnectToServerDialog">
                     <template #activator="{ props }">
                         <VBtn
                             prepend-icon="mdi-power-plug-outline"
                             block
                             variant="outlined"
                             v-bind="props"
-                            @click="addConnectionDialogOpen = true"
+                            @click="showConnectToServerDialog = true"
                         >
                             {{ t('explorer.button.connect') }}
                         </VBtn>
                     </template>
-                </ConnectionEditor>
+                </ConnectToServerDialog>
             </div>
         </template>
     </VNavigationDrawer>

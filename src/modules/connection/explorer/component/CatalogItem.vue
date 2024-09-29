@@ -205,7 +205,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
             CatalogItemType.ReplaceCatalog,
             'mdi-file-replace-outline',
             () => showReplaceCatalogDialog.value = true,
-            evitaLabConfig.readOnly
+            !props.catalog.corrupted && !evitaLabConfig.readOnly
         )
     )
     if (props.catalog.isInWarmup) {

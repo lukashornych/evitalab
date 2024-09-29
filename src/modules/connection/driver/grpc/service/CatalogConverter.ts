@@ -1,7 +1,7 @@
 import { GrpcCatalogState } from '@/modules/connection/driver/grpc/gen/GrpcEnums_pb'
 import {
     GrpcCatalogStatistics,
-    GrpcEntityCollectionStatistics,
+    GrpcEntityCollectionStatistics
 } from '@/modules/connection/driver/grpc/gen/GrpcEvitaDataTypes_pb'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { Catalog } from '@/modules/connection/model/Catalog'
@@ -27,6 +27,8 @@ export class CatalogConverter {
 
     private convertCatalogState(catalogState: GrpcCatalogState): CatalogState {
         switch (catalogState) {
+            case GrpcCatalogState.UNKNOWN_CATALOG_STATE:
+                return CatalogState.Unknown
             case GrpcCatalogState.WARMING_UP:
                 return CatalogState.WarmingUp
             case GrpcCatalogState.ALIVE:

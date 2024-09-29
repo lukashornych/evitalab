@@ -13,6 +13,13 @@ import { Message, proto3 } from "@bufbuild/protobuf";
  */
 export enum GrpcCatalogState {
   /**
+   * Unknown state of the catalog. Used when catalog is corrupted.
+   *
+   * @generated from enum value: UNKNOWN_CATALOG_STATE = 0;
+   */
+  UNKNOWN_CATALOG_STATE = 0,
+
+  /**
    * Initial state of the Evita catalog.
    * This state has several limitations but also advantages.
    * This state requires single threaded access - this means only single thread can read/write data to the catalog
@@ -24,23 +31,24 @@ export enum GrpcCatalogState {
    * This phase is meant to quickly fill initial state of the catalog from the external primary data store. This state
    * is also planned to be used when new replica is created and needs to quickly catch up with the master.
    *
-   * @generated from enum value: WARMING_UP = 0;
+   * @generated from enum value: WARMING_UP = 1;
    */
-  WARMING_UP = 0,
+  WARMING_UP = 1,
 
   /**
    * Standard "serving" state of the Evita catalog.
    * All operations are executed transactionally and leave the date in consistent state even if any error occurs.
    * Multiple readers and writers can work with the catalog simultaneously.
    *
-   * @generated from enum value: ALIVE = 1;
+   * @generated from enum value: ALIVE = 2;
    */
-  ALIVE = 1,
+  ALIVE = 2,
 }
 // Retrieve enum metadata with: proto3.getEnumType(GrpcCatalogState)
 proto3.util.setEnumType(GrpcCatalogState, "io.evitadb.externalApi.grpc.generated.GrpcCatalogState", [
-  { no: 0, name: "WARMING_UP" },
-  { no: 1, name: "ALIVE" },
+  { no: 0, name: "UNKNOWN_CATALOG_STATE" },
+  { no: 1, name: "WARMING_UP" },
+  { no: 2, name: "ALIVE" },
 ]);
 
 /**
@@ -864,6 +872,13 @@ export enum GrpcEvitaDataType {
   PREDECESSOR = 21,
 
   /**
+   * Represents ReferencedEntityPredecessor data type.
+   *
+   * @generated from enum value: REFERENCED_ENTITY_PREDECESSOR = 22;
+   */
+  REFERENCED_ENTITY_PREDECESSOR = 22,
+
+  /**
    * Represents string array data type.
    *
    * @generated from enum value: STRING_ARRAY = 50;
@@ -1034,6 +1049,7 @@ proto3.util.setEnumType(GrpcEvitaDataType, "io.evitadb.externalApi.grpc.generate
   { no: 19, name: "CURRENCY" },
   { no: 20, name: "UUID" },
   { no: 21, name: "PREDECESSOR" },
+  { no: 22, name: "REFERENCED_ENTITY_PREDECESSOR" },
   { no: 50, name: "STRING_ARRAY" },
   { no: 51, name: "BYTE_ARRAY" },
   { no: 52, name: "SHORT_ARRAY" },
@@ -1429,51 +1445,51 @@ proto3.util.setEnumType(GrpcHealthProblem, "io.evitadb.externalApi.grpc.generate
 export enum GrpcReadiness {
   /**
    * *
+   * Unknown state - cannot determine the state of the APIs (should not happen).
+   *
+   * @generated from enum value: API_UNKNOWN = 0;
+   */
+  API_UNKNOWN = 0,
+
+  /**
+   * *
    * At least one API is not ready.
    *
-   * @generated from enum value: API_STARTING = 0;
+   * @generated from enum value: API_STARTING = 1;
    */
-  API_STARTING = 0,
+  API_STARTING = 1,
 
   /**
    * *
    * All APIs are ready.
    *
-   * @generated from enum value: API_READY = 1;
+   * @generated from enum value: API_READY = 2;
    */
-  API_READY = 1,
+  API_READY = 2,
 
   /**
    * *
    * At least one API that was ready is not ready anymore.
    *
-   * @generated from enum value: API_STALLING = 2;
+   * @generated from enum value: API_STALLING = 3;
    */
-  API_STALLING = 2,
+  API_STALLING = 3,
 
   /**
    * *
    * Server is shutting down. None of the APIs are ready.
    *
-   * @generated from enum value: API_SHUTDOWN = 3;
+   * @generated from enum value: API_SHUTDOWN = 4;
    */
-  API_SHUTDOWN = 3,
-
-  /**
-   * *
-   * Unknown state - cannot determine the state of the APIs (should not happen).
-   *
-   * @generated from enum value: API_UNKNOWN = 4;
-   */
-  API_UNKNOWN = 4,
+  API_SHUTDOWN = 4,
 }
 // Retrieve enum metadata with: proto3.getEnumType(GrpcReadiness)
 proto3.util.setEnumType(GrpcReadiness, "io.evitadb.externalApi.grpc.generated.GrpcReadiness", [
-  { no: 0, name: "API_STARTING" },
-  { no: 1, name: "API_READY" },
-  { no: 2, name: "API_STALLING" },
-  { no: 3, name: "API_SHUTDOWN" },
-  { no: 4, name: "API_UNKNOWN" },
+  { no: 0, name: "API_UNKNOWN" },
+  { no: 1, name: "API_STARTING" },
+  { no: 2, name: "API_READY" },
+  { no: 3, name: "API_STALLING" },
+  { no: 4, name: "API_SHUTDOWN" },
 ]);
 
 /**

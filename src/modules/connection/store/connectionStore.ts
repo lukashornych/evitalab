@@ -6,6 +6,7 @@ import { Catalog } from '@/modules/connection/model/Catalog'
 import { CatalogSchema } from '@/modules/connection/model/schema/CatalogSchema'
 import { UnwrapNestedRefs } from '@vue/reactivity'
 import Immutable from 'immutable'
+import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
 
 /**
  * Defines Pinia store for evitaDB connections
@@ -38,7 +39,7 @@ export const useConnectionStore = defineStore('connections', () => {
         userConnections.value.push(...newConnections)
     }
 
-
+    const cachedServerStatuses: UnwrapNestedRefs<Map<ConnectionId, ServerStatus>> = reactive(new Map())
     const cachedCatalogs: UnwrapNestedRefs<Map<ConnectionId, Map<string, Catalog>>> = reactive(new Map())
     const cachedCatalogSchemas: UnwrapNestedRefs<Map<ConnectionId, Map<string, CatalogSchema>>> = reactive(new Map())
 
@@ -54,6 +55,7 @@ export const useConnectionStore = defineStore('connections', () => {
         connections,
         replacePreconfiguredConnections,
         replaceUserConnections,
+        cachedServerStatuses,
         cachedCatalogs,
         cachedCatalogSchemas,
         catalogs

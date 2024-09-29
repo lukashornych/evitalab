@@ -2,18 +2,19 @@ import { Connection } from "@/modules/connection/model/Connection";
 import { ConnectionId } from "@/modules/connection/model/ConnectionId";
 import { Transport } from "@connectrpc/connect";
 import { createGrpcWebTransport } from '@connectrpc/connect-web'
-import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 
-//TODO implement and add doc
+/**
+ * Creates and caches gRPC transport descriptors.
+ */
 export class TransportProvider {
     private readonly transports: Map<ConnectionId, Transport> = new Map();
 
-    public getTransport(connection: Connection){
+    /**
+     * Returns transport for the connection. Creates new one if missing
+     */
+    public getTransport(connection: Connection): Transport {
         let transport: Transport | undefined = this.transports.get(connection.id);
-        if(!transport){
-            if(!connection.grpcUrl){
-                throw new UnexpectedError("Grpc url is undefined");
-            }
+        if (transport == undefined) {
             transport = createGrpcWebTransport({
                 baseUrl: connection.grpcUrl
             })

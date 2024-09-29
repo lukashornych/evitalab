@@ -6,7 +6,6 @@ import {
 import { ConnectionService, connectionServiceInjectionKey } from '@/modules/connection/service/ConnectionService'
 import { ConnectionStore, useConnectionStore } from '@/modules/connection/store/connectionStore'
 import { LabStorage, labStorageInjectionKey } from '@/modules/storage/LabStorage'
-import { EvitaDBServerProbe, evitaDBServerProbeInjectionKey } from '@/modules/connection/service/EvitaDBServerProbe'
 import { EvitaLabConfig, evitaLabConfigInjectionKey } from '@/modules/config/EvitaLabConfig'
 import { ModuleContextBuilder } from '@/ModuleContextBuilder'
 import {
@@ -26,11 +25,7 @@ export class ConnectionModuleRegistrar implements ModuleRegistrar {
         const evitaLabConfig: EvitaLabConfig = builder.inject(evitaLabConfigInjectionKey)
         const labStorage: LabStorage = builder.inject(labStorageInjectionKey)
 
-        const evitaDBServerProbe: EvitaDBServerProbe = new EvitaDBServerProbe(evitaLabConfig)
-        const evitaDBDriverResolver: EvitaDBDriverResolver = new EvitaDBDriverResolver(
-            evitaLabConfig,
-            evitaDBServerProbe
-        )
+        const evitaDBDriverResolver: EvitaDBDriverResolver = new EvitaDBDriverResolver(evitaLabConfig)
         const connectionService: ConnectionService = ConnectionService.load(
             connectionStore,
             labStorage,
@@ -41,7 +36,6 @@ export class ConnectionModuleRegistrar implements ModuleRegistrar {
 
         builder.provide(connectionServiceInjectionKey, connectionService)
         builder.provide(evitaDBDriverResolverInjectionKey, evitaDBDriverResolver)
-        builder.provide(evitaDBServerProbeInjectionKey, evitaDBServerProbe)
         builder.provide(catalogItemServiceInjectionKey, catalogItemService)
         builder.provide(collectionItemServiceInjectionKey, collectionItemService)
     }

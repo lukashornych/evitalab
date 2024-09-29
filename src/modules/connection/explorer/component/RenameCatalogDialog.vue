@@ -95,11 +95,7 @@ async function rename(): Promise<boolean> {
         @update:model-value="emit('update:modelValue', $event)"
     >
         <template #title>
-            {{ t('explorer.catalog.rename.title') }}
-        </template>
-
-        <template #prepend-form>
-            <I18nT keypath="explorer.catalog.rename.description">
+            <I18nT keypath="explorer.catalog.rename.title">
                 <template #catalogName>
                     <strong>{{ catalogName }}</strong>
                 </template>

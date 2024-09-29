@@ -130,9 +130,20 @@ export class GrpcUpsertPriceMutation extends Message<GrpcUpsertPriceMutation> {
    * used for "informational" prices such as reference price (the crossed out price often found on e-commerce sites
    * as "usual price") but are not considered as the "selling" price.
    *
-   * @generated from field: bool sellable = 9;
+   * @generated from field: bool sellable = 9 [deprecated = true];
+   * @deprecated
    */
   sellable = false;
+
+  /**
+   * Controls whether price is subject to filtering / sorting logic, non-indexed prices will be fetched along with
+   * entity but won't be considered when evaluating search query. These prices may be
+   * used for "informational" prices such as reference price (the crossed out price often found on e-commerce sites
+   * as "usual price") but are not considered as the "selling" price.
+   *
+   * @generated from field: bool indexed = 10;
+   */
+  indexed = false;
 
   constructor(data?: PartialMessage<GrpcUpsertPriceMutation>) {
     super();
@@ -151,6 +162,7 @@ export class GrpcUpsertPriceMutation extends Message<GrpcUpsertPriceMutation> {
     { no: 7, name: "priceWithTax", kind: "message", T: GrpcBigDecimal },
     { no: 8, name: "validity", kind: "message", T: GrpcDateTimeRange },
     { no: 9, name: "sellable", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 10, name: "indexed", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcUpsertPriceMutation {

@@ -24,7 +24,7 @@ export class GraphQLClient extends HttpApiClient {
         try {
             return (
                 await this.httpClient.post(
-                    `${connection.gqlUrl}/${path}`,
+                    `${connection.graphQlUrl}/${path}`,
                     {
                         headers: {
                             'Content-Type': 'application/json',
