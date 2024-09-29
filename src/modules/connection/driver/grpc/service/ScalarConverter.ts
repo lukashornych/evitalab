@@ -1,5 +1,6 @@
 import { Scalar } from "@/modules/connection/model/data-type/Scalar"
 import { GrpcEvitaAssociatedDataDataType_GrpcEvitaDataType, GrpcEvitaDataType } from '../gen/GrpcEnums_pb'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 
 //TODO: Add docs
 export class ScalarConverter{
@@ -75,6 +76,7 @@ export class ScalarConverter{
                 return Scalar.OffsetDateTimeArray
             case GrpcEvitaDataType.PREDECESSOR:
                 return Scalar.Predecessor
+            // todo lho implemented referenced predecesor
             case GrpcEvitaDataType.SHORT:
                 return Scalar.Short
             case GrpcEvitaDataType.SHORT_ARRAY:
@@ -91,6 +93,8 @@ export class ScalarConverter{
                 return Scalar.UUID
             case GrpcEvitaDataType.UUID_ARRAY:
                 return Scalar.UUIDArray
+            default:
+                throw new UnexpectedError(`Unsupported scalar type '${scalar}'.`)
         }
     }
     public static convertAssociatedDataScalar(scalar: GrpcEvitaAssociatedDataDataType_GrpcEvitaDataType): Scalar {

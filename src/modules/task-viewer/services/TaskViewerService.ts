@@ -19,9 +19,9 @@ export class TaskViewerService {
                         pageNumber: number,
                         pageSize: number,
                         states?: TaskState[],
-                        taskType?: string): Promise<TaskStatuses>{
+                        taskTypes?: string[]): Promise<TaskStatuses>{
         const driver = await this.connectionService.getDriver(connection)
-        return await driver.getTaskStatuses(connection, pageNumber, pageSize, states, taskType)
+        return await driver.getTaskStatuses(connection, pageNumber, pageSize, states, taskTypes)
     }
 
     async cancelTask(connection: Connection, taskId: Uuid): Promise<boolean> {

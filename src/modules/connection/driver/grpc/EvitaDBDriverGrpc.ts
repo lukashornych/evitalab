@@ -4,7 +4,7 @@ import { Catalog } from '../../model/Catalog'
 import { Connection } from '../../model/Connection'
 import { Response } from '../../model/data/Response'
 import { CatalogSchema } from '../../model/schema/CatalogSchema'
-import { Empty } from '@bufbuild/protobuf'
+import { Empty, StringValue } from '@bufbuild/protobuf'
 import { CatalogSchemaConverter } from '../grpc/service/CatalogSchemaConverter'
 import { CatalogConverter } from '../grpc/service/CatalogConverter'
 import { ResponseConverter } from './service/ResponseConverter'
@@ -524,7 +524,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         pageNumber: number,
         pageSize: number,
         states?: TaskState[],
-        taskType?: string
+        taskTypes?: string[]
     ): Promise<TaskStatuses> {
         const params = states && states.length > 0
             ? this.taskStateConverter.convertTaskStatesToGrpc(states)
@@ -534,7 +534,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
             .listTaskStatuses({
                 pageNumber,
                 pageSize,
-                taskType,
+                taskType: taskTypes?.map(taskType => StringValue.fromJson(taskType)) || undefined,
                 simplifiedState: params
             })
         const jobs = this.taskStatusConverter.convertJobs(result)

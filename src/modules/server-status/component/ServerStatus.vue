@@ -1,68 +1,50 @@
 <script setup lang="ts">
 import { TabComponentEvents } from '@/modules/workspace/tab/model/TabComponentEvents'
-import { useServerStatusService } from '../service/ServerStatusService'
+import { ServerStatusService, useServerStatusService } from '../service/ServerStatusService'
 import { ref } from 'vue'
 import { TabComponentProps } from '@/modules/workspace/tab/model/TabComponentProps'
 import { ServerStatusTabParams } from '../model/ServerStatusTabParams'
 import { VoidTabData } from '@/modules/workspace/tab/model/void/VoidTabData'
 import { Duration } from 'luxon'
-import { List } from 'immutable'
+import Immutable, { List } from 'immutable'
 import { useI18n } from 'vue-i18n'
 import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
 import RuntimeConfigurationDialog from '@/modules/server-status/component/RuntimeConfigurationDialog.vue'
 import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
 import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
-import { ApiReadiness } from '@/modules/connection/model/status/ApiReadiness'
-import { ApiServerStatus } from '@/modules/connection/model/status/ApiServerStatus'
-import { ApiEndpoint } from '@/modules/connection/model/status/ApiEndpoint'
+
+const serverStatusService: ServerStatusService = useServerStatusService()
+const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
+const { t } = useI18n()
 
 const emit = defineEmits<TabComponentEvents>()
 const props = defineProps<TabComponentProps<ServerStatusTabParams, VoidTabData>>()
 
-const { t } = useI18n()
-
-const serverDetailLoaded = ref<boolean>(false)
-const serverDetail = ref<ServerStatus>()
-const apiReadinessLoaded = ref<boolean>(false)
-const apiReadiness = ref<ApiReadiness>()
-const apiStatus = ref<ApiServerStatus>()
-const apiStatusLoaded = ref<boolean>()
-const visibleYamlDialog = ref<boolean>(false)
-const runtimeConfigLoaded = ref<boolean>(false)
-const runtimeConfig = ref<string>()
-
 const path: List<string> = List([t('serverStatus.toolbar.title')])
-const serverStatusService = useServerStatusService()
-const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 
-serverStatusService
-    .getServerStatistics(props.params.connection)
-    .then((x) => loadedServerStatus(x))
-serverStatusService
-    .getApiReadiness(props.params.connection)
-    .then((x) => loadedApiReadiness(x))
-serverStatusService
-    .getRuntimeConfiguration(props.params.connection)
-    .then((x) => loadedRuntimeConfig(x))
+const serverStatusLoaded = ref<boolean>(false)
+const serverStatus = ref<ServerStatus>()
+
+const runtimeConfigurationLoaded = ref<boolean>(false)
+const runtimeConfiguration = ref<string>()
+const showRuntimeConfigurationDialog = ref<boolean>(false)
+
 serverStatusService
     .getServerStatus(props.params.connection)
-    .then((x) => loadedApiServerStatus(x))
+    .then((x) => loadedServerStatus(x))
+serverStatusService
+    .getRuntimeConfiguration(props.params.connection)
+    .then((x) => loadedRuntimeConfiguration(x))
 
-function loadedServerStatus(serverStatus: ServerStatus) {
-    serverDetail.value = serverStatus
-    serverDetailLoaded.value = true
+function loadedServerStatus(fetchedServerStatus: ServerStatus): void {
+    serverStatus.value = fetchedServerStatus
+    serverStatusLoaded.value = true
     checkAllDataLoaded()
 }
 
-function loadedApiReadiness(apiStatusValue: ApiReadiness) {
-    apiReadiness.value = apiStatusValue
-    apiReadinessLoaded.value = true
-    checkAllDataLoaded()
-}
-
-function loadedApiServerStatus(serverStatus: ApiServerStatus) {
-    apiStatus.value = serverStatus
-    apiStatusLoaded.value = true
+function loadedRuntimeConfiguration(fetchedRuntimeConfiguration: string) {
+    runtimeConfiguration.value = fetchedRuntimeConfiguration
+    runtimeConfigurationLoaded.value = true
     checkAllDataLoaded()
 }
 
@@ -73,25 +55,17 @@ function getFormattedUptime(uptime: bigint | undefined): string {
     )
 }
 
-function loadedRuntimeConfig(config: string) {
-    runtimeConfig.value = config
-    runtimeConfigLoaded.value = true
-    checkAllDataLoaded()
-}
-
 function checkAllDataLoaded(): void {
     if (
-        serverDetailLoaded.value === true &&
-        apiReadinessLoaded.value === true &&
-        runtimeConfigLoaded.value === true &&
-        apiStatusLoaded.value === true
+        serverStatusLoaded.value === true &&
+        runtimeConfigurationLoaded.value === true
     ) {
         emit('ready')
     }
 }
 
-function findApiUrls(apiName: keyof ApiEndpoint): string[] | undefined {
-    return apiStatus.value?.apis.find((api) => api[apiName])?.[apiName]
+function findApiUrls(apiType: ApiType): Immutable.List<string> | undefined {
+    return serverStatus.value?.apis.get(apiType)?.baseUrls
 }
 
 function formatUrl(url: string): string {
@@ -100,17 +74,11 @@ function formatUrl(url: string): string {
 
 function refresh() {
     serverStatusService
-        .getServerStatistics(props.params.connection)
-        .then((x) => loadedServerStatus(x))
-    serverStatusService
-        .getApiReadiness(props.params.connection)
-        .then((x) => loadedApiReadiness(x))
-    serverStatusService
         .getRuntimeConfiguration(props.params.connection)
-        .then((x) => loadedRuntimeConfig(x))
+        .then((x) => loadedRuntimeConfiguration(x))
     serverStatusService
         .getServerStatus(props.params.connection)
-        .then((x) => loadedApiServerStatus(x))
+        .then((x) => loadedServerStatus(x))
 }
 </script>
 
@@ -124,14 +92,15 @@ function refresh() {
                 </VBtn>
             </template>
         </VTabToolbar>
-        <VSheet>
-            <div v-if="serverDetailLoaded">
+<!--        todo lho reimplement -->
+<!--        <VSheet>
+            <div v-if="serverStatusLoaded">
                 <VCard variant="tonal" class="w-75 a-5 container">
                     <VCardText>
-                        <p class="main-title">{{ serverDetail?.instanceId }}</p>
+                        <p class="main-title">{{ serverStatus?.instanceId }}</p>
                         <div class="version">
                             <VChip>
-                                {{ t('serverStatus.detail.flags.version', { version: serverDetail?.version || '?' }) }}
+                                {{ t('serverStatus.detail.flags.version', { version: serverStatus?.version || '?' }) }}
                             </VChip>
                         </div>
                         <div class="informative-container">
@@ -141,16 +110,20 @@ function refresh() {
                             </div>
                             <div class="informative-items">
                                 <p>
-                                    {{ t('serverStatus.detail.stats.started', { started: serverDetail?.started?.getPrettyPrintableString() || '?' }) }}
+                                    {{ t('serverStatus.detail.stats.started', { started: serverStatus?.started?.getPrettyPrintableString() || '?' })
+                                    }}
                                 </p>
                                 <p>
-                                    {{ t('serverStatus.detail.stats.uptime', { uptime: getFormattedUptime(serverDetail?.uptime) || '?' }) }}
+                                    {{ t('serverStatus.detail.stats.uptime', { uptime: getFormattedUptime(serverStatus?.uptime) || '?' })
+                                    }}
                                 </p>
                                 <p>
-                                    {{ t('serverStatus.detail.stats.catalogsOk', { catalogCount: serverDetail?.catalogsOk || '?' }) }}
+                                    {{ t('serverStatus.detail.stats.catalogsOk', { catalogCount: serverStatus?.catalogsOk || '?' })
+                                    }}
                                 </p>
                                 <p>
-                                    {{ t('serverStatus.detail.stats.catalogsCorrupted', { catalogCount: serverDetail?.catalogsCorrupted || '?' }) }}
+                                    {{ t('serverStatus.detail.stats.catalogsCorrupted', { catalogCount: serverStatus?.catalogsCorrupted || '?' })
+                                    }}
                                 </p>
                                 <div class="log"></div>
                             </div>
@@ -163,7 +136,7 @@ function refresh() {
                                     <span
                                         :class="[
                                             'status-circle',
-                                            apiReadiness?.apis.gRPC === 'ready'
+                                            serverStatus?.apis.get(ApiType.Grpc) === 'ready'
                                                 ? 'active'
                                                 : 'inactive',
                                         ]"
@@ -244,10 +217,10 @@ function refresh() {
                                         </VChip>
                                     </VChipGroup>
                                 </p>
-                                <!-- todo lho: temporary disable flag, we will later introduce some kind of "demo" mode instead -->
+                                &lt;!&ndash; todo lho: temporary disable flag, we will later introduce some kind of "demo" mode instead &ndash;&gt;
                                 <VChip
                                     :disabled="evitaLabConfig.readOnly"
-                                    @click="visibleYamlDialog = true"
+                                    @click="showRuntimeConfigurationDialog = true"
                                     variant="outlined"
                                     class="w-75 bottom-title"
                                 >
@@ -258,12 +231,12 @@ function refresh() {
                     </VCardText>
                 </VCard>
                 <RuntimeConfigurationDialog
-                    v-if="runtimeConfigLoaded"
-                    v-model="visibleYamlDialog"
-                    :runtime-configuration="runtimeConfig!"
+                    v-if="runtimeConfigurationLoaded"
+                    v-model="showRuntimeConfigurationDialog"
+                    :runtime-configuration="runtimeConfiguration!"
                 />
             </div>
-        </VSheet>
+        </VSheet>-->
     </div>
 </template>
 

@@ -18,7 +18,7 @@ const props = withDefaults(
         subheader?: string,
         connection: Connection
         states?: TaskState[]
-        taskType?: string,
+        taskTypes?: string[],
         pageSize?: number,
         hideablePagination?: boolean,
     }>(),
@@ -82,7 +82,7 @@ async function loadTaskStatuses(): Promise<void> {
             pageNumber.value,
             props.pageSize,
             props.states,
-            props.taskType
+            props.taskTypes
         )
         taskStatuses.value = fetchedTaskStatuses
 

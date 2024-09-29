@@ -98,7 +98,7 @@ export interface EvitaDBDriver {
         pageNumber: number,
         pageSize: number,
         states?: TaskState[],
-        taskType?: string
+        taskTypes?: string[]
     ): Promise<TaskStatuses>
     //TODO: Add doc
     restoreCatalog(connection: Connection, fileId: Uuid, catalogName: string): Promise<TaskStatus>

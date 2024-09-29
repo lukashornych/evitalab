@@ -196,7 +196,7 @@ async function downloadBackup(file: File){
                 :connection="params.connection"
                 :subheader="t('backupViewer.tasks.title')"
                 :states="[TaskState.Running, TaskState.Queued]"
-                :task-type="backupTaskName"
+                :task-types="[backupTaskName, restoreTaskName]"
                 :page-size="5"
                 hideable-pagination
                 @update:active-jobs-present="backupsInPreparationPresent = $event"

@@ -111,7 +111,7 @@ async function downloadRecording(file: File) {
                 :connection="params.connection"
                 :subheader="t('jfrViewer.tasks.title')"
                 :states="[TaskState.Running, TaskState.Queued]"
-                :task-type="jfrRecorderTaskName"
+                :task-types="[jfrRecorderTaskName]"
                 :page-size="5"
                 hideable-pagination
                 @update:active-jobs-present="runningRecordingsPresent = $event"

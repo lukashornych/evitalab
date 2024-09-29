@@ -9,6 +9,9 @@ const hasher: HashObject = XXH.h64()
  */
 export class Connection {
 
+    // todo lho introduce type: USER, PRECONFIGURED, TEMP to not cache temp connection
+    //  so that i can use entire driver stack without caching temp connection
+
     readonly id: ConnectionId
     readonly name: string
     readonly preconfigured: boolean
