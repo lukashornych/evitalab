@@ -68,7 +68,7 @@ export class GrpcEvitaServerStatusResponse extends Message<GrpcEvitaServerStatus
    *
    * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcReadiness readiness = 8;
    */
-  readiness = GrpcReadiness.API_UNKNOWN;
+  readiness = GrpcReadiness.API_STARTING;
 
   /**
    * Information about all available APIs
@@ -76,6 +76,13 @@ export class GrpcEvitaServerStatusResponse extends Message<GrpcEvitaServerStatus
    * @generated from field: map<string, io.evitadb.externalApi.grpc.generated.GrpcApiStatus> api = 9;
    */
   api: { [key: string]: GrpcApiStatus } = {};
+
+  /**
+   * Flag indicating that the server is in read-only mode
+   *
+   * @generated from field: bool readOnly = 10;
+   */
+  readOnly = false;
 
   constructor(data?: PartialMessage<GrpcEvitaServerStatusResponse>) {
     super();
@@ -94,6 +101,7 @@ export class GrpcEvitaServerStatusResponse extends Message<GrpcEvitaServerStatus
     { no: 7, name: "healthProblems", kind: "enum", T: proto3.getEnumType(GrpcHealthProblem), repeated: true },
     { no: 8, name: "readiness", kind: "enum", T: proto3.getEnumType(GrpcReadiness) },
     { no: 9, name: "api", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: GrpcApiStatus} },
+    { no: 10, name: "readOnly", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcEvitaServerStatusResponse {

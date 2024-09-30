@@ -2049,7 +2049,7 @@ export class GrpcCatalogStatistics extends Message<GrpcCatalogStatistics> {
    *
    * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcCatalogState catalogState = 4;
    */
-  catalogState = GrpcCatalogState.UNKNOWN_CATALOG_STATE;
+  catalogState = GrpcCatalogState.WARMING_UP;
 
   /**
    * version of the catalog, -1 for corrupted catalog
