@@ -1,5 +1,6 @@
 import XXH, { HashObject } from 'xxhashjs'
 import { ConnectionId } from '@/modules/connection/model/ConnectionId'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 
 const hasher: HashObject = XXH.h64()
 
@@ -29,7 +30,7 @@ export class Connection {
         this.id = id ? id : hasher.update(name).digest().toString(16)
         this.name = name
         this.preconfigured = preconfigured
-        this.serverUrl = this.normalizeUrl(serverUrl)
+        this.serverUrl = this.validateAndNormalizeUrl(serverUrl)
     }
 
     static user(id: ConnectionId | undefined,
@@ -58,7 +59,7 @@ export class Connection {
             json.id,
             json.name,
             true,
-            json.serverurl
+            json.serverUrl
         )
     }
 
@@ -90,7 +91,12 @@ export class Connection {
         return this._observabilityUrl
     }
 
-    private normalizeUrl(url: string): string {
+    private validateAndNormalizeUrl(url: string): string {
+        try {
+            new URL(url)
+        } catch (e) {
+            throw new UnexpectedError('Server URL is not valid URL.')
+        }
         return url.endsWith('/') ? url.substring(0, url.length - 1) : url
     }
 }
