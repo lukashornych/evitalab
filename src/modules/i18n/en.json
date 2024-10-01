@@ -277,6 +277,10 @@
         "modify": "Modify",
         "catalogs": "Catalogs"
       },
+      "notification": {
+        "couldNotLoadCatalogs": "Could not load catalogs for connection {connectionName}: {reason}",
+        "couldNotLoadServerStatus": "Could not load server status for connection {connectionName}: {reason}"
+      },
       "connect": {
         "title": "Connect to evitaDB server",
         "button": {

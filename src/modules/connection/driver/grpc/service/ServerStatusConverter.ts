@@ -8,6 +8,7 @@ import Immutable from 'immutable'
 import { Readiness } from '@/modules/connection/model/status/Readiness'
 import { ApiStatus } from '@/modules/connection/model/status/ApiStatus'
 import { Endpoint } from '@/modules/connection/model/status/Endpoint'
+import { ApiType } from '@/modules/connection/model/status/ApiType'
 
 /**
  * Convert server status from gRPC to evitaLab representation.
@@ -30,6 +31,7 @@ export class ServerStatusConverter {
             serverStatus.instanceId,
             serverStatus.catalogsCorrupted,
             serverStatus.catalogsOk,
+            serverStatus.readOnly,
             this.convertHealthProblems(serverStatus.healthProblems),
             this.convertReadiness(serverStatus.readiness),
             this.convertApis(serverStatus.api)

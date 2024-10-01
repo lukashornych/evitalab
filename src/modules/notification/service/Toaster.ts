@@ -38,6 +38,7 @@ export class Toaster {
         this.toast.warning(title, { icon: 'mdi mdi-alert-outline' })
     }
 
+    // todo lho accept both public message and error for details
     error(error: Error | String): void {
         console.error(error)
 

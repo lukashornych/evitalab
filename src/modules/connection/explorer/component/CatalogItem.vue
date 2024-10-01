@@ -27,10 +27,9 @@ import {
 import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
 import VTreeViewEmptyItem from '@/modules/base/component/VTreeViewEmptyItem.vue'
 import CollectionItem from '@/modules/connection/explorer/component/CollectionItem.vue'
-import { provideCatalog, useConnection } from '@/modules/connection/explorer/component/dependecies'
+import { provideCatalog, useConnection, useServerStatus } from '@/modules/connection/explorer/component/dependecies'
 import { MenuItem } from '@/modules/base/model/menu/MenuItem'
 import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
-import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
 import RenameCatalogDialog from '@/modules/connection/explorer/component/RenameCatalogDialog.vue'
 import DropCatalogDialog from '@/modules/connection/explorer/component/DropCatalogDialog.vue'
 import ReplaceCatalogDialog from '@/modules/connection/explorer/component/ReplaceCatalogDialog.vue'
@@ -44,8 +43,9 @@ import {
 import { ItemFlag } from '@/modules/base/model/tree-view/ItemFlag'
 import { EntityCollection } from '@/modules/connection/model/EntityCollection'
 import Immutable from 'immutable'
+import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
+import { ApiType } from '@/modules/connection/model/status/ApiType'
 
-const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory = useEvitaQLConsoleTabFactory()
 const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = useGraphQLConsoleTabFactory()
@@ -57,6 +57,7 @@ const props = defineProps<{
     catalog: Catalog
 }>()
 const emit = defineEmits<{ (e: 'change'): void }>()
+const serverStatus: Ref<ServerStatus | undefined> = useServerStatus()
 
 const showRenameCatalogDialog = ref<boolean>(false)
 const showReplaceCatalogDialog = ref<boolean>(false)
@@ -97,6 +98,10 @@ function handleAction(action: string): void {
 }
 
 function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
+    const graphQlEnabled: boolean = serverStatus.value != undefined && serverStatus.value.apiEnabled(ApiType.GraphQL)
+    const catalogNotCorrupted: boolean = !props.catalog.corrupted
+    const serverWritable: boolean = serverStatus.value != undefined && !serverStatus.value.readOnly
+
     const actions: Map<CatalogItemType, MenuItem<CatalogItemType>> = new Map()
     actions.set(
         CatalogItemType.OpenEvitaQLConsole,
@@ -111,7 +116,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
                     )
                 )
             },
-            !props.catalog.corrupted
+            catalogNotCorrupted
         )
     )
     actions.set(
@@ -128,7 +133,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
                     )
                 )
             },
-            !props.catalog.corrupted
+            catalogNotCorrupted && graphQlEnabled
         )
     )
     actions.set(
@@ -145,7 +150,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
                     )
                 )
             },
-            !props.catalog.corrupted
+            catalogNotCorrupted && graphQlEnabled
         )
     )
     actions.set(
@@ -161,7 +166,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
                     )
                 )
             },
-            !props.catalog.corrupted
+            catalogNotCorrupted
         )
     )
 
@@ -180,9 +185,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
                     backupsService.createNew(connection, props.catalog.name, false)
                 )
             },
-            // todo lho: discuss if we want to disable backuping without restoring
-            // todo lho: readonly flag must be on connection
-            !props.catalog.corrupted && !evitaLabConfig.readOnly
+            catalogNotCorrupted && serverWritable
         )
     )
 
@@ -196,7 +199,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
             CatalogItemType.RenameCatalog,
             'mdi-pencil-outline',
             () => showRenameCatalogDialog.value = true,
-            !props.catalog.corrupted && !evitaLabConfig.readOnly
+            catalogNotCorrupted && serverWritable
         )
     )
     actions.set(
@@ -205,7 +208,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
             CatalogItemType.ReplaceCatalog,
             'mdi-file-replace-outline',
             () => showReplaceCatalogDialog.value = true,
-            !props.catalog.corrupted && !evitaLabConfig.readOnly
+            catalogNotCorrupted && serverWritable
         )
     )
     if (props.catalog.isInWarmup) {
@@ -215,7 +218,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
                 CatalogItemType.SwitchCatalogToAliveState,
                 'mdi-toggle-switch-outline',
                 () => showSwitchCatalogToAliveStateDialog.value = true,
-                !props.catalog.corrupted && !evitaLabConfig.readOnly
+                catalogNotCorrupted && serverWritable
             )
         )
     }
@@ -225,7 +228,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
             CatalogItemType.DropCatalog,
             'mdi-delete-outline',
             () => showDropCatalogDialog.value = true,
-            !evitaLabConfig.readOnly
+            serverWritable
         )
     )
 
@@ -240,7 +243,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
             CatalogItemType.CreateCollection,
             'mdi-plus',
             () => showCreateCollectionDialog.value = true,
-            !props.catalog.corrupted && !evitaLabConfig.readOnly
+            catalogNotCorrupted && serverWritable
         )
     )
     return new Map(actions)

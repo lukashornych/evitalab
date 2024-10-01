@@ -3,7 +3,7 @@
  * Explorer tree item representing a single connection to evitaDB.
  */
 
-import { computed, ComputedRef, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
 import { ConnectionService, useConnectionService } from '@/modules/connection/service/ConnectionService'
@@ -18,7 +18,7 @@ import {
 import { GraphQLInstanceType } from '@/modules/graphql-console/console/model/GraphQLInstanceType'
 import { ConnectionItemType } from '@/modules/connection/explorer/model/ConnectionItemType'
 import { MenuAction } from '@/modules/base/model/menu/MenuAction'
-import { provideConnection } from '@/modules/connection/explorer/component/dependecies'
+import { provideConnection, provideServerStatus } from '@/modules/connection/explorer/component/dependecies'
 import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
 import CatalogItem from '@/modules/connection/explorer/component/CatalogItem.vue'
 import RemoveConnectionDialog from '@/modules/connection/explorer/component/RemoveConnectionDialog.vue'
@@ -33,8 +33,9 @@ import CreateCatalogDialog from '@/modules/connection/explorer/component/CreateC
 import { TaskViewerTabFactory, useTaskViewerTabFactory } from '@/modules/task-viewer/services/TaskViewerTabFactory'
 import { JfrViewerTabFactory, useJfrViewerTabFactory } from '@/modules/jfr-viewer/service/JfrViewerTabFactory'
 import { ItemFlag } from '@/modules/base/model/tree-view/ItemFlag'
-import { ItemFlagType } from '@/modules/base/model/tree-view/ItemFlagType'
 import Immutable from 'immutable'
+import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
+import { ApiType } from '@/modules/connection/model/status/ApiType'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
@@ -52,6 +53,10 @@ const props = defineProps<{
 }>()
 provideConnection(props.connection)
 
+const serverStatus = ref<ServerStatus | undefined>()
+provideServerStatus(serverStatus)
+loadServerStatus().then()
+
 const flags = computed<ItemFlag[]>(() => {
     const flags: ItemFlag[] = []
     if (props.connection.preconfigured) {
@@ -61,10 +66,18 @@ const flags = computed<ItemFlag[]>(() => {
     }
     return flags
 })
-const actions = computed<Map<ConnectionItemType, MenuItem<ConnectionItemType>>>(() =>
-    createActions())
-const actionList = computed<MenuItem<ConnectionItemType>[]>(
-    () => Array.from(actions.value.values()))
+const actions = ref<Map<ConnectionItemType, MenuItem<ConnectionItemType>>>()
+watch(
+    [() => props.connection, serverStatus],
+    async () => actions.value = await createActions(),
+    { immediate: true }
+)
+const actionList = computed<MenuItem<ConnectionItemType>[]>(() => {
+    if (actions.value == undefined) {
+        return []
+    }
+    return Array.from(actions.value.values())
+})
 
 const catalogs = ref<Immutable.List<Catalog>>()
 const loading = ref<boolean>(false)
@@ -80,12 +93,42 @@ async function loadCatalogs(): Promise<void> {
                 return a.name.localeCompare(b.name)
             })
     } catch (e: any) {
-        toaster.error(e)
+        toaster.error(t(
+            'explorer.connection.notification.couldNotLoadCatalogs',
+            {
+                connectionName: props.connection.name,
+                reason: e.message
+            }
+        ))
     }
     loading.value = false
 }
 
+async function loadServerStatus(): Promise<void> {
+    try {
+        serverStatus.value = await connectionService.getServerStatus(props.connection)
+    } catch (e: any) {
+        toaster.error(e)
+        // toaster.error(t(
+        //     'explorer.connection.notification.couldNotLoadServerStatus',
+        //     {
+        //         connectionName: props.connection.name,
+        //         reason: e.message
+        //     }
+        // ))
+    }
+}
+
+async function reload(): Promise<void> {
+    // todo lho temp solution, connectionService.reload should be used when fixed
+    await loadCatalogs()
+    await loadServerStatus()
+}
+
 function handleAction(action: string): void {
+    if (actions.value == undefined) {
+        return
+    }
     const item: MenuItem<ConnectionItemType> | undefined = actions.value.get(action as ConnectionItemType)
     if (item instanceof MenuAction) {
         item.execute()
@@ -93,14 +136,20 @@ function handleAction(action: string): void {
 }
 
 // todo lho these should be some kind of factories
-function createActions(): Map<ConnectionItemType, MenuItem<ConnectionItemType>> {
+async function createActions(): Promise<Map<ConnectionItemType, MenuItem<ConnectionItemType>>> {
+    const graphQlEnabled: boolean = serverStatus.value != undefined && serverStatus.value.apiEnabled(ApiType.GraphQL)
+    const observabilityEnabled: boolean = serverStatus.value != undefined && serverStatus.value.apiEnabled(ApiType.Observability)
+    const userConnection: boolean = !props.connection.preconfigured
+    const labWritable: boolean = !evitaLabConfig.readOnly
+    const serverWritable: boolean = serverStatus.value != undefined && !serverStatus.value.readOnly
+
     const actions: Map<ConnectionItemType, MenuItem<ConnectionItemType>> = new Map()
     actions.set(
         ConnectionItemType.Refresh,
         createMenuAction(
             ConnectionItemType.Refresh,
             'mdi-refresh',
-            () => loadCatalogs()
+            async () => await reload()
         )
     )
     actions.set(
@@ -115,7 +164,8 @@ function createActions(): Map<ConnectionItemType, MenuItem<ConnectionItemType>> 
                         'system', // todo lho: this is not needed
                         GraphQLInstanceType.System
                     )
-                )
+                ),
+            graphQlEnabled
         )
     )
     actions.set(
@@ -149,7 +199,8 @@ function createActions(): Map<ConnectionItemType, MenuItem<ConnectionItemType>> 
                     props.connection
                 )
             )
-        }
+        },
+        observabilityEnabled
     ))
     actions.set(
         ConnectionItemType.ModifySubheader,
@@ -173,7 +224,7 @@ function createActions(): Map<ConnectionItemType, MenuItem<ConnectionItemType>> 
             ConnectionItemType.Remove,
             'mdi-delete-outline',
             () => (showRemoveConnectionDialog.value = true),
-            props.connection.preconfigured
+            userConnection && labWritable
         )
     )
     actions.set(
@@ -186,7 +237,7 @@ function createActions(): Map<ConnectionItemType, MenuItem<ConnectionItemType>> 
             ConnectionItemType.CreateCatalog,
             'mdi-plus',
             () => showCreateCatalogDialog.value = true,
-            evitaLabConfig.readOnly
+            serverWritable
         )
     )
     return actions
@@ -195,7 +246,7 @@ function createMenuAction(
     actionType: ConnectionItemType,
     prependIcon: string,
     execute: () => void,
-    disabled?: boolean
+    enabled: boolean = true
 ): MenuAction<ConnectionItemType> {
     return new MenuAction(
         actionType,
@@ -203,7 +254,7 @@ function createMenuAction(
         prependIcon,
         execute,
         undefined,
-        disabled
+        !enabled
     )
 }
 </script>

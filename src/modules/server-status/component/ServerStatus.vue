@@ -12,6 +12,7 @@ import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
 import RuntimeConfigurationDialog from '@/modules/server-status/component/RuntimeConfigurationDialog.vue'
 import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
 import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
+import { ApiType } from '@/modules/connection/model/status/ApiType'
 
 const serverStatusService: ServerStatusService = useServerStatusService()
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()

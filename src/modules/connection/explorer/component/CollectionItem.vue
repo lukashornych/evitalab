@@ -16,24 +16,21 @@ import {
     EntityViewerTabFactory,
     useEntityViewerTabFactory
 } from '@/modules/entity-viewer/viewer/workspace/service/EntityViewerTabFactory'
-import { useCatalog, useConnection } from '@/modules/connection/explorer/component/dependecies'
+import { useCatalog, useConnection, useServerStatus } from '@/modules/connection/explorer/component/dependecies'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import VTreeViewItem from '@/modules/base/component/VTreeViewItem.vue'
 import { EntityCollection } from '../../model/EntityCollection'
-import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
-import { computed, ref } from 'vue'
+import { computed, Ref, ref } from 'vue'
 import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
 import { MenuItem } from '@/modules/base/model/menu/MenuItem'
 import DropCollectionDialog from '@/modules/connection/explorer/component/DropCollectionDialog.vue'
 import RenameCollectionDialog from '@/modules/connection/explorer/component/RenameCollectionDialog.vue'
+import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
 
 const workspaceService: WorkspaceService = useWorkspaceService()
-const entityViewerTabFactory: EntityViewerTabFactory =
-    useEntityViewerTabFactory()
-const schemaViewerTabFactory: SchemaViewerTabFactory =
-    useSchemaViewerTabFactory()
+const entityViewerTabFactory: EntityViewerTabFactory = useEntityViewerTabFactory()
+const schemaViewerTabFactory: SchemaViewerTabFactory = useSchemaViewerTabFactory()
 const { t } = useI18n()
-const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 
 const props = defineProps<{
     entityCollection: EntityCollection
@@ -41,6 +38,7 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'change'): void
 }>()
+const serverStatus: Ref<ServerStatus | undefined> = useServerStatus()
 
 const showDropCollectionDialog = ref<boolean>(false)
 const showRenameCollectionDialog = ref<boolean>(false)
@@ -77,10 +75,9 @@ function handleAction(action: string) {
     }
 }
 
-function createActions(): Map<
-    CollectionActionType,
-    MenuItem<CollectionActionType>
-> {
+function createActions(): Map<CollectionActionType, MenuItem<CollectionActionType>> {
+    const serverWritable: boolean = serverStatus.value != undefined && !serverStatus.value.readOnly
+
     const actions: Map<CollectionActionType, MenuItem<CollectionActionType>> = new Map()
     actions.set(
         CollectionActionType.ViewEntities,
@@ -118,7 +115,7 @@ function createActions(): Map<
             CollectionActionType.RenameCollection,
             'mdi-pencil-outline',
             () => showRenameCollectionDialog.value = true,
-            evitaLabConfig.readOnly
+            serverWritable
         )
     )
     actions.set(
@@ -127,7 +124,7 @@ function createActions(): Map<
             CollectionActionType.DropCollection,
             'mdi-delete-outline',
             () => showDropCollectionDialog.value = true,
-            evitaLabConfig.readOnly
+            serverWritable
         )
     )
     return actions
@@ -137,7 +134,7 @@ function createMenuAction(
     actionType: CollectionActionType,
     prependIcon: string,
     execute: () => void,
-    disabled?: boolean
+    enabled: boolean = true
 ): MenuAction<CollectionActionType> {
     return new MenuAction(
         actionType,
@@ -145,7 +142,7 @@ function createMenuAction(
         prependIcon,
         execute,
         undefined,
-        disabled
+        !enabled
     )
 }
 </script>

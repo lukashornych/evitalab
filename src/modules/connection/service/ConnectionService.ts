@@ -131,6 +131,15 @@ export class ConnectionService {
     }
 
     /**
+     * Reloads all cached connection-related data.
+     */
+    async reload(connection: Connection): Promise<void> {
+        // todo lho reloading catalogs doesnt work properly with reactivity because new map is created every time
+        await this.getCatalogs(connection, true)
+        await this.getServerStatus(connection, true)
+    }
+
+    /**
      * Returns cached server status with info about the server for a connection.
      * Can be reloaded and re-cached.
      */

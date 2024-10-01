@@ -1,7 +1,7 @@
 /**
  * All supported APIs by evitaDB
  */
-enum ApiType {
+export enum ApiType {
     System = 'system',
     Grpc = 'grpc',
     GraphQL = 'graphQL',
