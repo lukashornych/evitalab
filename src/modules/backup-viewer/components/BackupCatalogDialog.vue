@@ -24,19 +24,11 @@ const emit = defineEmits<{
     (e: 'backup', date: string): void
 }>()
 
-const pastMomentRules = [
-    (value: any): any => {
-        if (value != undefined && value.trim().length > 0) return true
-        return t('backupViewer.backup.form.pastMoment.validations.required')
-    }
-]
-
 const minimalDate = ref<string | undefined>()
 const minimalDateLoaded = ref<boolean>(false)
 
 const pastMoment = ref<string>()
 const includeWal = ref<boolean>(false)
-const changed = computed<boolean>(() => pastMoment.value != undefined)
 
 async function loadMinimalDate(): Promise<CatalogVersionAtResponse> {
     return await backupViewerService.getMinimalBackupDate(
@@ -50,19 +42,25 @@ function reset(): void {
     includeWal.value = false
 }
 
+function convertPastMoment(): OffsetDateTime | undefined {
+    if (pastMoment.value === undefined) {
+        return undefined
+    }
+    // todo lho simplify
+    // todo lho verify date data type
+    const jsDate = new Date(pastMoment.value!)
+    const offsetDateTime: DateTime = DateTime.fromJSDate(jsDate)
+    const timestamp: Timestamp = Timestamp.fromDate(jsDate)
+    return new OffsetDateTime(timestamp, offsetDateTime.toFormat('ZZ'))
+}
+
 async function backup(): Promise<boolean> {
     try {
-        // todo lho simplify
-        // todo lho verify date data type
-        const jsDate = new Date(pastMoment.value!)
-        const offsetDateTime: DateTime = DateTime.fromJSDate(jsDate)
-        const timestamp: Timestamp = Timestamp.fromDate(jsDate)
-
         await backupViewerService.backupCatalog(
             props.connection,
             props.catalogName,
             includeWal.value,
-            new OffsetDateTime(timestamp, offsetDateTime.toFormat('ZZ'))
+            convertPastMoment()
         )
         toaster.success(t(
             'backupViewer.backup.notification.backupRequested',
@@ -90,7 +88,7 @@ loadMinimalDate().then((catalogVersionAt) => {
 <template>
     <VFormDialog
         :model-value="modelValue"
-        :changed="changed"
+        changed
         confirm-button-icon="mdi-cloud-download-outline"
         :confirm="backup"
         :reset="reset"
@@ -115,7 +113,6 @@ loadMinimalDate().then((catalogVersionAt) => {
                 :disabled="!minimalDateLoaded"
                 :min="minimalDate"
                 :max="new Date().toISOString()"
-                :rules="pastMomentRules"
             />
             <VCheckbox
                 v-model="includeWal"

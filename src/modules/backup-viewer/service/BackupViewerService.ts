@@ -40,7 +40,7 @@ export class BackupViewerService {
         connection: Connection,
         catalogName: string,
         includingWAL: boolean,
-        pastMoment: OffsetDateTime
+        pastMoment: OffsetDateTime | undefined
     ): Promise<TaskStatus> {
         const driver = await this.connectionService.getDriver(connection)
         return driver.createBackup(

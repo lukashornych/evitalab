@@ -957,10 +957,7 @@
       "info": "The back up process may take a while. Therefore it will be started asynchronously. You can find it’s progress and backup file to download in task listing.",
       "form": {
         "pastMoment": {
-          "label": "Past moment",
-          "validations": {
-            "required": "Past moment is required."
-          }
+          "label": "Past moment"
         },
         "includeWal": {
           "label": "Include WAL",

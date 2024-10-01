@@ -458,7 +458,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         connection: Connection,
         catalogName: string,
         includingWAL: boolean,
-        pastMoment: OffsetDateTime
+        pastMoment: OffsetDateTime | undefined
     ): Promise<TaskStatus> {
         const res = await this.clientProvider
             .getEvitaClient(connection)
@@ -468,10 +468,12 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
             .backupCatalog(
                 {
                     includingWAL,
-                    pastMoment: {
-                        offset: pastMoment.offset,
-                        timestamp: pastMoment.timestamp
-                    }
+                    pastMoment: pastMoment != undefined
+                        ? {
+                            offset: pastMoment.offset,
+                            timestamp: pastMoment.timestamp
+                        }
+                        : undefined,
                 },
                 {
                     headers: {

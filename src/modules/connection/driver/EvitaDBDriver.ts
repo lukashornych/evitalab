@@ -88,7 +88,7 @@ export interface EvitaDBDriver {
         connection: Connection,
         catalogName: string,
         includingWAL: boolean,
-        pastMoment: OffsetDateTime
+        pastMoment: OffsetDateTime | undefined
     ): Promise<TaskStatus>
     //TODO: Add doc
     getFilesToFetch(connection: Connection, origin: string, pageNumber: number, pageSize: number): Promise<FilesToFetch>
