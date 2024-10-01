@@ -41,23 +41,21 @@ function rejectSharedTab(): void {
         </template>
 
         <template #default>
+            <template v-if="tabRequest.initialData != undefined">
+                <span v-html="t('tabShare.sharedDialog.text.withoutInitialData')" />
+            </template>
+            <template v-else>
+                <span v-html="t('tabShare.sharedDialog.text.withInitialData')" />
+            </template>
 
-            <VCardText>
-                <template v-if="tabRequest.initialData != undefined">
-                    <span v-html="t('tabShare.sharedDialog.text.withoutInitialData')" />
-                </template>
-                <template v-else>
-                    <span v-html="t('tabShare.sharedDialog.text.withInitialData')" />
-                </template>
-            </VCardText>
-            <VCardText v-if="tabRequest.initialData != undefined">
-                <VAlert
-                    icon="mdi-alert-outline"
-                    type="warning"
-                >
-                    <span v-html="t('tabShare.sharedDialog.warning.potentiallyUnsafe')" />
-                </VAlert>
-            </VCardText>
+            <VAlert
+                v-if="tabRequest.initialData != undefined"
+                icon="mdi-alert-outline"
+                type="warning"
+                class="mt-4"
+            >
+                <span v-html="t('tabShare.sharedDialog.warning.potentiallyUnsafe')" />
+            </VAlert>
         </template>
 
         <template #reject-button>

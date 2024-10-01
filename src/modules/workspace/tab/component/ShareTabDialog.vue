@@ -74,19 +74,24 @@ function copyLink(): void {
         </template>
 
         <template #default>
-            <VCardText>
-                {{ t('tabShare.shareDialog.text') }}
-            </VCardText>
-            <VCardText v-if="tabData != undefined">
-                <VAlert icon="mdi-alert-outline" type="warning">
-                    <span v-html="t('tabShare.shareDialog.warning.sensitiveData')" />
-                </VAlert>
-            </VCardText>
-            <VCardText v-if="link.length > urlCharacterLimit">
-                <VAlert type="warning" icon="mdi-alert-outline">
-                    <span v-html="t('tabShare.shareDialog.warning.linkMayNotWork', { urlCharacterLimit })" />
-                </VAlert>
-            </VCardText>
+            <div>{{ t('tabShare.shareDialog.text') }}</div>
+
+            <VAlert
+                v-if="tabData != undefined"
+                icon="mdi-alert-outline"
+                type="warning"
+                class="mt-4"
+            >
+                <span v-html="t('tabShare.shareDialog.warning.sensitiveData')" />
+            </VAlert>
+            <VAlert
+                v-if="link.length > urlCharacterLimit"
+                type="warning"
+                icon="mdi-alert-outline"
+                class="mt-4"
+            >
+                <span v-html="t('tabShare.shareDialog.warning.linkMayNotWork', { urlCharacterLimit })" />
+            </VAlert>
         </template>
 
         <template #reject-button>
