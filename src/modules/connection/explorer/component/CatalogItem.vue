@@ -278,7 +278,7 @@ function createMenuAction(
                 :flags="flags"
                 :actions="actionList"
                 @click:action="handleAction"
-                class="text-gray-light text-sm-body-2"
+                class="text-gray-light"
             >
                 {{ catalog.name }}
             </VTreeViewItem>

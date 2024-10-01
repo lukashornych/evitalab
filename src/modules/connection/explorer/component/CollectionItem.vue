@@ -154,7 +154,7 @@ function createMenuAction(
             :actions="actionList"
             @click="openDataGrid"
             @click:action="handleAction"
-            class="text-gray-light text-sm-body-2"
+            class="text-gray-light"
         >
             {{ entityCollection.entityType }}
         </VTreeViewItem>
