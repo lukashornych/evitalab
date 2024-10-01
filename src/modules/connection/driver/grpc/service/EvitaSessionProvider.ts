@@ -4,6 +4,7 @@ import { GrpcEvitaSessionResponse } from '@/modules/connection/driver/grpc/gen/G
 import { Catalog } from '@/modules/connection/model/Catalog'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { Code, ConnectError } from '@connectrpc/connect'
+import { ConnectionId } from '@/modules/connection/model/ConnectionId'
 
 /**
  * Handles access to evita session. Provides way to share a single evita session across
@@ -12,8 +13,8 @@ export class EvitaSessionProvider {
 
     private readonly clientProvider: ClientProvider
 
-    private readonly activeReadOnlySessions: Map<string, ReadOnlySessionInfo> = new Map()
-    private readonly activeReadWriteSessions: Map<string, ReadWriteSessionInfo> = new Map()
+    private readonly activeReadOnlySessions: Map<ConnectionId, Map<string, ReadOnlySessionInfo>> = new Map()
+    private readonly activeReadWriteSessions: Map<ConnectionId, Map<string, ReadWriteSessionInfo>> = new Map()
 
     constructor(clientProvider: ClientProvider) {
         this.clientProvider = clientProvider
@@ -62,34 +63,13 @@ export class EvitaSessionProvider {
         return result
     }
 
-    async goLiveAndCloseSession(connection: Connection, catalog: Catalog): Promise<void> {
-        if (!catalog.isInWarmup) {
-            throw new UnexpectedError(`Catalog '${catalog.name}' is not in warming up state.`)
-        }
-
-        const session: ReadWriteSessionInfo | undefined = this.activeReadWriteSessions.get(catalog.name)
-        if (session == undefined) {
-            return
-        }
-        await this.clientProvider
-            .getEvitaSessionClient(connection)
-            .close(
-                {},
-                {
-                    headers: {
-                        sessionId: session.id
-                    }
-                }
-            )
-    }
-
     private async getReadOnlySession(connection: Connection, catalog: Catalog): Promise<SessionInfo> {
         if (catalog.isInWarmup) {
             // in this state, we want to share a single session across all calls, which is read write session
             return await this.getReadWriteSession(connection, catalog)
         }
 
-        let session: ReadOnlySessionInfo | undefined = this.activeReadOnlySessions.get(catalog.name)
+        let session: ReadOnlySessionInfo | undefined = this.getActiveReadOnlySession(connection, catalog)
         if (session == undefined || session.shouldInvalidate) {
             if (session != undefined) {
                 await this.closeReadOnlySession(connection, catalog)
@@ -99,13 +79,13 @@ export class EvitaSessionProvider {
                 .getEvitaClient(connection)
                 .createReadOnlySession({ catalogName: catalog.name })
             session = new ReadOnlySessionInfo(newSession.sessionId)
-            this.activeReadOnlySessions.set(catalog.name, session)
+            this.setActiveReadOnlySession(connection, catalog, session)
         }
         return session
     }
 
     private async getReadWriteSession(connection: Connection, catalog: Catalog): Promise<SessionInfo> {
-        let session: ReadWriteSessionInfo | undefined = this.activeReadWriteSessions.get(catalog.name)
+        let session: ReadWriteSessionInfo | undefined = this.getActiveReadWriteSession(connection, catalog)
         if (session == undefined || session.shouldInvalidate) {
             if (session != undefined) {
                 await this.closeReadWriteSession(connection, catalog)
@@ -115,7 +95,7 @@ export class EvitaSessionProvider {
                 .getEvitaClient(connection)
                 .createReadWriteSession({ catalogName: catalog.name })
             session = new ReadWriteSessionInfo(newSessionResponse.sessionId)
-            this.activeReadWriteSessions.set(catalog.name, session)
+            this.setActiveReadWriteSession(connection, catalog, session)
         } else {
             session.registerUser()
         }
@@ -123,7 +103,7 @@ export class EvitaSessionProvider {
     }
 
     private async closeReadOnlySession(connection: Connection, catalog: Catalog): Promise<void> {
-        let session: ReadOnlySessionInfo | undefined = this.activeReadOnlySessions.get(catalog.name)
+        let session: ReadOnlySessionInfo | undefined = this.getActiveReadOnlySession(connection, catalog)
         if (session == undefined) {
             return
         }
@@ -149,7 +129,7 @@ export class EvitaSessionProvider {
     }
 
     private async closeReadWriteSession(connection: Connection, catalog: Catalog): Promise<void> {
-        let session: ReadWriteSessionInfo | undefined = this.activeReadWriteSessions.get(catalog.name)
+        let session: ReadWriteSessionInfo | undefined = this.getActiveReadWriteSession(connection, catalog)
         if (session == undefined) {
             return
         }
@@ -184,6 +164,32 @@ export class EvitaSessionProvider {
                 readOnlySessionForCatalog.invalidate()
             }
         }
+    }
+
+    private getActiveReadOnlySession(connection: Connection, catalog: Catalog): ReadOnlySessionInfo | undefined {
+        return this.activeReadOnlySessions.get(connection.id)?.get(catalog.name)
+    }
+
+    private setActiveReadOnlySession(connection: Connection, catalog: Catalog, session: ReadOnlySessionInfo): void {
+        let sessionsForConnection: Map<string, ReadOnlySessionInfo> | undefined = this.activeReadOnlySessions.get(connection.id)
+        if (sessionsForConnection == undefined) {
+            sessionsForConnection = new Map()
+            this.activeReadOnlySessions.set(connection.id, sessionsForConnection)
+        }
+        sessionsForConnection.set(catalog.name, session)
+    }
+
+    private getActiveReadWriteSession(connection: Connection, catalog: Catalog): ReadWriteSessionInfo | undefined {
+        return this.activeReadWriteSessions.get(connection.id)?.get(catalog.name)
+    }
+
+    private setActiveReadWriteSession(connection: Connection, catalog: Catalog, session: ReadWriteSessionInfo): void {
+        let sessionsForConnection: Map<string, ReadWriteSessionInfo> | undefined = this.activeReadWriteSessions.get(connection.id)
+        if (sessionsForConnection == undefined) {
+            sessionsForConnection = new Map()
+            this.activeReadWriteSessions.set(connection.id, sessionsForConnection)
+        }
+        sessionsForConnection.set(catalog.name, session)
     }
 }
 
