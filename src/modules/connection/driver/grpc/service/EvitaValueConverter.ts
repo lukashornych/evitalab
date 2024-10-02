@@ -141,6 +141,10 @@ export class EvitaValueConverter {
                     return this.convertPredecessor(
                         objectValue as GrpcPredecessor
                     )
+                case GrpcEvitaDataType.REFERENCED_ENTITY_PREDECESSOR:
+                    return this.convertPredecessor(
+                        objectValue as GrpcPredecessor
+                    )
                 case GrpcEvitaDataType.SHORT_NUMBER_RANGE_ARRAY:
                     return this.convertIntegerNumberRangeArray(
                         objectValue as GrpcIntegerNumberRangeArray

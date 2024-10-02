@@ -76,7 +76,8 @@ export class ScalarConverter{
                 return Scalar.OffsetDateTimeArray
             case GrpcEvitaDataType.PREDECESSOR:
                 return Scalar.Predecessor
-            // todo lho implemented referenced predecesor
+            case GrpcEvitaDataType.REFERENCED_ENTITY_PREDECESSOR:
+                return Scalar.ReferencedEntityPredecessor
             case GrpcEvitaDataType.SHORT:
                 return Scalar.Short
             case GrpcEvitaDataType.SHORT_ARRAY:

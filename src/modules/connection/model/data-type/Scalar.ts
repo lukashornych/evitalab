@@ -45,5 +45,6 @@ export enum Scalar {
     UUID = 'UUID',
     UUIDArray = 'UUIDArray',
     Predecessor = 'Predecessor',
+    ReferencedEntityPredecessor = 'ReferencedEntityPredecessor',
     ComplexDataObject = 'ComplexDataObject'
 }
