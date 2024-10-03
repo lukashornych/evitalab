@@ -19,8 +19,7 @@
   <a href="https://github.com/lukashornych/evitalab/blob/master/LICENSE" title="License"><img src="https://img.shields.io/github/license/lukashornych/evitalab"/></a>
 </p>
 
-evitaLab aims to provide a user-friendly client for evitaDB database to easily browse data stored in the database.
-In the future, evitaLab will hopefully also allow data modifications.
+evitaLab aims to provide a user-friendly client for evitaDB database to easily browse and modify data stored in the database.
 
 You can try out evitaLab with evitaDB demo dataset at [demo.evitadb.io](https://demo.evitadb.io).
 
@@ -36,8 +35,11 @@ evitaLab allows you to:
 - [x] browse entities in interactive table
 - [x] execute GraphQL queries
 - [x] execute evitaQL queries
-- [x] visualise extra results 
+- [x] visualise extra results
+- [x] share tabs between developers
 - [x] manage connections to multiple evitaDB instances
+- [x] manage server (status, tasks, JFR recordings)
+- [x] manage catalogs and collections
 
 ## Running locally
 
