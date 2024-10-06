@@ -1,10 +1,9 @@
 import { InjectionKey } from 'vue'
 import { ConnectionService } from '@/modules/connection/service/ConnectionService'
 import { Connection } from '@/modules/connection/model/Connection'
-import { TaskViewerDefinition } from '@/modules/task-viewer/model/TaskViewerDefinition'
+import { TaskViewerTabDefinition } from '@/modules/task-viewer/model/TaskViewerTabDefinition'
 import { TaskViewerTabParams } from '@/modules/task-viewer/model/TaskViewerTabParams'
 import { TabParamsDto } from '@/modules/workspace/tab/model/TabParamsDto'
-import { TabDataDto } from '@/modules/workspace/tab/model/TabDataDto'
 import { TaskViewerTabParamsDto } from '@/modules/task-viewer/model/TaskViewerTabParamsDto'
 import { mandatoryInject } from '@/utils/reactivity'
 
@@ -17,18 +16,31 @@ export class TaskViewerTabFactory {
         this.connectionService = connectionService
     }
 
-    // todo lho i18n
-    createNew(connection: Connection, executeOnOpen: boolean = false):TaskViewerDefinition {
-        return new TaskViewerDefinition('Tasks',this.createTabParams(connection, executeOnOpen))
+    createNew(connection: Connection): TaskViewerTabDefinition {
+        return new TaskViewerTabDefinition(
+            this.constructTitle(connection),
+            new TaskViewerTabParams(connection)
+        )
     }
 
-    private createTabParams(connection: Connection, executeOnOpen: boolean = false):TaskViewerTabParams {
-        return new TaskViewerTabParams(connection, executeOnOpen)
+    restoreFromJson(paramsJson: TabParamsDto): TaskViewerTabDefinition {
+        const params: TaskViewerTabParams = this.restoreTabParamsFromSerializable(paramsJson)
+        return new TaskViewerTabDefinition(
+            this.constructTitle(params.connection),
+            params
+        )
     }
 
-    restoreFromJson(paramsJson: TabParamsDto, dataJson?: TabDataDto):TaskViewerDefinition{
-        const params: TaskViewerTabParamsDto = paramsJson as TaskViewerTabParamsDto
-        return new TaskViewerDefinition('Tasks', this.createTabParams(this.connectionService.getConnection(params.connection.id)))
+    // todo i18n
+    private constructTitle(connection: Connection): string {
+        return `Tasks [${connection.name}]`
+    }
+
+    private restoreTabParamsFromSerializable(json: TabParamsDto): TaskViewerTabParams {
+        const dto: TaskViewerTabParamsDto = json as TaskViewerTabParamsDto
+        return new TaskViewerTabParams(
+            this.connectionService.getConnection(dto.connectionId)
+        )
     }
 }
 

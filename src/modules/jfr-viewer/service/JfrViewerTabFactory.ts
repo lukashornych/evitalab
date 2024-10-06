@@ -1,9 +1,7 @@
 import { InjectionKey } from 'vue'
-import { JfrViewerService } from '@/modules/jfr-viewer/service/JfrViewerService'
 import { ConnectionService } from '@/modules/connection/service/ConnectionService'
 import { Connection } from '@/modules/connection/model/Connection'
-import { SchemaViewerTabDefinition } from '@/modules/schema-viewer/viewer/workspace/model/SchemaViewerTabDefinition'
-import { JfrViewerDefinition } from '@/modules/jfr-viewer/model/JfrViewerDefinition'
+import { JfrViewerTabDefinition } from '@/modules/jfr-viewer/model/JfrViewerTabDefinition'
 import { JfrViewerTabParams } from '@/modules/jfr-viewer/model/JfrViewerTabParams'
 import { mandatoryInject } from '@/utils/reactivity'
 import { TabParamsDto } from '@/modules/workspace/tab/model/TabParamsDto'
@@ -18,18 +16,31 @@ export class JfrViewerTabFactory {
         this.connectionService = connectionService
     }
 
+    createNew(connection: Connection): JfrViewerTabDefinition {
+        return new JfrViewerTabDefinition(
+            this.constructTitle(connection),
+            new JfrViewerTabParams(connection)
+        )
+    }
+
+    restoreFromJson(paramsJson: TabParamsDto):JfrViewerTabDefinition {
+        const params: JfrViewerTabParams = this.restoreTabParamsFromSerializable(paramsJson)
+        return new JfrViewerTabDefinition(
+            this.constructTitle(params.connection),
+            params
+        )
+    }
+
     // todo lho i18n
-    createNew(connection: Connection, excutableOnOpen: boolean = false): JfrViewerDefinition {
-        return new JfrViewerDefinition('JFR Recordings', this.createTabParams(connection, excutableOnOpen))
+    private constructTitle(connection: Connection): string {
+        return `JFR Recordings [${connection.name}]`
     }
 
-    private createTabParams(connection: Connection, executeOnOpen: boolean = false) {
-        return new JfrViewerTabParams(connection, executeOnOpen)
-    }
-
-    restoreFromJson(paramsJson: TabParamsDto, dataJson?: TabParamsDto):JfrViewerDefinition {
-        const params: JfrViewerTabParamsDto = paramsJson as JfrViewerTabParamsDto
-        return new JfrViewerDefinition('JFR Recordings', this.createTabParams(this.connectionService.getConnection(params.connection.id)))
+    private restoreTabParamsFromSerializable(json: TabParamsDto): JfrViewerTabParams {
+        const dto: JfrViewerTabParamsDto = json as JfrViewerTabParamsDto
+        return new JfrViewerTabParams(
+            this.connectionService.getConnection(dto.connectionId)
+        )
     }
 }
 

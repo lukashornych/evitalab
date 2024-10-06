@@ -41,10 +41,10 @@ keymap.prettyPrintAll().forEach((shortcut: string, command: Command) => {
             sectionMap.set(defaultSubsection, subsectionList)
         }
 
-        subsectionList.push({
-            name: t(`command.${command}`),
-            value: new PropertyValue(new KeywordValue(shortcut))
-        })
+        subsectionList.push(new Property(
+            t(`command.${command}`),
+            new PropertyValue(new KeywordValue(shortcut))
+        ))
     } else if (parts.length === 3) {
         const subsection: Subsection = parts[1]
         let subsectionList = sectionMap.get(subsection)
@@ -53,10 +53,10 @@ keymap.prettyPrintAll().forEach((shortcut: string, command: Command) => {
             sectionMap.set(subsection, subsectionList)
         }
 
-        subsectionList.push({
-            name: t(`command.${command}`),
-            value: new PropertyValue(new KeywordValue(shortcut))
-        })
+        subsectionList.push(new Property(
+            t(`command.${command}`),
+            new PropertyValue(new KeywordValue(shortcut))
+        ))
     } else {
         throw new UnexpectedError(`Unsupported command syntax '${command}'.`)
     }

@@ -182,7 +182,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
             'mdi-cloud-download-outline',
             () => {
                 workspaceService.createTab(
-                    backupsService.createNew(connection, props.catalog.name, false)
+                    backupsService.createNew(connection, props.catalog.name)
                 )
             },
             catalogNotCorrupted && serverWritable

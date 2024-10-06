@@ -2,9 +2,8 @@ import { Connection } from "@/modules/connection/model/Connection";
 import { ConnectionService } from "@/modules/connection/service/ConnectionService";
 import { mandatoryInject } from "@/utils/reactivity";
 import { InjectionKey } from "vue";
-import { BackupViewerDefinition } from "../model/BackupViewerDefinition";
+import { BackupViewerTabDefinition } from "../model/BackupViewerTabDefinition";
 import { TabParamsDto } from "@/modules/workspace/tab/model/TabParamsDto";
-import { TabDataDto } from "@/modules/workspace/tab/model/TabDataDto";
 import { BackupViewerTabParamsDto } from "../model/BackupViewerTabParamsDto";
 import { BackupViewerTabParams } from '@/modules/backup-viewer/model/BackupViewerTabParams'
 
@@ -17,17 +16,31 @@ export class BackupViewerTabFactory {
         this.connectionService = connectionService
     }
 
-    createNew(connection: Connection, catalogName: string, executeOnOpen: boolean = false):BackupViewerDefinition {
-        return new BackupViewerDefinition('Backups', this.createTabParams(connection, catalogName, executeOnOpen))
+    createNew(connection: Connection, catalogName: string): BackupViewerTabDefinition {
+        return new BackupViewerTabDefinition(
+            this.constructTitle(connection, catalogName),
+            new BackupViewerTabParams(connection, catalogName)
+        )
     }
 
-    private createTabParams(connection: Connection, catalogName: string, executeOnOpen: boolean = false):BackupViewerTabParams {
-        return new BackupViewerTabParams(connection, catalogName, executeOnOpen)
+    restoreFromJson(paramsJson: TabParamsDto): BackupViewerTabDefinition {
+        const params: BackupViewerTabParams = this.restoreTabParamsFromSerializable(paramsJson)
+        return new BackupViewerTabDefinition(
+            this.constructTitle(params.connection, params.catalogName),
+            params
+        )
     }
 
-    restoreFromJson(paramsJson: TabParamsDto, dataJson?: TabDataDto): BackupViewerDefinition {
-        const params: BackupViewerTabParamsDto = paramsJson as BackupViewerTabParams
-        return new BackupViewerDefinition('Backups', this.createTabParams(this.connectionService.getConnection(params.connection.id), params.catalogName))
+    private constructTitle(connection: Connection, catalogName: string): string {
+        return `${catalogName} [${connection.name}]`
+    }
+
+    private restoreTabParamsFromSerializable(json: TabParamsDto): BackupViewerTabParams {
+        const dto: BackupViewerTabParamsDto = json as BackupViewerTabParamsDto
+        return new BackupViewerTabParams(
+            this.connectionService.getConnection(dto.connectionId),
+            dto.catalogName
+        )
     }
 }
 

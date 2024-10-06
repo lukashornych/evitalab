@@ -13,10 +13,10 @@ import {
 import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
 import { CatalogVersionAtResponse } from '@/modules/connection/model/CatalogVersionAtResponse'
 import { TaskStatus } from '@/modules/connection/model/task/TaskStatus'
-import { FilesToFetch } from '@/modules/connection/model/file/FilesToFetch'
 import { TaskState } from '@/modules/connection/model/task/TaskState'
-import { TaskStatuses } from '@/modules/connection/model/task/TaskStatuses'
 import { EventType } from '@/modules/connection/model/jfr/EventType'
+import { PaginatedList } from '@/modules/connection/model/PaginatedList'
+import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
 
 /**
  * evitaDB version-agnostic driver to access data from connected evitaDB server
@@ -91,7 +91,7 @@ export interface EvitaDBDriver {
         pastMoment: OffsetDateTime | undefined
     ): Promise<TaskStatus>
     //TODO: Add doc
-    getFilesToFetch(connection: Connection, origin: string, pageNumber: number, pageSize: number): Promise<FilesToFetch>
+    getFilesToFetch(connection: Connection, origin: string, pageNumber: number, pageSize: number): Promise<PaginatedList<ServerFile>>
     //TODO: Add doc
     getTaskStatuses(
         connection: Connection,
@@ -99,13 +99,11 @@ export interface EvitaDBDriver {
         pageSize: number,
         states?: TaskState[],
         taskTypes?: string[]
-    ): Promise<TaskStatuses>
+    ): Promise<PaginatedList<TaskStatus>>
     //TODO: Add doc
     restoreCatalog(connection: Connection, fileId: Uuid, catalogName: string): Promise<TaskStatus>
     //TODO: Add doc
     cancelTask(connection: Connection, taskId: Uuid): Promise<boolean>
-    //TODO: Add doc
-    getJfrRecords(connection: Connection, pageNumber: number, pageSize: number): Promise<FilesToFetch>
     //TODO: Add doc
     downloadFile(connection:Connection, fileId: Uuid):Promise<Blob>
     //TODO: Add doc

@@ -2,9 +2,10 @@ import { Connection } from "@/modules/connection/model/Connection";
 import { Uuid } from "@/modules/connection/model/data-type/Uuid";
 import { mandatoryInject } from "@/utils/reactivity";
 import { InjectionKey } from "vue";
-import { TaskStatuses } from '@/modules/connection/model/task/TaskStatuses'
 import { TaskState } from '@/modules/connection/model/task/TaskState'
 import { ConnectionService } from '@/modules/connection/service/ConnectionService'
+import { PaginatedList } from '@/modules/connection/model/PaginatedList'
+import { TaskStatus } from '@/modules/connection/model/task/TaskStatus'
 
 export const taskViewerServiceInjectionKey: InjectionKey<TaskViewerService> = Symbol('taskViewerService')
 
@@ -15,11 +16,11 @@ export class TaskViewerService {
         this.connectionService = connectionService
     }
 
-    async getTaskStates(connection: Connection,
-                        pageNumber: number,
-                        pageSize: number,
-                        states?: TaskState[],
-                        taskTypes?: string[]): Promise<TaskStatuses>{
+    async getTaskStatuses(connection: Connection,
+                          pageNumber: number,
+                          pageSize: number,
+                          states?: TaskState[],
+                          taskTypes?: string[]): Promise<PaginatedList<TaskStatus>>{
         const driver = await this.connectionService.getDriver(connection)
         return await driver.getTaskStatuses(connection, pageNumber, pageSize, states, taskTypes)
     }

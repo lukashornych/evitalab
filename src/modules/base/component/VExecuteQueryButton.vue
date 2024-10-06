@@ -19,15 +19,15 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <VTabMainActionButton :loading="loading" @click="emit('click')">
-        <VIcon>mdi-play-outline</VIcon>
-
-        <slot>
-            <VTooltip activator="parent">
-                {{ t('common.button.executeQuery') }}
-            </VTooltip>
-            {{ t('common.button.run') }}
-        </slot>
+    <VTabMainActionButton
+        :loading="loading"
+        prepend-icon="mdi-play-outline"
+        @click="emit('click')"
+    >
+        <VTooltip activator="parent">
+            {{ t('common.button.executeQuery') }}
+        </VTooltip>
+        {{ t('common.button.run') }}
     </VTabMainActionButton>
 </template>
 

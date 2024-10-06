@@ -264,7 +264,7 @@
       },
       "actions": {
         "refresh": "Refresh",
-        "openGraphQLSystemApiConsole": "Open GraphQL System API console",
+        "openGraphQLSystemApiConsole": "GraphQL System API console",
         "create": "Create catalog",
         "edit": "Edit connection",
         "remove": "Remove connection",
@@ -335,10 +335,10 @@
         "backup": "Backup"
       },
       "actions": {
-        "openEvitaQLConsole": "Open evitaQL console",
-        "openGraphQLDataApiConsole": "Open GraphQL Data API console",
-        "openGraphQLSchemaApiConsole": "Open GraphQL Schema API console",
-        "viewSchema": "View schema",
+        "openEvitaQLConsole": "evitaQL console",
+        "openGraphQLDataApiConsole": "GraphQL Data API console",
+        "openGraphQLSchemaApiConsole": "GraphQL Schema API console",
+        "viewSchema": "Schema",
         "dropCatalog": "Drop catalog",
         "renameCatalog": "Rename catalog",
         "replaceCatalog": "Replace catalog",
@@ -433,8 +433,8 @@
         "modify": "Modify"
       },
       "actions": {
-        "viewEntities": "View entities",
-        "viewSchema": "View schema",
+        "viewEntities": "Entities",
+        "viewSchema": "Schema",
         "dropCollection": "Drop collection",
         "renameCollection": "Rename collection"
       },
@@ -937,8 +937,8 @@
     }
   },
   "backupViewer": {
-    "path": "Backups",
     "button": {
+      "reloadBackups": "Reload backups",
       "backupCatalog": "Backup catalog"
     },
     "tasks": {
@@ -1001,6 +1001,68 @@
   "taskViewer": {
     "path": "Tasks",
     "tasksVisualizer": {
+      "button": {
+        "reload": "Reload tasks"
+      },
+      "task": {
+        "state": {
+          "queued": "queued",
+          "running": "running",
+          "finished": "finished",
+          "failed": "failed"
+        },
+        "trait": {
+          "canBeStarted": "can be started",
+          "canBeCancelled": "can be cancelled",
+          "needsToBeStopped": "needs to be stopped"
+        },
+        "button": {
+          "details": "Details",
+          "downloadFileResult": "Download result",
+          "textResult": "Result",
+          "exception": "Exception",
+          "cancel": "Manually cancel task"
+        },
+        "progress": {
+          "indeterminate": "running..."
+        },
+        "detail": {
+          "title": "Task",
+          "property": {
+            "id": "ID",
+            "type": "Type",
+            "name": "Name",
+            "state": "State",
+            "catalogName": "Catalog name",
+            "issued": "Issued",
+            "started": {
+              "label": "Started",
+              "notStarted": "<task hasn't started yet>"
+            },
+            "finished": {
+              "label": "Finished",
+              "notStarted": "<task hasn't yet been started>",
+              "notFinished": "<task hasn't yet been finished>"
+            },
+            "elapsed": {
+              "label": "Time elapsed",
+              "notStarted": "<task hasn't yet been started>"
+            },
+            "progress": "Progress",
+            "settings": "Settings",
+            "traits": "Traits"
+          }
+        },
+        "textResult": {
+          "title": "Task result"
+        },
+        "exception": {
+          "title": "Task exception"
+        },
+        "notification": {
+          "couldNotDownloadResultFile": "Could not download result file for task {taskName}: {reason}"
+        }
+      },
       "notification": {
         "couldNotLoadTaskStatuses": "Could not load task statuses: {reason}",
         "taskCancelled": "The {taskName} task has been cancelled.",

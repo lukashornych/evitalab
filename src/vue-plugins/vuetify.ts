@@ -50,6 +50,13 @@ export default createVuetify({
         },
         VListItem: {
             activeColor: 'bg-primary-dark',
+            VBtn: {
+                variant: 'text',
+                density: 'compact'
+            },
+            VChip: {
+                density: 'compact'
+            }
         },
         VChipGroup: {
             variant: 'plain'
@@ -81,6 +88,9 @@ export default createVuetify({
         },
         VExpansionPanels: {
             variant: 'accordion'
+        },
+        VProgressLinear: {
+            rounded: true
         }
     },
 })

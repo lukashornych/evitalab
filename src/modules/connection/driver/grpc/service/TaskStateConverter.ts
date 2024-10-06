@@ -1,9 +1,14 @@
 import { GrpcTaskSimplifiedState } from "../gen/GrpcEnums_pb"
 import { TaskState } from '@/modules/connection/model/task/TaskState'
-// todo lho refactor
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+
+/**
+ * Converter for converting task states between evitaLab representation and
+ * evitaDB gRPC representation
+ */
 export class TaskStateConverter {
 
-    convertTaskStates(taskStates: GrpcTaskSimplifiedState[]):TaskState[] {
+    convertTaskStates(taskStates: GrpcTaskSimplifiedState[]): TaskState[] {
         const statuses: TaskState[] = []
         for(const status of taskStates) {
             statuses.push(this.convertTaskState(status))
@@ -19,8 +24,8 @@ export class TaskStateConverter {
         return statuses;
     }
 
-    convertTaskStateToGrpc(status: TaskState):GrpcTaskSimplifiedState{
-        switch (status) {
+    convertTaskStateToGrpc(state: TaskState):GrpcTaskSimplifiedState{
+        switch (state) {
             case TaskState.Failed:
                 return GrpcTaskSimplifiedState.TASK_FAILED
             case TaskState.Finished:
@@ -29,11 +34,13 @@ export class TaskStateConverter {
                 return GrpcTaskSimplifiedState.TASK_QUEUED
             case TaskState.Running:
                 return GrpcTaskSimplifiedState.TASK_RUNNING
+            default:
+                throw new UnexpectedError(`Unsupported task state '${state}'.`)
         }
     }
 
-    convertTaskState(status: GrpcTaskSimplifiedState):TaskState{
-        switch(status){
+    convertTaskState(state: GrpcTaskSimplifiedState):TaskState{
+        switch(state){
             case GrpcTaskSimplifiedState.TASK_FAILED:
                 return TaskState.Failed
             case GrpcTaskSimplifiedState.TASK_FINISHED:
@@ -42,6 +49,8 @@ export class TaskStateConverter {
                 return TaskState.Queued
             case GrpcTaskSimplifiedState.TASK_RUNNING:
                 return TaskState.Running
+            default:
+                throw new UnexpectedError(`Unsupported task state '${state}'.`)
         }
     }
 }

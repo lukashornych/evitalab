@@ -4,7 +4,7 @@ import { DefineComponent, markRaw } from 'vue'
 import { TaskViewerTabParams } from '@/modules/task-viewer/model/TaskViewerTabParams'
 import TaskViewer from '@/modules/task-viewer/components/TaskViewer.vue'
 
-export class TaskViewerDefinition extends TabDefinition<TaskViewerTabParams, VoidTabData> {
+export class TaskViewerTabDefinition extends TabDefinition<TaskViewerTabParams, VoidTabData> {
     constructor(title: string, params: TaskViewerTabParams) {
         super(
             undefined,

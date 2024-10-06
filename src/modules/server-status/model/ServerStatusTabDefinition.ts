@@ -6,10 +6,10 @@ import ServerStatus from '@/modules/server-status/component/ServerStatus.vue'
 
 // todo docs
 export class ServerStatusTabDefinition extends TabDefinition<ServerStatusTabParams, VoidTabData> {
-    constructor(params: ServerStatusTabParams) {
+    constructor(title: string, params: ServerStatusTabParams) {
         super(
             undefined,
-            'Server status',
+            title,
             'mdi-database-outline',
             markRaw(ServerStatus as DefineComponent<any, any, any>),
             params,

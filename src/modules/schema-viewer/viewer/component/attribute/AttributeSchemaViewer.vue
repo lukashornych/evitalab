@@ -14,6 +14,7 @@ import { GlobalAttributeUniquenessType } from '@/modules/connection/model/schema
 import { NotApplicableValue } from '@/modules/base/model/properties-table/NotApplicableValue'
 import SchemaContainer from '@/modules/schema-viewer/viewer/component/SchemaContainer.vue'
 import NameVariants from '@/modules/schema-viewer/viewer/component/NameVariants.vue'
+import { computed } from 'vue'
 
 const { t } = useI18n()
 
@@ -25,87 +26,91 @@ const props = defineProps<{
 const globalAttribute = props.schema instanceof GlobalAttributeSchema
 const entityAttribute = props.schema instanceof EntityAttributeSchema
 
-const properties: Property[] = []
-properties.push({ name: t('schemaViewer.attribute.label.type'), value: new PropertyValue(new KeywordValue(props.schema.type.getIfSupported()!)) })
-properties.push({ name: t('schemaViewer.attribute.label.description'), value: new PropertyValue(props.schema.description.getIfSupported()!) })
-properties.push({ name: t('schemaViewer.attribute.label.deprecationNotice'), value: new PropertyValue(props.schema.deprecationNotice.getIfSupported()!) })
-if (entityAttribute) properties.push({ name: t('schemaViewer.attribute.label.representative'), value: new PropertyValue((props.schema as EntityAttributeSchema).representative.getOrElse(false) ) })
-switch (props.schema.uniquenessType.getIfSupported()!) {
-    case AttributeUniquenessType.NotUnique:
-        properties.push({
-            name: t('schemaViewer.attribute.label.unique'),
-            value: new PropertyValue(false)
-        });
-        break
-    case AttributeUniquenessType.UniqueWithinCollection:
-        properties.push({
-            name: t('schemaViewer.attribute.label.unique'),
-            value: new PropertyValue(new MultiValueFlagValue(
-                true,
-                t('schemaViewer.attribute.placeholder.uniqueWithinCollection'),
-                t('schemaViewer.attribute.help.uniqueWithinCollection')
+const properties = computed<Property[]>(() => {
+    const properties: Property[] = []
+
+    properties.push(new Property(t('schemaViewer.attribute.label.type'), new PropertyValue(new KeywordValue(props.schema.type.getIfSupported()!))))
+    properties.push(new Property(t('schemaViewer.attribute.label.description'), new PropertyValue(props.schema.description.getIfSupported()!)))
+    properties.push(new Property(t('schemaViewer.attribute.label.deprecationNotice'), new PropertyValue(props.schema.deprecationNotice.getIfSupported()!)))
+    if (entityAttribute) properties.push(new Property(t('schemaViewer.attribute.label.representative'), new PropertyValue((props.schema as EntityAttributeSchema).representative.getOrElse(false) )))
+    switch (props.schema.uniquenessType.getIfSupported()!) {
+        case AttributeUniquenessType.NotUnique:
+            properties.push(new Property(
+                t('schemaViewer.attribute.label.unique'),
+                new PropertyValue(false)
             ))
-        });
-        break
-    case AttributeUniquenessType.UniqueWithinCollectionLocale:
-        properties.push({
-            name: t('schemaViewer.attribute.label.unique'),
-            value: new PropertyValue(new MultiValueFlagValue(
-                true,
-                t('schemaViewer.attribute.placeholder.uniqueWithinLocaleOfCollection'),
-                t('schemaViewer.attribute.help.uniqueWithinLocaleOfCollection')
+            break
+        case AttributeUniquenessType.UniqueWithinCollection:
+            properties.push(new Property(
+                t('schemaViewer.attribute.label.unique'),
+                new PropertyValue(new MultiValueFlagValue(
+                    true,
+                    t('schemaViewer.attribute.placeholder.uniqueWithinCollection'),
+                    t('schemaViewer.attribute.help.uniqueWithinCollection')
+                ))
             ))
-        });
-        break
-}
-if (globalAttribute) {
-    switch ((props.schema as GlobalAttributeSchema).globalUniquenessType.getIfSupported()!) {
-        case GlobalAttributeUniquenessType.NotUnique:
-            properties.push({
-                name: t('schemaViewer.attribute.label.globallyUnique'),
-                value: new PropertyValue(false)
-            });
             break
-        case GlobalAttributeUniquenessType.UniqueWithinCatalog:
-            properties.push({
-                name: t('schemaViewer.attribute.label.globallyUnique'),
-                value: new PropertyValue(new MultiValueFlagValue(
+        case AttributeUniquenessType.UniqueWithinCollectionLocale:
+            properties.push(new Property(
+                t('schemaViewer.attribute.label.unique'),
+                new PropertyValue(new MultiValueFlagValue(
                     true,
-                    t('schemaViewer.attribute.placeholder.globallyUniqueWithinCatalog'),
-                    t('schemaViewer.attribute.help.globallyUniqueWithinCatalog')
+                    t('schemaViewer.attribute.placeholder.uniqueWithinLocaleOfCollection'),
+                    t('schemaViewer.attribute.help.uniqueWithinLocaleOfCollection')
                 ))
-            });
-            break
-        case GlobalAttributeUniquenessType.UniqueWithinCatalogLocale:
-            properties.push({
-                name: t('schemaViewer.attribute.label.globallyUnique'),
-                value: new PropertyValue(new MultiValueFlagValue(
-                    true,
-                    t('schemaViewer.attribute.placeholder.globallyUniqueWithinLocaleOfCatalog'),
-                    t('schemaViewer.attribute.help.globallyUniqueWithinLocaleOfCatalog')
-                ))
-            });
+            ))
             break
     }
-}
-if (props.schema.filterable.getOrElse(false)) {
-    properties.push({ name: t('schemaViewer.attribute.label.filterable'), value: new PropertyValue(true) })
-} else if ((globalAttribute && (props.schema as GlobalAttributeSchema).globalUniquenessType.getIfSupported()! != GlobalAttributeUniquenessType.NotUnique) ||
-    props.schema.uniquenessType.getIfSupported()! != AttributeUniquenessType.NotUnique) {
-    // implicitly filterable because of unique index
-    properties.push({
-        name: t('schemaViewer.attribute.label.filterable'),
-        value: new PropertyValue(new NotApplicableValue(t('schemaViewer.attribute.help.implicitlyFilterable')))
-    })
-} else {
-    properties.push({ name: t('schemaViewer.attribute.label.filterable'), value: new PropertyValue(false) })
-}
-properties.push({ name: t('schemaViewer.attribute.label.sortable'), value: new PropertyValue(props.schema.sortable.getOrElse(false)) })
-properties.push({ name: t('schemaViewer.attribute.label.localized'), value: new PropertyValue(props.schema.localized.getOrElse(false)) })
-properties.push({ name: t('schemaViewer.attribute.label.nullable'), value: new PropertyValue(props.schema.nullable.getOrElse(false)) })
-properties.push({ name: t('schemaViewer.attribute.label.defaultValue'), value: new PropertyValue(props.schema.defaultValue.getIfSupported()!) })
-properties.push({ name: t('schemaViewer.attribute.label.indexedDecimalPlaces'), value: new PropertyValue(props.schema.indexedDecimalPlaces.getIfSupported()!) })
+    if (globalAttribute) {
+        switch ((props.schema as GlobalAttributeSchema).globalUniquenessType.getIfSupported()!) {
+            case GlobalAttributeUniquenessType.NotUnique:
+                properties.push(new Property(
+                    t('schemaViewer.attribute.label.globallyUnique'),
+                    new PropertyValue(false)
+                ))
+                break
+            case GlobalAttributeUniquenessType.UniqueWithinCatalog:
+                properties.push(new Property(
+                    t('schemaViewer.attribute.label.globallyUnique'),
+                    new PropertyValue(new MultiValueFlagValue(
+                        true,
+                        t('schemaViewer.attribute.placeholder.globallyUniqueWithinCatalog'),
+                        t('schemaViewer.attribute.help.globallyUniqueWithinCatalog')
+                    ))
+                ))
+                break
+            case GlobalAttributeUniquenessType.UniqueWithinCatalogLocale:
+                properties.push(new Property(
+                    t('schemaViewer.attribute.label.globallyUnique'),
+                    new PropertyValue(new MultiValueFlagValue(
+                        true,
+                        t('schemaViewer.attribute.placeholder.globallyUniqueWithinLocaleOfCatalog'),
+                        t('schemaViewer.attribute.help.globallyUniqueWithinLocaleOfCatalog')
+                    ))
+                ))
+                break
+        }
+    }
+    if (props.schema.filterable.getOrElse(false)) {
+        properties.push(new Property(t('schemaViewer.attribute.label.filterable'), new PropertyValue(true)))
+    } else if ((globalAttribute && (props.schema as GlobalAttributeSchema).globalUniquenessType.getIfSupported()! != GlobalAttributeUniquenessType.NotUnique) ||
+        props.schema.uniquenessType.getIfSupported()! != AttributeUniquenessType.NotUnique) {
+        // implicitly filterable because of unique index
+        properties.push(new Property(
+            t('schemaViewer.attribute.label.filterable'),
+            new PropertyValue(new NotApplicableValue(t('schemaViewer.attribute.help.implicitlyFilterable')))
+        ))
+    } else {
+        properties.push(new Property(t('schemaViewer.attribute.label.filterable'), new PropertyValue(false) ))
+    }
+    properties.push(new Property(t('schemaViewer.attribute.label.sortable'), new PropertyValue(props.schema.sortable.getOrElse(false)) ))
+    properties.push(new Property(t('schemaViewer.attribute.label.localized'), new PropertyValue(props.schema.localized.getOrElse(false)) ))
+    properties.push(new Property(t('schemaViewer.attribute.label.nullable'), new PropertyValue(props.schema.nullable.getOrElse(false)) ))
+    properties.push(new Property(t('schemaViewer.attribute.label.defaultValue'), new PropertyValue(props.schema.defaultValue.getIfSupported()!) ))
+    properties.push(new Property(t('schemaViewer.attribute.label.indexedDecimalPlaces'), new PropertyValue(props.schema.indexedDecimalPlaces.getIfSupported()!) ))
 
+    return properties
+})
 </script>
 
 <template>

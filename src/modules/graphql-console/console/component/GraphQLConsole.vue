@@ -264,7 +264,7 @@ function focusResultVisualiser(): void {
                     icon
                     density="compact"
                 >
-                    <VIcon>mdi-information</VIcon>
+                    <VIcon>mdi-information-outline</VIcon>
                     <VTooltip activator="parent">
                         <!-- TODO implement -->
                         {{ t('graphQLConsole.button.instanceDetails') }}

@@ -17,7 +17,9 @@ export class ServerStatusTabFactory {
     }
 
     createNew(connection: Connection, executeOnOpen: boolean = false) {
-        return new ServerStatusTabDefinition(this.createTabParams(connection, executeOnOpen))
+        return new ServerStatusTabDefinition(
+            this.constructTitle(connection),
+            this.createTabParams(connection, executeOnOpen))
     }
 
     private createTabParams(connection: Connection, executeOnOpen: boolean = false): ServerStatusTabParams {
@@ -25,8 +27,17 @@ export class ServerStatusTabFactory {
     }
 
     restoreFromJson(paramsJson: TabParamsDto): ServerStatusTabDefinition {
+        // todo lho fix params retore
         const params: ServerStatusTabParamsDto = paramsJson as ServerStatusTabParams
-        return new ServerStatusTabDefinition(new ServerStatusTabParams(this.connectionService.getConnection(params.connection.id)))
+        return new ServerStatusTabDefinition(
+            this.constructTitle(params.connection),
+            new ServerStatusTabParams(this.connectionService.getConnection(params.connection.id))
+        )
+    }
+
+    private constructTitle(connection: Connection): string {
+        // todo i18n
+        return `Server [${connection.name}]`
     }
 }
 

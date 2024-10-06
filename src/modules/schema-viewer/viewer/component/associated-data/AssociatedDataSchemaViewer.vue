@@ -8,6 +8,7 @@ import { KeywordValue } from '@/modules/base/model/properties-table/KeywordValue
 import { Scalar } from '@/modules/connection/model/data-type/Scalar'
 import SchemaContainer from '@/modules/schema-viewer/viewer/component/SchemaContainer.vue'
 import NameVariants from '@/modules/schema-viewer/viewer/component/NameVariants.vue'
+import { computed } from 'vue'
 
 const { t } = useI18n()
 
@@ -16,13 +17,13 @@ const props = defineProps<{
     schema: AssociatedDataSchema
 }>()
 
-const properties: Property[] = [
-    { name: t('schemaViewer.associatedDatum.label.type'), value: new PropertyValue(new KeywordValue(props.schema.type.getIfSupported()!.replace(Scalar.ComplexDataObject, 'Object'))) },
-    { name: t('schemaViewer.associatedDatum.label.description'), value: new PropertyValue(props.schema.description.getIfSupported()!) },
-    { name: t('schemaViewer.associatedDatum.label.deprecationNotice'), value: new PropertyValue(props.schema.deprecationNotice.getIfSupported()!) },
-    { name: t('schemaViewer.associatedDatum.label.localized'), value: new PropertyValue(props.schema.localized.getOrElse(false)) },
-    { name: t('schemaViewer.associatedDatum.label.nullable'), value: new PropertyValue(props.schema.nullable.getOrElse(false)) }
-]
+const properties = computed<Property[]>(() => [
+    new Property(t('schemaViewer.associatedDatum.label.type'), new PropertyValue(new KeywordValue(props.schema.type.getIfSupported()!.replace(Scalar.ComplexDataObject, 'Object')))),
+    new Property(t('schemaViewer.associatedDatum.label.description'), new PropertyValue(props.schema.description.getIfSupported()!)),
+    new Property(t('schemaViewer.associatedDatum.label.deprecationNotice'), new PropertyValue(props.schema.deprecationNotice.getIfSupported()!)),
+    new Property(t('schemaViewer.associatedDatum.label.localized'), new PropertyValue(props.schema.localized.getOrElse(false))),
+    new Property(t('schemaViewer.associatedDatum.label.nullable'), new PropertyValue(props.schema.nullable.getOrElse(false)))
+])
 
 </script>
 

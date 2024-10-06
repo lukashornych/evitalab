@@ -28,8 +28,7 @@ const props = withDefaults(
         scrollable: false,
         dangerous: false,
         confirmButtonIcon: 'mdi-check',
-        reset: () => {},
-        maxWidth: '36rem'
+        reset: () => {}
     }
 )
 const emit = defineEmits<{

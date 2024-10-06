@@ -6,20 +6,24 @@ import { useI18n } from 'vue-i18n'
 import { VBtn, VIcon, VList } from 'vuetify/lib/components/index.mjs'
 import { TabComponentProps } from '@/modules/workspace/tab/model/TabComponentProps'
 import { VoidTabData } from '@/modules/workspace/tab/model/void/VoidTabData'
-import { backupTaskName, restoreTaskName, BackupViewerService, useBackupViewerService } from '../service/BackupViewerService'
+import { BackupViewerService, useBackupViewerService } from '../service/BackupViewerService'
 import { onUnmounted } from 'vue'
 import { BackupViewerTabParams } from '@/modules/backup-viewer/model/BackupViewerTabParams'
-import { FilesToFetch } from '@/modules/connection/model/file/FilesToFetch'
 import { TaskState } from '@/modules/connection/model/task/TaskState'
 import BackupCatalogDialog from '@/modules/backup-viewer/components/BackupCatalogDialog.vue'
 import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
 import VTabMainActionButton from '@/modules/base/component/VTabMainActionButton.vue'
-import { Command } from '@/modules/keymap/model/Command'
-import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
-import TasksVisualizer from '@/modules/task-viewer/components/TasksVisualizer.vue'
-import { File } from '@/modules/connection/model/file/File'
+import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
 import RestoreCatalogDialog from '@/modules/backup-viewer/components/RestoreCatalogDialog.vue'
+import { PaginatedList } from '@/modules/connection/model/PaginatedList'
+import { backupTaskName } from '@/modules/backup-viewer/model/BackupTask'
+import { restoreTaskName } from '@/modules/backup-viewer/model/RestoreTask'
+import TaskList from '@/modules/task-viewer/components/TaskList.vue'
+import VListItemDivider from '@/modules/base/component/VListItemDivider.vue'
+
+const shownTaskStates: TaskState[] = [TaskState.Running, TaskState.Queued, TaskState.Failed]
+const shownTaskTypes: string[] = [backupTaskName, restoreTaskName]
 
 const backupViewerService: BackupViewerService = useBackupViewerService()
 const toaster: Toaster = useToaster()
@@ -28,30 +32,29 @@ const { t } = useI18n()
 const emit = defineEmits<TabComponentEvents>()
 const props = defineProps<TabComponentProps<BackupViewerTabParams, VoidTabData>>()
 
-const path: List<string> = List([t('backupViewer.path')])
+const taskListRef = ref<typeof TaskList>()
+
+const path: List<string> = List([props.params.catalogName])
 
 const initialized = ref<boolean>(false)
 
-const backupsIntervalId = setInterval(loadBackupFiles, 2000)
-
-onUnmounted(() => {
-    clearInterval(backupsIntervalId)
-})
-
 const showBackupCatalogDialog = ref<boolean>(false)
 const showRestoreCatalogDialog = ref<boolean>(false)
-const restoreBackupFile = ref<File | undefined>()
+const restoreBackupFile = ref<ServerFile | undefined>()
 
 const backupsInPreparationPresent = ref<boolean>(false)
 const backupFilesLoaded = ref<boolean>(false)
-const backupFiles = ref<FilesToFetch>()
-const backupFileItems = computed<File[]>(() => {
+const backupFiles = ref<PaginatedList<ServerFile>>()
+const backupFileItems = computed<ServerFile[]>(() => {
     if (backupFiles.value == undefined) {
         return []
     }
-    return backupFiles.value.filesToFetch.toArray()
+    return backupFiles.value.data.toArray()
 })
 const pageNumber = ref<number>(1)
+watch(pageNumber, async () => {
+    await loadBackupFiles()
+})
 const pageCount = computed<number>(() => {
     if (backupFiles.value == undefined) {
         return 1
@@ -59,18 +62,8 @@ const pageCount = computed<number>(() => {
     return Math.ceil(backupFiles.value.totalNumberOfRecords / pageSize.value)
 })
 const pageSize = ref<number>(20)
-const file = ref<File>()
 
-loadBackupFiles().then(() => {
-    initialized.value = true
-    emit('ready')
-})
-
-watch(pageNumber, async () => {
-    await loadBackupFiles()
-})
-
-async function loadBackupFiles(): Promise<void> {
+async function loadBackupFiles(): Promise<boolean> {
     try {
         backupFiles.value = await backupViewerService.getBackupFiles(
             props.params.connection,
@@ -78,15 +71,43 @@ async function loadBackupFiles(): Promise<void> {
             pageSize.value
         )
         backupFilesLoaded.value = true
+        return true
     } catch (e: any) {
         toaster.error(t(
             'backupViewer.notification.couldNotLoadBackupFiles',
             { reason: e.message }
         ))
+        return false
     }
 }
+loadBackupFiles().then(() => {
+    initialized.value = true
+    emit('ready')
+})
 
-function showRestoreDialog(file: File): void {
+let canReloadBackupFiles: boolean = true
+async function reloadBackupFiles(manual: boolean = false): Promise<void> {
+    if (!canReloadBackupFiles && !manual) {
+        return
+    }
+
+    const loaded: boolean = await loadBackupFiles()
+    if (loaded) {
+        canReloadBackupFiles = true
+        setTimeout(reloadBackupFiles, 2000)
+    } else {
+        // we don't want to spam user server is down, user needs to refresh manually
+        canReloadBackupFiles = false
+    }
+}
+setTimeout(reloadBackupFiles, 2000)
+
+function reloadBackups(): void {
+    reloadBackupFiles(true)
+    taskListRef.value?.reload(true)
+}
+
+function showRestoreDialog(file: ServerFile): void {
     restoreBackupFile.value = file
     showRestoreCatalogDialog.value = true
 }
@@ -96,7 +117,8 @@ function hideRestoreDialog(): void {
     restoreBackupFile.value = undefined
 }
 
-async function downloadBackup(file: File){
+// todo lho download button instead
+async function downloadBackup(file: ServerFile){
     try {
         const blob = await backupViewerService.downloadBackup(props.params.connection, file.fileId)
 
@@ -116,87 +138,32 @@ async function downloadBackup(file: File){
         ))
     }
 }
-
-// todo lho prototype for local file restore
-// async function upload(){
-//     await backupViewerService.uploadBackup(props.params.connection, sendCatalogChunks())
-// }
-//
-// async function* sendCatalogChunks(): AsyncIterable<GrpcRestoreCatalogRequest> {
-//     if (!file.value) {
-//         return;
-//     }
-//
-//     const CHUNK_SIZE = 64 * 1024; // 64 KB chunks
-//     const fileReader = new FileReader();
-//     let offset = 0;
-//     const totalSize = file.value.size;
-//
-//     // Helper function to read a chunk
-//     function readChunk() {
-//         if (offset >= totalSize) {
-//             fileReader.abort();
-//             return;
-//         }
-//         const chunk = file.value!.slice(offset, offset + CHUNK_SIZE);
-//         fileReader.readAsArrayBuffer(chunk);
-//     }
-//
-//     // Promise to handle the load of one chunk
-//     const onLoadPromise = () => {
-//         return new Promise<Uint8Array>((resolve, reject) => {
-//             fileReader.onload = (event: ProgressEvent<FileReader>) => {
-//                 if (event.target?.result) {
-//                     const arrayBuffer = event.target.result as ArrayBuffer;
-//                     const fileChunk = new Uint8Array(arrayBuffer);
-//                     offset += CHUNK_SIZE;
-//                     resolve(fileChunk);
-//                 }
-//             };
-//
-//             fileReader.onerror = () => {
-//                 console.error('Error reading file.');
-//                 fileReader.abort();
-//                 reject(new Error('Error reading file'));
-//             };
-//         });
-//     };
-//
-//     try {
-//         while (offset < totalSize) {
-//             readChunk();
-//             const chunk = await onLoadPromise();
-//             yield new GrpcRestoreCatalogRequest({
-//                 catalogName: 'random',
-//                 backupFile: chunk
-//             }); // Yield the chunk here
-//         }
-//     } catch (error) {
-//         console.error('Error during file upload:', error);
-//     }
-// }
 </script>
 
 <template>
     <div v-if="initialized" class="backup-viewer">
         <VTabToolbar prepend-icon="mdi-cloud-download-outline" :path="path">
             <template #append>
-                <VTabMainActionButton @click="showBackupCatalogDialog = true">
-                    <VIcon>mdi-cloud-download-outline</VIcon>
-
+                <VBtn icon @click="reloadBackups">
+                    <VIcon>mdi-refresh</VIcon>
+                    <VTooltip activator="parent">
+                        {{ t('backupViewer.button.reloadBackups') }}
+                    </VTooltip>
+                </VBtn>
+                <VTabMainActionButton prepend-icon="mdi-cloud-download-outline" @click="showBackupCatalogDialog = true">
                     {{ t('backupViewer.button.backupCatalog') }}
                 </VTabMainActionButton>
             </template>
         </VTabToolbar>
 
         <div>
-            <!--        todo lho add restore tasks -->
-            <TasksVisualizer
+            <TaskList
+                ref="taskListRef"
                 v-show="backupsInPreparationPresent"
                 :connection="params.connection"
                 :subheader="t('backupViewer.tasks.title')"
-                :states="[TaskState.Running, TaskState.Queued]"
-                :task-types="[backupTaskName, restoreTaskName]"
+                :states="shownTaskStates"
+                :task-types="shownTaskTypes"
                 :page-size="5"
                 hideable-pagination
                 @update:active-jobs-present="backupsInPreparationPresent = $event"
@@ -249,6 +216,12 @@ async function downloadBackup(file: File){
                                 </VCol>
                             </VRow>
                         </VListItem>
+
+<!--                        todo lho implement -->
+<!--                        <VListItemDivider-->
+<!--                            v-if="index < taskStatusesItems.length - 1"-->
+<!--                            inset-->
+<!--                        />-->
                     </template>
 
                     <template #footer>

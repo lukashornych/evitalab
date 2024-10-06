@@ -40,7 +40,7 @@ function open() {
                 </span>
             </VListItemTitle>
             <VChipGroup>
-                <VChip v-for="flag in flags" :key="flag" density="compact">
+                <VChip v-for="flag in flags" :key="flag">
                     {{ flag.startsWith('_') ? t(`schemaViewer.section.flag.${flag.substring(1)}`) : flag }}
                 </VChip>
             </VChipGroup>

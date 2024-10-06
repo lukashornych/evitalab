@@ -11,6 +11,8 @@ import { useI18n } from 'vue-i18n'
 import { Property } from '@/modules/base/model/properties-table/Property'
 import { PropertyValue } from '@/modules/base/model/properties-table/PropertyValue'
 import VMarkdown from '@/modules/base/component/VMarkdown.vue'
+import { ProgressValue } from '@/modules/base/model/properties-table/ProgressValue'
+import { PlaceholderValue } from '@/modules/base/model/properties-table/PlaceholderValue'
 
 const { t } = useI18n()
 
@@ -30,7 +32,7 @@ const props = defineProps<{
     </span>
 
     <!-- actual value is string -->
-    <div v-else-if="typeof propertyValue.value === 'string'">
+    <div v-else-if="typeof propertyValue.value === 'string'" class="text-item">
         <VMarkdown :source="propertyValue.value.toString()"/>
     </div>
 
@@ -49,6 +51,7 @@ const props = defineProps<{
     <VChip
         v-else-if="propertyValue.value instanceof KeywordValue"
         :variant="propertyValue.action ? 'outlined' : 'plain'"
+        :color="propertyValue.value.color"
         dense
         @click="propertyValue.action?.(propertyValue.value!.value)"
     >
@@ -92,10 +95,30 @@ const props = defineProps<{
 
     <!-- actual value is range value -->
     <div v-else-if="propertyValue.value instanceof RangeValue">
-        <VChip dense>{{ propertyValue.value.toSerializable()[0] }}</VChip>
+        {{ propertyValue.value.toSerializable()[0] }}
         &nbsp;-&nbsp;
-        <VChip dense>{{ propertyValue.value.toSerializable()[1] }}</VChip>
+        {{ propertyValue.value.toSerializable()[1] }}
     </div>
+
+    <div
+        v-else-if="propertyValue.value instanceof ProgressValue"
+        class="progress-bar-container"
+    >
+        <VProgressLinear
+            :model-value="propertyValue.value.progress"
+            :indeterminate="propertyValue.value.indeterminate"
+        />
+        <div v-if="!propertyValue.value.indeterminate" class="progress-bar-value">
+            {{ propertyValue.value.progress }} %
+        </div>
+    </div>
+
+    <span
+        v-else-if="propertyValue.value instanceof PlaceholderValue"
+        class="text-disabled font-weight-light font-italic"
+    >
+        {{ propertyValue.value.value }}
+    </span>
 
     <!-- actual value is something else (number) -->
     <span v-else>
@@ -114,5 +137,17 @@ const props = defineProps<{
 </template>
 
 <style lang="scss" scoped>
-
+.progress-bar-container {
+    display: inline-grid;
+    grid-template-columns: 10rem min-content;
+    gap: 0.5rem;
+    align-items: center;
+}
+.progress-bar-value {
+    text-wrap: nowrap;
+}
+.text-item {
+    // seems like hack to keep markdown text from overflowing outside of the table
+    overflow-wrap: anywhere;
+}
 </style>

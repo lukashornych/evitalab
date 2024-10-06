@@ -1,0 +1,165 @@
+<script setup lang="ts">
+/**
+ * Visualizes server tasks
+ */
+
+import { Connection } from '@/modules/connection/model/Connection'
+import { TaskViewerService, useTaskViewerService } from '../services/TaskViewerService'
+import { computed, ref, watch } from 'vue'
+import { TaskState } from '@/modules/connection/model/task/TaskState'
+import { TaskStatus } from '@/modules/connection/model/task/TaskStatus'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { useI18n } from 'vue-i18n'
+import { PaginatedList } from '@/modules/connection/model/PaginatedList'
+import TaskListItem from '@/modules/task-viewer/components/TaskListItem.vue'
+import VListItemDivider from '@/modules/base/component/VListItemDivider.vue'
+
+const taskViewerService: TaskViewerService = useTaskViewerService()
+const toaster: Toaster = useToaster()
+const { t } = useI18n()
+
+const props = withDefaults(
+    defineProps<{
+        subheader?: string,
+        connection: Connection
+        states?: TaskState[]
+        taskTypes?: string[],
+        pageSize?: number,
+        hideablePagination?: boolean,
+    }>(),
+    {
+        pageSize: 20,
+        hideablePagination: false
+    }
+)
+const emit = defineEmits<{
+    (e: 'update:activeJobsPresent', value: boolean): void
+}>()
+
+const pageNumber = ref<number>(1)
+watch(pageNumber, async () => {
+    await loadTaskStatuses()
+})
+const pageCount = computed<number>(() => {
+    if (taskStatuses.value == undefined) {
+        return 1
+    }
+    return Math.ceil(taskStatuses.value.totalNumberOfRecords / props.pageSize)
+})
+
+const taskStatuses = ref<PaginatedList<TaskStatus>>()
+watch(taskStatuses, async (newValue) => {
+    if (newValue != undefined && newValue.data.size > 0) {
+        emit('update:activeJobsPresent', true)
+    } else {
+        emit('update:activeJobsPresent', false)
+    }
+})
+const taskStatusesItems = computed<TaskStatus[]>(() => {
+    if (taskStatuses.value == undefined) {
+        return []
+    }
+    return taskStatuses.value.data.toArray()
+})
+const loadedTaskStatuses = ref<boolean>(false)
+const shouldDisplayPagination = computed<boolean>(() => {
+    if (!props.hideablePagination) {
+        return true
+    }
+    if (taskStatuses.value == undefined) {
+        return false
+    }
+    return taskStatuses.value.totalNumberOfRecords > props.pageSize
+})
+
+async function loadTaskStatuses(): Promise<boolean> {
+    try {
+        const fetchedTaskStatuses: PaginatedList<TaskStatus> = await taskViewerService.getTaskStatuses(
+            props.connection,
+            pageNumber.value,
+            props.pageSize,
+            props.states,
+            props.taskTypes
+        )
+        taskStatuses.value = fetchedTaskStatuses
+
+        if (fetchedTaskStatuses.pageNumber > 1 && taskStatuses.value?.data.size === 0) {
+            pageNumber.value--
+        }
+        if (!loadedTaskStatuses.value) {
+            loadedTaskStatuses.value = true
+        }
+        return true
+    } catch (e: any) {
+        toaster.error(t(
+            'taskViewer.tasksVisualizer.notification.couldNotLoadTaskStatuses',
+            { reason: e.message }
+        ))
+        return false
+    }
+}
+loadTaskStatuses().then()
+
+let canReload: boolean = true
+async function reload(manual: boolean = false): Promise<void> {
+    if (!canReload && !manual) {
+        return
+    }
+
+    const loaded: boolean = await loadTaskStatuses()
+    if (loaded) {
+        canReload = true
+        setTimeout(reload, 2000)
+    } else {
+        // we don't want to spam user server is down, user needs to refresh manually
+        canReload = false
+    }
+}
+setTimeout(reload, 2000)
+
+defineExpose<{
+    reload(manual: boolean): Promise<void>
+}>({
+    reload
+})
+</script>
+
+<template>
+    <VList v-if="loadedTaskStatuses">
+        <VListSubheader v-if="subheader !== undefined && subheader.length > 0">
+            {{ subheader }}
+        </VListSubheader>
+
+        <VDataIterator
+            :items="taskStatusesItems"
+            :page="pageNumber"
+            :items-per-page="pageSize"
+        >
+            <template #default="{ items }">
+                <template v-for="(item, index) in items" :key="item.raw.taskId.code">
+                    <TaskListItem
+                        :connection="connection"
+                        :task="item.raw"
+                    />
+
+                    <VListItemDivider
+                        v-if="index < taskStatusesItems.length - 1"
+                        inset
+                    />
+                </template>
+            </template>
+
+            <template #footer>
+                <VPagination
+                    v-if="shouldDisplayPagination"
+                    v-model="pageNumber"
+                    :length="pageCount"
+                />
+            </template>
+        </VDataIterator>
+    </VList>
+</template>
+
+<style lang="scss" scoped>
+
+</style>

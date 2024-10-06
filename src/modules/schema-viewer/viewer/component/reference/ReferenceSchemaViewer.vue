@@ -16,7 +16,7 @@ import NameVariants from '@/modules/schema-viewer/viewer/component/NameVariants.
 import AttributeSchemaList from '@/modules/schema-viewer/viewer/component/attribute/AttributeSchemaList.vue'
 import { List } from 'immutable'
 import { ConnectionService, useConnectionService } from '@/modules/connection/service/ConnectionService'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { Immutable } from '@babel/types'
 import { NamingConvention } from '@/modules/connection/model/NamingConvetion'
 
@@ -30,107 +30,114 @@ const props = defineProps<{
     schema: ReferenceSchema
 }>()
 
-const properties: Property[] = []
-
-const loadedEntityNameVarinats = ref<boolean>()
+const loadedEntityNameVariants = ref<boolean>()
 const entityNameVariants = ref<Immutable.Map<NamingConvention, string>>()
 
-const loadedReferncedGroupyType = ref<boolean>()
+const loadedReferencedGroupType = ref<boolean>()
 const groupTypeNameVariants = ref<Immutable.Map<NamingConvention, string> | undefined>()
 
-properties.push({
-    name: t('schemaViewer.reference.label.description'),
-    value: new PropertyValue(props.schema.description.getIfSupported()!)
-})
-properties.push({
-    name: t('schemaViewer.reference.label.deprecationNotice'),
-    value: new PropertyValue(props.schema.deprecationNotice.getIfSupported()!)
-})
-properties.push({
-    name: t('schemaViewer.reference.label.cardinality'),
-    value: new PropertyValue(new KeywordValue(props.schema.cardinality.getIfSupported()!))
-})
-if (props.schema.referencedEntityTypeManaged.getOrElse(false)) {
-    properties.push({
-        name: t('schemaViewer.reference.label.referencedEntity'),
-        value: new PropertyValue(
-            new KeywordValue(props.schema.entityType.getIfSupported()!),
-            undefined,
-            item => {
-                workspaceService.createTab(schemaViewerTabFactory.createNew(
-                    props.dataPointer.connection,
-                    new EntitySchemaPointer(
-                        props.dataPointer.schemaPointer.catalogName,
-                        props.schema.entityType.getIfSupported()!
-                    )
-                ))
-            }
-        )
-    })
-} else {
-    properties.push({
-        name: t('schemaViewer.reference.label.referencedEntity'),
-        value: new PropertyValue(new KeywordValue(props.schema.entityType.getIfSupported()!))
-    })
-}
-properties.push({
-    name: t('schemaViewer.reference.label.referencedEntityManaged'),
-    value: new PropertyValue(props.schema.referencedEntityTypeManaged.getOrElse(false))
-})
-if (props.schema.referencedGroupType.getIfSupported() == undefined) {
-    properties.push({ name: t('schemaViewer.reference.label.referencedGroup'), value: new PropertyValue(undefined) })
-} else if (props.schema.referencedGroupTypeManaged.getOrElse(false)) {
-    properties.push({
-        name: t('schemaViewer.reference.label.referencedGroup'),
-        value: new PropertyValue(
-            props.schema.referencedGroupType ? new KeywordValue(props.schema.referencedGroupType.getIfSupported()!) : undefined,
-            undefined,
-            item => {
-                workspaceService.createTab(schemaViewerTabFactory.createNew(
-                    props.dataPointer.connection,
-                    new EntitySchemaPointer(
-                        props.dataPointer.schemaPointer.catalogName,
-                        props.schema.referencedGroupType.getIfSupported()! as string
-                    )
-                ))
-            }
-        )
-    })
-} else {
-    properties.push({
-        name: t('schemaViewer.reference.label.referencedGroup'),
-        value: new PropertyValue(props.schema.referencedGroupType ? new KeywordValue(props.schema.referencedGroupType.getIfSupported()!) : undefined)
-    })
-}
-properties.push({
-    name: t('schemaViewer.reference.label.referencedGroupManaged'),
-    value: new PropertyValue(props.schema.referencedGroupTypeManaged.getOrElse(false) || false)
-})
-properties.push({
-    name: t('schemaViewer.reference.label.indexed'),
-    value: new PropertyValue(props.schema.indexed.getIfSupported())
-})
-properties.push({
-    name: t('schemaViewer.reference.label.faceted'),
-    value: new PropertyValue(props.schema.faceted.getIfSupported())
+const properties = computed<Property[]>(() => {
+    const properties: Property[] = []
+
+    properties.push(new Property(
+        t('schemaViewer.reference.label.description'),
+        new PropertyValue(props.schema.description.getIfSupported()!)
+    ))
+    properties.push(new Property(
+        t('schemaViewer.reference.label.deprecationNotice'),
+        new PropertyValue(props.schema.deprecationNotice.getIfSupported()!)
+    ))
+    properties.push(new Property(
+        t('schemaViewer.reference.label.cardinality'),
+        new PropertyValue(new KeywordValue(props.schema.cardinality.getIfSupported()!))
+    ))
+    if (props.schema.referencedEntityTypeManaged.getOrElse(false)) {
+        properties.push(new Property(
+            t('schemaViewer.reference.label.referencedEntity'),
+            new PropertyValue(
+                new KeywordValue(props.schema.entityType.getIfSupported()!),
+                undefined,
+                item => {
+                    workspaceService.createTab(schemaViewerTabFactory.createNew(
+                        props.dataPointer.connection,
+                        new EntitySchemaPointer(
+                            props.dataPointer.schemaPointer.catalogName,
+                            props.schema.entityType.getIfSupported()!
+                        )
+                    ))
+                }
+            )
+        ))
+    } else {
+        properties.push(new Property(
+            t('schemaViewer.reference.label.referencedEntity'),
+            new PropertyValue(new KeywordValue(props.schema.entityType.getIfSupported()!))
+        ))
+    }
+    properties.push(new Property(
+        t('schemaViewer.reference.label.referencedEntityManaged'),
+        new PropertyValue(props.schema.referencedEntityTypeManaged.getOrElse(false))
+    ))
+    if (props.schema.referencedGroupType.getIfSupported() == undefined) {
+        properties.push(new Property(
+            t('schemaViewer.reference.label.referencedGroup'),
+            new PropertyValue(undefined)
+        ))
+    } else if (props.schema.referencedGroupTypeManaged.getOrElse(false)) {
+        properties.push(new Property(
+            t('schemaViewer.reference.label.referencedGroup'),
+            new PropertyValue(
+                props.schema.referencedGroupType ? new KeywordValue(props.schema.referencedGroupType.getIfSupported()!) : undefined,
+                undefined,
+                item => {
+                    workspaceService.createTab(schemaViewerTabFactory.createNew(
+                        props.dataPointer.connection,
+                        new EntitySchemaPointer(
+                            props.dataPointer.schemaPointer.catalogName,
+                            props.schema.referencedGroupType.getIfSupported()! as string
+                        )
+                    ))
+                }
+            )
+        ))
+    } else {
+        properties.push(new Property(
+            t('schemaViewer.reference.label.referencedGroup'),
+            new PropertyValue(props.schema.referencedGroupType ? new KeywordValue(props.schema.referencedGroupType.getIfSupported()!) : undefined)
+        ))
+    }
+    properties.push(new Property(
+        t('schemaViewer.reference.label.referencedGroupManaged'),
+        new PropertyValue(props.schema.referencedGroupTypeManaged.getOrElse(false) || false)
+    ))
+    properties.push(new Property(
+        t('schemaViewer.reference.label.indexed'),
+        new PropertyValue(props.schema.indexed.getIfSupported())
+    ))
+    properties.push(new Property(
+        t('schemaViewer.reference.label.faceted'),
+        new PropertyValue(props.schema.faceted.getIfSupported())
+    ))
+
+    return properties
 })
 
 !props.schema.referencedEntityTypeManaged.getOrThrow() ?
     localEntityTypeNameVariants() :
-    getEntityTypeNameVariants().then(() => loadedEntityNameVarinats.value = true)
+    getEntityTypeNameVariants().then(() => loadedEntityNameVariants.value = true)
 
 !props.schema.referencedGroupTypeManaged.getOrThrow() ?
     localReferenceGroupType() :
-    getGroupTypeNameVariants().then(() => loadedReferncedGroupyType.value = true)
+    getGroupTypeNameVariants().then(() => loadedReferencedGroupType.value = true)
 
 function localReferenceGroupType() {
     groupTypeNameVariants.value = props.schema.groupTypeNameVariants.getOrThrow()
-    loadedReferncedGroupyType.value = true
+    loadedReferencedGroupType.value = true
 }
 
 function localEntityTypeNameVariants() {
     entityNameVariants.value = props.schema.entityTypeNameVariants.getOrThrow()
-    loadedEntityNameVarinats.value = true
+    loadedEntityNameVariants.value = true
 }
 
 async function getEntityTypeNameVariants() {
@@ -155,12 +162,12 @@ function isGroupType(): boolean {
 
             <NameVariants
                 :prefix="t('schemaViewer.reference.label.referencedEntityNameVariants')"
-                v-if="loadedEntityNameVarinats && entityNameVariants"
+                v-if="loadedEntityNameVariants && entityNameVariants"
                 :name-variants="entityNameVariants"
             />
 
             <NameVariants
-                v-if="isGroupType() && loadedReferncedGroupyType && groupTypeNameVariants"
+                v-if="isGroupType() && loadedReferencedGroupType && groupTypeNameVariants"
                 :prefix="t('schemaViewer.reference.label.referencedGroupNameVariants')"
                 :name-variants="groupTypeNameVariants"
             />

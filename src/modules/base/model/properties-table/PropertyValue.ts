@@ -2,6 +2,8 @@ import { KeywordValue } from '@/modules/base/model/properties-table/KeywordValue
 import { MultiValueFlagValue } from '@/modules/base/model/properties-table/MultiValueFlagValue'
 import { NotApplicableValue } from '@/modules/base/model/properties-table/NotApplicableValue'
 import { RangeValue } from '@/modules/base/model/properties-table/RangeValue'
+import { ProgressValue } from '@/modules/base/model/properties-table/ProgressValue'
+import { PlaceholderValue } from '@/modules/base/model/properties-table/PlaceholderValue'
 
 /**
  * Holder of a single value of a property
@@ -39,3 +41,5 @@ type PropertyValueValue =
     | MultiValueFlagValue
     | NotApplicableValue
     | RangeValue
+    | ProgressValue
+    | PlaceholderValue

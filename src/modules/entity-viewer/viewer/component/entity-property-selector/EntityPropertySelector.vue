@@ -264,19 +264,6 @@ onUnmounted(() => {
         <template #title>
             {{ t('entityViewer.propertySelector.title') }}
         </template>
-        <template #title-actions>
-            <VBtn
-                icon
-                variant="flat"
-                density="compact"
-                @click="emit('update:modelValue', false)"
-            >
-                <VIcon>mdi-close</VIcon>
-                <VTooltip activator="parent">
-                    {{ t('common.button.close') }}
-                </VTooltip>
-            </VBtn>
-        </template>
 
         <template #default>
             <VTextField

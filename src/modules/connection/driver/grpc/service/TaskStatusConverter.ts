@@ -1,100 +1,117 @@
-import { GrpcFilesToFetchResponse, GrpcTaskStatusesResponse } from '../gen/GrpcEvitaManagementAPI_pb'
+import { GrpcTaskStatusesResponse } from '../gen/GrpcEvitaManagementAPI_pb'
 import { GrpcFile, GrpcTaskStatus } from '../gen/GrpcEvitaDataTypes_pb'
 import { Uuid } from '@/modules/connection/model/data-type/Uuid'
 import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateTime'
-import { List } from 'immutable'
+import Immutable from 'immutable'
 import { StringValue } from '@bufbuild/protobuf'
 import { TaskStateConverter } from './TaskStateConverter'
-import { TaskStatuses } from '@/modules/connection/model/task/TaskStatuses'
 import { TaskStatus } from '@/modules/connection/model/task/TaskStatus'
-import { File } from '@/modules/connection/model/file/File'
+import { PaginatedList } from '@/modules/connection/model/PaginatedList'
+import { TaskResult } from '@/modules/connection/model/task/TaskResult'
+import { TextTaskResult } from '@/modules/connection/model/task/TextTaskResult'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { ServerFileConverter } from '@/modules/connection/driver/grpc/service/ServerFileConverter'
+import { GrpcTaskTrait } from '@/modules/connection/driver/grpc/gen/GrpcEnums_pb'
+import { TaskTrait } from '@/modules/connection/model/task/TaskTrait'
+import { FileTaskResult } from '@/modules/connection/model/task/FileTaskResult'
 
-// todo lho refactor
+/**
+ * Converts task statuses between evitaLab representation and evitaDB's gRPC
+ * representation
+ */
 export class TaskStatusConverter {
     private readonly taskConverter: TaskStateConverter
+    private readonly serverFileConverter: ServerFileConverter
 
-    constructor(taskConverter: TaskStateConverter) {
+    constructor(taskConverter: TaskStateConverter, fileConverter: ServerFileConverter) {
         this.taskConverter = taskConverter
+        this.serverFileConverter = fileConverter
     }
 
-    convertJobs(job: GrpcTaskStatusesResponse): TaskStatuses {
-        const files: GrpcTaskStatus[] = job.taskStatus
-        const newFiles: TaskStatus[] = []
-
-        for (const oldFile of files) {
-                newFiles.push(
-                    this.convertJob(oldFile)
-                )
+    convertTaskStatuses(grpcTaskStatuses: GrpcTaskStatusesResponse): PaginatedList<TaskStatus> {
+        const taskStatuses: TaskStatus[] = []
+        for (const grpcTaskStatus of grpcTaskStatuses.taskStatus) {
+            taskStatuses.push(this.convert(grpcTaskStatus))
         }
 
-        return new TaskStatuses(
-            job.pageSize,
-            job.pageNumber,
-            List(newFiles),
-            job.totalNumberOfRecords
+        return new PaginatedList(
+            Immutable.List(taskStatuses),
+            grpcTaskStatuses.pageNumber,
+            grpcTaskStatuses.pageSize,
+            grpcTaskStatuses.totalNumberOfRecords
         )
     }
 
-    convertFilesToFetch(files: GrpcFilesToFetchResponse){
-
-    }
-
-    convertJob(oldFile: GrpcTaskStatus): TaskStatus {
-        const file = this.convertResultFile(
-            oldFile.result.case,
-            oldFile.result.value
+    convert(grpcTaskStatus: GrpcTaskStatus): TaskStatus {
+        const result: TaskResult | undefined = this.convertResult(
+            grpcTaskStatus.result.case,
+            grpcTaskStatus.result.value
         )
         return new TaskStatus(
-            oldFile.taskType,
-            oldFile.taskName,
+            grpcTaskStatus.taskType,
+            grpcTaskStatus.taskName,
             Uuid.createUUID(
-                oldFile.taskId?.mostSignificantBits!,
-                oldFile.taskId?.leastSignificantBits!
+                grpcTaskStatus.taskId!.mostSignificantBits!,
+                grpcTaskStatus.taskId!.leastSignificantBits!
             ),
-            oldFile.catalogName!,
+            grpcTaskStatus.catalogName,
             new OffsetDateTime(
-                oldFile.issued?.timestamp,
-                oldFile.issued?.offset
+                grpcTaskStatus.issued!.timestamp,
+                grpcTaskStatus.issued!.offset
             ),
-            new OffsetDateTime(
-                oldFile.started?.timestamp,
-                oldFile.started?.offset
-            ),
-            new OffsetDateTime(
-                oldFile.finished?.timestamp,
-                oldFile.finished?.offset
-            ),
-            oldFile.progress,
-            oldFile.settings!,
-            file,
-            oldFile.exception!,
-            this.taskConverter.convertTaskState(oldFile.simplifiedState))
+            grpcTaskStatus.started != undefined
+                ? new OffsetDateTime(
+                    grpcTaskStatus.started.timestamp,
+                    grpcTaskStatus.started.offset
+                )
+                : undefined,
+            grpcTaskStatus.finished != undefined
+                ? new OffsetDateTime(
+                    grpcTaskStatus.finished?.timestamp,
+                    grpcTaskStatus.finished?.offset
+                )
+                : undefined,
+            grpcTaskStatus.progress,
+            grpcTaskStatus.settings!,
+            result,
+            grpcTaskStatus.exception,
+            this.taskConverter.convertTaskState(grpcTaskStatus.simplifiedState),
+            this.convertTaskTraits(grpcTaskStatus.trait)
+        )
     }
 
-    private convertResultFile(
+    private convertResult(
         caseName: 'text' | 'file' | undefined,
         input: StringValue | GrpcFile | undefined
-    ): string | File | undefined {
-        if (caseName === undefined || input === undefined) return undefined
-        if (caseName === 'text') {
-            return (input as StringValue).value
-        } else {
-            const file = input as GrpcFile
-            return new File(
-                Uuid.createUUID(
-                    file.fileId?.mostSignificantBits!,
-                    file.fileId?.leastSignificantBits!
-                ),
-                file.name,
-                file.description!,
-                file.contentType,
-                file.totalSizeInBytes,
-                new OffsetDateTime(
-                    file.created?.timestamp,
-                    file.created?.offset
-                ),
-                file.origin!
+    ): TaskResult | undefined {
+        if (caseName == undefined || input == undefined) {
+            return undefined
+        }
+        switch (caseName) {
+            case 'text': return new TextTaskResult((input as StringValue).value)
+            case 'file': return new FileTaskResult(
+                this.serverFileConverter.convert(input as GrpcFile)
             )
+            default:
+                throw new UnexpectedError(`Unsupported result type '${caseName}'.`)
+        }
+    }
+
+    private convertTaskTraits(grpcTaskTraits: GrpcTaskTrait[]): Immutable.Set<TaskTrait> {
+        const taskTraits: TaskTrait[] = []
+        for (const grpcTaskTrait of grpcTaskTraits) {
+            taskTraits.push(this.convertTaskTrait(grpcTaskTrait))
+        }
+        return Immutable.Set(taskTraits)
+    }
+
+    private convertTaskTrait(grpcTaskTrait: GrpcTaskTrait): TaskTrait {
+        switch (grpcTaskTrait) {
+            case GrpcTaskTrait.TASK_CAN_BE_STARTED: return TaskTrait.CanBeStarted
+            case GrpcTaskTrait.TASK_CAN_BE_CANCELLED: return TaskTrait.CanBeCancelled
+            case GrpcTaskTrait.TASK_NEEDS_TO_BE_STOPPED: return TaskTrait.NeedsToBeStopped
+            default:
+                throw new UnexpectedError(`Unsupported task trait '${grpcTaskTrait}'.`)
         }
     }
 }

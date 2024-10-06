@@ -1,8 +1,7 @@
-import { Connection } from "@/modules/connection/model/Connection";
-import { TabDataDto } from "@/modules/workspace/tab/model/TabDataDto";
 import { TabParamsDto } from '@/modules/workspace/tab/model/TabParamsDto'
+import { ConnectionId } from '@/modules/connection/model/ConnectionId'
 
 export interface BackupViewerTabParamsDto extends TabParamsDto {
-    readonly connection: Connection
+    readonly connectionId: ConnectionId
     readonly catalogName: string
 }

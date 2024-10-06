@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { SchemaViewerDataPointer } from '@/modules/schema-viewer/viewer/model/SchemaViewerDataPointer'
 import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
@@ -21,23 +21,23 @@ const props = defineProps<{
     schema: EntitySchema
 }>()
 
-const baseProperties = ref<Property[]>([
-    { name: t('schemaViewer.entity.label.version'), value: new PropertyValue(props.schema.version.getIfSupported()!) },
-    { name: t('schemaViewer.entity.label.description'), value: new PropertyValue(props.schema.description.getIfSupported()!) },
-    { name: t('schemaViewer.entity.label.deprecationNotice'), value: new PropertyValue(props.schema.deprecationNotice.getIfSupported()!) },
-    { name: t('schemaViewer.entity.label.locales'), value: props.schema.locales.getOrElse(List()).map(locale => new PropertyValue(new KeywordValue(locale.toString()))) },
-    { name: t('schemaViewer.entity.label.currencies'), value: List(props.schema.currencies.getIfSupported()!.values()).map(currency => new PropertyValue(new KeywordValue(currency.toString()))) },
-    { name: t('schemaViewer.entity.label.generatedPrimaryKey'), value: new PropertyValue(props.schema.withGeneratedPrimaryKey.getOrElse(false)) },
-    { name: t('schemaViewer.entity.label.hierarchical'), value: new PropertyValue(props.schema.withHierarchy.getOrElse(false)) },
-    { name: t('schemaViewer.entity.label.prices'), value: new PropertyValue(props.schema.withPrice.getOrElse(false)) },
-    { name: t('schemaViewer.entity.label.indexedDecimalPlaces'), value: new PropertyValue(props.schema.indexedPricePlaces.getIfSupported()!) },
+const properties = computed<Property[]>(() => [
+    new Property(t('schemaViewer.entity.label.version'), new PropertyValue(props.schema.version.getIfSupported()!)),
+    new Property(t('schemaViewer.entity.label.description'), new PropertyValue(props.schema.description.getIfSupported()!)),
+    new Property(t('schemaViewer.entity.label.deprecationNotice'), new PropertyValue(props.schema.deprecationNotice.getIfSupported()!)),
+    new Property(t('schemaViewer.entity.label.locales'), props.schema.locales.getOrElse(List()).map(locale => new PropertyValue(new KeywordValue(locale.toString())))),
+    new Property(t('schemaViewer.entity.label.currencies'), List(props.schema.currencies.getIfSupported()!.values()).map(currency => new PropertyValue(new KeywordValue(currency.toString())))),
+    new Property(t('schemaViewer.entity.label.generatedPrimaryKey'), new PropertyValue(props.schema.withGeneratedPrimaryKey.getOrElse(false))),
+    new Property(t('schemaViewer.entity.label.hierarchical'), new PropertyValue(props.schema.withHierarchy.getOrElse(false))),
+    new Property(t('schemaViewer.entity.label.prices'), new PropertyValue(props.schema.withPrice.getOrElse(false))),
+    new Property(t('schemaViewer.entity.label.indexedDecimalPlaces'), new PropertyValue(props.schema.indexedPricePlaces.getIfSupported()!)),
     // todo lho i18n for items
-    { name: t('schemaViewer.entity.label.evolutionModes'), value: props.schema.evolutionMode.getOrElse(List()).map(mode => new PropertyValue(new KeywordValue(mode))) }
+    new Property(t('schemaViewer.entity.label.evolutionModes'), props.schema.evolutionMode.getOrElse(List()).map(mode => new PropertyValue(new KeywordValue(mode))))
 ])
 </script>
 
 <template>
-    <SchemaContainer :properties="baseProperties">
+    <SchemaContainer :properties="properties">
         <template #nested-details>
             <NameVariants :name-variants="schema.nameVariants.getIfSupported()!" />
 

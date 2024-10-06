@@ -19,7 +19,7 @@ const props = withDefaults(defineProps<{
             class="properties-table__row"
         >
             <td class="text-medium-emphasis">{{ property.name }}</td>
-            <td class="d-flex align-center">
+            <td>
                 <VPropertiesTableValue :property="property" :property-value="property.value" />
             </td>
         </tr>

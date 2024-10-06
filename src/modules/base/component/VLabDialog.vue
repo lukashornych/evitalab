@@ -2,11 +2,14 @@
  * Custom base dialog component for all evitaLab dialogs
  */
 import VCardTitleWithActions from '@/modules/base/component/VCardTitleWithActions.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = withDefaults(
     defineProps<{
         modelValue: boolean,
-        maxWidth: string | number,
+        maxWidth?: string | number,
         persistent?: boolean,
         scrollable?: boolean
     }>(),
@@ -40,7 +43,20 @@ const emit = defineEmits<{
                 </template>
 
                 <template #actions>
-                    <slot name="title-actions" />
+                    <slot name="title-actions">
+                        <VBtn
+                            v-if="!persistent"
+                            icon
+                            variant="flat"
+                            density="compact"
+                            @click="emit('update:modelValue', false)"
+                        >
+                            <VIcon>mdi-close</VIcon>
+                            <VTooltip activator="parent">
+                                {{ t('common.button.close') }}
+                            </VTooltip>
+                        </VBtn>
+                    </slot>
                 </template>
             </VCardTitleWithActions>
 

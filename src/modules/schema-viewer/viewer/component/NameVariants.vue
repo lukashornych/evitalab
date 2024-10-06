@@ -6,6 +6,7 @@ import { NamingConvention } from '@/modules/connection/model/NamingConvetion'
 import { Map } from 'immutable'
 import SchemaContainerSection from '@/modules/schema-viewer/viewer/component/SchemaContainerSection.vue'
 import VPropertiesTable from '@/modules/base/component/VPropertiesTable.vue'
+import { computed } from 'vue'
 
 const { t } = useI18n()
 
@@ -16,17 +17,18 @@ const props = withDefaults(defineProps<{
     prefix: ''
 })
 
-const name = props.prefix
-    ? t('schemaViewer.nameVariants.prefixedTitle', { prefix: props.prefix })
-    : t('schemaViewer.nameVariants.title')
+const name = computed<string>(() =>
+    props.prefix
+        ? t('schemaViewer.nameVariants.prefixedTitle', { prefix: props.prefix })
+        : t('schemaViewer.nameVariants.title'))
 
-const properties: Property[] = [
-    { name: t('schemaViewer.nameVariants.label.camelCase'), value: new PropertyValue(props.nameVariants.get(NamingConvention.CamelCase)) },
-    { name: t('schemaViewer.nameVariants.label.kebabCase'), value: new PropertyValue(props.nameVariants.get(NamingConvention.KebabCase)) },
-    { name: t('schemaViewer.nameVariants.label.pascalCase'), value: new PropertyValue(props.nameVariants.get(NamingConvention.PascalCase)) },
-    { name: t('schemaViewer.nameVariants.label.snakeCase'), value: new PropertyValue(props.nameVariants.get(NamingConvention.SnakeCase)) },
-    { name: t('schemaViewer.nameVariants.label.upperSnakeCase'), value: new PropertyValue(props.nameVariants.get(NamingConvention.UpperSnakeCase)) }
-]
+const properties = computed<Property[]>(() => [
+    new Property(t('schemaViewer.nameVariants.label.camelCase'), new PropertyValue(props.nameVariants.get(NamingConvention.CamelCase))),
+    new Property(t('schemaViewer.nameVariants.label.kebabCase'), new PropertyValue(props.nameVariants.get(NamingConvention.KebabCase))),
+    new Property(t('schemaViewer.nameVariants.label.pascalCase'), new PropertyValue(props.nameVariants.get(NamingConvention.PascalCase))),
+    new Property(t('schemaViewer.nameVariants.label.snakeCase'), new PropertyValue(props.nameVariants.get(NamingConvention.SnakeCase))),
+    new Property(t('schemaViewer.nameVariants.label.upperSnakeCase'), new PropertyValue(props.nameVariants.get(NamingConvention.UpperSnakeCase)))
+])
 </script>
 
 <template>

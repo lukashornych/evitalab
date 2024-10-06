@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { computed, ref } from 'vue'
-import { File } from '@/modules/connection/model/file/File'
+import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
 import { Connection } from '@/modules/connection/model/Connection'
 import { BackupViewerService, useBackupViewerService } from '@/modules/backup-viewer/service/BackupViewerService'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
@@ -15,7 +15,7 @@ const { t } = useI18n()
 const props = defineProps<{
     modelValue: boolean,
     connection: Connection,
-    file: File
+    file: ServerFile
 }>()
 const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void

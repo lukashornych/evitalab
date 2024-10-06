@@ -7,8 +7,14 @@ export class KeywordValue {
      */
     readonly value: string
 
-    constructor(value: string) {
+    /**
+     * Optional color of the keyword
+     */
+    readonly color?: string
+
+    constructor(value: string, color?: string) {
         this.value = value
+        this.color = color
     }
 
     toString() {

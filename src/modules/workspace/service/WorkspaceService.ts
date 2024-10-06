@@ -26,6 +26,11 @@ import { mandatoryInject } from '@/utils/reactivity'
 import { ServerStatusTabFactory } from '@/modules/server-status/service/ServerStatusTabFactory'
 import { ServerStatusTabDefinition } from '@/modules/server-status/model/ServerStatusTabDefinition'
 import { TaskViewerTabFactory } from '@/modules/task-viewer/services/TaskViewerTabFactory'
+import { TaskViewerTabDefinition } from '@/modules/task-viewer/model/TaskViewerTabDefinition'
+import { BackupViewerTabDefinition } from '@/modules/backup-viewer/model/BackupViewerTabDefinition'
+import { JfrViewerTabDefinition } from '@/modules/jfr-viewer/model/JfrViewerTabDefinition'
+import { BackupViewerTabFactory } from '@/modules/backup-viewer/service/BackupViewerTabFactory'
+import { JfrViewerTabFactory } from '@/modules/jfr-viewer/service/JfrViewerTabFactory'
 
 const openedTabsStorageKey: string = 'openedTabs'
 const tabHistoryStorageKey: string = 'tabHistory'
@@ -45,7 +50,9 @@ export class WorkspaceService {
     private readonly schemaViewerTabFactory: SchemaViewerTabFactory
     private readonly keymapViewerTabFactory: KeymapViewerTabFactory
     private readonly serverStatusTabFactory: ServerStatusTabFactory
-    private readonly jobTabFactory: TaskViewerTabFactory
+    private readonly taskViewerTabFactory: TaskViewerTabFactory
+    private readonly backupViewerTabFactory: BackupViewerTabFactory
+    private readonly jfrViewerTabFactory: JfrViewerTabFactory
 
     constructor(store: WorkspaceStore,
                 labStorage: LabStorage,
@@ -55,7 +62,9 @@ export class WorkspaceService {
                 schemaViewerTabFactory: SchemaViewerTabFactory,
                 keymapViewerTabFactory: KeymapViewerTabFactory,
                 serverStatusTabFactory: ServerStatusTabFactory,
-                jobTabFactory: TaskViewerTabFactory) {
+                taskViewerTabFactory: TaskViewerTabFactory,
+                backupViewerTabFactory: BackupViewerTabFactory,
+                jfrViewerTabFactory: JfrViewerTabFactory) {
         this.store = store
         this.labStorage = labStorage
         this.entityViewerTabFactory = entityViewerTabFactory
@@ -64,7 +73,9 @@ export class WorkspaceService {
         this.schemaViewerTabFactory = schemaViewerTabFactory
         this.keymapViewerTabFactory = keymapViewerTabFactory
         this.serverStatusTabFactory = serverStatusTabFactory
-        this.jobTabFactory = jobTabFactory
+        this.taskViewerTabFactory = taskViewerTabFactory
+        this.backupViewerTabFactory = backupViewerTabFactory
+        this.jfrViewerTabFactory = jfrViewerTabFactory
     }
 
     getTabDefinitions(): TabDefinition<any, any>[] {
@@ -159,6 +170,12 @@ export class WorkspaceService {
                         return this.keymapViewerTabFactory.createNew()
                     case TabType.ServerStatus:
                         return this.serverStatusTabFactory.restoreFromJson(storedTabObject.tabParams)
+                    case TabType.TaskViewer:
+                        return this.taskViewerTabFactory.restoreFromJson(storedTabObject.tabParams)
+                    case TabType.BackupViewer:
+                        return this.backupViewerTabFactory.restoreFromJson(storedTabObject.tabParams)
+                    case TabType.JfrViewer:
+                        return this.jfrViewerTabFactory.restoreFromJson(storedTabObject.tabParams)
                     default:
                         throw new UnexpectedError(`Unsupported stored tab type '${storedTabObject.tabType}'.`)
                 }
@@ -191,8 +208,14 @@ export class WorkspaceService {
                     tabType = TabType.SchemaViewer
                 } else if (tabRequest instanceof KeymapViewerTabDefinition) {
                     tabType = TabType.KeymapViewer
-                } else if(tabRequest instanceof ServerStatusTabDefinition) {
+                } else if (tabRequest instanceof ServerStatusTabDefinition) {
                     tabType = TabType.ServerStatus
+                } else if (tabRequest instanceof TaskViewerTabDefinition) {
+                    tabType = TabType.TaskViewer
+                } else if (tabRequest instanceof BackupViewerTabDefinition) {
+                    tabType = TabType.BackupViewer
+                } else if (tabRequest instanceof JfrViewerTabDefinition) {
+                    tabType = TabType.JfrViewer
                 } else {
                     console.info(undefined, `Unsupported tab type '${tabRequest.constructor.name}'. Not storing for next session.`)
                     return undefined

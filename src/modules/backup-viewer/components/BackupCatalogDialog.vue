@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateTime'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import VFormDialog from '@/modules/base/component/VFormDialog.vue'
 import { DateTime } from 'luxon'

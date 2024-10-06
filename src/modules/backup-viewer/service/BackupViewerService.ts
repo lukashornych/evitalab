@@ -10,16 +10,15 @@ import {
 import { ConnectionService } from '@/modules/connection/service/ConnectionService'
 import { CatalogVersionAtResponse } from '@/modules/connection/model/CatalogVersionAtResponse'
 import { TaskStatus } from '@/modules/connection/model/task/TaskStatus'
-import { FilesToFetch } from '@/modules/connection/model/file/FilesToFetch'
 import { ClassifierValidationErrorType } from '@/modules/connection/model/data-type/ClassifierValidationErrorType'
 import { EvitaDBDriver } from '@/modules/connection/driver/EvitaDBDriver'
 import { ClassifierType } from '@/modules/connection/model/data-type/ClassifierType'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { PaginatedList } from '@/modules/connection/model/PaginatedList'
+import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
+import { backupTaskName } from '@/modules/backup-viewer/model/BackupTask'
 
 export const backupViewerServiceInjectionKey: InjectionKey<BackupViewerService> = Symbol('backupViewerService')
-
-export const backupTaskName: string = 'BackupTask'
-export const restoreTaskName: string = 'RestoreTask'
 
 export class BackupViewerService {
     private readonly connectionService: ConnectionService
@@ -55,7 +54,7 @@ export class BackupViewerService {
         connection: Connection,
         pageNumber: number,
         pageSize: number
-    ): Promise<FilesToFetch> {
+    ): Promise<PaginatedList<ServerFile>> {
         const driver = await this.connectionService.getDriver(connection)
         return await driver.getFilesToFetch(connection, backupTaskName, pageNumber, pageSize)
     }
@@ -97,6 +96,67 @@ export class BackupViewerService {
         }
         return false
     }
+
+
+// todo lho prototype for local file restore
+// async function upload(){
+//     await backupViewerService.uploadBackup(props.params.connection, sendCatalogChunks())
+// }
+//
+// async function* sendCatalogChunks(): AsyncIterable<GrpcRestoreCatalogRequest> {
+//     if (!file.value) {
+//         return;
+//     }
+//
+//     const CHUNK_SIZE = 64 * 1024; // 64 KB chunks
+//     const fileReader = new FileReader();
+//     let offset = 0;
+//     const totalSize = file.value.size;
+//
+//     // Helper function to read a chunk
+//     function readChunk() {
+//         if (offset >= totalSize) {
+//             fileReader.abort();
+//             return;
+//         }
+//         const chunk = file.value!.slice(offset, offset + CHUNK_SIZE);
+//         fileReader.readAsArrayBuffer(chunk);
+//     }
+//
+//     // Promise to handle the load of one chunk
+//     const onLoadPromise = () => {
+//         return new Promise<Uint8Array>((resolve, reject) => {
+//             fileReader.onload = (event: ProgressEvent<FileReader>) => {
+//                 if (event.target?.result) {
+//                     const arrayBuffer = event.target.result as ArrayBuffer;
+//                     const fileChunk = new Uint8Array(arrayBuffer);
+//                     offset += CHUNK_SIZE;
+//                     resolve(fileChunk);
+//                 }
+//             };
+//
+//             fileReader.onerror = () => {
+//                 console.error('Error reading file.');
+//                 fileReader.abort();
+//                 reject(new Error('Error reading file'));
+//             };
+//         });
+//     };
+//
+//     try {
+//         while (offset < totalSize) {
+//             readChunk();
+//             const chunk = await onLoadPromise();
+//             yield new GrpcRestoreCatalogRequest({
+//                 catalogName: 'random',
+//                 backupFile: chunk
+//             }); // Yield the chunk here
+//         }
+//     } catch (error) {
+//         console.error('Error during file upload:', error);
+//     }
+// }
+
 }
 
 export const useBackupViewerService = (): BackupViewerService => {

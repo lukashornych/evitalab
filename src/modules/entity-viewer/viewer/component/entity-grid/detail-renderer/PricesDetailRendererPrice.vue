@@ -26,15 +26,42 @@ const properties = computed<Property[]>(() => {
     )
 
     return [
-        { name: t('entityViewer.grid.priceRenderer.price.label.priceId'), value: new PropertyValue(props.price.priceId) },
-        { name: t('entityViewer.grid.priceRenderer.price.label.priceList'), value: new PropertyValue(new KeywordValue(props.price.priceList)) },
-        { name: t('entityViewer.grid.priceRenderer.price.label.currency'), value: new PropertyValue(new KeywordValue(props.price.currency.code)) },
-        { name: t('entityViewer.grid.priceRenderer.price.label.innerRecordId'), value: new PropertyValue(props.price.innerRecordId) },
-        { name: t('entityViewer.grid.priceRenderer.price.label.sellable'), value: new PropertyValue(props.price.sellable) },
-        { name: t('entityViewer.grid.priceRenderer.price.label.validity'), value: new PropertyValue(new RangeValue(props.price.validity ?? undefined)) },
-        { name: t('entityViewer.grid.priceRenderer.price.label.priceWithoutTax'), value: new PropertyValue(priceFormatter.format(parseFloat(props.price.priceWithoutTax?.value ?? '0'))) },
-        { name: t('entityViewer.grid.priceRenderer.price.label.priceWithTax'), value: new PropertyValue(priceFormatter.format(parseFloat(props.price.priceWithTax.value ?? '0'))) },
-        { name: t('entityViewer.grid.priceRenderer.price.label.taxRate'), value: new PropertyValue(new KeywordValue(taxFormatter.format(parseFloat(props.price.taxRate?.value ?? '0') / 100))) }
+        new Property(
+            t('entityViewer.grid.priceRenderer.price.label.priceId'),
+            new PropertyValue(props.price.priceId)
+        ),
+        new Property(
+            t('entityViewer.grid.priceRenderer.price.label.priceList'),
+            new PropertyValue(new KeywordValue(props.price.priceList))
+        ),
+        new Property(
+            t('entityViewer.grid.priceRenderer.price.label.currency'),
+            new PropertyValue(new KeywordValue(props.price.currency.code))
+        ),
+        new Property(
+            t('entityViewer.grid.priceRenderer.price.label.innerRecordId'),
+            new PropertyValue(props.price.innerRecordId)
+        ),
+        new Property(
+            t('entityViewer.grid.priceRenderer.price.label.sellable'),
+            new PropertyValue(props.price.sellable)
+        ),
+        new Property(
+            t('entityViewer.grid.priceRenderer.price.label.validity'),
+            new PropertyValue(new RangeValue(props.price.validity ?? undefined))
+        ),
+        new Property(
+            t('entityViewer.grid.priceRenderer.price.label.priceWithoutTax'),
+            new PropertyValue(priceFormatter.format(parseFloat(props.price.priceWithoutTax?.value ?? '0')))
+        ),
+        new Property(
+            t('entityViewer.grid.priceRenderer.price.label.priceWithTax'),
+            new PropertyValue(priceFormatter.format(parseFloat(props.price.priceWithTax.value ?? '0')))
+        ),
+        new Property(
+            t('entityViewer.grid.priceRenderer.price.label.taxRate'),
+            new PropertyValue(new KeywordValue(taxFormatter.format(parseFloat(props.price.taxRate?.value ?? '0') / 100)))
+        )
     ]
 })
 </script>

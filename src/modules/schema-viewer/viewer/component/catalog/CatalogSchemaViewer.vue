@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { SchemaViewerDataPointer } from '@/modules/schema-viewer/viewer/model/SchemaViewerDataPointer'
 import {
@@ -50,25 +50,25 @@ props.schema
     })
     .catch()
 
-const baseProperties = ref<Property[]>([
-    {
-        name: t('schemaViewer.catalog.label.catalogId'),
-        value: new PropertyValue(catalogId),
-    },
-    {
-        name: t('schemaViewer.catalog.label.version'),
-        value: new PropertyValue(props.schema.version.getIfSupported()),
-    },
-    {
-        name: t('schemaViewer.catalog.label.description'),
-        value: new PropertyValue(props.schema.description.getIfSupported()!),
-    },
+const properties = computed<Property[]>(() => [
+    new Property(
+        t('schemaViewer.catalog.label.catalogId'),
+        new PropertyValue(catalogId.value),
+    ),
+    new Property(
+        t('schemaViewer.catalog.label.version'),
+        new PropertyValue(props.schema.version.getIfSupported()),
+    ),
+    new Property(
+        t('schemaViewer.catalog.label.description'),
+        new PropertyValue(props.schema.description.getIfSupported()!),
+    ),
 ])
 </script>
 
 <template>
     <div v-if="loaded">
-        <SchemaContainer :properties="baseProperties">
+        <SchemaContainer :properties="properties">
             <template #nested-details>
                 <NameVariants
                     :name-variants="schema.nameVariants.getIfSupported()!"

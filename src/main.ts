@@ -10,6 +10,7 @@ import { defaultToastOptions, toast } from '@/vue-plugins/toastification'
 import vuetify from '@/vue-plugins/vuetify'
 import Lab from '@/Lab.vue'
 import { ModuleContextBuilder } from '@/ModuleContextBuilder'
+import luxonExtensions from '@/vue-plugins/luxonExtensions'
 
 /**
  * Bootstraps the entire evitaLab.
@@ -27,6 +28,7 @@ loadFonts()
             .use(VueApexCharts)
             .use(i18n)
             .use(router)
+            .use(luxonExtensions)
 
         // register evitaLab modules
         const moduleContextBuilder: ModuleContextBuilder = new ModuleContextBuilder(app)

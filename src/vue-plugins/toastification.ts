@@ -9,4 +9,5 @@ export const defaultToastOptions = {
     closeOnClick: false,
     draggable: false,
     transition: "Vue-Toastification__fade",
+    maxToasts: 3
 }

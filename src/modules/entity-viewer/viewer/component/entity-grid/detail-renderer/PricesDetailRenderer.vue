@@ -93,12 +93,12 @@ const priceInnerRecordHandling = computed<PriceInnerRecordHandling>(() => {
     )
 })
 const entityPricingProperties = computed<Property[]>(() => [
-    {
-        name: t('entityViewer.grid.priceRenderer.label.priceInnerRecordHandling'),
-        value: new PropertyValue(
+    new Property(
+        t('entityViewer.grid.priceRenderer.label.priceInnerRecordHandling'),
+        new PropertyValue(
             new KeywordValue(priceInnerRecordHandling.value)
-        ),
-    },
+        )
+    )
 ])
 const prices = computed<EntityPrices>(() => {
     if (!(props.value instanceof EntityPrices)) {

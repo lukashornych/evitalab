@@ -1,7 +1,10 @@
 import { OffsetDateTime } from '../data-type/OffsetDateTime'
 import { Uuid } from '../data-type/Uuid'
 
-export class File {
+/**
+ * Represents server file
+ */
+export class ServerFile {
     readonly fileId: Uuid
     readonly name: string
     readonly description: string

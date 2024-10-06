@@ -1,20 +1,18 @@
 import { TabParams } from '@/modules/workspace/tab/model/TabParams'
 import { TaskViewerTabParamsDto } from '@/modules/task-viewer/model/TaskViewerTabParamsDto'
-import { ExecutableTabRequest } from '@/modules/workspace/tab/model/ExecutableTabRequest'
 import { Connection } from '@/modules/connection/model/Connection'
 
-export class TaskViewerTabParams implements TabParams<TaskViewerTabParamsDto>, ExecutableTabRequest{
-    readonly  executeOnOpen: boolean
+export class TaskViewerTabParams implements TabParams<TaskViewerTabParamsDto> {
+
     readonly connection: Connection
 
-    constructor(connection: Connection, executeOnOpen: boolean = false) {
-        this.executeOnOpen = executeOnOpen
+    constructor(connection: Connection) {
         this.connection = connection
     }
 
     toSerializable(): TaskViewerTabParamsDto {
         return {
-            connection: this.connection
+            connectionId: this.connection.id
         }
     }
 }

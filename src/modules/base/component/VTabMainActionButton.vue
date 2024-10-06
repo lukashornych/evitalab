@@ -4,6 +4,7 @@
  */
 
 const props = withDefaults(defineProps<{
+    prependIcon: string
     loading?: boolean
 }>(), {
     loading: false
@@ -16,9 +17,10 @@ const emit = defineEmits<{
 <template>
     <VBtn
         :loading="loading"
+        :prepend-icon="prependIcon"
         density="compact"
         @click="emit('click')"
-        class="v-btn--variant-primary ml-3"
+        class="v-btn--variant-primary ml-2"
     >
         <slot />
     </VBtn>

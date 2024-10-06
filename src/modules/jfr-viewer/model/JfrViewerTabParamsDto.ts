@@ -1,6 +1,6 @@
 import { TabParamsDto } from '@/modules/workspace/tab/model/TabParamsDto'
-import { Connection } from '@/modules/connection/model/Connection'
+import { ConnectionId } from '@/modules/connection/model/ConnectionId'
 
 export interface JfrViewerTabParamsDto extends TabParamsDto {
-    readonly connection: Connection
+    readonly connectionId: ConnectionId
 }

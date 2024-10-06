@@ -7,21 +7,24 @@ import { TabComponentProps } from '@/modules/workspace/tab/model/TabComponentPro
 import { VoidTabData } from '@/modules/workspace/tab/model/void/VoidTabData'
 import { JfrViewerTabParams } from '@/modules/jfr-viewer/model/JfrViewerTabParams'
 import {
-    jfrRecorderTaskName,
     JfrViewerService,
     useJfrViewerService,
 } from '@/modules/jfr-viewer/service/JfrViewerService'
 import { VBtn, VIcon, VList } from 'vuetify/components'
 import { onUnmounted } from 'vue'
-import { FilesToFetch } from '@/modules/connection/model/file/FilesToFetch'
-import { File } from '@/modules/connection/model/file/File'
+import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
 import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
-import TasksVisualizer from '@/modules/task-viewer/components/TasksVisualizer.vue'
 import VTabMainActionButton from '@/modules/base/component/VTabMainActionButton.vue'
 import { TaskState } from '@/modules/connection/model/task/TaskState'
 import StartJfrRecordingDialog from '@/modules/jfr-viewer/components/StartJfrRecordingDialog.vue'
 import EndJfrRecordingDialog from '@/modules/jfr-viewer/components/EndJfrRecordingDialog.vue'
+import { PaginatedList } from '@/modules/connection/model/PaginatedList'
+import { jfrRecorderTaskName } from '@/modules/jfr-viewer/model/JfrRecorderTask'
+import TaskList from '@/modules/task-viewer/components/TaskList.vue'
+
+const shownTaskStates: TaskState[] = [TaskState.Running, TaskState.Queued]
+const shownTaskTypes: string[] = [jfrRecorderTaskName]
 
 const jfrViewerService: JfrViewerService = useJfrViewerService()
 const toaster: Toaster = useToaster()
@@ -39,13 +42,13 @@ onUnmounted(() => {
 const path: List<string> = List([t('jfrViewer.path')])
 
 const initialized = ref<boolean>(false)
-const jfrRecordings = ref<FilesToFetch | undefined>()
+const jfrRecordings = ref<PaginatedList<ServerFile> | undefined>()
 const jfrRecordingsLoaded = ref<boolean>(false)
-const jfrRecordingItems = computed<File[]>(() => {
+const jfrRecordingItems = computed<ServerFile[]>(() => {
     if (jfrRecordings.value == undefined) {
         return []
     }
-    return jfrRecordings.value.filesToFetch.toArray()
+    return jfrRecordings.value.data.toArray()
 })
 const runningRecordingsPresent = ref<boolean>(false)
 const pageNumber = ref<number>(1)
@@ -70,7 +73,7 @@ async function loadJfrRecordings() {
     jfrRecordingsLoaded.value = true
 }
 
-async function downloadRecording(file: File) {
+async function downloadRecording(file: ServerFile) {
     try {
         const blob = await jfrViewerService.downloadFile(props.params.connection, file.fileId)
 
@@ -97,21 +100,19 @@ async function downloadRecording(file: File) {
     <div v-if="initialized" class="jfr-viewer">
         <VTabToolbar prepend-icon="mdi-record-circle-outline" :path="path">
             <template #append>
-                <VTabMainActionButton @click="showStartRecordingDialog = true">
-                    <VIcon>mdi-record-circle-outline</VIcon>
-
+                <VTabMainActionButton prepend-icon="mdi-record-circle-outline" @click="showStartRecordingDialog = true">
                     {{ t('jfrViewer.button.startRecording') }}
                 </VTabMainActionButton>
             </template>
         </VTabToolbar>
 
         <div>
-            <TasksVisualizer
+            <TaskList
                 v-show="runningRecordingsPresent"
                 :connection="params.connection"
                 :subheader="t('jfrViewer.tasks.title')"
-                :states="[TaskState.Running, TaskState.Queued]"
-                :task-types="[jfrRecorderTaskName]"
+                :states="shownTaskStates"
+                :task-types="shownTaskTypes"
                 :page-size="5"
                 hideable-pagination
                 @update:active-jobs-present="runningRecordingsPresent = $event"
@@ -124,7 +125,7 @@ async function downloadRecording(file: File) {
                         @click="showEndRecordingDialog = true"
                     />
                 </template>
-            </TasksVisualizer>
+            </TaskList>
 
             <VList v-if="jfrRecordingsLoaded">
                 <VListSubheader v-if="runningRecordingsPresent">
@@ -172,6 +173,11 @@ async function downloadRecording(file: File) {
                                 </VCol>
                             </VRow>
                         </VListItem>
+                        <!--                        todo lho implement -->
+                        <!--                        <VListItemDivider-->
+                        <!--                            v-if="index < taskStatusesItems.length - 1"-->
+                        <!--                            inset-->
+                        <!--                        />-->
                     </template>
 
                     <template #footer>

@@ -13,7 +13,9 @@ import { EntitySchema } from '../../model/schema/EntitySchema'
 import {
     GrpcCatalogSchemaResponse,
     GrpcCatalogVersionAtResponse,
-    GrpcDeleteCollectionResponse, GrpcGoLiveAndCloseResponse, GrpcRenameCollectionResponse
+    GrpcDeleteCollectionResponse,
+    GrpcGoLiveAndCloseResponse,
+    GrpcRenameCollectionResponse
 } from '@/modules/connection/driver/grpc/gen/GrpcEvitaSessionAPI_pb'
 import { EvitaDBInstanceServerError } from '@/modules/driver-support/exception/EvitaDBInstanceServerError'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
@@ -35,25 +37,23 @@ import { ClassifierValidationErrorType } from '@/modules/connection/model/data-t
 import { ClassifierType } from '@/modules/connection/model/data-type/ClassifierType'
 import {
     GrpcEvitaServerStatusResponse,
-    GrpcReservedKeywordsResponse
+    GrpcReservedKeywordsResponse,
+    GrpcRestoreCatalogRequest,
+    GrpcRestoreCatalogResponse
 } from '@/modules/connection/driver/grpc/gen/GrpcEvitaManagementAPI_pb'
 import { ReservedKeywordsConverter } from '@/modules/connection/driver/grpc/service/ReservedKeywordsConverter'
 import { splitStringWithCaseIntoWords } from '@/utils/string'
 import { Keyword } from '@/modules/connection/driver/grpc/model/Keyword'
 import { Uuid } from '../../model/data-type/Uuid'
-import {
-    GrpcRestoreCatalogRequest,
-    GrpcRestoreCatalogResponse
-} from '@/modules/connection/driver/grpc/gen/GrpcEvitaManagementAPI_pb'
-import { BackupConverter } from '@/modules/connection/driver/grpc/service/BackupConverter'
 import { TaskStatusConverter } from '@/modules/connection/driver/grpc/service/TaskStatusConverter'
 import { TaskStatus } from '@/modules/connection/model/task/TaskStatus'
 import { CatalogVersionAtResponse } from '@/modules/connection/model/CatalogVersionAtResponse'
-import { FilesToFetch } from '@/modules/connection/model/file/FilesToFetch'
-import { TaskStatuses } from '@/modules/connection/model/task/TaskStatuses'
 import { EventType } from '@/modules/connection/model/jfr/EventType'
 import { TaskState } from '@/modules/connection/model/task/TaskState'
 import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
+import { ServerFileConverter } from '@/modules/connection/driver/grpc/service/ServerFileConverter'
+import { PaginatedList } from '@/modules/connection/model/PaginatedList'
+import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
 
 //TODO: Add docs and add header 'X-EvitaDB-ClientID': this.getClientIdHeaderValue()
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
@@ -73,7 +73,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
     private _serverStatusConverter?: ServerStatusConverter
     private _reservedKeywordsConverter?: ReservedKeywordsConverter
     private _taskStateConverter?: TaskStateConverter
-    private _backupConverter?: BackupConverter
+    private _serverFileConverter?: ServerFileConverter
     private _taskStatusConverter?: TaskStatusConverter
 
     private reservedKeywords?: Immutable.Map<ClassifierType, Immutable.List<Keyword>>
@@ -481,7 +481,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                     }
                 }
             )
-        return this.backupConverter.convertBackupCatalog(result)
+        return this.taskStatusConverter.convert(result.taskStatus!)
     }
 
     async getMinimalBackupDate(
@@ -510,7 +510,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         )
     }
 
-    async getFilesToFetch(connection: Connection, origin: string, pageNumber: number, pageSize: number): Promise<FilesToFetch> {
+    async getFilesToFetch(connection: Connection, origin: string, pageNumber: number, pageSize: number): Promise<PaginatedList<ServerFile>> {
         const result = await this.clientProvider
             .getEvitaManagementClient(connection)
             .listFilesToFetch({
@@ -518,7 +518,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                 pageNumber,
                 pageSize
             })
-        return this.backupConverter.convertFilesToFetch(result)
+        return this.serverFileConverter.convertServerFiles(result)
     }
 
     async getTaskStatuses(
@@ -527,7 +527,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         pageSize: number,
         states?: TaskState[],
         taskTypes?: string[]
-    ): Promise<TaskStatuses> {
+    ): Promise<PaginatedList<TaskStatus>> {
         const params = states && states.length > 0
             ? this.taskStateConverter.convertTaskStatesToGrpc(states)
             : []
@@ -539,18 +539,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                 taskType: taskTypes?.map(taskType => StringValue.fromJson(taskType)) || undefined,
                 simplifiedState: params
             })
-        const jobs = this.taskStatusConverter.convertJobs(result)
-        return jobs
-    }
-
-    async getJfrRecords(connection: Connection, pageNumber: number, pageSize: number): Promise<FilesToFetch> {
-        const result = await this.clientProvider.getEvitaManagementClient(connection).listFilesToFetch({
-            origin: 'JfrRecorderTask',
-            pageNumber,
-            pageSize
-        })
-
-        return this.backupConverter.convertFilesToFetch(result)
+        return this.taskStatusConverter.convertTaskStatuses(result)
     }
 
     async stopJfrRecording(connection: Connection):Promise<boolean> {
@@ -604,7 +593,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                     mostSignificantBits: fileId.mostSignificantBits
                 }
             })
-        return this.taskStatusConverter.convertJob(result.task!)
+        return this.taskStatusConverter.convert(result.task!)
     }
 
     async cancelTask(connection: Connection, taskId: Uuid): Promise<boolean> {
@@ -695,18 +684,17 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         return this._taskStateConverter
     }
 
-    private get backupConverter(): BackupConverter {
-        if (this._backupConverter == undefined) {
-            this._backupConverter = new BackupConverter(
-                this.taskStateConverter
-            )
+    private get serverFileConverter(): ServerFileConverter {
+        if (this._serverFileConverter == undefined) {
+            this._serverFileConverter = new ServerFileConverter()
         }
-        return this._backupConverter
+        return this._serverFileConverter
     }
     private get taskStatusConverter(): TaskStatusConverter {
         if (this._taskStatusConverter == undefined) {
             this._taskStatusConverter = new TaskStatusConverter(
-                this.taskStateConverter
+                this.taskStateConverter,
+                this.serverFileConverter
             )
         }
         return this._taskStatusConverter

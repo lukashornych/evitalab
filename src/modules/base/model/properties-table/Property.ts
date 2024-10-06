@@ -4,13 +4,19 @@ import { List } from 'immutable'
 /**
  * Single property of a table (row)
  */
-export type Property = {
+export class Property {
+
     /**
      * Name of the property
      */
-    name: string
+    readonly name: string
     /**
      * Value of the property
      */
-    value: PropertyValue | List<PropertyValue>
+    readonly value: PropertyValue | List<PropertyValue>
+
+    constructor(name: string, value: PropertyValue | List<PropertyValue>) {
+        this.name = name
+        this.value = value
+    }
 }

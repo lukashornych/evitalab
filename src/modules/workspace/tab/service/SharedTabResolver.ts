@@ -21,21 +21,15 @@ export class SharedTabResolver {
     private readonly evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory
     private readonly graphQLConsoleTabFactory: GraphQLConsoleTabFactory
     private readonly schemaViewerTabFactory: SchemaViewerTabFactory
-    private readonly serverStatusTabFactory: ServerStatusTabFactory
-    private readonly taskViewerTabFactory: TaskViewerTabFactory
 
     constructor(entityViewerTabFactory: EntityViewerTabFactory,
                 evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory,
                 graphQLConsoleTabFactory: GraphQLConsoleTabFactory,
-                schemaViewerTabFactory: SchemaViewerTabFactory,
-                serverStatusTabFactory: ServerStatusTabFactory,
-                jobTabFactory: TaskViewerTabFactory) {
+                schemaViewerTabFactory: SchemaViewerTabFactory) {
         this.entityViewerTabFactory = entityViewerTabFactory
         this.evitaQLConsoleTabFactory = evitaQLConsoleTabFactory
         this.graphQLConsoleTabFactory = graphQLConsoleTabFactory
         this.schemaViewerTabFactory = schemaViewerTabFactory
-        this.serverStatusTabFactory = serverStatusTabFactory
-        this.taskViewerTabFactory = jobTabFactory
     }
 
     async resolve(shareTabObjectSerialized: string | undefined): Promise<TabDefinition<any, any> | undefined> {
@@ -58,8 +52,6 @@ export class SharedTabResolver {
             case 'schema-viewer':
             case TabType.SchemaViewer:
                 return this.schemaViewerTabFactory.restoreFromJson(shareTabObject.tabParams)
-            case TabType.ServerStatus:
-                return this.serverStatusTabFactory.restoreFromJson(shareTabObject.tabParams)
             default:
                 throw new UnexpectedError(`Unsupported shared tab type '${shareTabObject.tabType}'.`)
         }

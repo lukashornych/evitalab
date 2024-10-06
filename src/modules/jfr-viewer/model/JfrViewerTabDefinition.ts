@@ -4,7 +4,7 @@ import { JfrViewerTabParams } from '@/modules/jfr-viewer/model/JfrViewerTabParam
 import { DefineComponent, markRaw } from 'vue'
 import JfrViewer from '@/modules/jfr-viewer/components/JfrViewer.vue'
 
-export class JfrViewerDefinition extends TabDefinition<JfrViewerTabParams, VoidTabData>{
+export class JfrViewerTabDefinition extends TabDefinition<JfrViewerTabParams, VoidTabData>{
     constructor(title: string, params: JfrViewerTabParams) {
         super(
             undefined,
