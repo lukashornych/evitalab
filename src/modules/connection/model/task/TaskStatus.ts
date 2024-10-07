@@ -25,7 +25,7 @@ export class TaskStatus {
     readonly traits: Immutable.Set<TaskTrait>
 
     private _cancelRequested: boolean = false
-    private _elapsed?: Duration = undefined
+    private _duration?: Duration = undefined
 
     constructor(taskType: string,
                 taskName: string,
@@ -69,10 +69,10 @@ export class TaskStatus {
         }
     }
 
-    get elapsed(): Duration | undefined {
-        if (this._elapsed == undefined || this.finished == undefined) {
+    get duration(): Duration | undefined {
+        if (this._duration == undefined || this.finished == undefined) {
             if (this.started == undefined) {
-                this._elapsed = undefined
+                this._duration = undefined
             } else {
                 const startTime: number = Number(this.started.timestamp!.seconds) * 1000
                 const endTime: number = this.finished != null
@@ -80,9 +80,9 @@ export class TaskStatus {
                     : DateTime.now().toMillis()
 
                 const duration: number = endTime - startTime
-                this._elapsed = Duration.fromMillis(duration)
+                this._duration = Duration.fromMillis(duration)
             }
         }
-        return this._elapsed
+        return this._duration
     }
 }

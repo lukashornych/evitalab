@@ -1021,7 +1021,7 @@
           "downloadFileResult": "Download result",
           "textResult": "Result",
           "exception": "Exception",
-          "cancel": "Manually cancel task"
+          "cancel": "Forcefully cancel task"
         },
         "progress": {
           "indeterminate": "running..."
@@ -1044,8 +1044,8 @@
               "notStarted": "<task hasn't yet been started>",
               "notFinished": "<task hasn't yet been finished>"
             },
-            "elapsed": {
-              "label": "Time elapsed",
+            "duration": {
+              "label": "Duration",
               "notStarted": "<task hasn't yet been started>"
             },
             "progress": "Progress",
@@ -1077,7 +1077,10 @@
       "startRecording": "Start recording"
     },
     "tasks": {
-      "title": "Running recordings"
+      "title": "Running recordings",
+      "button": {
+        "stopRecording": "Stop recording"
+      }
     },
     "list": {
       "title": "Finished recordings"

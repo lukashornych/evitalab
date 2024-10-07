@@ -1,17 +1,13 @@
 <script setup lang="ts">
 import { List } from 'immutable'
 import { useI18n } from 'vue-i18n'
-import { computed, ref } from 'vue'
+import { computed, onUnmounted, ref } from 'vue'
 import { TabComponentEvents } from '@/modules/workspace/tab/model/TabComponentEvents'
 import { TabComponentProps } from '@/modules/workspace/tab/model/TabComponentProps'
 import { VoidTabData } from '@/modules/workspace/tab/model/void/VoidTabData'
 import { JfrViewerTabParams } from '@/modules/jfr-viewer/model/JfrViewerTabParams'
-import {
-    JfrViewerService,
-    useJfrViewerService,
-} from '@/modules/jfr-viewer/service/JfrViewerService'
+import { JfrViewerService, useJfrViewerService } from '@/modules/jfr-viewer/service/JfrViewerService'
 import { VBtn, VIcon, VList } from 'vuetify/components'
-import { onUnmounted } from 'vue'
 import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
 import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
@@ -23,7 +19,7 @@ import { PaginatedList } from '@/modules/connection/model/PaginatedList'
 import { jfrRecorderTaskName } from '@/modules/jfr-viewer/model/JfrRecorderTask'
 import TaskList from '@/modules/task-viewer/components/TaskList.vue'
 
-const shownTaskStates: TaskState[] = [TaskState.Running, TaskState.Queued]
+const shownTaskStates: TaskState[] = [TaskState.Running, TaskState.Queued, TaskState.Failed]
 const shownTaskTypes: string[] = [jfrRecorderTaskName]
 
 const jfrViewerService: JfrViewerService = useJfrViewerService()
@@ -117,13 +113,17 @@ async function downloadRecording(file: ServerFile) {
                 hideable-pagination
                 @update:active-jobs-present="runningRecordingsPresent = $event"
             >
-                <template #cancel-action="{ taskStatus }">
+                <template #item-append-action-buttons="{ task }">
                     <VBtn
-                        icon="mdi-stop-circle-outline"
-                        density="compact"
-                        variant="flat"
+                        v-if="task.state === TaskState.Running"
+                        icon
                         @click="showEndRecordingDialog = true"
-                    />
+                    >
+                        <VIcon>mdi-stop-circle-outline</VIcon>
+                        <VTooltip activator="parent">
+                            {{ t('jfrViewer.tasks.button.stopRecording') }}
+                        </VTooltip>
+                    </VBtn>
                 </template>
             </TaskList>
 

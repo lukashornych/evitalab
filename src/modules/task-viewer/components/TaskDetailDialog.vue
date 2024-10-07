@@ -34,11 +34,16 @@ const taskColor = computed<string | undefined>(() => {
     return undefined
 })
 
-const taskDuration = ref<Duration | undefined>(props.task.elapsed)
-const taskDurationRefreshId = setInterval(
-    () => taskDuration.value = props.task.elapsed,
-    1000
-)
+const taskDuration = ref<Duration | undefined>(props.task.duration)
+let taskDurationRefreshTimeoutId: number | undefined = undefined
+function refreshDuration(): void {
+    taskDuration.value = props.task.duration
+    if (props.task.finished == undefined) {
+        // when task is finished we have nothing to update anymore
+        taskDurationRefreshTimeoutId = setTimeout(refreshDuration, 1000)
+    }
+}
+taskDurationRefreshTimeoutId = setTimeout(refreshDuration, 1000)
 
 const properties = computed<Property[]>(() => {
     const properties: Property[] = []
@@ -90,11 +95,11 @@ const properties = computed<Property[]>(() => {
         )
     ))
     properties.push(new Property(
-        t('taskViewer.tasksVisualizer.task.detail.property.elapsed.label'),
+        t('taskViewer.tasksVisualizer.task.detail.property.duration.label'),
         new PropertyValue(
             taskDuration.value != undefined
                 ? taskDuration.value.toHuman()
-                : new PlaceholderValue(t('taskViewer.tasksVisualizer.task.detail.property.elapsed.notStarted'))
+                : new PlaceholderValue(t('taskViewer.tasksVisualizer.task.detail.property.duration.notStarted'))
         )
     ))
     properties.push(new Property(
@@ -123,7 +128,7 @@ const properties = computed<Property[]>(() => {
     return properties
 })
 
-onUnmounted(() => clearInterval(taskDurationRefreshId))
+onUnmounted(() => clearTimeout(taskDurationRefreshTimeoutId))
 </script>
 
 <template>

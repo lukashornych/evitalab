@@ -5,7 +5,7 @@
 
 import { Connection } from '@/modules/connection/model/Connection'
 import { TaskViewerService, useTaskViewerService } from '../services/TaskViewerService'
-import { computed, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { TaskState } from '@/modules/connection/model/task/TaskState'
 import { TaskStatus } from '@/modules/connection/model/task/TaskStatus'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
@@ -101,6 +101,7 @@ async function loadTaskStatuses(): Promise<boolean> {
 loadTaskStatuses().then()
 
 let canReload: boolean = true
+let reloadTimeoutId: number | undefined = undefined
 async function reload(manual: boolean = false): Promise<void> {
     if (!canReload && !manual) {
         return
@@ -109,13 +110,15 @@ async function reload(manual: boolean = false): Promise<void> {
     const loaded: boolean = await loadTaskStatuses()
     if (loaded) {
         canReload = true
-        setTimeout(reload, 2000)
+        reloadTimeoutId = setTimeout(reload, 2000)
     } else {
         // we don't want to spam user server is down, user needs to refresh manually
         canReload = false
     }
 }
-setTimeout(reload, 2000)
+reloadTimeoutId = setTimeout(reload, 2000)
+
+onUnmounted(() => clearTimeout(reloadTimeoutId))
 
 defineExpose<{
     reload(manual: boolean): Promise<void>
@@ -140,7 +143,11 @@ defineExpose<{
                     <TaskListItem
                         :connection="connection"
                         :task="item.raw"
-                    />
+                    >
+                        <template #append-action-buttons="{ task }">
+                            <slot name="item-append-action-buttons" :task="task"/>
+                        </template>
+                    </TaskListItem>
 
                     <VListItemDivider
                         v-if="index < taskStatusesItems.length - 1"

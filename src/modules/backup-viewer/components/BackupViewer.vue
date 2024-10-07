@@ -86,6 +86,7 @@ loadBackupFiles().then(() => {
 })
 
 let canReloadBackupFiles: boolean = true
+let reloadBackupFilesTimeoutId: number | undefined = undefined
 async function reloadBackupFiles(manual: boolean = false): Promise<void> {
     if (!canReloadBackupFiles && !manual) {
         return
@@ -94,13 +95,13 @@ async function reloadBackupFiles(manual: boolean = false): Promise<void> {
     const loaded: boolean = await loadBackupFiles()
     if (loaded) {
         canReloadBackupFiles = true
-        setTimeout(reloadBackupFiles, 2000)
+        reloadBackupFilesTimeoutId = setTimeout(reloadBackupFiles, 2000)
     } else {
         // we don't want to spam user server is down, user needs to refresh manually
         canReloadBackupFiles = false
     }
 }
-setTimeout(reloadBackupFiles, 2000)
+reloadBackupFilesTimeoutId = setTimeout(reloadBackupFiles, 2000)
 
 function reloadBackups(): void {
     reloadBackupFiles(true)
@@ -138,6 +139,8 @@ async function downloadBackup(file: ServerFile){
         ))
     }
 }
+
+onUnmounted(() => clearInterval(reloadBackupFilesTimeoutId))
 </script>
 
 <template>
