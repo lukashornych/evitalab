@@ -1004,6 +1004,7 @@
       "button": {
         "reload": "Reload tasks"
       },
+      "noTasks": "No tasks are running",
       "task": {
         "state": {
           "queued": "queued",
@@ -1030,7 +1031,7 @@
           "title": "Task",
           "property": {
             "id": "ID",
-            "type": "Type",
+            "types": "Types",
             "name": "Name",
             "state": "State",
             "catalogName": "Catalog name",

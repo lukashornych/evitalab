@@ -19,9 +19,9 @@ import AttributeHistogramsVisualiser
     from '@/modules/console/result-visualiser/component/histogram/AttributeHistogramsVisualiser.vue'
 import PriceHistogramVisualiser
     from '@/modules/console/result-visualiser/component/histogram/PriceHistogramVisualiser.vue'
-import MissingDataIndicator from '@/modules/console/result-visualiser/component/MissingDataIndicator.vue'
 import VLoadingCircular from '@/modules/base/component/VLoadingCircular.vue'
 import { Response } from '@/modules/connection/model/data/Response'
+import VMissingDataIndicator from '@/modules/base/component/VMissingDataIndicator.vue'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -230,24 +230,24 @@ defineExpose<{
             :price-histogram-result="resultForVisualiser"
         />
 
-        <MissingDataIndicator
+        <VMissingDataIndicator
             v-else-if="queries.length == 0"
             icon="mdi-text-search"
             :title="t('resultVisualizer.visualiser.placeholder.noQueries')"
         />
-        <MissingDataIndicator
+        <VMissingDataIndicator
             v-else-if="selectedQuery == undefined"
             icon="mdi-database-search"
             :title="t('resultVisualizer.visualiser.placeholder.noSelectedQuery')"
         />
-        <MissingDataIndicator
+        <VMissingDataIndicator
             v-else-if="selectedVisualiserType == undefined"
             icon="mdi-format-list-bulleted-type"
             :title="t('resultVisualizer.visualiser.placeholder.noSelectedData')"
         />
-        <MissingDataIndicator v-else-if="selectedQueryResult == undefined || selectedQueryEntitySchema == undefined || resultForVisualiser == undefined">
+        <VMissingDataIndicator v-else-if="selectedQueryResult == undefined || selectedQueryEntitySchema == undefined || resultForVisualiser == undefined">
             <VLoadingCircular :size="64" />
-        </MissingDataIndicator>
+        </VMissingDataIndicator>
     </div>
 </template>
 

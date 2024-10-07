@@ -13,6 +13,7 @@ import { useI18n } from 'vue-i18n'
 import { PaginatedList } from '@/modules/connection/model/PaginatedList'
 import TaskListItem from '@/modules/task-viewer/components/TaskListItem.vue'
 import VListItemDivider from '@/modules/base/component/VListItemDivider.vue'
+import VMissingDataIndicator from '@/modules/base/component/VMissingDataIndicator.vue'
 
 const taskViewerService: TaskViewerService = useTaskViewerService()
 const toaster: Toaster = useToaster()
@@ -128,7 +129,7 @@ defineExpose<{
 </script>
 
 <template>
-    <VList v-if="loadedTaskStatuses">
+    <VList v-if="loadedTaskStatuses && taskStatusesItems.length > 0">
         <VListSubheader v-if="subheader !== undefined && subheader.length > 0">
             {{ subheader }}
         </VListSubheader>
@@ -164,7 +165,14 @@ defineExpose<{
                 />
             </template>
         </VDataIterator>
+
     </VList>
+
+    <VMissingDataIndicator
+        v-else
+        icon="mdi-chart-gantt"
+        :title="t('taskViewer.tasksVisualizer.noTasks')"
+    />
 </template>
 
 <style lang="scss" scoped>

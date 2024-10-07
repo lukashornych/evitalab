@@ -43,12 +43,15 @@ export class TaskStatusConverter {
     }
 
     convert(grpcTaskStatus: GrpcTaskStatus): TaskStatus {
+        const taskTypes: string[] = grpcTaskStatus.taskType
+            .split(',')
+            .map(it => it.trim())
         const result: TaskResult | undefined = this.convertResult(
             grpcTaskStatus.result.case,
             grpcTaskStatus.result.value
         )
         return new TaskStatus(
-            grpcTaskStatus.taskType,
+            Immutable.List(taskTypes),
             grpcTaskStatus.taskName,
             Uuid.createUUID(
                 grpcTaskStatus.taskId!.mostSignificantBits!,

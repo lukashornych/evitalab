@@ -9,7 +9,7 @@ const props = defineProps<{
 }>()
 
 const taskIcon = computed<string>(() => {
-    const icon: string | undefined = taskTypeToIconMapping.get(props.task.taskType)
+    const icon: string | undefined = taskTypeToIconMapping.get(props.task.mainTaskType)
     if (icon != undefined) {
         return icon
     }
@@ -18,13 +18,15 @@ const taskIcon = computed<string>(() => {
 </script>
 
 <template>
-    <VIcon>
-        {{ taskIcon }}
+    <VTooltip>
+        <template #activator="{ props }">
+            <VIcon v-bind="props">{{ taskIcon }}</VIcon>
+        </template>
 
-        <VTooltip activator="parent">
-            {{ task.taskType }}
-        </VTooltip>
-    </VIcon>
+        <template #default>
+            {{ task.mainTaskType }}
+        </template>
+    </VTooltip>
 </template>
 
 <style lang="scss" scoped>

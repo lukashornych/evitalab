@@ -12,7 +12,7 @@ import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
 import { AttributeSchema } from '@/modules/connection/model/schema/AttributeSchema'
 import { VisualisedHistogram } from '@/modules/console/result-visualiser/model/histogram/VisualisedHistogram'
 import HistogramVisualiser from '@/modules/console/result-visualiser/component/histogram/HistogramVisualiser.vue'
-import MissingDataIndicator from '@/modules/console/result-visualiser/component/MissingDataIndicator.vue'
+import VMissingDataIndicator from '@/modules/base/component/VMissingDataIndicator.vue'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -48,7 +48,7 @@ const histogramsByAttributes = computed<[AttributeSchema, VisualisedHistogram][]
         </VExpansionPanel>
     </VExpansionPanels>
 
-    <MissingDataIndicator
+    <VMissingDataIndicator
         v-else
         icon="mdi-text-search"
         :title="t('resultVisualizer.attributeHistogram.placeholder.noAttributeHistograms')"

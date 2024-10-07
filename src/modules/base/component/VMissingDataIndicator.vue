@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Informative component that is displayed when there is no data or argument for visualisation.
+ * Informative component that is displayed when there is no data or argument.
  */
 
 const props = defineProps<{

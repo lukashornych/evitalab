@@ -10,7 +10,7 @@ import { ResultVisualiserService } from '@/modules/console/result-visualiser/ser
 import { Result } from '@/modules/console/result-visualiser/model/Result'
 import { VisualisedHistogram } from '@/modules/console/result-visualiser/model/histogram/VisualisedHistogram'
 import HistogramVisualiser from '@/modules/console/result-visualiser/component/histogram/HistogramVisualiser.vue'
-import MissingDataIndicator from '@/modules/console/result-visualiser/component/MissingDataIndicator.vue'
+import VMissingDataIndicator from '@/modules/base/component/VMissingDataIndicator.vue'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -35,7 +35,7 @@ const histogram = computed<VisualisedHistogram | undefined>(() => {
 <template>
     <HistogramVisualiser v-if="histogram" :histogram="histogram" />
 
-    <MissingDataIndicator
+    <VMissingDataIndicator
         v-else
         icon="mdi-text-search"
         :title="t('resultVisualizer.priceHistogram.placeholder.noPriceHistograms')"

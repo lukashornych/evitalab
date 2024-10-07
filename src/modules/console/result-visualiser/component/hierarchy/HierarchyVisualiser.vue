@@ -13,7 +13,7 @@ import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
 import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
 import NamedHierarchiesVisualiser
     from '@/modules/console/result-visualiser/component/hierarchy/NamedHierarchiesVisualiser.vue'
-import MissingDataIndicator from '@/modules/console/result-visualiser/component/MissingDataIndicator.vue'
+import VMissingDataIndicator from '@/modules/base/component/VMissingDataIndicator.vue'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -63,7 +63,7 @@ function getPanelKey(referenceSchema: ReferenceSchema | undefined): string {
         </VExpansionPanel>
     </VExpansionPanels>
 
-    <MissingDataIndicator
+    <VMissingDataIndicator
         v-else
         icon="mdi-text-search"
         :title="t('resultVisualizer.hierarchyVisualiser.placeholder.noHierarchies')"

@@ -34,11 +34,11 @@ onUnmounted(() => clearTimeout(taskDurationRefreshTimeoutId))
 </script>
 
 <template>
-    <div class="task-title">
+    <span class="task-title">
         <span>{{ task.taskName }}</span>
 
         <!-- not using chip group because of https://github.com/vuetifyjs/vuetify/issues/19678 -->
-        <div class="task-title__chips">
+        <span class="task-title__chips">
             <VChip :color="taskColor">
                 {{ t(`taskViewer.tasksVisualizer.task.state.${task.state}`) }}
             </VChip>
@@ -46,8 +46,8 @@ onUnmounted(() => clearTimeout(taskDurationRefreshTimeoutId))
             <VChip v-if="taskDuration != undefined">
                 {{ taskDuration.toHuman() }}
             </VChip>
-        </div>
-    </div>
+        </span>
+    </span>
 </template>
 
 <style lang="scss" scoped>
@@ -55,6 +55,8 @@ onUnmounted(() => clearTimeout(taskDurationRefreshTimeoutId))
     display: flex;
     gap: 1rem;
     align-items: center;
+    flex-flow: row wrap;
+    max-height: 1.5rem;
 
     &__chips {
         display: flex;

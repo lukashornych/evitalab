@@ -13,9 +13,9 @@ import { EntitySchema } from '@/modules/connection/model/schema/EntitySchema'
 import { ReferenceSchema } from '@/modules/connection/model/schema/ReferenceSchema'
 import ReferenceFacetGroupStatisticsVisualiser
     from '@/modules/console/result-visualiser/component/facet-summary/ReferenceFacetGroupStatisticsVisualiser.vue'
-import MissingDataIndicator from '@/modules/console/result-visualiser/component/MissingDataIndicator.vue'
 import { List } from 'immutable'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import VMissingDataIndicator from '@/modules/base/component/VMissingDataIndicator.vue'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -78,7 +78,7 @@ function getCountForReference(referenceSchema: ReferenceSchema, groupStatisticsR
         </VExpansionPanel>
     </VExpansionPanels>
 
-    <MissingDataIndicator
+    <VMissingDataIndicator
         v-else
         icon="mdi-text-search"
         :title="t('resultVisualizer.facetStatisticsVisualiser.placeholder.noGroups')"

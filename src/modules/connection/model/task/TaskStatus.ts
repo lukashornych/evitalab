@@ -10,7 +10,7 @@ import { DateTime, Duration } from 'luxon'
  * Represents a single server task that is being processed by the evitaDB.
  */
 export class TaskStatus {
-    readonly taskType: string
+    readonly taskTypes: Immutable.List<string>
     readonly taskName: string
     readonly taskId: Uuid
     readonly catalogName: string | undefined
@@ -27,7 +27,7 @@ export class TaskStatus {
     private _cancelRequested: boolean = false
     private _duration?: Duration = undefined
 
-    constructor(taskType: string,
+    constructor(taskTypes: Immutable.List<string>,
                 taskName: string,
                 taskId: Uuid,
                 catalogName: string | undefined,
@@ -40,7 +40,7 @@ export class TaskStatus {
                 exception: string | undefined,
                 state: TaskState,
                 traits: Immutable.Set<TaskTrait>){
-        this.taskType = taskType
+        this.taskTypes = taskTypes
         this.taskName = taskName
         this.taskId = taskId
         this.catalogName = catalogName
@@ -53,6 +53,10 @@ export class TaskStatus {
         this.exception = exception
         this.state = state
         this.traits = traits
+    }
+
+    get mainTaskType(): string {
+        return this.taskTypes.get(0)!
     }
 
     /**

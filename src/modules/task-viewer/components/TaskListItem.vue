@@ -69,6 +69,7 @@ const props = defineProps<{
     display: flex;
     gap: 1rem;
     align-items: center;
+    margin-left: 1rem;
 
     &__buttons {
         display: flex;

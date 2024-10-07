@@ -52,8 +52,9 @@ const properties = computed<Property[]>(() => {
         new PropertyValue(props.task.taskId.code)
     ))
     properties.push(new Property(
-        t('taskViewer.tasksVisualizer.task.detail.property.type'),
-        new PropertyValue(new KeywordValue(props.task.taskType))
+        t('taskViewer.tasksVisualizer.task.detail.property.types'),
+        props.task.taskTypes
+            .map(taskType => new PropertyValue(new KeywordValue(taskType)))
     ))
     properties.push(new Property(
         t('taskViewer.tasksVisualizer.task.detail.property.name'),
