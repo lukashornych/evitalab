@@ -101,7 +101,7 @@ async function loadTaskStatuses(): Promise<boolean> {
 loadTaskStatuses().then()
 
 let canReload: boolean = true
-let reloadTimeoutId: number | undefined = undefined
+let reloadTimeoutId: ReturnType<typeof setTimeout> | undefined = undefined
 async function reload(manual: boolean = false): Promise<void> {
     if (!canReload && !manual) {
         return

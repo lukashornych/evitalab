@@ -20,7 +20,7 @@ const taskColor = computed<string | undefined>(() => {
 })
 
 const taskDuration = ref<Duration | undefined>(props.task.duration)
-let taskDurationRefreshTimeoutId: number | undefined = undefined
+let taskDurationRefreshTimeoutId: ReturnType<typeof setTimeout> | undefined = undefined
 function refreshDuration(): void {
     taskDuration.value = props.task.duration
     if (props.task.finished == undefined) {

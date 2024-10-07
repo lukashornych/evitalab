@@ -86,7 +86,7 @@ loadBackupFiles().then(() => {
 })
 
 let canReloadBackupFiles: boolean = true
-let reloadBackupFilesTimeoutId: number | undefined = undefined
+let reloadBackupFilesTimeoutId: ReturnType<typeof setTimeout> | undefined = undefined
 async function reloadBackupFiles(manual: boolean = false): Promise<void> {
     if (!canReloadBackupFiles && !manual) {
         return
