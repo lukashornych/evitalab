@@ -179,29 +179,36 @@ async function createActions(): Promise<Map<ConnectionItemType, MenuItem<Connect
                 )
         )
     )
-    actions.set(ConnectionItemType.Tasks, createMenuAction(
+    actions.set(
         ConnectionItemType.Tasks,
-        'mdi-chart-gantt',
-        () => {
-            workspaceService.createTab(
-                taskViewerTabFactory.createNew(
-                    props.connection
+        createMenuAction(
+            ConnectionItemType.Tasks,
+            'mdi-chart-gantt',
+            () => {
+                workspaceService.createTab(
+                    taskViewerTabFactory.createNew(
+                        props.connection
+                    )
                 )
-            )
-        }
-    ))
-    actions.set(ConnectionItemType.JfrRecordings, createMenuAction(
+            },
+            serverWritable
+        )
+    )
+    actions.set(
         ConnectionItemType.JfrRecordings,
-        'mdi-chart-timeline',
-        () => {
-            workspaceService.createTab(
-                jfrViewerTabFactory.createNew(
-                    props.connection
+        createMenuAction(
+            ConnectionItemType.JfrRecordings,
+            'mdi-chart-timeline',
+            () => {
+                workspaceService.createTab(
+                    jfrViewerTabFactory.createNew(
+                        props.connection
+                    )
                 )
-            )
-        },
-        observabilityEnabled
-    ))
+            },
+            serverWritable && observabilityEnabled
+        )
+    )
     actions.set(
         ConnectionItemType.ModifySubheader,
         new MenuSubheader(t('explorer.connection.subheader.modify'))
