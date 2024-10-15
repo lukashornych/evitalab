@@ -5,16 +5,14 @@ import { Connection } from "@/modules/connection/model/Connection";
 export class BackupViewerTabParams implements TabParams<BackupViewerTabParamsDto> {
 
     readonly connection: Connection
-    readonly catalogName: string
 
-    constructor(connection: Connection, catalogName: string) {
+    constructor(connection: Connection) {
         this.connection = connection
-        this.catalogName = catalogName
     }
+
     toSerializable(): BackupViewerTabParamsDto {
         return {
-            connectionId: this.connection.id,
-            catalogName: this.catalogName
+            connectionId: this.connection.id
         }
     }
 }

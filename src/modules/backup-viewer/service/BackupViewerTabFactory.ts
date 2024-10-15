@@ -16,30 +16,30 @@ export class BackupViewerTabFactory {
         this.connectionService = connectionService
     }
 
-    createNew(connection: Connection, catalogName: string): BackupViewerTabDefinition {
+    createNew(connection: Connection): BackupViewerTabDefinition {
         return new BackupViewerTabDefinition(
-            this.constructTitle(connection, catalogName),
-            new BackupViewerTabParams(connection, catalogName)
+            this.constructTitle(connection),
+            new BackupViewerTabParams(connection)
         )
     }
 
     restoreFromJson(paramsJson: TabParamsDto): BackupViewerTabDefinition {
         const params: BackupViewerTabParams = this.restoreTabParamsFromSerializable(paramsJson)
         return new BackupViewerTabDefinition(
-            this.constructTitle(params.connection, params.catalogName),
+            this.constructTitle(params.connection),
             params
         )
     }
 
-    private constructTitle(connection: Connection, catalogName: string): string {
-        return `${catalogName} [${connection.name}]`
+    // todo lho i18n
+    private constructTitle(connection: Connection): string {
+        return `Catalog backups [${connection.name}]`
     }
 
     private restoreTabParamsFromSerializable(json: TabParamsDto): BackupViewerTabParams {
         const dto: BackupViewerTabParamsDto = json as BackupViewerTabParamsDto
         return new BackupViewerTabParams(
-            this.connectionService.getConnection(dto.connectionId),
-            dto.catalogName
+            this.connectionService.getConnection(dto.connectionId)
         )
     }
 }

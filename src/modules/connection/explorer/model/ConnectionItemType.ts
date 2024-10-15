@@ -9,5 +9,6 @@ export enum ConnectionItemType {
     JfrRecordings = 'jfrRecordings',
     ModifySubheader = 'modifySubheader',
     CatalogsSubheader = 'catalogsSubheader',
-    CreateCatalog = 'createCatalog'
+    CreateCatalog = 'createCatalog',
+    CatalogBackups = 'catalogBackups'
 }

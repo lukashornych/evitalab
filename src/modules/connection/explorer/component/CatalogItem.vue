@@ -36,10 +36,6 @@ import ReplaceCatalogDialog from '@/modules/connection/explorer/component/Replac
 import CreateCollectionDialog from '@/modules/connection/explorer/component/CreateCollectionDialog.vue'
 import SwitchCatalogToAliveStateDialog
     from '@/modules/connection/explorer/component/SwitchCatalogToAliveStateDialog.vue'
-import {
-    BackupViewerTabFactory,
-    useBackupsTabFactory,
-} from '@/modules/backup-viewer/service/BackupViewerTabFactory'
 import { ItemFlag } from '@/modules/base/model/tree-view/ItemFlag'
 import { EntityCollection } from '@/modules/connection/model/EntityCollection'
 import Immutable from 'immutable'
@@ -50,7 +46,6 @@ const workspaceService: WorkspaceService = useWorkspaceService()
 const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory = useEvitaQLConsoleTabFactory()
 const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = useGraphQLConsoleTabFactory()
 const schemaViewerTabFactory: SchemaViewerTabFactory = useSchemaViewerTabFactory()
-const backupsService: BackupViewerTabFactory = useBackupsTabFactory()
 const { t } = useI18n()
 
 const props = defineProps<{
@@ -167,25 +162,6 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
                 )
             },
             catalogNotCorrupted
-        )
-    )
-
-    actions.set(
-        CatalogItemType.BackupSubheader,
-        new MenuSubheader(t('explorer.catalog.subheader.backup'))
-    )
-
-    actions.set(
-        CatalogItemType.Backups,
-        createMenuAction(
-            CatalogItemType.Backups,
-            'mdi-cloud-download-outline',
-            () => {
-                workspaceService.createTab(
-                    backupsService.createNew(connection, props.catalog.name)
-                )
-            },
-            catalogNotCorrupted && serverWritable
         )
     )
 

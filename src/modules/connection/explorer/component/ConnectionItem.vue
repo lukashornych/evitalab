@@ -36,6 +36,8 @@ import { ItemFlag } from '@/modules/base/model/tree-view/ItemFlag'
 import Immutable from 'immutable'
 import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
 import { ApiType } from '@/modules/connection/model/status/ApiType'
+import { CatalogItemType } from '@/modules/connection/explorer/model/CatalogItemType'
+import { BackupViewerTabFactory, useBackupsTabFactory } from '@/modules/backup-viewer/service/BackupViewerTabFactory'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
@@ -44,6 +46,7 @@ const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = useGraphQLConsoleTabF
 const serverStatusTabFactory: ServerStatusTabFactory = useServerStatusTabFactory()
 const taskViewerTabFactory: TaskViewerTabFactory = useTaskViewerTabFactory()
 const jfrViewerTabFactory: JfrViewerTabFactory = useJfrViewerTabFactory()
+const backupsService: BackupViewerTabFactory = useBackupsTabFactory()
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -209,6 +212,7 @@ async function createActions(): Promise<Map<ConnectionItemType, MenuItem<Connect
             serverWritable && observabilityEnabled
         )
     )
+
     actions.set(
         ConnectionItemType.ModifySubheader,
         new MenuSubheader(t('explorer.connection.subheader.modify'))
@@ -244,6 +248,19 @@ async function createActions(): Promise<Map<ConnectionItemType, MenuItem<Connect
             ConnectionItemType.CreateCatalog,
             'mdi-plus',
             () => showCreateCatalogDialog.value = true,
+            serverWritable
+        )
+    )
+    actions.set(
+        ConnectionItemType.CatalogBackups,
+        createMenuAction(
+            ConnectionItemType.CatalogBackups,
+            'mdi-cloud-download-outline',
+            () => {
+                workspaceService.createTab(
+                    backupsService.createNew(props.connection)
+                )
+            },
             serverWritable
         )
     )

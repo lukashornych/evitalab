@@ -17,6 +17,8 @@ import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { PaginatedList } from '@/modules/connection/model/PaginatedList'
 import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
 import { backupTaskName } from '@/modules/backup-viewer/model/BackupTask'
+import { Catalog } from '@/modules/connection/model/Catalog'
+import Immutable from 'immutable'
 
 export const backupViewerServiceInjectionKey: InjectionKey<BackupViewerService> = Symbol('backupViewerService')
 
@@ -25,6 +27,20 @@ export class BackupViewerService {
 
     constructor(connectionService: ConnectionService) {
         this.connectionService = connectionService
+    }
+
+    async getAvailableCatalogs(connection: Connection): Promise<Immutable.List<Catalog>> {
+        return this.connectionService.getCatalogs(connection, true)
+    }
+
+    async isCatalogExists(connection: Connection, catalogName: string): Promise<boolean> {
+        const driver: EvitaDBDriver = await this.connectionService.getDriver(connection)
+        try {
+            await driver.getCatalog(connection, catalogName)
+            return true
+        } catch (e) {
+            return false
+        }
     }
 
     async getMinimalBackupDate(
@@ -76,6 +92,11 @@ export class BackupViewerService {
     async uploadBackup(connection: Connection, stream: AsyncIterable<GrpcRestoreCatalogRequest>): Promise<GrpcRestoreCatalogResponse>{
         const driver = await this.connectionService.getDriver(connection)
         return await driver.uploadFile(connection, stream)
+    }
+
+    async deleteBackup(connection: Connection, fileId: Uuid): Promise<boolean> {
+        const driver: EvitaDBDriver = await this.connectionService.getDriver(connection)
+        return await driver.deleteFile(connection, fileId)
     }
 
     async isCatalogNameValid(connection: Connection, catalogName: string): Promise<ClassifierValidationErrorType | undefined> {

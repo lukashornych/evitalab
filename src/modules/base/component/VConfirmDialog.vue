@@ -42,6 +42,10 @@ function reject(): void {
         persistent
         max-width="36rem"
     >
+        <template #activator="{ props }">
+            <slot name="activator" v-bind="{ props }"/>
+        </template>
+
         <template #title>
             <slot name="title">
                 {{ t('common.dialog.confirmDialog.title') }}

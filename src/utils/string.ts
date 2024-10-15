@@ -4,6 +4,24 @@ const stringWithCaseWordSplittingPattern: RegExp = /([^\s\-_A-Z]+)|([A-Z]+[^\s\-
 const unsupportedCharactersForWordSplittingPattern: RegExp = /[.:+\-@/\\|`~]/g
 
 /**
+ * The number of bytes in a kilobyte.
+ */
+const oneKB: number = 1024
+/**
+ * The number of bytes in a megabyte.
+ */
+const oneMB: number = oneKB * oneKB
+/**
+ * The number of bytes in a gigabyte.
+ */
+const oneGB: number = oneKB * oneMB
+
+const sizeFormatter: Intl.NumberFormat = new Intl.NumberFormat(
+    navigator.language,
+    { maximumFractionDigits: 2 }
+)
+
+/**
  * Splits string into words.
  * @param s input string to split
  */
@@ -21,4 +39,16 @@ export function splitStringWithCaseIntoWords(s?: string): Immutable.List<string>
         words.push(result[0])
     }
     return Immutable.List(words)
+}
+
+export function formatByteSize(sizeInBytes: number): string {
+    if (Math.floor(sizeInBytes / oneGB) > 0) {
+        return `${sizeFormatter.format(sizeInBytes / oneGB)} GB`
+    } else if (Math.floor(sizeInBytes / oneMB) > 0) {
+        return `${sizeFormatter.format(sizeInBytes / oneMB)} MB`
+    } else if (Math.floor(sizeInBytes / oneKB) > 0) {
+        return `${sizeFormatter.format(sizeInBytes / oneKB)} KB`
+    } else {
+        return `${sizeFormatter.format(sizeInBytes)} B`
+    }
 }

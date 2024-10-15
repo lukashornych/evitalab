@@ -10,7 +10,7 @@ const props = withDefaults(defineProps<{
     loading: false
 })
 const emit = defineEmits<{
-    (e: 'click'): void
+    (e: 'click', value: any): void
 }>()
 </script>
 
@@ -19,7 +19,7 @@ const emit = defineEmits<{
         :loading="loading"
         :prepend-icon="prependIcon"
         density="compact"
-        @click="emit('click')"
+        @click="emit('click', $event)"
         class="v-btn--variant-primary ml-2"
     >
         <slot />

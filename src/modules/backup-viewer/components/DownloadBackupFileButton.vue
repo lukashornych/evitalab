@@ -1,25 +1,24 @@
 <script setup lang="ts">
 
-import { FileTaskResult } from '@/modules/connection/model/task/FileTaskResult'
 import VDownloadServerFileButton from '@/modules/connection/component/VDownloadServerFileButton.vue'
-import { TaskStatus } from '@/modules/connection/model/task/TaskStatus'
+import { Connection } from '@/modules/connection/model/Connection'
+import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
 import { useI18n } from 'vue-i18n'
-import { Connection } from '@/modules/connection/model/Connection'
 
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
 const props = defineProps<{
-    connection: Connection
-    task: TaskStatus
+    connection: Connection,
+    backupFile: ServerFile
 }>()
 
 function onCouldNotDownloadResultFile(e: Error): void {
     toaster.error(t(
-        'taskViewer.tasksVisualizer.task.notification.couldNotDownloadResultFile',
+        'backupViewer.list.backup.notification.couldNotDownloadBackupFile',
         {
-            taskName: props.task.taskName,
+            fileName: props.backupFile.name,
             reason: e.message
         }
     ))
@@ -29,10 +28,10 @@ function onCouldNotDownloadResultFile(e: Error): void {
 <template>
     <VDownloadServerFileButton
         :connection="connection"
-        :file="(task.result as FileTaskResult).value"
+        :file="backupFile"
         @error="onCouldNotDownloadResultFile($event)"
     >
-        {{ t('taskViewer.tasksVisualizer.task.button.downloadFileResult') }}
+        {{ t('backupViewer.list.backup.button.downloadBackupFile') }}
     </VDownloadServerFileButton>
 </template>
 

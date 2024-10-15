@@ -59,6 +59,8 @@ const pageSize = ref<number>(20)
 const showStartRecordingDialog = ref<boolean>(false)
 const showEndRecordingDialog = ref<boolean>(false)
 
+const taskListRef = ref<typeof TaskList>()
+
 loadJfrRecordings().then(() => {
     initialized.value = true
     emit('ready')
@@ -67,6 +69,10 @@ loadJfrRecordings().then(() => {
 async function loadJfrRecordings() {
     jfrRecordings.value = await jfrViewerService.getRecordings(props.params.connection)
     jfrRecordingsLoaded.value = true
+}
+
+async function jfrRecordingEnded(): Promise<void> {
+    taskListRef.value?.reload(true)
 }
 
 async function downloadRecording(file: ServerFile) {
@@ -104,6 +110,7 @@ async function downloadRecording(file: ServerFile) {
 
         <div>
             <TaskList
+                ref="taskListRef"
                 v-show="runningRecordingsPresent"
                 :connection="params.connection"
                 :subheader="t('jfrViewer.tasks.title')"
@@ -196,6 +203,7 @@ async function downloadRecording(file: ServerFile) {
             v-if="showEndRecordingDialog"
             v-model="showEndRecordingDialog"
             :connection="params.connection"
+            @end="jfrRecordingEnded"
         />
     </div>
 </template>

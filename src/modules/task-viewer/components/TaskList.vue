@@ -110,8 +110,14 @@ async function reload(manual: boolean = false): Promise<void> {
 
     const loaded: boolean = await loadTaskStatuses()
     if (loaded) {
+        if (manual && canReload) {
+            // do nothing if the reloading process is working and user
+            // requests additional reload in between
+        } else {
+            // set new timeout only for automatic reload or reload recovery
+            reloadTimeoutId = setTimeout(reload, 2000)
+        }
         canReload = true
-        reloadTimeoutId = setTimeout(reload, 2000)
     } else {
         // we don't want to spam user server is down, user needs to refresh manually
         canReload = false
@@ -165,7 +171,6 @@ defineExpose<{
                 />
             </template>
         </VDataIterator>
-
     </VList>
 
     <VMissingDataIndicator

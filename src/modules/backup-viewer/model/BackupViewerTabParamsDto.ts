@@ -3,5 +3,4 @@ import { ConnectionId } from '@/modules/connection/model/ConnectionId'
 
 export interface BackupViewerTabParamsDto extends TabParamsDto {
     readonly connectionId: ConnectionId
-    readonly catalogName: string
 }

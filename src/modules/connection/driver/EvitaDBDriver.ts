@@ -108,6 +108,7 @@ export interface EvitaDBDriver {
     downloadFile(connection:Connection, fileId: Uuid):Promise<Blob>
     //TODO: Add doc
     uploadFile(connection: Connection, stream: AsyncIterable<GrpcRestoreCatalogRequest>):Promise<GrpcRestoreCatalogResponse>
+    deleteFile(connection: Connection, fileId: Uuid): Promise<boolean>
     //TODO: Add doc
     downloadRecordingEventTypes(connection: Connection):Promise<EventType[]>
     //TODO: Add doc

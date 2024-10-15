@@ -14,7 +14,8 @@ const props = defineProps<{
     connection: Connection
 }>()
 const emit = defineEmits<{
-    (e: 'update:modelValue', value: boolean): void
+    (e: 'update:modelValue', value: boolean): void,
+    (e: 'end'): void
 }>()
 
 async function stopRecording(): Promise<boolean> {
@@ -23,6 +24,7 @@ async function stopRecording(): Promise<boolean> {
         const stopped: boolean = await jfrViewerService.stopRecording(props.connection)
         if (stopped) {
             toaster.success(t('jfrViewer.stopRecording.notification.recordingStopped'))
+            emit('end')
         } else {
             toaster.info(t('jfrViewer.stopRecording.notification.recordingNotStopped'))
         }

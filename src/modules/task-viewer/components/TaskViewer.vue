@@ -18,8 +18,11 @@ const path: List<string> = List([t('taskViewer.path')])
 
 const taskListRef = ref<typeof TaskList>()
 
+const reloadingTasks = ref<boolean>(false)
 function reloadTasks(): void {
+    reloadingTasks.value = true
     taskListRef.value?.reload(true)
+    reloadingTasks.value = false
 }
 
 emit('ready')
@@ -29,7 +32,7 @@ emit('ready')
     <div class="task-viewer">
         <VTabToolbar :prepend-icon="'mdi-chart-gantt'" :path="path">
             <template #append>
-                <VBtn icon @click="reloadTasks">
+                <VBtn icon :loading="reloadingTasks" @click="reloadTasks">
                     <VIcon>mdi-refresh</VIcon>
                     <VTooltip activator="parent">
                         {{ t('taskViewer.tasksVisualizer.button.reload') }}
@@ -38,17 +41,24 @@ emit('ready')
             </template>
         </VTabToolbar>
 
-        <TaskList ref="taskListRef" :connection="props.params.connection" />
+        <VSheet class="task-viewer__body">
+            <TaskList ref="taskListRef" :connection="props.params.connection" />
+        </VSheet>
     </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .task-viewer {
     display: grid;
     grid-template-rows: 3rem 1fr;
 
     &__body {
-        position: relative;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 3rem;
+        bottom: 0;
+        overflow-y: auto;
     }
 }
 </style>

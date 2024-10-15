@@ -19,6 +19,7 @@
       "add": "Add",
       "create": "Create",
       "drop": "Drop",
+      "delete": "Delete",
       "executeQuery": "Execute query",
       "showMore": "Show more",
       "copy": "Copy",
@@ -270,6 +271,7 @@
         "remove": "Remove connection",
         "detail": "Status",
         "createCatalog": "Create catalog",
+        "catalogBackups": "Catalog backups",
         "tasks": "Tasks",
         "jfrRecordings": "JFR recordings"
       },
@@ -331,8 +333,7 @@
       },
       "subheader": {
         "modify": "Modify",
-        "collections": "Collections",
-        "backup": "Backup"
+        "collections": "Collections"
       },
       "actions": {
         "openEvitaQLConsole": "evitaQL console",
@@ -343,8 +344,7 @@
         "renameCatalog": "Rename catalog",
         "replaceCatalog": "Replace catalog",
         "createCollection": "Create collection",
-        "switchCatalogToAliveState": "Switch catalog to alive state",
-        "backups": "Backups"
+        "switchCatalogToAliveState": "Switch catalog to alive state"
       },
       "errors": {
         "couldNotLoad": "This catalog couldn't be loaded because it's corrupted."
@@ -937,6 +937,7 @@
     }
   },
   "backupViewer": {
+    "title": "Catalog backups",
     "button": {
       "reloadBackups": "Reload backups",
       "backupCatalog": "Backup catalog"
@@ -945,17 +946,35 @@
       "title": "Backups in preparation"
     },
     "list": {
-      "title": "Finished backups"
+      "title": "Available backups",
+      "noFiles": "No catalog backups are available",
+      "backup": {
+        "button": {
+          "deleteBackupFile": "Delete backup file",
+          "restoreBackupFile": "Restore backup file",
+          "downloadBackupFile": "Download backup file"
+        },
+        "notification": {
+          "couldNotDownloadBackupFile": "Could not download {fileName} file: {reason}"
+        }
+      }
     },
     "notification": {
       "couldNotLoadBackupFiles": "Could not load backup files: {reason}",
       "couldNotDownloadBackupFile": "Could not download backup file {fileName}: {reason}"
     },
     "backup": {
-      "title": "Backup {catalogName} catalog",
+      "title": "Backup catalog",
       "description": "Request a new backup for the catalog:",
       "info": "The back up process may take a while. Therefore it will be started asynchronously. You can find it’s progress and backup file to download in task listing.",
       "form": {
+        "catalogName": {
+          "label": "Catalog to backup",
+          "validations": {
+            "required": "Catalog to backup is required.",
+            "notExists": "Selected catalog doesn't exist anymore."
+          }
+        },
         "pastMoment": {
           "label": "Past moment"
         },
@@ -968,6 +987,8 @@
         "backup": "Backup"
       },
       "notification": {
+        "couldNotLoadAvailableCatalogs": "Could not load available catalogs: {reason}",
+        "couldNotLoadMinimalDate": "Could not load available moments: {reason}",
         "backupRequested": "A backup for the {catalogName} catalog requested.",
         "couldNotRequestBackup": "Could not request a backup for the {catalogName} catalog: {reason}"
       }
@@ -995,6 +1016,15 @@
       "notification": {
         "restoreRequested": "A restoration of the {fileName} backup file has been requested.",
         "couldNotRestoreBackupFile": "Could not restore backup file {fileName}: {reason}"
+      }
+    },
+    "delete": {
+      "title": "Delete {fileName} file",
+      "question": "Do you want to delete server file with backed up catalog?",
+      "notification": {
+        "fileDeleted": "The {fileName} backup file has been successfully deleted.",
+        "fileNotDeleted": "The {fileName} backup file has not been deleted.",
+        "couldNotDeleteFile": "Could not delete the {fileName} backup file: {reason}"
       }
     }
   },

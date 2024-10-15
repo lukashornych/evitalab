@@ -15,10 +15,11 @@ const { t } = useI18n()
 const props = defineProps<{
     modelValue: boolean,
     connection: Connection,
-    file: ServerFile
+    backupFile: ServerFile
 }>()
 const emit = defineEmits<{
-    (e: 'update:modelValue', value: boolean): void
+    (e: 'update:modelValue', value: boolean): void,
+    (e: 'restore'): void
 }>()
 
 
@@ -51,19 +52,20 @@ async function restore(): Promise<boolean> {
     try {
         await backupViewerService.restoreCatalog(
             props.connection,
-            props.file.fileId,
+            props.backupFile.fileId,
             catalogName.value
         )
         toaster.success(t(
             'backupViewer.restore.notification.restoreRequested',
-            { fileName: props.file.name }
+            { fileName: props.backupFile.name }
         ))
+        emit('restore')
         return true
     } catch (e: any) {
         toaster.error(t(
             'backupViewer.restore.notification.couldNotRestoreBackupFile',
             {
-                fileName: props.file.name,
+                fileName: props.backupFile.name,
                 reason: e.message
             }
         ))
@@ -81,10 +83,14 @@ async function restore(): Promise<boolean> {
         :reset="reset"
         @update:model-value="emit('update:modelValue', $event)"
     >
+        <template #activator="{ props }">
+            <slot name="activator" v-bind="{ props }" />
+        </template>
+
         <template #title>
             <I18nT keypath="backupViewer.restore.title">
                 <template #fileName>
-                    <strong>{{ file.name }}</strong>
+                    <strong>{{ backupFile.name }}</strong>
                 </template>
             </I18nT>
         </template>

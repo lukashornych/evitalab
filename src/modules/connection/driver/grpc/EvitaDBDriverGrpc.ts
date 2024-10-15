@@ -36,6 +36,7 @@ import { ConnectError } from '@connectrpc/connect'
 import { ClassifierValidationErrorType } from '@/modules/connection/model/data-type/ClassifierValidationErrorType'
 import { ClassifierType } from '@/modules/connection/model/data-type/ClassifierType'
 import {
+    GrpcDeleteFileToFetchResponse,
     GrpcEvitaServerStatusResponse,
     GrpcReservedKeywordsResponse,
     GrpcRestoreCatalogRequest,
@@ -54,6 +55,7 @@ import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
 import { ServerFileConverter } from '@/modules/connection/driver/grpc/service/ServerFileConverter'
 import { PaginatedList } from '@/modules/connection/model/PaginatedList'
 import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
+import { file } from '@babel/types'
 
 //TODO: Add docs and add header 'X-EvitaDB-ClientID': this.getClientIdHeaderValue()
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
@@ -564,6 +566,17 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
     async uploadFile(connection: Connection, stream: AsyncIterable<GrpcRestoreCatalogRequest>): Promise<GrpcRestoreCatalogResponse> {
         const res = await this.clientProvider.getEvitaManagementClient(connection).restoreCatalog(stream)
         return res
+    }
+
+    async deleteFile(connection: Connection, fileId: Uuid): Promise<boolean> {
+        const response: GrpcDeleteFileToFetchResponse = await this.clientProvider.getEvitaManagementClient(connection)
+            .deleteFile({
+                fileId: {
+                    leastSignificantBits: fileId.leastSignificantBits,
+                    mostSignificantBits: fileId.mostSignificantBits
+                }
+            })
+        return response.success
     }
 
     async downloadRecordingEventTypes(connection: Connection):Promise<EventType[]>{

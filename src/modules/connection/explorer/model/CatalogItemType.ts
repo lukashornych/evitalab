@@ -12,7 +12,5 @@ export enum CatalogItemType {
     CollectionsSubheader = 'collectionsSubheader',
     JobsSubheader = 'jobsSubheader',
     CreateCollection = 'createCollection',
-    BackupSubheader = 'backupSubheader',
-    Backups = 'backups',
     Jobs = 'jobs'
 }
