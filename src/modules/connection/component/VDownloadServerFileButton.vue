@@ -35,7 +35,7 @@ async function download(): Promise<void> {
     state.value = State.Preparing
 
     try {
-        // todo lho refactor this after services refactor
+        // todo lho refactor this after services refactor, maybe merge with server file viewer module?
         const driver: EvitaDBDriver = await connectionService.getDriver(props.connection)
         const blob = await driver.downloadFile(props.connection, props.file.fileId)
 

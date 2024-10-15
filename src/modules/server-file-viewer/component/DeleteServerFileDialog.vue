@@ -3,48 +3,51 @@
 import VFormDialog from '@/modules/base/component/VFormDialog.vue'
 import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
 import { useI18n } from 'vue-i18n'
-import { BackupViewerService, useBackupViewerService } from '@/modules/backup-viewer/service/BackupViewerService'
 import { Connection } from '@/modules/connection/model/Connection'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import {
+    ServerFileViewerService,
+    useServerFileViewerService
+} from '@/modules/server-file-viewer/service/ServerFileViewerService'
 
-const backupViewerService: BackupViewerService = useBackupViewerService()
+const serverFileViewerService: ServerFileViewerService = useServerFileViewerService()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
 const props = defineProps<{
     modelValue: boolean,
     connection: Connection
-    backupFile: ServerFile
+    file: ServerFile
 }>()
 const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void
     (e: 'delete'): void
 }>()
 
-async function deleteBackupFile(): Promise<boolean> {
+async function deleteFile(): Promise<boolean> {
     try {
-        const deleted: boolean = await backupViewerService.deleteBackup(
+        const deleted: boolean = await serverFileViewerService.deleteFile(
             props.connection,
-            props.backupFile.fileId
+            props.file.fileId
         )
         if (deleted) {
             toaster.success(t(
-                'backupViewer.delete.notification.fileDeleted',
-                { fileName: props.backupFile.name }
+                'serverFileViewer.delete.notification.fileDeleted',
+                { fileName: props.file.name }
             ))
         } else {
             toaster.info(t(
-                'backupViewer.delete.notification.fileNotDeleted',
-                { fileName: props.backupFile.name }
+                'serverFileViewer.delete.notification.fileNotDeleted',
+                { fileName: props.file.name }
             ))
         }
         emit('delete')
         return true
     } catch (e: any) {
         toaster.error(t(
-            'backupViewer.delete.notification.couldNotDeleteFile',
+            'serverFileViewer.delete.notification.couldNotDeleteFile',
             {
-                fileName: props.backupFile.name,
+                fileName: props.file.name,
                 reason: e.message
             }
         ))
@@ -59,7 +62,7 @@ async function deleteBackupFile(): Promise<boolean> {
         dangerous
         changed
         confirm-button-icon="mdi-delete-outline"
-        :confirm="deleteBackupFile"
+        :confirm="deleteFile"
         @update:model-value="emit('update:modelValue', $event)"
     >
         <template #activator="{ props }">
@@ -67,15 +70,15 @@ async function deleteBackupFile(): Promise<boolean> {
         </template>
 
         <template #title>
-            <I18nT keypath="backupViewer.delete.title">
+            <I18nT keypath="serverFileViewer.delete.title">
                 <template #fileName>
-                    {{ backupFile.name }}
+                    {{ file.name }}
                 </template>
             </I18nT>
         </template>
 
         <template #prepend-form>
-            {{ t('backupViewer.delete.question') }}
+            {{ t('serverFileViewer.delete.question') }}
         </template>
 
         <template #confirm-button-body>

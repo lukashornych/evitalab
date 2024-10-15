@@ -85,11 +85,16 @@ async function startRecording(): Promise<boolean> {
         :reset="reset"
         @update:model-value="emit('update:modelValue', $event)"
     >
+        <template #activator="{ props }">
+            <slot name="activator" v-bind="{ props }" />
+        </template>
+
         <template #title>
             {{ t('jfrViewer.startRecording.title') }}
         </template>
 
 <!--        todo lho singleline? -->
+<!--        todo lho add virtual select all/none item-->
         <template #default>
             <VAutocomplete
                 v-model="selectedTypes"

@@ -5,20 +5,20 @@ import { computed } from 'vue'
 import { formatByteSize } from '@/utils/string'
 
 const props = defineProps<{
-    backupFile: ServerFile
+    recordingFile: ServerFile
 }>()
 
 const fileSize = computed<string>(() => {
-    return formatByteSize(Number(props.backupFile.totalSizeInBytes))
+    return formatByteSize(Number(props.recordingFile.totalSizeInBytes))
 })
 </script>
 
 <template>
-    <span class="backup-title">
-        <span>{{ backupFile.name }}</span>
+    <span class="recording-title">
+        <span>{{ recordingFile.name }}</span>
 
         <!-- not using chip group because of https://github.com/vuetifyjs/vuetify/issues/19678 -->
-        <span class="backup-title__chips">
+        <span class="recording-title__chips">
             <VChip>
                 {{ fileSize }}
             </VChip>
@@ -27,7 +27,7 @@ const fileSize = computed<string>(() => {
 </template>
 
 <style lang="scss" scoped>
-.backup-title {
+.recording-title {
     display: flex;
     gap: 1rem;
     align-items: center;

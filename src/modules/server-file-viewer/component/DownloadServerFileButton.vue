@@ -11,14 +11,14 @@ const { t } = useI18n()
 
 const props = defineProps<{
     connection: Connection,
-    backupFile: ServerFile
+    file: ServerFile
 }>()
 
 function onCouldNotDownloadResultFile(e: Error): void {
     toaster.error(t(
-        'backupViewer.list.backup.notification.couldNotDownloadBackupFile',
+        'serverFileViewer.list.item.notification.couldNotDownloadFile',
         {
-            fileName: props.backupFile.name,
+            fileName: props.file.name,
             reason: e.message
         }
     ))
@@ -28,10 +28,10 @@ function onCouldNotDownloadResultFile(e: Error): void {
 <template>
     <VDownloadServerFileButton
         :connection="connection"
-        :file="backupFile"
+        :file="file"
         @error="onCouldNotDownloadResultFile($event)"
     >
-        {{ t('backupViewer.list.backup.button.downloadBackupFile') }}
+        {{ t('serverFileViewer.list.item.button.downloadFile') }}
     </VDownloadServerFileButton>
 </template>
 

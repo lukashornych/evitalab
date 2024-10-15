@@ -4,13 +4,13 @@ import { Connection } from '@/modules/connection/model/Connection'
 import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
 import { useI18n } from 'vue-i18n'
 import { ref } from 'vue'
-import DeleteBackupFileDialog from '@/modules/backup-viewer/components/DeleteBackupFileDialog.vue'
+import DeleteServerFileDialog from '@/modules/server-file-viewer/component/DeleteServerFileDialog.vue'
 
 const { t } = useI18n()
 
 const props = defineProps<{
     connection: Connection
-    backupFile: ServerFile
+    file: ServerFile
 }>()
 const emit = defineEmits<{
     (e: 'delete'): void
@@ -20,10 +20,10 @@ const showDeleteDialog = ref<boolean>(false)
 </script>
 
 <template>
-    <DeleteBackupFileDialog
+    <DeleteServerFileDialog
         v-model="showDeleteDialog"
         :connection="connection"
-        :backup-file="backupFile"
+        :file="file"
         @delete="emit('delete')"
     >
         <template #activator="{ props }">
@@ -35,11 +35,11 @@ const showDeleteDialog = ref<boolean>(false)
                 <VIcon>mdi-delete-outline</VIcon>
 
                 <VTooltip activator="parent">
-                    {{ t('backupViewer.list.backup.button.deleteBackupFile') }}
+                    {{ t('serverFileViewer.list.item.button.deleteFile') }}
                 </VTooltip>
             </VBtn>
         </template>
-    </DeleteBackupFileDialog>
+    </DeleteServerFileDialog>
 </template>
 
 <style lang="scss" scoped>

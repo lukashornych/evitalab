@@ -75,16 +75,15 @@ const shouldDisplayPagination = computed<boolean>(() => {
 
 async function loadTaskStatuses(): Promise<boolean> {
     try {
-        const fetchedTaskStatuses: PaginatedList<TaskStatus> = await taskViewerService.getTaskStatuses(
+        taskStatuses.value = await taskViewerService.getTaskStatuses(
             props.connection,
             pageNumber.value,
             props.pageSize,
             props.states,
             props.taskTypes
         )
-        taskStatuses.value = fetchedTaskStatuses
 
-        if (fetchedTaskStatuses.pageNumber > 1 && taskStatuses.value?.data.size === 0) {
+        if (taskStatuses.value.pageNumber > 1 && taskStatuses.value?.data.size === 0) {
             pageNumber.value--
         }
         if (!loadedTaskStatuses.value) {

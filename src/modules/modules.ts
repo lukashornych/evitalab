@@ -15,6 +15,7 @@ import { BackupViewerModuleRegistrar } from '@/modules/backup-viewer/BackupViewe
 import { TaskViewerModuleRegistrar } from '@/modules/task-viewer/TaskViewerModuleRegistrar'
 import { ServerActionsModuleRegistrar } from '@/modules/server-status/ServerActionsModuleRegistrar'
 import { JfrViewerModuleRegistrar } from '@/modules/jfr-viewer/JfrViewerModuleRegistrar'
+import { ServerFileViewerModuleRegistrar } from '@/modules/server-file-viewer/ServerFileViewerModuleRegistrar'
 
 // todo docs
 export const modules: ModuleRegistrar[] = [
@@ -34,6 +35,7 @@ export const modules: ModuleRegistrar[] = [
     new EntityViewerModuleRegistrar(),
     new SchemaViewerModuleRegistrar(),
     new ServerActionsModuleRegistrar(),
+    new ServerFileViewerModuleRegistrar(),
     new BackupViewerModuleRegistrar(),
     new TaskViewerModuleRegistrar(),
     new JfrViewerModuleRegistrar()

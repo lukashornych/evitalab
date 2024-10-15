@@ -84,19 +84,9 @@ export class BackupViewerService {
         return await driver.restoreCatalog(connection, fileId, catalogName)
     }
 
-    async downloadBackup(connection: Connection, fileId: Uuid): Promise<Blob> {
-        const driver = await this.connectionService.getDriver(connection)
-        return await driver.downloadFile(connection, fileId)
-    }
-
     async uploadBackup(connection: Connection, stream: AsyncIterable<GrpcRestoreCatalogRequest>): Promise<GrpcRestoreCatalogResponse>{
         const driver = await this.connectionService.getDriver(connection)
         return await driver.uploadFile(connection, stream)
-    }
-
-    async deleteBackup(connection: Connection, fileId: Uuid): Promise<boolean> {
-        const driver: EvitaDBDriver = await this.connectionService.getDriver(connection)
-        return await driver.deleteFile(connection, fileId)
     }
 
     async isCatalogNameValid(connection: Connection, catalogName: string): Promise<ClassifierValidationErrorType | undefined> {

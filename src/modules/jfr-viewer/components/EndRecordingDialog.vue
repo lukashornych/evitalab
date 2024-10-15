@@ -48,6 +48,10 @@ async function stopRecording(): Promise<boolean> {
         :confirm="stopRecording"
         @update:model-value="emit('update:modelValue', $event)"
     >
+        <template #activator="{ props }">
+            <slot name="activator" :props="props" />
+        </template>
+
         <template #title>
             {{ t('jfrViewer.stopRecording.title') }}
         </template>

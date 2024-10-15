@@ -1,72 +1,65 @@
 <script setup lang="ts">
 
 import VMissingDataIndicator from '@/modules/base/component/VMissingDataIndicator.vue'
+import { useI18n } from 'vue-i18n'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { PaginatedList } from '@/modules/connection/model/PaginatedList'
 import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
-import { BackupViewerService, useBackupViewerService } from '@/modules/backup-viewer/service/BackupViewerService'
+import { JfrViewerService, useJfrViewerService } from '@/modules/jfr-viewer/service/JfrViewerService'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
-import { useI18n } from 'vue-i18n'
 import { Connection } from '@/modules/connection/model/Connection'
 import ServerFileList from '@/modules/server-file-viewer/component/ServerFileList.vue'
-import RestoreBackupFileButton from '@/modules/backup-viewer/components/RestoreBackupFileButton.vue'
 
-const backupViewerService: BackupViewerService = useBackupViewerService()
+const jfrViewerService: JfrViewerService = useJfrViewerService()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
 const props = defineProps<{
     connection: Connection
-    backupsInPreparationPresent: boolean
-}>()
-const emit = defineEmits<{
-    (e: 'requestTaskUpdate'): void
+    recordingsInPreparationPresent: boolean
 }>()
 
-const backupFilesLoaded = ref<boolean>(false)
-const backupFiles = ref<PaginatedList<ServerFile>>()
-const backupFileItems = computed<ServerFile[]>(() => {
-    if (backupFiles.value == undefined) {
+const recordingsLoaded = ref<boolean>(false)
+const recordings = ref<PaginatedList<ServerFile> | undefined>()
+const recordingItems = computed<ServerFile[]>(() => {
+    if (recordings.value == undefined) {
         return []
     }
-    return backupFiles.value.data.toArray()
+    return recordings.value.data.toArray()
 })
+
 const pageNumber = ref<number>(1)
 watch(pageNumber, async () => {
-    await loadBackupFiles()
+    await loadRecordings()
 })
 const pageCount = computed<number>(() => {
-    if (backupFiles.value == undefined) {
+    if (recordings.value == undefined) {
         return 1
     }
-    return Math.ceil(backupFiles.value.totalNumberOfRecords / pageSize.value)
+    return Math.ceil(recordings.value.totalNumberOfRecords / pageSize.value)
 })
 const pageSize = ref<number>(20)
 
-async function loadBackupFiles(): Promise<boolean> {
+async function loadRecordings(): Promise<boolean> {
     try {
-        backupFiles.value = await backupViewerService.getBackupFiles(
-            props.connection,
-            pageNumber.value,
-            pageSize.value
-        )
+        recordings.value = await jfrViewerService.getRecordings(props.connection)
 
-        if (backupFiles.value.pageNumber > 1 && backupFiles.value?.data.size === 0) {
+        if (recordings.value.pageNumber > 1 && recordings.value?.data.size === 0) {
             pageNumber.value--
         }
-        if (!backupFilesLoaded.value) {
-            backupFilesLoaded.value = true
+        if (!recordingsLoaded.value) {
+            recordingsLoaded.value = true
         }
         return true
     } catch (e: any) {
         toaster.error(t(
-            'backupViewer.notification.couldNotLoadBackupFiles',
+            'jfrViewer.notification.couldNotLoadRecordings',
             { reason: e.message }
         ))
         return false
     }
 }
-loadBackupFiles().then()
+loadRecordings().then()
 
 let canReload: boolean = true
 let reloadTimeoutId: ReturnType<typeof setTimeout> | undefined = undefined
@@ -75,7 +68,7 @@ async function reload(manual: boolean = false): Promise<void> {
         return
     }
 
-    const loaded: boolean = await loadBackupFiles()
+    const loaded: boolean = await loadRecordings()
     if (loaded) {
         if (manual && canReload) {
             // do nothing if the reloading process is working and user
@@ -103,32 +96,23 @@ defineExpose<{
 
 <template>
     <ServerFileList
-        v-if="backupFilesLoaded && backupFileItems.length > 0"
+        v-if="recordingsLoaded && recordingItems.length > 0"
         :connection="connection"
-        :files="backupFileItems"
+        :files="recordingItems"
         v-model:page-number="pageNumber"
         :page-size="pageSize"
         :page-count="pageCount"
-        @request-task-update="emit('requestTaskUpdate')"
         @request-file-update="reload(true)"
     >
-        <template v-if="backupsInPreparationPresent" #subheader>
-            {{ t('backupViewer.list.title') }}
-        </template>
-
-        <template #item-append="{ file }">
-            <RestoreBackupFileButton
-                :connection="connection"
-                :backup-file="file"
-                @restore="emit('requestTaskUpdate')"
-            />
+        <template v-if="recordingsInPreparationPresent" #subheader>
+            {{ t('jfrViewer.list.title') }}
         </template>
     </ServerFileList>
 
     <VMissingDataIndicator
         v-else
-        icon="mdi-cloud-download-outline"
-        :title="t('backupViewer.list.noFiles')"
+        icon="mdi-record-circle-outline"
+        :title="t('jfrViewer.list.noRecordings')"
     />
 </template>
 

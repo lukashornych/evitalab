@@ -22,11 +22,6 @@ export class JfrViewerService {
         return await driver.getFilesToFetch(connection, jfrRecorderTaskName, 1,20)
     }
 
-    async downloadFile(connection: Connection, fileId: Uuid):Promise<Blob> {
-        const driver = await this.connectionService.getDriver(connection)
-        return await driver.downloadFile(connection, fileId)
-    }
-
     async getEventTypes(connection: Connection):Promise<EventType[]>{
         const driver = await this.connectionService.getDriver(connection)
         return await driver.downloadRecordingEventTypes(connection)

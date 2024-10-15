@@ -5,9 +5,11 @@
 
 const props = withDefaults(defineProps<{
     prependIcon: string
-    loading?: boolean
+    loading?: boolean,
+    disabled?: boolean
 }>(), {
-    loading: false
+    loading: false,
+    disabled: false
 })
 const emit = defineEmits<{
     (e: 'click', value: any): void
@@ -18,6 +20,7 @@ const emit = defineEmits<{
     <VBtn
         :loading="loading"
         :prepend-icon="prependIcon"
+        :disabled="disabled"
         density="compact"
         @click="emit('click', $event)"
         class="v-btn--variant-primary ml-2"

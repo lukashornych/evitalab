@@ -68,6 +68,8 @@ async function confirm(): Promise<void> {
         }
         emit('update:modelValue', false)
     }
+
+    props.reset()
 }
 </script>
 

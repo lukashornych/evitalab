@@ -950,12 +950,7 @@
       "noFiles": "No catalog backups are available",
       "backup": {
         "button": {
-          "deleteBackupFile": "Delete backup file",
-          "restoreBackupFile": "Restore backup file",
-          "downloadBackupFile": "Download backup file"
-        },
-        "notification": {
-          "couldNotDownloadBackupFile": "Could not download {fileName} file: {reason}"
+          "restoreBackupFile": "Restore backup file"
         }
       }
     },
@@ -1016,15 +1011,6 @@
       "notification": {
         "restoreRequested": "A restoration of the {fileName} backup file has been requested.",
         "couldNotRestoreBackupFile": "Could not restore backup file {fileName}: {reason}"
-      }
-    },
-    "delete": {
-      "title": "Delete {fileName} file",
-      "question": "Do you want to delete server file with backed up catalog?",
-      "notification": {
-        "fileDeleted": "The {fileName} backup file has been successfully deleted.",
-        "fileNotDeleted": "The {fileName} backup file has not been deleted.",
-        "couldNotDeleteFile": "Could not delete the {fileName} backup file: {reason}"
       }
     }
   },
@@ -1105,7 +1091,8 @@
   "jfrViewer": {
     "path": "JFR Recordings",
     "button": {
-      "startRecording": "Start recording"
+      "startRecording": "Start recording",
+      "reloadRecordings": "Reload recordings"
     },
     "tasks": {
       "title": "Running recordings",
@@ -1114,9 +1101,11 @@
       }
     },
     "list": {
-      "title": "Finished recordings"
+      "title": "Finished recordings",
+      "noRecordings": "No JFR recordings are available."
     },
     "notification": {
+      "couldNotLoadRecordings": "Could not load JFR recording files: {reason}",
       "couldNotDownloadRecordingFile": "Could not download recording file {fileName}: {reason}"
     },
     "startRecording": {
@@ -1150,6 +1139,28 @@
         "couldNotStopRecording": "Could not stop JFR recording: {reason}",
         "recordingStopped": "JFR recording has been stopped.",
         "recordingNotStopped": "JFR recording has not been stopped."
+      }
+    }
+  },
+  "serverFileViewer": {
+    "list": {
+      "item": {
+        "button": {
+          "deleteFile": "Delete server file",
+          "downloadFile": "Download server file"
+        },
+        "notification": {
+          "couldNotDownloadFile": "Could not download {fileName} file: {reason}"
+        }
+      }
+    },
+    "delete": {
+      "title": "Delete {fileName} file",
+      "question": "Do you want to delete server file?",
+      "notification": {
+        "fileDeleted": "The {fileName} file has been successfully deleted.",
+        "fileNotDeleted": "The {fileName} file has not been deleted.",
+        "couldNotDeleteFile": "Could not delete the {fileName} file: {reason}"
       }
     }
   }

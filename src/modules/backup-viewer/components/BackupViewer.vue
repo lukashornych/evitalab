@@ -19,8 +19,8 @@ const shownTaskTypes: string[] = [backupTaskName, restoreTaskName]
 
 const { t } = useI18n()
 
-const emit = defineEmits<TabComponentEvents>()
 const props = defineProps<TabComponentProps<BackupViewerTabParams, VoidTabData>>()
+const emit = defineEmits<TabComponentEvents>()
 
 const taskListRef = ref<typeof TaskList>()
 const backupListRef = ref<typeof BackupList>()
@@ -75,7 +75,7 @@ emit('ready')
                 ref="backupListRef"
                 :connection="params.connection"
                 :backups-in-preparation-present="backupsInPreparationPresent"
-                @tasks-update="reloadTasks"
+                @request-task-update="reloadTasks"
             />
         </VSheet>
     </div>
