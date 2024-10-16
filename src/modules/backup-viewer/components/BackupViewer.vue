@@ -13,6 +13,7 @@ import { restoreTaskName } from '@/modules/backup-viewer/model/RestoreTask'
 import TaskList from '@/modules/task-viewer/components/TaskList.vue'
 import BackupList from '@/modules/backup-viewer/components/BackupList.vue'
 import BackupCatalogButton from '@/modules/backup-viewer/components/BackupCatalogButton.vue'
+import RestoreLocalBackupFileButton from '@/modules/backup-viewer/components/RestoreLocalBackupFileButton.vue'
 
 const shownTaskStates: TaskState[] = [TaskState.Running, TaskState.Queued, TaskState.Failed]
 const shownTaskTypes: string[] = [backupTaskName, restoreTaskName]
@@ -51,6 +52,10 @@ emit('ready')
                         {{ t('backupViewer.button.reloadBackups') }}
                     </VTooltip>
                 </VBtn>
+                <RestoreLocalBackupFileButton
+                    :connection="params.connection"
+                    @restore="reloadBackups"
+                />
                 <BackupCatalogButton
                     :connection="params.connection"
                     @backup="reloadBackups"

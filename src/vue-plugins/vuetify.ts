@@ -80,6 +80,10 @@ export default createVuetify({
             variant: 'solo-filled',
             density: 'compact'
         },
+        VFileInput: {
+            variant: 'solo-filled',
+            density: 'compact'
+        },
         VList: {
             density: 'compact'
         },

@@ -39,8 +39,7 @@ import {
     GrpcDeleteFileToFetchResponse,
     GrpcEvitaServerStatusResponse,
     GrpcReservedKeywordsResponse,
-    GrpcRestoreCatalogRequest,
-    GrpcRestoreCatalogResponse
+    GrpcRestoreCatalogResponse, GrpcRestoreCatalogUnaryRequest
 } from '@/modules/connection/driver/grpc/gen/GrpcEvitaManagementAPI_pb'
 import { ReservedKeywordsConverter } from '@/modules/connection/driver/grpc/service/ReservedKeywordsConverter'
 import { splitStringWithCaseIntoWords } from '@/utils/string'
@@ -55,7 +54,16 @@ import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
 import { ServerFileConverter } from '@/modules/connection/driver/grpc/service/ServerFileConverter'
 import { PaginatedList } from '@/modules/connection/model/PaginatedList'
 import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
-import { file } from '@babel/types'
+import { GrpcFile, GrpcTaskStatus } from '@/modules/connection/driver/grpc/gen/GrpcEvitaDataTypes_pb'
+
+/**
+ * Chunk size for upload local backup files
+ */
+const chunkSize: number = 64 * 1024; // 64 KB chunks
+/**
+ * Timeout in milliseconds in which a file chunks needs to be uploaded to server
+ */
+const fileChunkUploadTimeout: number = 60000 // 1 minute
 
 //TODO: Add docs and add header 'X-EvitaDB-ClientID': this.getClientIdHeaderValue()
 export class EvitaDBDriverGrpc implements EvitaDBDriver {
@@ -563,9 +571,72 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         return new Blob(data)
     }
 
-    async uploadFile(connection: Connection, stream: AsyncIterable<GrpcRestoreCatalogRequest>): Promise<GrpcRestoreCatalogResponse> {
-        const res = await this.clientProvider.getEvitaManagementClient(connection).restoreCatalog(stream)
-        return res
+    async restoreCatalog(connection: Connection, file: Blob, catalogName: string): Promise<TaskStatus> {
+        const fileReader = new FileReader();
+        let offset: number = 0;
+        const totalSize: number = file.size;
+
+        // Helper function to read a chunk
+        function readChunk() {
+            if (offset >= totalSize) {
+                fileReader.abort();
+                return;
+            }
+            const chunk = file.slice(offset, offset + chunkSize);
+            fileReader.readAsArrayBuffer(chunk);
+        }
+
+        // Promise to handle the load of one chunk
+        const onLoadPromise = () => {
+            return new Promise<Uint8Array>((resolve, reject) => {
+                fileReader.onload = (event: ProgressEvent<FileReader>) => {
+                    if (event.target?.result) {
+                        const arrayBuffer = event.target.result as ArrayBuffer;
+                        const fileChunk = new Uint8Array(arrayBuffer);
+                        offset += chunkSize;
+                        resolve(fileChunk);
+                    }
+                };
+
+                fileReader.onerror = () => {
+                    fileReader.abort();
+                    reject(new UnexpectedError('Error reading file'));
+                };
+            });
+        };
+
+        let lastTaskStatus: GrpcTaskStatus | undefined = undefined
+        let uploadedFileId: Uuid | undefined = undefined
+        while (offset < totalSize) {
+            readChunk();
+            const chunk: Uint8Array = await onLoadPromise();
+            const chunkRequest: GrpcRestoreCatalogUnaryRequest = new GrpcRestoreCatalogUnaryRequest({
+                catalogName,
+                backupFile: chunk,
+                fileId: uploadedFileId != undefined
+                    ? {
+                        mostSignificantBits: uploadedFileId.mostSignificantBits,
+                        leastSignificantBits: uploadedFileId.leastSignificantBits
+                    }
+                    : undefined,
+                totalSizeInBytes: BigInt(file.size)
+            });
+
+            const chunkResponse: GrpcRestoreCatalogResponse = await this.clientProvider
+                .getEvitaManagementClient(connection)
+                .restoreCatalogUnary(
+                    chunkRequest,
+                    { timeoutMs: fileChunkUploadTimeout }
+                )
+            lastTaskStatus = chunkResponse.task
+            if (uploadedFileId == undefined) {
+                uploadedFileId = this.evitaValueConverter.convertUUID(
+                    (chunkResponse.task?.result.value as GrpcFile).fileId!
+                )
+            }
+        }
+
+        return this.taskStatusConverter.convert(lastTaskStatus!)
     }
 
     async deleteFile(connection: Connection, fileId: Uuid): Promise<boolean> {
@@ -592,7 +663,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
         return result.ok
     }
 
-    async restoreCatalog(
+    async restoreCatalogFromServerFile(
         connection: Connection,
         fileId: Uuid,
         catalogName: string

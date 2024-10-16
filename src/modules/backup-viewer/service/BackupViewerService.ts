@@ -3,10 +3,6 @@ import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateT
 import { Uuid } from '@/modules/connection/model/data-type/Uuid'
 import { mandatoryInject } from '@/utils/reactivity'
 import { InjectionKey } from 'vue'
-import {
-    GrpcRestoreCatalogRequest,
-    GrpcRestoreCatalogResponse
-} from '@/modules/connection/driver/grpc/gen/GrpcEvitaManagementAPI_pb'
 import { ConnectionService } from '@/modules/connection/service/ConnectionService'
 import { CatalogVersionAtResponse } from '@/modules/connection/model/CatalogVersionAtResponse'
 import { TaskStatus } from '@/modules/connection/model/task/TaskStatus'
@@ -75,18 +71,13 @@ export class BackupViewerService {
         return await driver.getFilesToFetch(connection, backupTaskName, pageNumber, pageSize)
     }
 
-    async restoreCatalog(
+    async restoreBackupFile(
         connection: Connection,
         fileId: Uuid,
         catalogName: string
     ): Promise<TaskStatus> {
         const driver = await this.connectionService.getDriver(connection)
-        return await driver.restoreCatalog(connection, fileId, catalogName)
-    }
-
-    async uploadBackup(connection: Connection, stream: AsyncIterable<GrpcRestoreCatalogRequest>): Promise<GrpcRestoreCatalogResponse>{
-        const driver = await this.connectionService.getDriver(connection)
-        return await driver.uploadFile(connection, stream)
+        return await driver.restoreCatalogFromServerFile(connection, fileId, catalogName)
     }
 
     async isCatalogNameValid(connection: Connection, catalogName: string): Promise<ClassifierValidationErrorType | undefined> {
@@ -108,66 +99,10 @@ export class BackupViewerService {
         return false
     }
 
-
-// todo lho prototype for local file restore
-// async function upload(){
-//     await backupViewerService.uploadBackup(props.params.connection, sendCatalogChunks())
-// }
-//
-// async function* sendCatalogChunks(): AsyncIterable<GrpcRestoreCatalogRequest> {
-//     if (!file.value) {
-//         return;
-//     }
-//
-//     const CHUNK_SIZE = 64 * 1024; // 64 KB chunks
-//     const fileReader = new FileReader();
-//     let offset = 0;
-//     const totalSize = file.value.size;
-//
-//     // Helper function to read a chunk
-//     function readChunk() {
-//         if (offset >= totalSize) {
-//             fileReader.abort();
-//             return;
-//         }
-//         const chunk = file.value!.slice(offset, offset + CHUNK_SIZE);
-//         fileReader.readAsArrayBuffer(chunk);
-//     }
-//
-//     // Promise to handle the load of one chunk
-//     const onLoadPromise = () => {
-//         return new Promise<Uint8Array>((resolve, reject) => {
-//             fileReader.onload = (event: ProgressEvent<FileReader>) => {
-//                 if (event.target?.result) {
-//                     const arrayBuffer = event.target.result as ArrayBuffer;
-//                     const fileChunk = new Uint8Array(arrayBuffer);
-//                     offset += CHUNK_SIZE;
-//                     resolve(fileChunk);
-//                 }
-//             };
-//
-//             fileReader.onerror = () => {
-//                 console.error('Error reading file.');
-//                 fileReader.abort();
-//                 reject(new Error('Error reading file'));
-//             };
-//         });
-//     };
-//
-//     try {
-//         while (offset < totalSize) {
-//             readChunk();
-//             const chunk = await onLoadPromise();
-//             yield new GrpcRestoreCatalogRequest({
-//                 catalogName: 'random',
-//                 backupFile: chunk
-//             }); // Yield the chunk here
-//         }
-//     } catch (error) {
-//         console.error('Error during file upload:', error);
-//     }
-// }
-
+    async restoreLocalBackupFile(connection: Connection, file: Blob, catalogName: string): Promise<TaskStatus> {
+        const driver = await this.connectionService.getDriver(connection)
+        return await driver.restoreCatalog(connection, file, catalogName)
+    }
 }
 
 export const useBackupViewerService = (): BackupViewerService => {

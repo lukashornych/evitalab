@@ -940,6 +940,7 @@
     "title": "Catalog backups",
     "button": {
       "reloadBackups": "Reload backups",
+      "restoreLocalBackup": "Import and restore catalog from backup file",
       "backupCatalog": "Backup catalog"
     },
     "tasks": {
@@ -990,7 +991,7 @@
     },
     "restore": {
       "title": "Restore catalog from {fileName}",
-      "description": "Restore the backup file into catalog:",
+      "description": "Request restoration of the backup file into catalog:",
       "info": "The restore process may take a while. Therefore, it will be started asynchronously. You can find it's progress in backups or tasks.",
       "button": {
         "restore": "Restore"
@@ -1011,6 +1012,37 @@
       "notification": {
         "restoreRequested": "A restoration of the {fileName} backup file has been requested.",
         "couldNotRestoreBackupFile": "Could not restore backup file {fileName}: {reason}"
+      }
+    },
+    "restoreLocal": {
+      "title": "Restore catalog",
+      "description": "Request restoration of imported backup file into catalog:",
+      "info": "The restore process may take a while. Therefore, it will be started asynchronously. You can find it's progress in backups or tasks.",
+      "button": {
+        "restore": "Restore"
+      },
+      "form": {
+        "backupFile": {
+          "label": "Backup file",
+          "validations": {
+            "required": "Backup file is required."
+          }
+        },
+        "catalogName": {
+          "label": "Catalog name",
+          "validations": {
+            "required": "Catalog name is required.",
+            "empty": "Catalog name is required.",
+            "leadingTrailingWhiteSpace": "Catalog name cannot have leading or trailing whitespace characters.",
+            "keyword": "Catalog name is same as a reserved keyword.",
+            "format": "Catalog name doesn't match supported format.",
+            "notAvailable": "Catalog with this name already exists."
+          }
+        }
+      },
+      "notification": {
+        "restoreRequested": "A backup restoration has been requested.",
+        "couldNotRestoreBackupFile": "Could not restore backup file: {reason}"
       }
     }
   },

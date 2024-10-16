@@ -50,7 +50,7 @@ function reset(): void {
 
 async function restore(): Promise<boolean> {
     try {
-        await backupViewerService.restoreCatalog(
+        await backupViewerService.restoreBackupFile(
             props.connection,
             props.backupFile.fileId,
             catalogName.value

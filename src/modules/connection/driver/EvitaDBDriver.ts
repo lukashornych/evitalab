@@ -101,13 +101,13 @@ export interface EvitaDBDriver {
         taskTypes?: string[]
     ): Promise<PaginatedList<TaskStatus>>
     //TODO: Add doc
-    restoreCatalog(connection: Connection, fileId: Uuid, catalogName: string): Promise<TaskStatus>
+    restoreCatalogFromServerFile(connection: Connection, fileId: Uuid, catalogName: string): Promise<TaskStatus>
     //TODO: Add doc
     cancelTask(connection: Connection, taskId: Uuid): Promise<boolean>
     //TODO: Add doc
     downloadFile(connection:Connection, fileId: Uuid):Promise<Blob>
     //TODO: Add doc
-    uploadFile(connection: Connection, stream: AsyncIterable<GrpcRestoreCatalogRequest>):Promise<GrpcRestoreCatalogResponse>
+    restoreCatalog(connection: Connection, file: Blob, catalogName: string): Promise<TaskStatus>
     deleteFile(connection: Connection, fileId: Uuid): Promise<boolean>
     //TODO: Add doc
     downloadRecordingEventTypes(connection: Connection):Promise<EventType[]>
