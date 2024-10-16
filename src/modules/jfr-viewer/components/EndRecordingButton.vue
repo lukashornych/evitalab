@@ -18,18 +18,25 @@ const emit = defineEmits<{
 }>()
 
 const showEndRecordingDialog = ref<boolean>(false)
+const endRequested = ref<boolean>(false)
+
+function onEnd(): void {
+    endRequested.value = true
+    emit('end')
+}
 </script>
 
 <template>
     <EndRecordingDialog
         v-model="showEndRecordingDialog"
         :connection="connection"
-        @end="emit('end')"
+        @end="onEnd"
     >
         <template #activator="{ props }">
             <VBtn
                 v-if="task.state === TaskState.Running"
                 icon
+                :disabled="endRequested"
                 @click="showEndRecordingDialog = true"
                 v-bind="props"
             >
