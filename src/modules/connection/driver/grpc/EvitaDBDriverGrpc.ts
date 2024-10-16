@@ -39,7 +39,7 @@ import {
     GrpcDeleteFileToFetchResponse,
     GrpcEvitaServerStatusResponse,
     GrpcReservedKeywordsResponse,
-    GrpcRestoreCatalogResponse, GrpcRestoreCatalogUnaryRequest
+    GrpcRestoreCatalogUnaryRequest, GrpcRestoreCatalogUnaryResponse
 } from '@/modules/connection/driver/grpc/gen/GrpcEvitaManagementAPI_pb'
 import { ReservedKeywordsConverter } from '@/modules/connection/driver/grpc/service/ReservedKeywordsConverter'
 import { splitStringWithCaseIntoWords } from '@/utils/string'
@@ -59,7 +59,7 @@ import { GrpcFile, GrpcTaskStatus } from '@/modules/connection/driver/grpc/gen/G
 /**
  * Chunk size for upload local backup files
  */
-const chunkSize: number = 64 * 1024; // 64 KB chunks
+const chunkSize: number = 2 * 1024 * 1024; // 2 MB chunks
 /**
  * Timeout in milliseconds in which a file chunks needs to be uploaded to server
  */
@@ -622,7 +622,7 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                 totalSizeInBytes: BigInt(file.size)
             });
 
-            const chunkResponse: GrpcRestoreCatalogResponse = await this.clientProvider
+            const chunkResponse: GrpcRestoreCatalogUnaryResponse = await this.clientProvider
                 .getEvitaManagementClient(connection)
                 .restoreCatalogUnary(
                     chunkRequest,
@@ -630,9 +630,10 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                 )
             lastTaskStatus = chunkResponse.task
             if (uploadedFileId == undefined) {
-                uploadedFileId = this.evitaValueConverter.convertUUID(
-                    (chunkResponse.task?.result.value as GrpcFile).fileId!
-                )
+                if (chunkResponse.fileId == undefined) {
+                    throw new UnexpectedError('No fileId was returned for uploaded chunk. Aborting...')
+                }
+                uploadedFileId = this.evitaValueConverter.convertUUID(chunkResponse.fileId)
             }
         }
 

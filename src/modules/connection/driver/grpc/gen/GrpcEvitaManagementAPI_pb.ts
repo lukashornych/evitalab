@@ -500,7 +500,7 @@ export class GrpcRestoreCatalogResponse extends Message<GrpcRestoreCatalogRespon
   /**
    * the task that is used to restore the catalog and getting its progress
    *
-   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTaskStatus task = 2;
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTaskStatus task = 3;
    */
   task?: GrpcTaskStatus;
 
@@ -513,7 +513,7 @@ export class GrpcRestoreCatalogResponse extends Message<GrpcRestoreCatalogRespon
   static readonly typeName = "io.evitadb.externalApi.grpc.generated.GrpcRestoreCatalogResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "read", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
-    { no: 2, name: "task", kind: "message", T: GrpcTaskStatus },
+    { no: 3, name: "task", kind: "message", T: GrpcTaskStatus },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcRestoreCatalogResponse {
@@ -530,6 +530,63 @@ export class GrpcRestoreCatalogResponse extends Message<GrpcRestoreCatalogRespon
 
   static equals(a: GrpcRestoreCatalogResponse | PlainMessage<GrpcRestoreCatalogResponse> | undefined, b: GrpcRestoreCatalogResponse | PlainMessage<GrpcRestoreCatalogResponse> | undefined): boolean {
     return proto3.util.equals(GrpcRestoreCatalogResponse, a, b);
+  }
+}
+
+/**
+ * Response to a catalog restore request.
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GrpcRestoreCatalogUnaryResponse
+ */
+export class GrpcRestoreCatalogUnaryResponse extends Message<GrpcRestoreCatalogUnaryResponse> {
+  /**
+   * returns the number of bytes read from the backup file
+   *
+   * @generated from field: int64 read = 1;
+   */
+  read = protoInt64.zero;
+
+  /**
+   * The identification of the file on the server that should be restored
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcUuid fileId = 2;
+   */
+  fileId?: GrpcUuid;
+
+  /**
+   * the task that is used to restore the catalog and getting its progress
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTaskStatus task = 3;
+   */
+  task?: GrpcTaskStatus;
+
+  constructor(data?: PartialMessage<GrpcRestoreCatalogUnaryResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "io.evitadb.externalApi.grpc.generated.GrpcRestoreCatalogUnaryResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "read", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 2, name: "fileId", kind: "message", T: GrpcUuid },
+    { no: 3, name: "task", kind: "message", T: GrpcTaskStatus },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcRestoreCatalogUnaryResponse {
+    return new GrpcRestoreCatalogUnaryResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GrpcRestoreCatalogUnaryResponse {
+    return new GrpcRestoreCatalogUnaryResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GrpcRestoreCatalogUnaryResponse {
+    return new GrpcRestoreCatalogUnaryResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GrpcRestoreCatalogUnaryResponse | PlainMessage<GrpcRestoreCatalogUnaryResponse> | undefined, b: GrpcRestoreCatalogUnaryResponse | PlainMessage<GrpcRestoreCatalogUnaryResponse> | undefined): boolean {
+    return proto3.util.equals(GrpcRestoreCatalogUnaryResponse, a, b);
   }
 }
 

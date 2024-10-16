@@ -1011,6 +1011,13 @@ export class GrpcPaginatedList extends Message<GrpcPaginatedList> {
    */
   pageNumber = 0;
 
+  /**
+   * The number of the last page.
+   *
+   * @generated from field: int32 lastPageNumber = 3;
+   */
+  lastPageNumber = 0;
+
   constructor(data?: PartialMessage<GrpcPaginatedList>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1021,6 +1028,7 @@ export class GrpcPaginatedList extends Message<GrpcPaginatedList> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "pageSize", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 2, name: "pageNumber", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 3, name: "lastPageNumber", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcPaginatedList {
@@ -2750,6 +2758,14 @@ export class GrpcQueryParam extends Message<GrpcQueryParam> {
     case: "managedReferencesBehaviour";
   } | {
     /**
+     * The expression
+     *
+     * @generated from field: string expressionValue = 23;
+     */
+    value: string;
+    case: "expressionValue";
+  } | {
+    /**
      * The string array value.
      *
      * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcStringArray stringArrayValue = 101;
@@ -2946,6 +2962,7 @@ export class GrpcQueryParam extends Message<GrpcQueryParam> {
     { no: 20, name: "statisticsType", kind: "enum", T: proto3.getEnumType(GrpcStatisticsType), oneof: "queryParam" },
     { no: 21, name: "histogramBehavior", kind: "enum", T: proto3.getEnumType(GrpcHistogramBehavior), oneof: "queryParam" },
     { no: 22, name: "managedReferencesBehaviour", kind: "enum", T: proto3.getEnumType(GrpcManagedReferencesBehaviour), oneof: "queryParam" },
+    { no: 23, name: "expressionValue", kind: "scalar", T: 9 /* ScalarType.STRING */, oneof: "queryParam" },
     { no: 101, name: "stringArrayValue", kind: "message", T: GrpcStringArray, oneof: "queryParam" },
     { no: 102, name: "integerArrayValue", kind: "message", T: GrpcIntegerArray, oneof: "queryParam" },
     { no: 103, name: "longArrayValue", kind: "message", T: GrpcLongArray, oneof: "queryParam" },

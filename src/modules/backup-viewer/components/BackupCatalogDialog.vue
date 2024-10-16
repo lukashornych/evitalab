@@ -25,6 +25,15 @@ const emit = defineEmits<{
     (e: 'backup'): void
 }>()
 
+watch(
+    () => props.modelValue,
+    (newValue) => {
+        if (newValue) {
+            loadAvailableCatalogs().then()
+        }
+    }
+)
+
 const availableCatalogs = ref<string[]>([])
 const availableCatalogsLoaded = ref<boolean>(false)
 const minimalDate = ref<string | undefined>()
@@ -133,8 +142,6 @@ async function backup(): Promise<boolean> {
         return false
     }
 }
-
-loadAvailableCatalogs().then()
 </script>
 
 <template>

@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { GrpcCancelTaskRequest, GrpcCancelTaskResponse, GrpcDeleteFileToFetchRequest, GrpcDeleteFileToFetchResponse, GrpcEvitaCatalogStatisticsResponse, GrpcEvitaConfigurationResponse, GrpcEvitaServerStatusResponse, GrpcFetchFileRequest, GrpcFetchFileResponse, GrpcFilesToFetchRequest, GrpcFilesToFetchResponse, GrpcFileToFetchRequest, GrpcFileToFetchResponse, GrpcReservedKeywordsResponse, GrpcRestoreCatalogFromServerFileRequest, GrpcRestoreCatalogRequest, GrpcRestoreCatalogResponse, GrpcRestoreCatalogUnaryRequest, GrpcSpecifiedTaskStatusesRequest, GrpcSpecifiedTaskStatusesResponse, GrpcTaskStatusesRequest, GrpcTaskStatusesResponse, GrpcTaskStatusRequest, GrpcTaskStatusResponse } from "./GrpcEvitaManagementAPI_pb.js";
+import { GrpcCancelTaskRequest, GrpcCancelTaskResponse, GrpcDeleteFileToFetchRequest, GrpcDeleteFileToFetchResponse, GrpcEvitaCatalogStatisticsResponse, GrpcEvitaConfigurationResponse, GrpcEvitaServerStatusResponse, GrpcFetchFileRequest, GrpcFetchFileResponse, GrpcFilesToFetchRequest, GrpcFilesToFetchResponse, GrpcFileToFetchRequest, GrpcFileToFetchResponse, GrpcReservedKeywordsResponse, GrpcRestoreCatalogFromServerFileRequest, GrpcRestoreCatalogRequest, GrpcRestoreCatalogResponse, GrpcRestoreCatalogUnaryRequest, GrpcRestoreCatalogUnaryResponse, GrpcSpecifiedTaskStatusesRequest, GrpcSpecifiedTaskStatusesResponse, GrpcTaskStatusesRequest, GrpcTaskStatusesResponse, GrpcTaskStatusRequest, GrpcTaskStatusResponse } from "./GrpcEvitaManagementAPI_pb.js";
 
 /**
  * This service contains RPCs that could be called by gRPC clients on evitaDB. Main purpose of this service is to provide
@@ -67,7 +67,7 @@ export const EvitaManagementService = {
     restoreCatalogUnary: {
       name: "RestoreCatalogUnary",
       I: GrpcRestoreCatalogUnaryRequest,
-      O: GrpcRestoreCatalogResponse,
+      O: GrpcRestoreCatalogUnaryResponse,
       kind: MethodKind.Unary,
     },
     /**
