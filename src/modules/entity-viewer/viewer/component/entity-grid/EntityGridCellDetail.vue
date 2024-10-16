@@ -60,6 +60,7 @@ const rawDataType = computed<Scalar | ExtraEntityObjectType | undefined>(() => {
         const propertyName = props.propertyDescriptor.key.name
         switch (propertyName) {
             case StaticEntityProperties.PrimaryKey: return Scalar.Integer
+            case StaticEntityProperties.Version: return Scalar.Integer
             case StaticEntityProperties.Locales: return Scalar.LocaleArray
             case StaticEntityProperties.PriceInnerRecordHandling: return Scalar.String
             default: return undefined

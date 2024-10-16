@@ -70,9 +70,11 @@ export class EvitaQLQueryExecutor extends QueryExecutor {
 
         flattenedProperties.push([
             EntityPropertyKey.entity(StaticEntityProperties.PrimaryKey),
-            this.wrapRawValueIntoNativeValue(
-                Object(entity.primaryKey)
-            ),
+            this.wrapRawValueIntoNativeValue(entity.primaryKey)
+        ])
+        flattenedProperties.push([
+            EntityPropertyKey.entity(StaticEntityProperties.Version),
+            this.wrapRawValueIntoNativeValue(entity.version)
         ])
         flattenedProperties.push(this.flattenParent(entity))
 

@@ -270,6 +270,15 @@ export class EntityViewerService {
             undefined,
             ImmutableList()
         ))
+        descriptors.push(new EntityPropertyDescriptor(
+            EntityPropertyType.Entity,
+            EntityPropertyKey.entity(StaticEntityProperties.Version),
+            'Version',
+            'Version',
+            undefined,
+            undefined,
+            ImmutableList()
+        ))
         if (entitySchema.withHierarchy.getOrElse(false)) {
             descriptors.push(new EntityPropertyDescriptor(
                 EntityPropertyType.Entity,
