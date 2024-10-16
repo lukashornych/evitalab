@@ -120,7 +120,7 @@ export class EvitaSessionProvider {
                     }
                 )
         } catch (e) {
-            if (e instanceof ConnectError && e.code === Code.InvalidArgument) {
+            if (e instanceof ConnectError) {
                 // ignore, session already closed
                 return
             }
