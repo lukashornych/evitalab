@@ -534,7 +534,8 @@ export class GrpcRestoreCatalogResponse extends Message<GrpcRestoreCatalogRespon
 }
 
 /**
- * Response to a catalog restore request.
+ * Response to a catalog restore request (unary variant). This is used for gRPC/web.
+ * We need to explicitly handle the fileId, because it gets repeatedly updated (appended) from the client.
  *
  * @generated from message io.evitadb.externalApi.grpc.generated.GrpcRestoreCatalogUnaryResponse
  */

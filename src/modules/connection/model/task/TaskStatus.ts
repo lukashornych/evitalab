@@ -14,7 +14,8 @@ export class TaskStatus {
     readonly taskName: string
     readonly taskId: Uuid
     readonly catalogName: string | undefined
-    readonly issued: OffsetDateTime
+    readonly created: OffsetDateTime
+    readonly issued: OffsetDateTime | undefined
     readonly started: OffsetDateTime | undefined
     readonly finished: OffsetDateTime | undefined
     readonly progress: number
@@ -31,7 +32,8 @@ export class TaskStatus {
                 taskName: string,
                 taskId: Uuid,
                 catalogName: string | undefined,
-                issued: OffsetDateTime,
+                created: OffsetDateTime,
+                issued: OffsetDateTime | undefined,
                 started: OffsetDateTime | undefined,
                 finished: OffsetDateTime | undefined,
                 progress: number,
@@ -44,6 +46,7 @@ export class TaskStatus {
         this.taskName = taskName
         this.taskId = taskId
         this.catalogName = catalogName
+        this.created = created
         this.issued = issued
         this.started = started
         this.finished = finished

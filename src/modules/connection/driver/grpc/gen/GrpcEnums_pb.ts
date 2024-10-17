@@ -1529,6 +1529,14 @@ export enum GrpcTaskSimplifiedState {
    * @generated from enum value: TASK_FAILED = 3;
    */
   TASK_FAILED = 3,
+
+  /**
+   * *
+   * Task is waiting for precondition to be satisfied.
+   *
+   * @generated from enum value: TASK_WAITING_FOR_PRECONDITION = 4;
+   */
+  TASK_WAITING_FOR_PRECONDITION = 4,
 }
 // Retrieve enum metadata with: proto3.getEnumType(GrpcTaskSimplifiedState)
 proto3.util.setEnumType(GrpcTaskSimplifiedState, "io.evitadb.externalApi.grpc.generated.GrpcTaskSimplifiedState", [
@@ -1536,6 +1544,7 @@ proto3.util.setEnumType(GrpcTaskSimplifiedState, "io.evitadb.externalApi.grpc.ge
   { no: 1, name: "TASK_RUNNING" },
   { no: 2, name: "TASK_FINISHED" },
   { no: 3, name: "TASK_FAILED" },
+  { no: 4, name: "TASK_WAITING_FOR_PRECONDITION" },
 ]);
 
 /**

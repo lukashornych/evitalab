@@ -74,8 +74,16 @@ const properties = computed<Property[]>(() => {
         ))
     }
     properties.push(new Property(
-        t('taskViewer.tasksVisualizer.task.detail.property.issued'),
-        new PropertyValue(props.task.issued.getPrettyPrintableString())
+        t('taskViewer.tasksVisualizer.task.detail.property.created'),
+        new PropertyValue(props.task.created.getPrettyPrintableString())
+    ))
+    properties.push(new Property(
+        t('taskViewer.tasksVisualizer.task.detail.property.issued.label'),
+        new PropertyValue(
+            props.task.issued != undefined
+                ? props.task.issued.getPrettyPrintableString()
+                : new PlaceholderValue(t('taskViewer.tasksVisualizer.task.detail.property.issued.notIssued'))
+        )
     ))
     properties.push(new Property(
         t('taskViewer.tasksVisualizer.task.detail.property.started.label'),

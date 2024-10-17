@@ -59,9 +59,15 @@ export class TaskStatusConverter {
             ),
             grpcTaskStatus.catalogName,
             new OffsetDateTime(
-                grpcTaskStatus.issued!.timestamp,
-                grpcTaskStatus.issued!.offset
+                grpcTaskStatus.created!.timestamp,
+                grpcTaskStatus.created!.offset
             ),
+            grpcTaskStatus.issued != undefined
+                ? new OffsetDateTime(
+                    grpcTaskStatus.issued!.timestamp,
+                    grpcTaskStatus.issued!.offset
+                )
+                : undefined,
             grpcTaskStatus.started != undefined
                 ? new OffsetDateTime(
                     grpcTaskStatus.started.timestamp,

@@ -15,7 +15,7 @@ import BackupList from '@/modules/backup-viewer/components/BackupList.vue'
 import BackupCatalogButton from '@/modules/backup-viewer/components/BackupCatalogButton.vue'
 import RestoreLocalBackupFileButton from '@/modules/backup-viewer/components/RestoreLocalBackupFileButton.vue'
 
-const shownTaskStates: TaskState[] = [TaskState.Running, TaskState.Queued, TaskState.Failed]
+const shownTaskStates: TaskState[] = [TaskState.WaitingForPrecondition, TaskState.Running, TaskState.Queued, TaskState.Failed]
 const shownTaskTypes: string[] = [backupTaskName, restoreTaskName]
 
 const { t } = useI18n()

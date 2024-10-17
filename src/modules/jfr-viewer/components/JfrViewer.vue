@@ -14,7 +14,7 @@ import RecordingList from '@/modules/jfr-viewer/components/RecordingList.vue'
 import StartRecordingButton from '@/modules/jfr-viewer/components/StartRecordingButton.vue'
 import EndRecordingButton from '@/modules/jfr-viewer/components/EndRecordingButton.vue'
 
-const shownTaskStates: TaskState[] = [TaskState.Running, TaskState.Queued, TaskState.Failed]
+const shownTaskStates: TaskState[] = [TaskState.WaitingForPrecondition, TaskState.Running, TaskState.Queued, TaskState.Failed]
 const shownTaskTypes: string[] = [jfrRecorderTaskName]
 
 const { t } = useI18n()

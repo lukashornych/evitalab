@@ -1,4 +1,4 @@
-import { GrpcTaskSimplifiedState } from "../gen/GrpcEnums_pb"
+import { GrpcTaskSimplifiedState } from '../gen/GrpcEnums_pb'
 import { TaskState } from '@/modules/connection/model/task/TaskState'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 
@@ -26,6 +26,8 @@ export class TaskStateConverter {
 
     convertTaskStateToGrpc(state: TaskState):GrpcTaskSimplifiedState{
         switch (state) {
+            case TaskState.WaitingForPrecondition:
+                return GrpcTaskSimplifiedState.TASK_WAITING_FOR_PRECONDITION
             case TaskState.Failed:
                 return GrpcTaskSimplifiedState.TASK_FAILED
             case TaskState.Finished:
@@ -41,6 +43,8 @@ export class TaskStateConverter {
 
     convertTaskState(state: GrpcTaskSimplifiedState):TaskState{
         switch(state){
+            case GrpcTaskSimplifiedState.TASK_WAITING_FOR_PRECONDITION:
+                return TaskState.WaitingForPrecondition
             case GrpcTaskSimplifiedState.TASK_FAILED:
                 return TaskState.Failed
             case GrpcTaskSimplifiedState.TASK_FINISHED:

@@ -1976,6 +1976,13 @@ export class GrpcTaskStatus extends Message<GrpcTaskStatus> {
    */
   trait: GrpcTaskTrait[] = [];
 
+  /**
+   * Date and time when the task was created
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcOffsetDateTime created = 15;
+   */
+  created?: GrpcOffsetDateTime;
+
   constructor(data?: PartialMessage<GrpcTaskStatus>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1998,6 +2005,7 @@ export class GrpcTaskStatus extends Message<GrpcTaskStatus> {
     { no: 12, name: "file", kind: "message", T: GrpcFile, oneof: "result" },
     { no: 13, name: "exception", kind: "message", T: StringValue },
     { no: 14, name: "trait", kind: "enum", T: proto3.getEnumType(GrpcTaskTrait), repeated: true },
+    { no: 15, name: "created", kind: "message", T: GrpcOffsetDateTime },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcTaskStatus {

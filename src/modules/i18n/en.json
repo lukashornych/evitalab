@@ -1055,6 +1055,7 @@
       "noTasks": "No tasks are running",
       "task": {
         "state": {
+          "waitingForPrecondition": "waiting for precondition",
           "queued": "queued",
           "running": "running",
           "finished": "finished",
@@ -1083,10 +1084,14 @@
             "name": "Name",
             "state": "State",
             "catalogName": "Catalog name",
-            "issued": "Issued",
+            "created": "Created",
+            "issued": {
+              "label": "Issued",
+              "notIssued": "<task hasn't yet been issued>"
+            },
             "started": {
               "label": "Started",
-              "notStarted": "<task hasn't started yet>"
+              "notStarted": "<task hasn't yet been started>"
             },
             "finished": {
               "label": "Finished",
