@@ -54,12 +54,12 @@ import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
 import { ServerFileConverter } from '@/modules/connection/driver/grpc/service/ServerFileConverter'
 import { PaginatedList } from '@/modules/connection/model/PaginatedList'
 import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
-import { GrpcFile, GrpcTaskStatus } from '@/modules/connection/driver/grpc/gen/GrpcEvitaDataTypes_pb'
+import { GrpcTaskStatus } from '@/modules/connection/driver/grpc/gen/GrpcEvitaDataTypes_pb'
 
 /**
  * Chunk size for upload local backup files
  */
-const chunkSize: number = 2 * 1024 * 1024; // 2 MB chunks
+const chunkSize: number = 500 * 1024; // 500 KB chunks
 /**
  * Timeout in milliseconds in which a file chunks needs to be uploaded to server
  */
