@@ -18,7 +18,7 @@
     "@connectrpc/connect-web": "^1.4.0",
     "@connectrpc/protoc-gen-connect-es": "^1.4.0",
     "@ddietr/codemirror-themes": "^1.4.2",
-    "@lukashornych/codemirror-lang-evitaql": "1.2.4",
+    "@lukashornych/codemirror-lang-evitaql": "1.2.5",
     "@mdi/font": "7.0.96",
     "@types/dompurify": "^3.0.4",
     "@types/js-cookie": "^3.0.3",
