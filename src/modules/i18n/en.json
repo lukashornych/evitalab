@@ -1134,7 +1134,7 @@
     },
     "list": {
       "title": "Finished recordings",
-      "noRecordings": "No JFR recordings are available."
+      "noRecordings": "No JFR recordings are available"
     },
     "notification": {
       "couldNotLoadRecordings": "Could not load JFR recording files: {reason}",
