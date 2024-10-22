@@ -1,17 +1,17 @@
 import { TabDefinition } from '@/modules/workspace/tab/model/TabDefinition'
 import { VoidTabData } from '@/modules/workspace/tab/model/void/VoidTabData'
-import { ServerStatusTabParams } from './ServerStatusTabParams'
+import { ServerViewerTabParams } from './ServerViewerTabParams'
 import { DefineComponent, markRaw } from 'vue'
-import ServerStatus from '@/modules/server-status/component/ServerStatus.vue'
+import ServerViewer from '@/modules/server-viewer/component/ServerViewer.vue'
 
 // todo docs
-export class ServerStatusTabDefinition extends TabDefinition<ServerStatusTabParams, VoidTabData> {
-    constructor(title: string, params: ServerStatusTabParams) {
+export class ServerViewerTabDefinition extends TabDefinition<ServerViewerTabParams, VoidTabData> {
+    constructor(title: string, params: ServerViewerTabParams) {
         super(
             undefined,
             title,
             'mdi-database-outline',
-            markRaw(ServerStatus as DefineComponent<any, any, any>),
+            markRaw(ServerViewer as DefineComponent<any, any, any>),
             params,
             new VoidTabData()
         )

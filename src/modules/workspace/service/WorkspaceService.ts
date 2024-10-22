@@ -23,8 +23,8 @@ import {
 import { SchemaViewerTabDefinition } from '@/modules/schema-viewer/viewer/workspace/model/SchemaViewerTabDefinition'
 import { KeymapViewerTabDefinition } from '@/modules/keymap/viewer/workspace/model/KeymapViewerTabDefinition'
 import { mandatoryInject } from '@/utils/reactivity'
-import { ServerStatusTabFactory } from '@/modules/server-status/service/ServerStatusTabFactory'
-import { ServerStatusTabDefinition } from '@/modules/server-status/model/ServerStatusTabDefinition'
+import { ServerViewerTabFactory } from '@/modules/server-viewer/service/ServerViewerTabFactory'
+import { ServerViewerTabDefinition } from '@/modules/server-viewer/model/ServerViewerTabDefinition'
 import { TaskViewerTabFactory } from '@/modules/task-viewer/services/TaskViewerTabFactory'
 import { TaskViewerTabDefinition } from '@/modules/task-viewer/model/TaskViewerTabDefinition'
 import { BackupViewerTabDefinition } from '@/modules/backup-viewer/model/BackupViewerTabDefinition'
@@ -49,7 +49,7 @@ export class WorkspaceService {
     private readonly graphQLConsoleTabFactory: GraphQLConsoleTabFactory
     private readonly schemaViewerTabFactory: SchemaViewerTabFactory
     private readonly keymapViewerTabFactory: KeymapViewerTabFactory
-    private readonly serverStatusTabFactory: ServerStatusTabFactory
+    private readonly serverViewerTabFactory: ServerViewerTabFactory
     private readonly taskViewerTabFactory: TaskViewerTabFactory
     private readonly backupViewerTabFactory: BackupViewerTabFactory
     private readonly jfrViewerTabFactory: JfrViewerTabFactory
@@ -61,7 +61,7 @@ export class WorkspaceService {
                 graphQLConsoleTabFactory: GraphQLConsoleTabFactory,
                 schemaViewerTabFactory: SchemaViewerTabFactory,
                 keymapViewerTabFactory: KeymapViewerTabFactory,
-                serverStatusTabFactory: ServerStatusTabFactory,
+                serverViewerTabFactory: ServerViewerTabFactory,
                 taskViewerTabFactory: TaskViewerTabFactory,
                 backupViewerTabFactory: BackupViewerTabFactory,
                 jfrViewerTabFactory: JfrViewerTabFactory) {
@@ -72,7 +72,7 @@ export class WorkspaceService {
         this.graphQLConsoleTabFactory = graphQLConsoleTabFactory
         this.schemaViewerTabFactory = schemaViewerTabFactory
         this.keymapViewerTabFactory = keymapViewerTabFactory
-        this.serverStatusTabFactory = serverStatusTabFactory
+        this.serverViewerTabFactory = serverViewerTabFactory
         this.taskViewerTabFactory = taskViewerTabFactory
         this.backupViewerTabFactory = backupViewerTabFactory
         this.jfrViewerTabFactory = jfrViewerTabFactory
@@ -168,8 +168,9 @@ export class WorkspaceService {
                         return this.schemaViewerTabFactory.restoreFromJson(storedTabObject.tabParams)
                     case TabType.KeymapViewer:
                         return this.keymapViewerTabFactory.createNew()
-                    case TabType.ServerStatus:
-                        return this.serverStatusTabFactory.restoreFromJson(storedTabObject.tabParams)
+                    case 'serverStatus':
+                    case TabType.ServerViewer:
+                        return this.serverViewerTabFactory.restoreFromJson(storedTabObject.tabParams)
                     case TabType.TaskViewer:
                         return this.taskViewerTabFactory.restoreFromJson(storedTabObject.tabParams)
                     case TabType.BackupViewer:
@@ -208,8 +209,8 @@ export class WorkspaceService {
                     tabType = TabType.SchemaViewer
                 } else if (tabRequest instanceof KeymapViewerTabDefinition) {
                     tabType = TabType.KeymapViewer
-                } else if (tabRequest instanceof ServerStatusTabDefinition) {
-                    tabType = TabType.ServerStatus
+                } else if (tabRequest instanceof ServerViewerTabDefinition) {
+                    tabType = TabType.ServerViewer
                 } else if (tabRequest instanceof TaskViewerTabDefinition) {
                     tabType = TabType.TaskViewer
                 } else if (tabRequest instanceof BackupViewerTabDefinition) {

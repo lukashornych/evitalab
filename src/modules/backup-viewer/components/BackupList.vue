@@ -11,6 +11,8 @@ import { Connection } from '@/modules/connection/model/Connection'
 import ServerFileList from '@/modules/server-file-viewer/component/ServerFileList.vue'
 import RestoreBackupFileButton from '@/modules/backup-viewer/components/RestoreBackupFileButton.vue'
 
+const reloadInterval: number = 5000
+
 const backupViewerService: BackupViewerService = useBackupViewerService()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
@@ -82,7 +84,7 @@ async function reload(manual: boolean = false): Promise<void> {
             // requests additional reload in between
         } else {
             // set new timeout only for automatic reload or reload recovery
-            reloadTimeoutId = setTimeout(reload, 5000)
+            reloadTimeoutId = setTimeout(reload, reloadInterval)
         }
         canReload = true
     } else {
@@ -90,7 +92,7 @@ async function reload(manual: boolean = false): Promise<void> {
         canReload = false
     }
 }
-reloadTimeoutId = setTimeout(reload, 5000)
+reloadTimeoutId = setTimeout(reload, reloadInterval)
 
 onUnmounted(() => clearInterval(reloadTimeoutId))
 
