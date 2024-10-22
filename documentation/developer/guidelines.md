@@ -13,7 +13,7 @@ TODO script, template, style
 
 ### Component setup structure
 
-TODO import, services, props, emits, refs, functions
+TODO import, const, services, props, emits, refs, functions
 
 ### Dependency injection
 

@@ -26,9 +26,9 @@ import VTreeViewEmptyItem from '@/modules/base/component/VTreeViewEmptyItem.vue'
 import { MenuSubheader } from '@/modules/base/model/menu/MenuSubheader'
 import { MenuItem } from '@/modules/base/model/menu/MenuItem'
 import {
-    ServerStatusTabFactory,
+    ServerViewerTabFactory,
     useServerStatusTabFactory
-} from '@/modules/server-status/service/ServerStatusTabFactory'
+} from '@/modules/server-viewer/service/ServerViewerTabFactory'
 import CreateCatalogDialog from '@/modules/connection/explorer/component/CreateCatalogDialog.vue'
 import { TaskViewerTabFactory, useTaskViewerTabFactory } from '@/modules/task-viewer/services/TaskViewerTabFactory'
 import { JfrViewerTabFactory, useJfrViewerTabFactory } from '@/modules/jfr-viewer/service/JfrViewerTabFactory'
@@ -43,7 +43,7 @@ const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
 const connectionService: ConnectionService = useConnectionService()
 const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = useGraphQLConsoleTabFactory()
-const serverStatusTabFactory: ServerStatusTabFactory = useServerStatusTabFactory()
+const serverStatusTabFactory: ServerViewerTabFactory = useServerStatusTabFactory()
 const taskViewerTabFactory: TaskViewerTabFactory = useTaskViewerTabFactory()
 const jfrViewerTabFactory: JfrViewerTabFactory = useJfrViewerTabFactory()
 const backupsService: BackupViewerTabFactory = useBackupsTabFactory()
@@ -172,9 +172,9 @@ async function createActions(): Promise<Map<ConnectionItemType, MenuItem<Connect
         )
     )
     actions.set(
-        ConnectionItemType.Detail,
+        ConnectionItemType.Server,
         createMenuAction(
-            ConnectionItemType.Detail,
+            ConnectionItemType.Server,
             'mdi-database-outline',
             () =>
                 workspaceService.createTab(

@@ -1,10 +1,10 @@
 import { TabParams } from '@/modules/workspace/tab/model/TabParams'
-import { ServerStatusTabParamsDto } from './ServerStatusTabParamsDto'
+import { ServerViewerTabParamsDto } from './ServerViewerTabParamsDto'
 import { ExecutableTabRequest } from '@/modules/workspace/tab/model/ExecutableTabRequest'
 import { Connection } from '@/modules/connection/model/Connection'
 
 // todo docs
-export class ServerStatusTabParams implements TabParams<ServerStatusTabParamsDto>, ExecutableTabRequest {
+export class ServerViewerTabParams implements TabParams<ServerViewerTabParamsDto>, ExecutableTabRequest {
     readonly executeOnOpen: boolean
     readonly connection: Connection
 
@@ -13,7 +13,7 @@ export class ServerStatusTabParams implements TabParams<ServerStatusTabParamsDto
         this.executeOnOpen = executeOnOpen
     }
 
-    toSerializable(): ServerStatusTabParamsDto {
+    toSerializable(): ServerViewerTabParamsDto {
         return {
             connection: this.connection
         }

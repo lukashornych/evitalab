@@ -18,7 +18,7 @@ const props = defineProps<{
 </script>
 
 <template>
-    <VChipGroup dense>
+    <VChipGroup dense column>
         <template v-if="(propertyValue as List<PropertyValue>).size > 0">
             <template v-for="item in propertyValue" :key="item.value.toString()">
                 <VPropertiesTableValueItem :property="property" :propertyValue="item" />
@@ -33,5 +33,4 @@ const props = defineProps<{
 </template>
 
 <style lang="scss" scoped>
-
 </style>

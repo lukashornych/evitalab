@@ -36,7 +36,7 @@ const emit = defineEmits<{
             <slot name="activator" v-bind="{ props }"/>
         </template>
 
-        <VCard class="py-8 px-4">
+        <VCard class="dialog-content">
             <VCardTitleWithActions>
                 <template #default>
                     <slot name="title" />
@@ -75,5 +75,7 @@ const emit = defineEmits<{
 </template>
 
 <style lang="scss" scoped>
-
+.dialog-content {
+    padding: 2rem 1rem;
+}
 </style>

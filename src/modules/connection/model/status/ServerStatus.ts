@@ -11,7 +11,7 @@ import { ApiType } from '@/modules/connection/model/status/ApiType'
 export class ServerStatus {
 
     readonly version: string
-    readonly started: OffsetDateTime | undefined
+    readonly started: OffsetDateTime
     readonly uptime: bigint
     readonly instanceId: string
     readonly catalogsCorrupted: number
@@ -22,7 +22,7 @@ export class ServerStatus {
     readonly apis: Immutable.Map<ApiType, ApiStatus>
 
     constructor(version: string,
-                started: OffsetDateTime | undefined,
+                started: OffsetDateTime,
                 uptime: bigint,
                 instanceId: string,
                 catalogsCorrupted: number,

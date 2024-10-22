@@ -8,7 +8,7 @@ import { EvitaQLConsoleTabFactory } from '@/modules/evitaql-console/console/work
 import { GraphQLConsoleTabFactory } from '@/modules/graphql-console/console/workspace/service/GraphQLConsoleTabFactory'
 import { SchemaViewerTabFactory } from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
 import { mandatoryInject } from '@/utils/reactivity'
-import { ServerStatusTabFactory } from '@/modules/server-status/service/ServerStatusTabFactory'
+import { ServerViewerTabFactory } from '@/modules/server-viewer/service/ServerViewerTabFactory'
 import { TaskViewerTabFactory } from '@/modules/task-viewer/services/TaskViewerTabFactory'
 
 export const sharedTabResolverInjectionKey: InjectionKey<SharedTabResolver> = Symbol('sharedTabResolver')

@@ -4,7 +4,7 @@ export enum ConnectionItemType {
     OpenGraphQLSystemAPIConsole = 'openGraphQLSystemApiConsole',
     Edit = 'edit',
     Remove = 'remove',
-    Detail = 'detail',
+    Server = 'server',
     Tasks = 'tasks',
     JfrRecordings = 'jfrRecordings',
     ModifySubheader = 'modifySubheader',

@@ -4,10 +4,10 @@ import { mandatoryInject } from '@/utils/reactivity'
 import { InjectionKey } from 'vue'
 import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
 
-export const serverStatusServiceInjectionKey: InjectionKey<ServerStatusService> = Symbol('serverStatusService')
+export const serverViewerServiceInjectionKey: InjectionKey<ServerViewerService> = Symbol('serverViewerService')
 
 // todo docs
-export class ServerStatusService {
+export class ServerViewerService {
     private readonly evitaDBDriverResolver: EvitaDBDriverResolver
 
     constructor(evitaDBDriver: EvitaDBDriverResolver) {
@@ -25,6 +25,6 @@ export class ServerStatusService {
     }
 }
 
-export const useServerStatusService = (): ServerStatusService => {
-    return mandatoryInject(serverStatusServiceInjectionKey) as ServerStatusService
+export const useServerViewerService = (): ServerViewerService => {
+    return mandatoryInject(serverViewerServiceInjectionKey) as ServerViewerService
 }

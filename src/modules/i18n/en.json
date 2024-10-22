@@ -269,7 +269,7 @@
         "create": "Create catalog",
         "edit": "Edit connection",
         "remove": "Remove connection",
-        "detail": "Status",
+        "server": "Server",
         "createCatalog": "Create catalog",
         "catalogBackups": "Catalog backups",
         "tasks": "Tasks",
@@ -914,25 +914,77 @@
       }
     }
   },
-  "serverStatus": {
+  "serverViewer": {
     "toolbar": {
-      "title": "Status"
+      "title": "Server"
     },
-    "detail": {
+    "button": {
+      "reload": "Reload"
+    },
+    "notification": {
+      "couldNotLoad": "Could not load server status: {reason}"
+    },
+    "serverTitle": {
       "flags": {
-        "version": "version: {version}"
-      },
+        "version": "version: {version}",
+        "readOnly": "read only"
+      }
+    },
+    "serverStatus": {
+      "title": "Status",
       "stats": {
-        "started": "Started: {started}",
-        "uptime": "Uptime: {uptime}",
-        "catalogsOk": "Catalogs: {catalogCount}",
-        "catalogsCorrupted": "Corrupted catalogs: {catalogCount}"
+        "started": "Started",
+        "uptime": "Uptime",
+        "readiness": {
+          "label": "Readiness",
+          "type": {
+            "starting": "starting",
+            "ready": "ready",
+            "stalling": "stalling",
+            "shutdown": "shutdown",
+            "unknown": "unknown"
+          }
+        },
+        "catalogsOk": "Catalogs",
+        "catalogsCorrupted": "Corrupted catalogs",
+        "healthProblems": {
+          "label": "Health problems",
+          "type": {
+            "memoryShortage": "memory shortage",
+            "externalApiUnavailable": "external API unavailable",
+            "inputQueuesOverloaded": "input queues overloaded",
+            "javaInternalErrors": "Java internal errors"
+          }
+        }
       },
-      "actions": {
-        "openRuntimeConfiguration": "Open runtime configuration"
+      "apiType": {
+        "system": "System",
+        "grpc": "gRPC",
+        "graphQL": "GraphQL",
+        "rest": "REST",
+        "observability": "Observability",
+        "lab": "evitaLab"
       },
-      "runtimeConfig": {
-        "title": "Runtime configuration"
+      "button": {
+        "openRuntimeConfiguration": "Runtime configuration",
+        "openApiDetail": "API detail"
+      },
+      "apiDetail": {
+        "title": "{apiType} API",
+        "props": {
+          "enabled": "Enabled",
+          "ready": "Ready",
+          "baseUrls": "Base URLs"
+        },
+        "endpoints": {
+          "title": "Endpoints"
+        }
+      },
+      "runtimeConfiguration": {
+        "title": "Runtime configuration",
+        "notification": {
+          "couldNotLoadConfiguration": "Could not load runtime configuration: {reason}"
+        }
       }
     }
   },

@@ -24,9 +24,7 @@ export class ServerStatusConverter {
     convert(serverStatus: GrpcEvitaServerStatusResponse):ServerStatus{
         return new ServerStatus(
             serverStatus.version,
-            serverStatus.startedAt != undefined
-                ? this.evitaValueConverter.convertOffsetDateTime(serverStatus.startedAt)
-                : undefined,
+            this.evitaValueConverter.convertOffsetDateTime(serverStatus.startedAt!),
             serverStatus.uptime,
             serverStatus.instanceId,
             serverStatus.catalogsCorrupted,
@@ -59,11 +57,11 @@ export class ServerStatusConverter {
 
     private convertReadiness(grpcReadiness: GrpcReadiness): Readiness {
         switch (grpcReadiness) {
-            case GrpcReadiness.API_UNKNOWN: return Readiness.ApiUnknown
-            case GrpcReadiness.API_STARTING: return Readiness.ApiStarting
-            case GrpcReadiness.API_READY: return Readiness.ApiReady
-            case GrpcReadiness.API_STALLING: return Readiness.ApiStalling
-            case GrpcReadiness.API_SHUTDOWN: return Readiness.ApiShutdown
+            case GrpcReadiness.API_UNKNOWN: return Readiness.Unknown
+            case GrpcReadiness.API_STARTING: return Readiness.Starting
+            case GrpcReadiness.API_READY: return Readiness.Ready
+            case GrpcReadiness.API_STALLING: return Readiness.Stalling
+            case GrpcReadiness.API_SHUTDOWN: return Readiness.Shutdown
             default:
                 throw new UnexpectedError(`Unsupported readiness type '${grpcReadiness}'.`)
         }

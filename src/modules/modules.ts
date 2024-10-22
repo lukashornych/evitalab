@@ -13,7 +13,7 @@ import { WelcomeScreenModuleRegistrar } from '@/modules/welcome-screen/WelcomeSc
 import { KeymapModuleRegistrar } from '@/modules/keymap/KeymapModuleRegistrar'
 import { BackupViewerModuleRegistrar } from '@/modules/backup-viewer/BackupViewerModuleRegistrar'
 import { TaskViewerModuleRegistrar } from '@/modules/task-viewer/TaskViewerModuleRegistrar'
-import { ServerActionsModuleRegistrar } from '@/modules/server-status/ServerActionsModuleRegistrar'
+import { ServerViewerModuleRegistrar } from '@/modules/server-viewer/ServerViewerModuleRegistrar'
 import { JfrViewerModuleRegistrar } from '@/modules/jfr-viewer/JfrViewerModuleRegistrar'
 import { ServerFileViewerModuleRegistrar } from '@/modules/server-file-viewer/ServerFileViewerModuleRegistrar'
 
@@ -34,7 +34,7 @@ export const modules: ModuleRegistrar[] = [
     new GraphQLConsoleModuleRegistrar(),
     new EntityViewerModuleRegistrar(),
     new SchemaViewerModuleRegistrar(),
-    new ServerActionsModuleRegistrar(),
+    new ServerViewerModuleRegistrar(),
     new ServerFileViewerModuleRegistrar(),
     new BackupViewerModuleRegistrar(),
     new TaskViewerModuleRegistrar(),

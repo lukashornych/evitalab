@@ -28,9 +28,9 @@ import { LabStorage, labStorageInjectionKey } from '@/modules/storage/LabStorage
 import { SharedTabResolver, sharedTabResolverInjectionKey } from '@/modules/workspace/tab/service/SharedTabResolver'
 import { ModuleContextBuilder } from '@/ModuleContextBuilder'
 import {
-    ServerStatusTabFactory,
-    serverStatusTabFactoryInjectionKey
-} from '@/modules/server-status/service/ServerStatusTabFactory'
+    ServerViewerTabFactory,
+    serverViewerTabFactoryInjectionKey
+} from '@/modules/server-viewer/service/ServerViewerTabFactory'
 import { BackupViewerTabFactory, backupsTabFactoryInjectionKey } from '@/modules/backup-viewer/service/BackupViewerTabFactory'
 import { TaskViewerTabFactory, taskViewerTabFactoryInjectionKey } from '@/modules/task-viewer/services/TaskViewerTabFactory'
 import { JfrViewerTabFactory, jfrViewerTabFactoryInjectionKey } from '@/modules/jfr-viewer/service/JfrViewerTabFactory'
@@ -54,8 +54,8 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
         builder.provide(schemaViewerTabFactoryInjectionKey, schemaViewerTabFactory)
         const keymapViewerTabFactory: KeymapViewerTabFactory = new KeymapViewerTabFactory()
         builder.provide(keymapViewerTabFactoryInjectionKey, keymapViewerTabFactory)
-        const serverStatusTabFactory: ServerStatusTabFactory = new ServerStatusTabFactory(connectionService)
-        builder.provide(serverStatusTabFactoryInjectionKey, serverStatusTabFactory)
+        const serverViewerTabFactory: ServerViewerTabFactory = new ServerViewerTabFactory(connectionService)
+        builder.provide(serverViewerTabFactoryInjectionKey, serverViewerTabFactory)
         const taskViewerTabFactory: TaskViewerTabFactory = new TaskViewerTabFactory(connectionService)
         builder.provide(taskViewerTabFactoryInjectionKey, taskViewerTabFactory)
         const jfrViewerTabFactory: JfrViewerTabFactory = new JfrViewerTabFactory(connectionService)
@@ -79,7 +79,7 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
                 graphQLConsoleTabFactory,
                 schemaViewerTabFactory,
                 keymapViewerTabFactory,
-                serverStatusTabFactory,
+                serverViewerTabFactory,
                 taskViewerTabFactory,
                 backupViewerTabFactory,
                 jfrViewerTabFactory

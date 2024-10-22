@@ -4,9 +4,11 @@ import VPropertiesTableValue from '@/modules/base/component/VPropertiesTableValu
 
 const props = withDefaults(defineProps<{
     title?: string
-    properties: Property[]
+    properties: Property[],
+    dense?: boolean
 }>(), {
-    title: undefined
+    title: undefined,
+    dense: false
 })
 </script>
 
@@ -16,7 +18,7 @@ const props = withDefaults(defineProps<{
         <tr
             v-for="property in properties"
             :key="property.name"
-            class="properties-table__row"
+            :class="['properties-table__row', { 'properties-table__row--dense': dense }]"
         >
             <td class="text-medium-emphasis">{{ property.name }}</td>
             <td>
@@ -39,6 +41,10 @@ const props = withDefaults(defineProps<{
         grid-template-columns: 15rem 1fr;
         column-gap: 0.5rem;
         align-items: center;
+    }
+
+    &__row--dense {
+        grid-template-columns: 8rem 15rem;
     }
 }
 </style>
