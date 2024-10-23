@@ -22,11 +22,24 @@ const badgeColor = computed<string>(() => {
     }
     return 'success'
 })
+const badgeTooltip = computed<string>(() => {
+    if (!props.apiStatus.enabled) {
+        return t('serverViewer.serverStatus.apiState.disabled')
+    }
+    if (!props.apiStatus.ready) {
+        return t('serverViewer.serverStatus.apiState.notReady')
+    }
+    return t('serverViewer.serverStatus.apiState.ready')
+})
 </script>
 
 <template>
     <div class="api-info-list-item">
-        <VBadge :color="badgeColor" inline class="api-info-list-item__state" />
+        <VBadge :color="badgeColor" inline class="api-info-list-item__state">
+            <VTooltip activator="parent">
+                {{ badgeTooltip }}
+            </VTooltip>
+        </VBadge>
 
         <span>{{ t(`serverViewer.serverStatus.apiType.${apiType}`) }}</span>
 

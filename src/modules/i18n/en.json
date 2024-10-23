@@ -965,6 +965,11 @@
         "observability": "Observability",
         "lab": "evitaLab"
       },
+      "apiState": {
+        "disabled": "API is disabled",
+        "notReady": "API is not ready",
+        "ready": "API is ready"
+      },
       "button": {
         "openRuntimeConfiguration": "Runtime configuration",
         "openApiDetail": "API detail"
