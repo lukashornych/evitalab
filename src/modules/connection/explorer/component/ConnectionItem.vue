@@ -58,7 +58,6 @@ provideConnection(props.connection)
 
 const serverStatus = ref<ServerStatus | undefined>()
 provideServerStatus(serverStatus)
-loadServerStatus().then()
 
 const flags = computed<ItemFlag[]>(() => {
     const flags: ItemFlag[] = []
@@ -88,13 +87,60 @@ const loading = ref<boolean>(false)
 const showRemoveConnectionDialog = ref<boolean>(false)
 const showCreateCatalogDialog = ref<boolean>(false)
 
-async function loadCatalogs(): Promise<void> {
+let loaded: boolean = false
+async function load(): Promise<void> {
+    if (loaded) {
+        return
+    }
+
+    // todo lho revise
     loading.value = true
+    loaded = await loadServerStatus()
+        .then((loaded) => {
+            if (!loaded) {
+                return false
+            }
+            return loadCatalogs()
+        })
+    loading.value = false
+}
+
+async function reload(): Promise<void> {
+    // todo lho temp solution, connectionService.reload should be used when fixed
+    loading.value = true
+    await loadServerStatus()
+        .then((loaded) => {
+            if (!loaded) {
+                return false
+            }
+            return loadCatalogs()
+        })
+    loading.value = false
+}
+
+async function loadServerStatus(): Promise<boolean> {
+    try {
+        serverStatus.value = await connectionService.getServerStatus(props.connection)
+        return true
+    } catch (e: any) {
+        toaster.error(t(
+            'explorer.connection.notification.couldNotLoadServerStatus',
+            {
+                connectionName: props.connection.name,
+                reason: e.message
+            }
+        ))
+        return false
+    }
+}
+
+async function loadCatalogs(): Promise<boolean> {
     try {
         catalogs.value = (await connectionService.getCatalogs(props.connection, true))
             .sort((a: Catalog, b: Catalog) => {
                 return a.name.localeCompare(b.name)
             })
+        return true
     } catch (e: any) {
         toaster.error(t(
             'explorer.connection.notification.couldNotLoadCatalogs',
@@ -103,29 +149,8 @@ async function loadCatalogs(): Promise<void> {
                 reason: e.message
             }
         ))
+        return false
     }
-    loading.value = false
-}
-
-async function loadServerStatus(): Promise<void> {
-    try {
-        serverStatus.value = await connectionService.getServerStatus(props.connection)
-    } catch (e: any) {
-        toaster.error(e)
-        // toaster.error(t(
-        //     'explorer.connection.notification.couldNotLoadServerStatus',
-        //     {
-        //         connectionName: props.connection.name,
-        //         reason: e.message
-        //     }
-        // ))
-    }
-}
-
-async function reload(): Promise<void> {
-    // todo lho temp solution, connectionService.reload should be used when fixed
-    await loadCatalogs()
-    await loadServerStatus()
 }
 
 function handleAction(action: string): void {
@@ -144,7 +169,8 @@ async function createActions(): Promise<Map<ConnectionItemType, MenuItem<Connect
     const observabilityEnabled: boolean = serverStatus.value != undefined && serverStatus.value.apiEnabled(ApiType.Observability)
     const userConnection: boolean = !props.connection.preconfigured
     const labWritable: boolean = !evitaLabConfig.readOnly
-    const serverWritable: boolean = serverStatus.value != undefined && !serverStatus.value.readOnly
+    const serverReady: boolean = serverStatus.value != undefined
+    const serverWritable: boolean = serverReady && !serverStatus.value!.readOnly
 
     const actions: Map<ConnectionItemType, MenuItem<ConnectionItemType>> = new Map()
     actions.set(
@@ -179,7 +205,8 @@ async function createActions(): Promise<Map<ConnectionItemType, MenuItem<Connect
             () =>
                 workspaceService.createTab(
                     serverStatusTabFactory.createNew(props.connection)
-                )
+                ),
+            serverReady
         )
     )
     actions.set(
@@ -295,7 +322,7 @@ function createMenuAction(
                     :loading="loading"
                     :flags="flags"
                     :actions="actionList"
-                    @click="loadCatalogs()"
+                    @click="load()"
                     @click:action="handleAction"
                 >
                     {{ connection.name }}
