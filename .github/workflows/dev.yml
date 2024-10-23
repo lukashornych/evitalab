@@ -11,6 +11,11 @@ concurrency:
   group: ${{ github.head_ref || github.ref_name }}  # for the same branch (dev or PR)
   cancel-in-progress: true        # run only one workflow at a time (cancel the previous)
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   verify:
     name: Verify (build and test)
