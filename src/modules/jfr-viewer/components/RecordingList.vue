@@ -59,7 +59,6 @@ async function loadRecordings(): Promise<boolean> {
         return false
     }
 }
-loadRecordings().then()
 
 let canReload: boolean = true
 let reloadTimeoutId: ReturnType<typeof setTimeout> | undefined = undefined
@@ -83,8 +82,10 @@ async function reload(manual: boolean = false): Promise<void> {
         canReload = false
     }
 }
-reloadTimeoutId = setTimeout(reload, 5000)
 
+loadRecordings().then(() => {
+    reloadTimeoutId = setTimeout(reload, 5000)
+})
 onUnmounted(() => clearInterval(reloadTimeoutId))
 
 defineExpose<{

@@ -46,10 +46,6 @@ async function loadServerStatus(): Promise<boolean> {
         return false
     }
 }
-loadServerStatus().then(() => {
-    initialized.value = true
-    emit('ready')
-})
 
 let canReload: boolean = true
 let reloadTimeoutId: ReturnType<typeof setTimeout> | undefined = undefined
@@ -74,10 +70,19 @@ async function reload(manual: boolean = false): Promise<void> {
         canReload = false
     }
 }
-reloadTimeoutId = setTimeout(reload, reloadInterval)
+
+loadServerStatus().then((loaded) => {
+    if (!loaded) {
+        return
+    }
+
+    initialized.value = true
+    emit('ready')
+
+    reloadTimeoutId = setTimeout(reload, reloadInterval)
+})
 
 onUnmounted(() => clearInterval(reloadInterval))
-
 </script>
 
 <template>

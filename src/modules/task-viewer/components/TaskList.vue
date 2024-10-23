@@ -98,7 +98,6 @@ async function loadTaskStatuses(): Promise<boolean> {
         return false
     }
 }
-loadTaskStatuses().then()
 
 let canReload: boolean = true
 let reloadTimeoutId: ReturnType<typeof setTimeout> | undefined = undefined
@@ -122,8 +121,10 @@ async function reload(manual: boolean = false): Promise<void> {
         canReload = false
     }
 }
-reloadTimeoutId = setTimeout(reload, 2000)
 
+loadTaskStatuses().then(() => {
+    reloadTimeoutId = setTimeout(reload, 2000)
+})
 onUnmounted(() => clearTimeout(reloadTimeoutId))
 
 defineExpose<{

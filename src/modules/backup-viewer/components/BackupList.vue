@@ -68,7 +68,6 @@ async function loadBackupFiles(): Promise<boolean> {
         return false
     }
 }
-loadBackupFiles().then()
 
 let canReload: boolean = true
 let reloadTimeoutId: ReturnType<typeof setTimeout> | undefined = undefined
@@ -92,8 +91,10 @@ async function reload(manual: boolean = false): Promise<void> {
         canReload = false
     }
 }
-reloadTimeoutId = setTimeout(reload, reloadInterval)
 
+loadBackupFiles().then(() => {
+    reloadTimeoutId = setTimeout(reload, reloadInterval)
+})
 onUnmounted(() => clearInterval(reloadTimeoutId))
 
 defineExpose<{
