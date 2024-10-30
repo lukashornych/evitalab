@@ -180,7 +180,18 @@ watch(
         if (newModel == undefined) {
             return
         }
-        date.value = newModel.toJSDate()
+        // We need to specify the date this way without specific time offset so
+        // that it thinks that the actual offset is the local offset.
+        // This makes sure that the picker displays correct date according to the
+        // actual offset not according to local offset of the device.
+        date.value = new Date(
+            newModel.year,
+            newModel.month - 1,
+            newModel.day,
+            newModel.hour,
+            newModel.minute,
+            newModel.second
+        )
         time.value = newModel
             .set({ millisecond: 0 })
             .toISOTime({ includeOffset: false, suppressMilliseconds: true })!
