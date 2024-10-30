@@ -148,7 +148,7 @@ export class ConnectionService {
             return await this.fetchAndCacheServerStatus(connection)
         }
 
-        let serverStatus: ServerStatus | undefined = this.store.cachedServerStatuses.get(connection.id)
+        let serverStatus: ServerStatus | undefined = this.store.cachedServerStatuses.get(connection.id) as ServerStatus | undefined
         if (serverStatus == undefined) {
             serverStatus = await this.fetchAndCacheServerStatus(connection)
             this.store.cachedServerStatuses.set(connection.id, serverStatus)
