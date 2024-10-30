@@ -5,6 +5,7 @@ import { computed, ref, watch } from 'vue'
 import { DateTime } from 'luxon'
 import VTimeOffsetPicker from '@/modules/base/component/VTimeOffsetPicker.vue'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { timeOffsetFrom } from '@/utils/dateTime'
 
 enum Step {
     Date = 0,
@@ -17,7 +18,6 @@ const { t } = useI18n()
 
 const props = withDefaults(
     defineProps<{
-        modelValue?: DateTime,
         label?: string,
         disabled?: boolean,
         defaultTimeOffset?: string,
@@ -25,15 +25,15 @@ const props = withDefaults(
         max?: DateTime
     }>(),
     {
-        modelValue: undefined,
         label: undefined,
         disabled: false,
-        defaultTimeOffset: '+00:00'
+        defaultTimeOffset: () => timeOffsetFrom(DateTime.now())
     }
 )
-const emit = defineEmits<{
-    (e: 'update:modelValue', value: DateTime): void
-}>()
+
+/**
+ * Wizard
+ */
 
 const showMenu = ref<boolean>(false)
 watch(showMenu, (newValue) => {
@@ -63,14 +63,23 @@ function goToNextStep(): void {
     }
 }
 
-const timeOffset = ref<string>(props.defaultTimeOffset)
+/**
+ * Raw data
+ */
+
+const timeOffset = ref<string>()
+const timeOffsetOverriddenByModel = ref<boolean>(false)
 watch(
     () => props.defaultTimeOffset,
-    () => timeOffset.value = props.defaultTimeOffset,
+    (newDefaultTimeOffset) => {
+        if (!timeOffsetOverriddenByModel.value) {
+            timeOffset.value = newDefaultTimeOffset
+        }
+    },
     { immediate: true }
 )
 
-const date = ref<Date>()
+const date = ref<Date | undefined>(undefined)
 const isoDate = computed<string | undefined>(() => {
     if (date.value == undefined) {
         return undefined
@@ -140,6 +149,10 @@ const maxTime = computed<string | undefined>(() => {
         })!
 })
 
+/**
+ * Computed data
+ */
+
 const computedOffsetDateTime = computed<DateTime | undefined>(() => {
     if (isoDate.value == undefined) {
         return undefined
@@ -159,7 +172,30 @@ const computedOffsetDateTime = computed<DateTime | undefined>(() => {
     return DateTime.fromISO(rawOffsetDateTime)
         .setZone(timeOffset.value) // a little bit of hack to not use default device locale
 })
-const displayedOffsetDateTime = ref<string>('')
+
+const model = defineModel<DateTime>({ required: false })
+watch(
+    model,
+    (newModel) => {
+        if (newModel == undefined) {
+            return
+        }
+        date.value = newModel.toJSDate()
+        time.value = newModel
+            .set({ millisecond: 0 })
+            .toISOTime({ includeOffset: false, suppressMilliseconds: true })!
+        timeOffset.value = timeOffsetFrom(newModel)
+        timeOffsetOverriddenByModel.value = true
+    },
+    { immediate: true }
+)
+
+const displayedOffsetDateTime = computed<string>(() => {
+    if (model.value == undefined) {
+        return ''
+    }
+    return model.value.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS)
+})
 
 function confirm(): void {
     if (computedOffsetDateTime.value == undefined) {
@@ -178,10 +214,8 @@ function confirm(): void {
         return
     }
 
-    displayedOffsetDateTime.value = computedOffsetDateTime.value
-        .toLocaleString(DateTime.DATETIME_FULL)
     showMenu.value = false
-    emit('update:modelValue', offsetDateTime)
+    model.value = offsetDateTime
 }
 </script>
 
