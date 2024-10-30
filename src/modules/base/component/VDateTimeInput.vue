@@ -37,7 +37,7 @@ const props = withDefaults(
 
 const showMenu = ref<boolean>(false)
 watch(showMenu, (newValue) => {
-    if (!newValue) {
+    if (newValue) {
         currentStep.value = Step.Date
     }
 })
@@ -86,7 +86,7 @@ const isoDate = computed<string | undefined>(() => {
     }
     return `${date.value.getFullYear()}-${String(date.value.getMonth() + 1).padStart(2, '0')}-${String(date.value.getDate()).padStart(2, '0')}`
 })
-watch(date, (newValue) => {
+watch(date, (newValue, oldValue) => {
     if (newValue != undefined) {
         currentStep.value = Step.Time
     }
@@ -190,6 +190,21 @@ watch(
     { immediate: true }
 )
 
+const error = computed<string | undefined>(() => {
+    if (computedOffsetDateTime.value == undefined) {
+        return undefined
+    }
+
+    if (props.min != undefined && computedOffsetDateTime.value < props.min) {
+        return t('common.input.dateTime.error.olderThanMin')
+    }
+    if (props.max != undefined && computedOffsetDateTime.value > props.max) {
+        return t('common.input.dateTime.error.newerThanMax')
+    }
+
+    return undefined
+})
+
 const displayedOffsetDateTime = computed<string>(() => {
     if (model.value == undefined) {
         return ''
@@ -201,21 +216,12 @@ function confirm(): void {
     if (computedOffsetDateTime.value == undefined) {
         throw new Error('Missing offset date time.')
     }
-
-    const offsetDateTime: DateTime = computedOffsetDateTime.value
-    if (props.min != undefined && offsetDateTime < props.min) {
-        toaster.error(t('common.input.dateTime.error.olderThanMin'))
-        currentStep.value = Step.Date
-        return
-    }
-    if (props.max != undefined && offsetDateTime > props.max) {
-        toaster.error(t('common.input.dateTime.error.newerThanMax'))
-        currentStep.value = Step.Date
+    if (error.value != undefined) {
         return
     }
 
     showMenu.value = false
-    model.value = offsetDateTime
+    model.value = computedOffsetDateTime.value
 }
 </script>
 
@@ -234,7 +240,7 @@ function confirm(): void {
             activator="parent"
             min-width="0"
         >
-            <VSheet v-if="showMenu" elevation="6">
+            <VSheet v-if="showMenu" elevation="6" class="wizard">
                 <VWindow v-if="showMenu" v-model="currentStep">
                     <VWindowItem>
                         <VDatePicker
@@ -258,11 +264,21 @@ function confirm(): void {
                     </VWindowItem>
                 </VWindow>
 
-                <div v-if="currentStep < Step.TimeOffset" class="time-offset-info text-disabled">
+                <div v-if="currentStep < Step.TimeOffset" class="wizard__time-offset-info text-disabled">
                     {{ t('common.input.dateTime.help.timeOffset', { offset: timeOffset }) }}
                 </div>
 
-                <footer class="actions">
+                <VScrollXTransition v-show="error != undefined">
+                    <VAlert
+                        type="error"
+                        icon="mdi-alert-circle-outline"
+                        class="wizard__error-alert"
+                    >
+                        {{ error }}
+                    </VAlert>
+                </VScrollXTransition>
+
+                <footer class="wizard__actions">
                     <VBtn
                         v-if="currentStep > Step.Date"
                         variant="tonal"
@@ -285,6 +301,7 @@ function confirm(): void {
                     <VBtn
                         v-else-if="currentStep === Step.TimeOffset"
                         prepend-icon="mdi-check"
+                        :disabled="error != undefined"
                         @click="confirm"
                     >
                         {{ t('common.button.confirm') }}
@@ -296,14 +313,22 @@ function confirm(): void {
 </template>
 
 <style lang="scss" scoped>
-.time-offset-info {
-    text-align: center;
-    margin: 0 1rem 1rem;
-}
+.wizard {
+    width: min-content;
 
-.actions {
-    display: flex;
-    padding: 0 1rem 1rem;
-    gap: 0.5rem;
+    &__time-offset-info {
+        text-align: center;
+        margin: 0 1rem 1rem;
+    }
+
+    &__error-alert {
+        margin: 0 1rem 1rem;
+    }
+
+    &__actions {
+        display: flex;
+        padding: 0 1rem 1rem;
+        gap: 0.5rem;
+    }
 }
 </style>
