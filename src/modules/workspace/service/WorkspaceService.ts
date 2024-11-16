@@ -31,6 +31,8 @@ import { BackupViewerTabDefinition } from '@/modules/backup-viewer/model/BackupV
 import { JfrViewerTabDefinition } from '@/modules/jfr-viewer/model/JfrViewerTabDefinition'
 import { BackupViewerTabFactory } from '@/modules/backup-viewer/service/BackupViewerTabFactory'
 import { JfrViewerTabFactory } from '@/modules/jfr-viewer/service/JfrViewerTabFactory'
+import Immutable from 'immutable'
+import { ActiveEditorStatus, EditorSelection } from '@/modules/workspace/status-bar/model/ActiveEditorStatus'
 
 const openedTabsStorageKey: string = 'openedTabs'
 const tabHistoryStorageKey: string = 'tabHistory'
@@ -336,6 +338,55 @@ export class WorkspaceService {
     storeTabHistory(): void {
         const serializedTabHistory: string = JSON.stringify(Array.from(this.store.tabHistory.entries()))
         this.labStorage.set(tabHistoryStorageKey, LZString.compressToEncodedURIComponent(serializedTabHistory))
+    }
+
+    /**
+     * Returns active editor status provided by some editor. If any.
+     */
+    getActiveEditorStatus(): ActiveEditorStatus | undefined {
+        return this.store.activeEditorStatus as ActiveEditorStatus | undefined
+    }
+
+    /**
+     * Activates a new status for currently active editor.
+     * Should be called by an editor when it gains focus.
+     *
+     * @param language editor language configuration
+     * @param tabSize editor tab size configuration
+     */
+    activateEditorStatus(language: string,
+                         tabSize: number): void {
+        if (this.store.activeEditorStatus != null) {
+            throw new UnexpectedError('There is already one activated editor ' +
+                'status. Cannot activate another one before the current one is deactivated.')
+        }
+        this.store.activeEditorStatus = new ActiveEditorStatus(language, tabSize)
+    }
+
+    /**
+     * Updates data for currently active editor. Should be called for every
+     * editor change.
+     *
+     * @param newSelections new selections in the active editor
+     */
+    updateEditorStatus(newSelections: Immutable.List<EditorSelection>): void {
+        if (this.store.activeEditorStatus == undefined) {
+            console.warn('There is no active editor status, yet it is being updated.')
+        } else {
+            (this.store.activeEditorStatus as ActiveEditorStatus).selections = newSelections
+        }
+    }
+
+    /**
+     * Deactivates currently activated editor. Should be called by an editor
+     * when it loses focus.
+     */
+    deactivateEditorStatus(): void {
+        if (this.store.activeEditorStatus == null) {
+            console.warn('There is no active editor status, yet it is being deactivated.')
+        } else {
+            this.store.activeEditorStatus = undefined
+        }
     }
 }
 

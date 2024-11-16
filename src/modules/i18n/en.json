@@ -37,11 +37,26 @@
     "list": {
       "empty": "No items found."
     },
-    "codeEditor": {
-      "status": {
-        "cursorPosition": "Ln {line}, Col {column}",
-        "selectionRange": "{charsCount} chars",
-        "selectionRanges": "{linesCount} line breaks"
+    "statusBar": {
+      "activeEditorStatus": {
+        "selections": {
+          "label": "Text selections in the active editor",
+          "value": {
+            "multipleSelections": "{count} selections",
+            "singleSelection": {
+              "cursorPosition": "Ln {line}, Col {column}",
+              "selectionRange": "{charsCount} chars",
+              "lineBreaks": "{lineBreaks} line breaks"
+            }
+          }
+        },
+        "tabSize": {
+          "label": "Current tab size configuration in the active editor",
+          "value": "{tabSize} spaces"
+        },
+        "language": {
+          "label": "Supported language in the active editor"
+        }
       }
     },
     "dialog": {
