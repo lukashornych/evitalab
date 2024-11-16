@@ -6,15 +6,19 @@ import { language, Language } from '@codemirror/language'
 import { jsonLanguage } from '@codemirror/lang-json'
 import { evitaQLQueryLanguage, evitaQLConstraintListLanguage } from '@lukashornych/codemirror-lang-evitaql'
 import { graphqlLanguage } from 'cm6-graphql'
+import { xmlLanguage } from '@codemirror/lang-xml'
+import { yamlLanguage } from '@codemirror/lang-yaml'
 import { WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
 
 function resolveLanguageCode(view: EditorView): string {
     const currentLanguage: Language | null = view.state.facet(language)
-    let languageCode: string = ''
-    if (currentLanguage == undefined) {
-        languageCode = 'plain'
-    } else if (currentLanguage === jsonLanguage) {
+    let languageCode: string = 'plain'
+    if (currentLanguage === jsonLanguage) {
         languageCode = 'JSON'
+    } else if (currentLanguage === yamlLanguage) {
+        languageCode = 'YAML'
+    } else if (currentLanguage === xmlLanguage) {
+        languageCode = 'XML'
     } else if (currentLanguage === evitaQLQueryLanguage) {
         languageCode = 'evitaQL'
     } else if (currentLanguage === evitaQLConstraintListLanguage) {
