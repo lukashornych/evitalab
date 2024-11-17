@@ -7,17 +7,17 @@
 
 import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
 import { computed } from 'vue'
-import { ActiveEditorStatus } from '@/modules/workspace/status-bar/model/editor-status/ActiveEditorStatus'
 import EditorStatusComponent from '@/modules/workspace/status-bar/component/EditorStatus.vue'
 import SubjectPathStatusComponent from '@/modules/workspace/status-bar/component/subject-path-status/SubjectPathStatus.vue'
 import { SubjectPathStatus } from '@/modules/workspace/status-bar/model/subject-path-status/SubjectPathStatus'
+import { EditorStatus } from '@/modules/workspace/status-bar/model/editor-status/EditorStatus'
 
 const workspaceService: WorkspaceService = useWorkspaceService()
 
 const pathStatus = computed<SubjectPathStatus>(() =>
-    workspaceService.getSubjectPathStatus())
-const editorStatus = computed<ActiveEditorStatus | undefined>(() =>
-    workspaceService.getEditorStatus())
+    workspaceService.subjectPathStatus)
+const editorStatus = computed<EditorStatus>(() =>
+    workspaceService.editorStatus)
 </script>
 
 <template>
@@ -31,7 +31,7 @@ const editorStatus = computed<ActiveEditorStatus | undefined>(() =>
             <SubjectPathStatusComponent :status="pathStatus" />
         </div>
         <div class="right-content">
-            <EditorStatusComponent v-if="editorStatus != undefined" :status="editorStatus" />
+            <EditorStatusComponent :status="editorStatus" />
         </div>
     </VAppBar>
 </template>

@@ -2,8 +2,9 @@ import { defineStore } from 'pinia'
 import { ref, Ref } from 'vue'
 import { TabDefinition } from '@/modules/workspace/tab/model/TabDefinition'
 import { TabData } from '@/modules/workspace/tab/model/TabData'
-import { ActiveEditorStatus } from '@/modules/workspace/status-bar/model/editor-status/ActiveEditorStatus'
+import { EditorInfo } from '@/modules/workspace/status-bar/model/editor-status/EditorInfo'
 import { SubjectPathStatus } from '@/modules/workspace/status-bar/model/subject-path-status/SubjectPathStatus'
+import { EditorStatus } from '@/modules/workspace/status-bar/model/editor-status/EditorStatus'
 
 /**
  * Defines Pinia store for entire workspace
@@ -16,14 +17,14 @@ export const useWorkspaceStore = defineStore('workspace', () => {
 
     // status bar
     const subjectPathStatus: Ref<SubjectPathStatus> = ref<SubjectPathStatus>(new SubjectPathStatus())
-    const activeEditorStatus: Ref<ActiveEditorStatus | undefined> = ref<ActiveEditorStatus | undefined>(undefined)
+    const editorStatus: Ref<EditorStatus> = ref<EditorStatus>(new EditorStatus())
 
     return {
         tabDefinitions,
         tabData,
         tabHistory,
         subjectPathStatus,
-        activeEditorStatus
+        editorStatus
     }
 })
 

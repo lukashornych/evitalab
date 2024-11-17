@@ -36,7 +36,7 @@ function updateComponentPath(): void {
         componentInstance.value.path != undefined) {
         const path: SubjectPath | undefined = componentInstance.value.path()
         if (path != undefined) {
-            workspaceService.defineSubjectPath(props.id, path)
+            workspaceService.subjectPathStatus.definePath(props.id, path)
         }
     }
 }

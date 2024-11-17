@@ -45,11 +45,11 @@ const currentTabId = ref<string | null>()
 watch(currentTabId, (newTabId, oldTabId) => {
     if (newTabId != undefined) {
         keymap.setContext(newTabId)
-        workspaceService.activateSubjectPath(newTabId)
+        workspaceService.subjectPathStatus.activatePath(newTabId)
     } else if (oldTabId != undefined) {
         // no more tabs
         keymap.resetActivatedContext()
-        workspaceService.deactivateSubjectPath()
+        workspaceService.subjectPathStatus.deactivatePath()
     }
 })
 
@@ -75,7 +75,7 @@ function closeTab(tabId: string): void {
 
     workspaceService.destroyTab(tabId)
     keymap.deleteContext(tabId)
-    workspaceService.deleteSubjectPath(tabId)
+    workspaceService.subjectPathStatus.deletePath(tabId)
 
     if (tabDefinitions.value.length === 0) {
         currentTabId.value = null

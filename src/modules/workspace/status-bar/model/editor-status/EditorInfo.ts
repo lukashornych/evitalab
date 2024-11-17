@@ -4,7 +4,7 @@ import { EditorSelection } from '@/modules/workspace/status-bar/model/editor-sta
 /**
  * Hold status info about active editor, i.e. editor which is being written in.
  */
-export class ActiveEditorStatus {
+export class EditorInfo {
     readonly language: string
     readonly tabSize: number
     selections: Immutable.List<EditorSelection>

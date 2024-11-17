@@ -15,14 +15,25 @@ export class SubjectPathStatus {
     constructor() {
     }
 
+    /**
+     * Activate defined path, i.e. to be visible as the primary path.
+     *
+     * @param id path id to activate
+     */
     activatePath(id: string): void {
         this._activatedPathId = id
     }
 
+    /**
+     * Deactivates previously activated path to not be visible anymore
+     */
     deactivatePath(): void {
         this._activatedPathId = undefined
     }
 
+    /**
+     * Returns activated subject path, if any.
+     */
     get activatedPath(): SubjectPath | undefined {
         if (this._activatedPathId == undefined) {
             return fallbackPath
@@ -34,10 +45,22 @@ export class SubjectPathStatus {
         return activatedPath
     }
 
+    /**
+     * Defines a new or updated subject path under specified id. Such path can be later
+     * activated
+     *
+     * @param id path id
+     * @param path new/updated path
+     */
     definePath(id: string, path: SubjectPath): void {
         this.availablePaths.set(id, path)
     }
 
+    /**
+     * Deletes defined subject path if it is no longer needed
+     *
+     * @param id path id
+     */
     deletePath(id: string): void {
         this.availablePaths.delete(id)
     }
