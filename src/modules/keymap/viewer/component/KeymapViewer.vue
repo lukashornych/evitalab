@@ -86,7 +86,7 @@ emit('ready')
     <div class="keymap-viewer">
         <VTabToolbar
             :prepend-icon="KeymapViewerTabDefinition.icon()"
-            :path="title"
+            :title="title"
         />
 
         <VSheet class="keymap-viewer__body">

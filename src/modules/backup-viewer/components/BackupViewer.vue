@@ -62,7 +62,7 @@ emit('ready')
 
 <template>
     <div class="backup-viewer">
-        <VTabToolbar :prepend-icon="BackupViewerTabDefinition.icon()" :path="title">
+        <VTabToolbar :prepend-icon="BackupViewerTabDefinition.icon()" :title="title">
             <template #append>
                 <VBtn icon @click="reloadBackups">
                     <VIcon>mdi-refresh</VIcon>

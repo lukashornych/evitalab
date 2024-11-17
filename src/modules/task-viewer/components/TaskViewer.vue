@@ -48,7 +48,7 @@ emit('ready')
 
 <template>
     <div class="task-viewer">
-        <VTabToolbar :prepend-icon="TaskViewerTabDefinition.icon()" :path="title">
+        <VTabToolbar :prepend-icon="TaskViewerTabDefinition.icon()" :title="title">
             <template #append>
                 <VBtn icon :loading="reloadingTasks" @click="reloadTasks">
                     <VIcon>mdi-refresh</VIcon>

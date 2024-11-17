@@ -86,7 +86,7 @@ onUnmounted(() => {
     >
         <VTabToolbar
             :prepend-icon="SchemaViewerTabDefinition.icon()"
-            :path="title"
+            :title="title"
         >
             <template #append>
                 <ShareTabButton

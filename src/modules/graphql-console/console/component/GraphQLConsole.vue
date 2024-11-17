@@ -272,7 +272,7 @@ function focusResultVisualiser(): void {
 
 <template>
     <div v-if="initialized" class="graphql-editor">
-        <VTabToolbar :prepend-icon="GraphQLConsoleTabDefinition.icon()" :path="title">
+        <VTabToolbar :prepend-icon="GraphQLConsoleTabDefinition.icon()" :title="title">
             <template #append>
                 <ShareTabButton
                     ref="shareTabButtonRef"

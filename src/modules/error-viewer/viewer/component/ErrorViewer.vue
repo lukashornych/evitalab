@@ -47,7 +47,7 @@ emit('ready')
     <div class="error-viewer">
         <VTabToolbar
             :prepend-icon="ErrorViewerTabDefinition.icon()"
-            :path="title"
+            :title="title"
         >
             <!-- todo lho link to submit an issue to github -->
             <template #append>

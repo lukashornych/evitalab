@@ -13,7 +13,7 @@ type Flag = {
 
 const props = withDefaults(defineProps<{
     prependIcon: string,
-    path: List<string>,
+    title: List<string>,
     flags?: List<string>
 }>(), {
     flags: () => List()
@@ -48,7 +48,7 @@ const normalizedFlags = computed<List<Flag>>(() => {
 
         <VToolbarTitle class="ml-0 font-weight-bold">
             <div class="tab-toolbar__title">
-                <VTabToolbarTitle :title="path" />
+                <VTabToolbarTitle :title="title" />
 
                 <VChipGroup v-if="normalizedFlags">
                     <VChip

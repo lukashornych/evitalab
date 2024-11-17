@@ -105,7 +105,7 @@ onUnmounted(() => clearInterval(reloadInterval))
 
 <template>
     <div v-if="initialized" class="server-status">
-        <VTabToolbar :prepend-icon="SchemaViewerTabDefinition.icon()" :path="title">
+        <VTabToolbar :prepend-icon="SchemaViewerTabDefinition.icon()" :title="title">
             <template #append>
                 <VBtn icon @click="reload">
                     <VIcon>mdi-refresh</VIcon>

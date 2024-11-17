@@ -269,7 +269,7 @@ if (props.params.executeOnOpen) {
 
 <template>
     <div class="evitaql-editor">
-        <VTabToolbar :prepend-icon="EvitaQLConsoleTabDefinition.icon()" :path="title">
+        <VTabToolbar :prepend-icon="EvitaQLConsoleTabDefinition.icon()" :title="title">
             <template #append>
                 <ShareTabButton
                     ref="shareTabButtonRef"

@@ -334,7 +334,7 @@ async function executeQuery(): Promise<void> {
         <Toolbar
             :icon="EntityViewerTabDefinition.icon()"
             :current-data="currentData"
-            :path="title"
+            :title="title"
             :loading="loading"
             @execute-query="executeQueryManually"
         >

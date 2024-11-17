@@ -61,7 +61,7 @@ emit('ready')
 
 <template>
     <div class="jfr-viewer">
-        <VTabToolbar :prepend-icon="JfrViewerTabDefinition.icon()" :path="title">
+        <VTabToolbar :prepend-icon="JfrViewerTabDefinition.icon()" :title="title">
             <template #append>
                 <VBtn icon @click="reloadRecordings">
                     <VIcon>mdi-refresh</VIcon>
