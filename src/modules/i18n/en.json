@@ -523,6 +523,9 @@
       }
     }
   },
+  "keymapViewer": {
+    "title": "Keymap"
+  },
   "entityViewer": {
     "loadedDataWarning": "Loaded query data must be manually executed.",
     "dataLocaleSelector": {
@@ -672,6 +675,7 @@
     }
   },
   "errorViewer": {
+    "title": "Error: {name}",
     "placeholder": {
       "noDetailsAvailable": "No details available."
     },
@@ -816,6 +820,22 @@
     }
   },
   "schemaViewer": {
+    "title": {
+      "schema": {
+        "entity": "Entities",
+        "attribute": "Attributes",
+        "associatedData": "Associated data",
+        "reference": "References"
+      }
+    },
+    "path": {
+      "item": {
+        "entities": "entities",
+        "attributes": "attributes",
+        "associatedData": "associated data",
+        "references": "references"
+      }
+    },
     "section": {
       "placeholder": {
         "noItemsForSearchedTerm": "No items found for searched term."
@@ -1137,7 +1157,7 @@
     }
   },
   "taskViewer": {
-    "path": "Tasks",
+    "title": "Tasks",
     "tasksVisualizer": {
       "button": {
         "reload": "Reload tasks"
@@ -1216,7 +1236,7 @@
     }
   },
   "jfrViewer": {
-    "path": "JFR Recordings",
+    "title": "JFR Recordings",
     "button": {
       "startRecording": "Start recording",
       "reloadRecordings": "Reload recordings"

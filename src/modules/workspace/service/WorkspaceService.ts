@@ -32,7 +32,10 @@ import { JfrViewerTabDefinition } from '@/modules/jfr-viewer/model/JfrViewerTabD
 import { BackupViewerTabFactory } from '@/modules/backup-viewer/service/BackupViewerTabFactory'
 import { JfrViewerTabFactory } from '@/modules/jfr-viewer/service/JfrViewerTabFactory'
 import Immutable from 'immutable'
-import { ActiveEditorStatus, EditorSelection } from '@/modules/workspace/status-bar/model/ActiveEditorStatus'
+import { SubjectPath } from '@/modules/workspace/status-bar/model/subject-path-status/SubjectPath'
+import { SubjectPathStatus } from '@/modules/workspace/status-bar/model/subject-path-status/SubjectPathStatus'
+import { ActiveEditorStatus } from '@/modules/workspace/status-bar/model/editor-status/ActiveEditorStatus'
+import { EditorSelection } from '@/modules/workspace/status-bar/model/editor-status/EditorSelection'
 
 const openedTabsStorageKey: string = 'openedTabs'
 const tabHistoryStorageKey: string = 'tabHistory'
@@ -343,7 +346,7 @@ export class WorkspaceService {
     /**
      * Returns active editor status provided by some editor. If any.
      */
-    getActiveEditorStatus(): ActiveEditorStatus | undefined {
+    getEditorStatus(): ActiveEditorStatus | undefined {
         return this.store.activeEditorStatus as ActiveEditorStatus | undefined
     }
 
@@ -387,6 +390,49 @@ export class WorkspaceService {
         } else {
             this.store.activeEditorStatus = undefined
         }
+    }
+
+    /**
+     * Returns subject path status holding currently activate subject path.
+     */
+    getSubjectPathStatus(): SubjectPathStatus {
+        return this.store.subjectPathStatus as SubjectPathStatus
+    }
+
+    /**
+     * Activate defined path, i.e. to be visible as the primary path.
+     *
+     * @param id path id to activate
+     */
+    activateSubjectPath(id: string): void {
+        this.store.subjectPathStatus.activatePath(id)
+    }
+
+    /**
+     * Deactivates previously activated path to not be visible anymore
+     */
+    deactivateSubjectPath(): void {
+        this.store.subjectPathStatus.deactivatePath()
+    }
+
+    /**
+     * Defines a new or updated subject path under specified id. Such path can be later
+     * activated
+     *
+     * @param id path id
+     * @param path new/updated path
+     */
+    defineSubjectPath(id: string, path: SubjectPath): void {
+        this.store.subjectPathStatus.definePath(id, path)
+    }
+
+    /**
+     * Deletes defined subject path if it is no longer needed
+     *
+     * @param id path id
+     */
+    deleteSubjectPath(id: string): void {
+        this.store.subjectPathStatus.deletePath(id)
     }
 }
 

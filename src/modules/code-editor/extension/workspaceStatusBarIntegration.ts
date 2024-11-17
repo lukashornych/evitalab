@@ -1,6 +1,5 @@
 import { EditorView } from 'codemirror'
 import { AnnotationType, Extension, Line, StateField, Annotation, EditorState } from '@codemirror/state'
-import { EditorSelection } from '@/modules/workspace/status-bar/model/ActiveEditorStatus'
 import Immutable from 'immutable'
 import { language, Language } from '@codemirror/language'
 import { jsonLanguage } from '@codemirror/lang-json'
@@ -9,7 +8,12 @@ import { graphqlLanguage } from 'cm6-graphql'
 import { xmlLanguage } from '@codemirror/lang-xml'
 import { yamlLanguage } from '@codemirror/lang-yaml'
 import { WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import { EditorSelection } from '@/modules/workspace/status-bar/model/editor-status/EditorSelection'
 
+/**
+ * Resolves editor language. It is kind of a hack because CodeMirror doesn't
+ * provide way to name language extensions.
+ */
 function resolveLanguageCode(view: EditorView): string {
     const currentLanguage: Language | null = view.state.facet(language)
     let languageCode: string = 'plain'

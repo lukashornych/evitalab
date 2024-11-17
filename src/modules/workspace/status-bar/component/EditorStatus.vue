@@ -3,9 +3,10 @@
  * Render the status info of an active editor with info like selection, spaces, and so on.
  */
 
-import { ActiveEditorStatus, EditorSelection } from '@/modules/workspace/status-bar/model/ActiveEditorStatus'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { EditorSelection } from '@/modules/workspace/status-bar/model/editor-status/EditorSelection'
+import { ActiveEditorStatus } from '@/modules/workspace/status-bar/model/editor-status/ActiveEditorStatus'
 
 const { t } = useI18n()
 
@@ -69,7 +70,6 @@ const primarySelection = computed<EditorSelection | undefined>(() => {
 
 <style lang="scss" scoped>
 .active-editor-status {
-    height: 2rem;
     display: flex;
     column-gap: 1rem;
     align-items: center;

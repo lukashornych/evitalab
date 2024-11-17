@@ -1,20 +1,3 @@
-import Immutable from 'immutable'
-
-/**
- * Hold status info about active editor, i.e. editor which is being written in.
- */
-export class ActiveEditorStatus {
-    readonly language: string
-    readonly tabSize: number
-    selections: Immutable.List<EditorSelection>
-
-    constructor(language: string, tabSize: number) {
-        this.language = language
-        this.tabSize = tabSize
-        this.selections = Immutable.List()
-    }
-}
-
 /**
  * Defines a single text selection in an active editor
  */
