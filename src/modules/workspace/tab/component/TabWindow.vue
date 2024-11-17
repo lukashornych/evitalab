@@ -50,7 +50,7 @@ function updateComponentPath(): void {
             :is="component"
             v-bind="componentProps"
             @ready="handleReady"
-            @data-update="handleDataUpdated"
+            @update:data="handleDataUpdated"
         />
     </KeepAlive>
     <TabLoadingScreen v-if="!componentReady" />
