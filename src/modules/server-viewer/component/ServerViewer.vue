@@ -35,14 +35,14 @@ defineExpose<TabComponentExpose>({
             props.params.connection,
             [SubjectPathItem.significant(
                 SchemaViewerTabDefinition.icon(),
-                t('serverViewer.toolbar.title')
+                t('serverViewer.title')
             )]
         )
     }
 })
 
 const initialized = ref<boolean>(false)
-const title: List<string> = List.of(t('serverViewer.toolbar.title'))
+const title: List<string> = List.of(t('serverViewer.title'))
 
 const detailRef = ref<typeof ServerStatusComponent>()
 

@@ -891,6 +891,16 @@
         "prices": "Prices",
         "indexedDecimalPlaces": "Indexed decimal places",
         "evolutionModes": "Evolution modes"
+      },
+      "evolutionMode": {
+        "adaptPrimaryKeyGeneration": "Adapt Primary Key Generation",
+        "addingAttributes": "Adding Attributes",
+        "addingAssociatedData": "Adding Associated Data",
+        "addingReferences": "Adding References",
+        "addingPrices": "Adding Prices",
+        "addingLocales": "Adding Locales",
+        "addingCurrencies": "Adding Currencies",
+        "addingHierarchy": "Adding Hierarchy"
       }
     },
     "nameVariants": {
@@ -968,9 +978,10 @@
     }
   },
   "serverViewer": {
-    "toolbar": {
-      "title": "Server"
+    "definition": {
+      "title": "Server [{connectionName}]"
     },
+    "title": "Server",
     "button": {
       "reload": "Reload"
     },
@@ -1047,6 +1058,9 @@
     }
   },
   "backupViewer": {
+    "definition": {
+      "title": "Catalog backups [{connectionName}]"
+    },
     "title": "Catalog backups",
     "button": {
       "reloadBackups": "Reload backups",
@@ -1157,6 +1171,9 @@
     }
   },
   "taskViewer": {
+    "definition": {
+      "title": "Tasks [{connectionName}]"
+    },
     "title": "Tasks",
     "tasksVisualizer": {
       "button": {
@@ -1236,6 +1253,9 @@
     }
   },
   "jfrViewer": {
+    "definition": {
+      "title": "JFR Recordings [{connectionName}]"
+    },
     "title": "JFR Recordings",
     "button": {
       "startRecording": "Start recording",
