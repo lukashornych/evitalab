@@ -38,6 +38,13 @@ import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
 import { ApiType } from '@/modules/connection/model/status/ApiType'
 import { CatalogItemType } from '@/modules/connection/explorer/model/CatalogItemType'
 import { BackupViewerTabFactory, useBackupsTabFactory } from '@/modules/backup-viewer/service/BackupViewerTabFactory'
+import {
+    GraphQLConsoleTabDefinition
+} from '@/modules/graphql-console/console/workspace/model/GraphQLConsoleTabDefinition'
+import { ServerViewerTabDefinition } from '@/modules/server-viewer/model/ServerViewerTabDefinition'
+import { TaskViewerTabDefinition } from '@/modules/task-viewer/model/TaskViewerTabDefinition'
+import { JfrViewerTabDefinition } from '@/modules/jfr-viewer/model/JfrViewerTabDefinition'
+import { BackupViewerTabDefinition } from '@/modules/backup-viewer/model/BackupViewerTabDefinition'
 
 const evitaLabConfig: EvitaLabConfig = useEvitaLabConfig()
 const workspaceService: WorkspaceService = useWorkspaceService()
@@ -185,7 +192,7 @@ async function createActions(): Promise<Map<ConnectionItemType, MenuItem<Connect
         ConnectionItemType.OpenGraphQLSystemAPIConsole,
         createMenuAction(
             ConnectionItemType.OpenGraphQLSystemAPIConsole,
-            'mdi-graphql',
+            GraphQLConsoleTabDefinition.icon(),
             () =>
                 workspaceService.createTab(
                     graphQLConsoleTabFactory.createNew(
@@ -201,7 +208,7 @@ async function createActions(): Promise<Map<ConnectionItemType, MenuItem<Connect
         ConnectionItemType.Server,
         createMenuAction(
             ConnectionItemType.Server,
-            'mdi-database-outline',
+            ServerViewerTabDefinition.icon(),
             () =>
                 workspaceService.createTab(
                     serverStatusTabFactory.createNew(props.connection)
@@ -213,7 +220,7 @@ async function createActions(): Promise<Map<ConnectionItemType, MenuItem<Connect
         ConnectionItemType.Tasks,
         createMenuAction(
             ConnectionItemType.Tasks,
-            'mdi-chart-gantt',
+            TaskViewerTabDefinition.icon(),
             () => {
                 workspaceService.createTab(
                     taskViewerTabFactory.createNew(
@@ -228,7 +235,7 @@ async function createActions(): Promise<Map<ConnectionItemType, MenuItem<Connect
         ConnectionItemType.JfrRecordings,
         createMenuAction(
             ConnectionItemType.JfrRecordings,
-            'mdi-chart-timeline',
+            JfrViewerTabDefinition.icon(),
             () => {
                 workspaceService.createTab(
                     jfrViewerTabFactory.createNew(
@@ -282,7 +289,7 @@ async function createActions(): Promise<Map<ConnectionItemType, MenuItem<Connect
         ConnectionItemType.CatalogBackups,
         createMenuAction(
             ConnectionItemType.CatalogBackups,
-            'mdi-cloud-download-outline',
+            BackupViewerTabDefinition.icon(),
             () => {
                 workspaceService.createTab(
                     backupsService.createNew(props.connection)

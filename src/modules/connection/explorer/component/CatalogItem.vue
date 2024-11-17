@@ -41,6 +41,13 @@ import { EntityCollection } from '@/modules/connection/model/EntityCollection'
 import Immutable from 'immutable'
 import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
 import { ApiType } from '@/modules/connection/model/status/ApiType'
+import {
+    EvitaQLConsoleTabDefinition
+} from '@/modules/evitaql-console/console/workspace/model/EvitaQLConsoleTabDefinition'
+import {
+    GraphQLConsoleTabDefinition
+} from '@/modules/graphql-console/console/workspace/model/GraphQLConsoleTabDefinition'
+import { SchemaViewerTabDefinition } from '@/modules/schema-viewer/viewer/workspace/model/SchemaViewerTabDefinition'
 
 const workspaceService: WorkspaceService = useWorkspaceService()
 const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory = useEvitaQLConsoleTabFactory()
@@ -102,7 +109,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
         CatalogItemType.OpenEvitaQLConsole,
         createMenuAction(
             CatalogItemType.OpenEvitaQLConsole,
-            'mdi-variable',
+            EvitaQLConsoleTabDefinition.icon(),
             () => {
                 workspaceService.createTab(
                     evitaQLConsoleTabFactory.createNew(
@@ -118,7 +125,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
         CatalogItemType.OpenGraphQLDataAPIConsole,
         createMenuAction(
             CatalogItemType.OpenGraphQLDataAPIConsole,
-            'mdi-graphql',
+            GraphQLConsoleTabDefinition.icon(),
             () => {
                 workspaceService.createTab(
                     graphQLConsoleTabFactory.createNew(
@@ -135,7 +142,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
         CatalogItemType.OpenGraphQLSchemaAPIConsole,
         createMenuAction(
             CatalogItemType.OpenGraphQLSchemaAPIConsole,
-            'mdi-graphql',
+            GraphQLConsoleTabDefinition.icon(),
             () => {
                 workspaceService.createTab(
                     graphQLConsoleTabFactory.createNew(
@@ -152,7 +159,7 @@ function createActions(): Map<CatalogItemType, MenuItem<CatalogItemType>> {
         CatalogItemType.ViewSchema,
         createMenuAction(
             CatalogItemType.ViewSchema,
-            'mdi-file-code-outline',
+            SchemaViewerTabDefinition.icon(),
             () => {
                 workspaceService.createTab(
                     schemaViewerTabFactory.createNew(
