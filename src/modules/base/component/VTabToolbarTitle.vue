@@ -7,7 +7,7 @@ const props = defineProps<{
 </script>
 
 <template>
-    <div>
+    <div class="tab-toolbar-title">
         <template v-for="(item, index) in title" :key="index">
             <span
                 v-if="index < title.size - 1"
@@ -30,5 +30,8 @@ const props = defineProps<{
 </template>
 
 <style lang="scss" scoped>
-
+.tab-toolbar-title {
+    display: flex;
+    align-items: center;
+}
 </style>

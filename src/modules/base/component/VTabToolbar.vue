@@ -47,7 +47,7 @@ const normalizedFlags = computed<List<Flag>>(() => {
         />
 
         <VToolbarTitle class="ml-0 font-weight-bold">
-            <div style="display: flex">
+            <div class="tab-toolbar__title">
                 <VTabToolbarTitle :title="path" />
 
                 <VChipGroup v-if="normalizedFlags">
@@ -74,5 +74,11 @@ const normalizedFlags = computed<List<Flag>>(() => {
 <style lang="scss" scoped>
 .tab-toolbar {
     z-index: 100;
+
+    &__title {
+        display: flex;
+        column-gap: 1rem;
+        align-items: center;
+    }
 }
 </style>
