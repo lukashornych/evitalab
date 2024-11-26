@@ -297,11 +297,12 @@
         "preconfigured": "preconfigured"
       },
       "actions": {
-        "refresh": "Refresh",
-        "openGraphQLSystemApiConsole": "GraphQL System API console",
+        "graphQLSystemApiConsole": "GraphQL System API console",
         "create": "Create catalog",
         "edit": "Edit connection",
         "remove": "Remove connection",
+        "refresh": "Refresh",
+        "closeAllSessions": "Close all sessions",
         "server": "Server",
         "createCatalog": "Create catalog",
         "catalogBackups": "Catalog backups",
@@ -309,12 +310,15 @@
         "jfrRecordings": "JFR recordings"
       },
       "subheader": {
+        "manage": "Manage",
         "modify": "Modify",
         "catalogs": "Catalogs"
       },
       "notification": {
         "couldNotLoadCatalogs": "Could not load catalogs for connection {connectionName}: {reason}",
-        "couldNotLoadServerStatus": "Could not load server status for connection {connectionName}: {reason}"
+        "couldNotLoadServerStatus": "Could not load server status for connection {connectionName}: {reason}",
+        "closedAllSessions": "All open sessions of all catalogs in connection {connectionName} were closed.",
+        "couldNotCloseSessions": "Could not close sessions of connection {connectionName}: {reason}"
       },
       "connect": {
         "title": "Connect to evitaDB server",
@@ -365,22 +369,25 @@
         "warmingUp": "warming up"
       },
       "subheader": {
+        "manage": "Manage",
         "modify": "Modify",
         "collections": "Collections"
       },
       "actions": {
-        "openEvitaQLConsole": "evitaQL console",
-        "openGraphQLDataApiConsole": "GraphQL Data API console",
-        "openGraphQLSchemaApiConsole": "GraphQL Schema API console",
+        "evitaQLConsole": "evitaQL console",
+        "graphQLDataApiConsole": "GraphQL Data API console",
+        "graphQLSchemaApiConsole": "GraphQL Schema API console",
         "viewSchema": "Schema",
+        "closeAllSessions": "Close all sessions",
         "dropCatalog": "Drop catalog",
         "renameCatalog": "Rename catalog",
         "replaceCatalog": "Replace catalog",
         "createCollection": "Create collection",
         "switchCatalogToAliveState": "Switch catalog to alive state"
       },
-      "errors": {
-        "couldNotLoad": "This catalog couldn't be loaded because it's corrupted."
+      "notification": {
+        "closedAllSessions": "All open sessions of catalog {catalogName} were closed.",
+        "couldNotCloseSessions": "Could not close sessions of catalog {catalogName}: {reason}"
       },
       "create": {
         "title": "Create catalog",

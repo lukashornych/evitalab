@@ -36,7 +36,6 @@ import { ItemFlag } from '@/modules/base/model/tree-view/ItemFlag'
 import Immutable from 'immutable'
 import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
 import { ApiType } from '@/modules/connection/model/status/ApiType'
-import { CatalogItemType } from '@/modules/connection/explorer/model/CatalogItemType'
 import { BackupViewerTabFactory, useBackupsTabFactory } from '@/modules/backup-viewer/service/BackupViewerTabFactory'
 import {
     GraphQLConsoleTabDefinition
@@ -160,6 +159,24 @@ async function loadCatalogs(): Promise<boolean> {
     }
 }
 
+async function closeAllSessions(): Promise<void> {
+    try {
+        await connectionService.closeAllSessions(props.connection)
+        toaster.success(t(
+            'explorer.connection.notification.closedAllSessions',
+            { connectionName: props.connection.name }
+        ))
+    } catch (e: any) {
+        toaster.error(t(
+            'explorer.connection.notification.couldNotCloseSessions',
+            {
+                connectionName: props.connection.name,
+                reason: e.message
+            }
+        ))
+    }
+}
+
 function handleAction(action: string): void {
     if (actions.value == undefined) {
         return
@@ -180,30 +197,6 @@ async function createActions(): Promise<Map<ConnectionItemType, MenuItem<Connect
     const serverWritable: boolean = serverReady && !serverStatus.value!.readOnly
 
     const actions: Map<ConnectionItemType, MenuItem<ConnectionItemType>> = new Map()
-    actions.set(
-        ConnectionItemType.Refresh,
-        createMenuAction(
-            ConnectionItemType.Refresh,
-            'mdi-refresh',
-            async () => await reload()
-        )
-    )
-    actions.set(
-        ConnectionItemType.OpenGraphQLSystemAPIConsole,
-        createMenuAction(
-            ConnectionItemType.OpenGraphQLSystemAPIConsole,
-            GraphQLConsoleTabDefinition.icon(),
-            () =>
-                workspaceService.createTab(
-                    graphQLConsoleTabFactory.createNew(
-                        props.connection,
-                        'system', // todo lho: this is not needed
-                        GraphQLInstanceType.System
-                    )
-                ),
-            graphQlEnabled
-        )
-    )
     actions.set(
         ConnectionItemType.Server,
         createMenuAction(
@@ -244,6 +237,44 @@ async function createActions(): Promise<Map<ConnectionItemType, MenuItem<Connect
                 )
             },
             serverWritable && observabilityEnabled
+        )
+    )
+    actions.set(
+        ConnectionItemType.GraphQLSystemAPIConsole,
+        createMenuAction(
+            ConnectionItemType.GraphQLSystemAPIConsole,
+            GraphQLConsoleTabDefinition.icon(),
+            () =>
+                workspaceService.createTab(
+                    graphQLConsoleTabFactory.createNew(
+                        props.connection,
+                        'system', // todo lho: this is not needed
+                        GraphQLInstanceType.System
+                    )
+                ),
+            graphQlEnabled
+        )
+    )
+
+    actions.set(
+        ConnectionItemType.ManageSubheader,
+        new MenuSubheader(t('explorer.connection.subheader.manage'))
+    )
+    actions.set(
+        ConnectionItemType.Refresh,
+        createMenuAction(
+            ConnectionItemType.Refresh,
+            'mdi-refresh',
+            async () => await reload()
+        )
+    )
+    actions.set(
+        ConnectionItemType.CloseAllSessions,
+        createMenuAction(
+            ConnectionItemType.CloseAllSessions,
+            'mdi-lan-disconnect',
+            () => closeAllSessions(),
+            serverReady
         )
     )
 
@@ -330,6 +361,7 @@ function createMenuAction(
                     :flags="flags"
                     :actions="actionList"
                     @click="load()"
+                    @click:action-menu="load()"
                     @click:action="handleAction"
                 >
                     {{ connection.name }}
