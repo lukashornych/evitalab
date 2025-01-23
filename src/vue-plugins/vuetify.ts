@@ -102,6 +102,9 @@ export default createVuetify({
                 variant: 'flat'
             }
         },
+        VCheckbox: {
+            density: 'compact'
+        },
         VList: {
             density: 'compact'
         },

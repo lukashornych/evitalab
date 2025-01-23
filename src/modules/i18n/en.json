@@ -307,7 +307,8 @@
         "createCatalog": "Create catalog",
         "catalogBackups": "Catalog backups",
         "tasks": "Tasks",
-        "jfrRecordings": "JFR recordings"
+        "jfrRecordings": "JFR recordings",
+        "trafficRecordings": "Traffic recordings"
       },
       "subheader": {
         "manage": "Manage",
@@ -371,7 +372,8 @@
       "subheader": {
         "manage": "Manage",
         "modify": "Modify",
-        "collections": "Collections"
+        "collections": "Collections",
+        "traffic": "Traffic"
       },
       "actions": {
         "evitaQLConsole": "evitaQL console",
@@ -383,7 +385,8 @@
         "renameCatalog": "Rename catalog",
         "replaceCatalog": "Replace catalog",
         "createCollection": "Create collection",
-        "switchCatalogToAliveState": "Switch catalog to alive state"
+        "switchCatalogToAliveState": "Switch catalog to alive state",
+        "activeTrafficRecording": "Active traffic recording"
       },
       "notification": {
         "closedAllSessions": "All open sessions of catalog {catalogName} were closed.",
@@ -1280,7 +1283,7 @@
     },
     "notification": {
       "couldNotLoadRecordings": "Could not load JFR recording files: {reason}",
-      "couldNotDownloadRecordingFile": "Could not download recording file {fileName}: {reason}"
+      "couldNotDownloadRecordingFile": "Could not download JFR recording file {fileName}: {reason}"
     },
     "startRecording": {
       "title": "Start JFR recording",
@@ -1335,6 +1338,114 @@
         "fileDeleted": "The {fileName} file has been successfully deleted.",
         "fileNotDeleted": "The {fileName} file has not been deleted.",
         "couldNotDeleteFile": "Could not delete the {fileName} file: {reason}"
+      }
+    }
+  },
+  "trafficViewer": {
+    "recordings": {
+      "definition": {
+        "title": "Traffic Recordings [{connectionName}]"
+      },
+      "title": "Traffic Recordings",
+      "button": {
+        "startRecording": "Start recording",
+        "reloadRecordings": "Reload recordings"
+      },
+      "tasks": {
+        "title": "Running recordings",
+        "button": {
+          "stopRecording": "Stop recording"
+        }
+      },
+      "list": {
+        "title": "Finished recordings",
+        "noRecordings": "No traffic recordings are available"
+      },
+      "notification": {
+        "couldNotLoadRecordings": "Could not load traffic recording files: {reason}",
+        "couldNotDownloadRecordingFile": "Could not download traffic recording file {fileName}: {reason}"
+      },
+      "startRecording": {
+        "title": "Start traffic recording",
+        "info": "This will start recording process in background which will be active until you stop it manually or is stopped automatically by defined limits. Note that there can be only one recording active at the same time.",
+        "infoForFileExport": "Once the recording process is finished, a file will be created and be ready for download.",
+        "button": {
+          "startRecording": "Start recording"
+        },
+        "form": {
+          "catalogName": {
+            "label": "Catalog to record",
+            "validations": {
+              "required": "Catalog to record is required.",
+              "notExists": "Selected catalog doesn't exist anymore."
+            }
+          },
+          "samplingRate": {
+            "label": "Sampling rate",
+            "hint": "The sampling rate of the traffic recording (100 % means all records will be recorded, 1 % means 1 % of records will be recorded).",
+            "unit": "%",
+            "validations": {
+              "required": "Sampling rate is required.",
+              "notNumber": "Sampling rate must be integer number.",
+              "outOfRange": "Sampling rate must be number between 1 and 100 (inclusive)."
+            }
+          },
+          "maxDurationInMilliseconds": {
+            "label": "Maximum duration",
+            "hint": "The duration of the recording in milliseconds, after this time the recording will be stopped automatically.",
+            "unit": "ms",
+            "validations": {
+              "notNumber": "Maximum duration must be integer number.",
+              "outOfRange": "Maximum duration must be positive number."
+            }
+          },
+          "exportFile": {
+            "label": "Export to file",
+            "hint": "Whether to export the traffic into a file for download once the recording is finished."
+          },
+          "maxFileSizeInBytes": {
+            "label": "Maximum file size",
+            "hint": "The size of the recording in bytes, after this size the recording will be stopped automatically.",
+            "unit": "bytes",
+            "validations": {
+              "notNumber": "Maximum file size must be integer number.",
+              "outOfRange": "Maximum file size must be positive number."
+            }
+          },
+          "chunkFileSizeInBytes": {
+            "label": "Chunk file size",
+            "hint": "The size of the chunk file in bytes. Individual files in the export file will be approximately this size.",
+            "unit": "bytes",
+            "validations": {
+              "notNumber": "Chunk file size must be integer number.",
+              "outOfRange": "Chunk file size must be positive number."
+            }
+          }
+        },
+        "notification": {
+          "couldNotStartRecording": "Could not start traffic recording: {reason}",
+          "recordingStarted": "Traffic recording has been started."
+        }
+      },
+      "stopRecording": {
+        "title": "Stop traffic recording",
+        "info": "This will stop the active recording process. The final recording will be available in the traffic recording listing.",
+        "button": {
+          "stopRecording": "Stop recording"
+        },
+        "notification": {
+          "couldNotStopRecording": "Could not stop traffic recording: {reason}",
+          "recordingStopped": "Traffic recording has been stopped."
+        }
+      }
+    },
+    "recordHistory": {
+      "title": "Active traffic recording",
+      "button": {
+        "reloadRecordHistory": "Reload record history"
+      },
+      "list": {
+        "noRecords": "There are no traffic records for {catalogName} catalog. You need to either enable traffic recording on server options or start recording on demand in traffic recordings."
       }
     }
   }
