@@ -10,6 +10,8 @@ import { TrafficRecordHistoryViewerTabParams } from '@/modules/traffic-viewer/mo
 import { TrafficRecordHistoryViewerTabParamsDto } from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabParamsDto'
 import { TrafficRecordHistoryDataPointer } from '@/modules/traffic-viewer/model/TrafficRecordHistoryDataPointer'
 import { TrafficRecordHistoryViewerTabDataDto } from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabDataDto'
+import { Uuid } from '@/modules/connection/model/data-type/Uuid'
+import { Duration } from 'luxon'
 
 export const trafficRecordHistoryViewerTabFactoryInjectionKey: InjectionKey<TrafficRecordHistoryViewerTabFactory> = Symbol('trafficRecordingHistoryViewerTabFactory')
 
@@ -73,7 +75,12 @@ export class TrafficRecordHistoryViewerTabFactory {
         }
         const dto: TrafficRecordHistoryViewerTabDataDto = json as TrafficRecordHistoryViewerTabDataDto
         return new TrafficRecordHistoryViewerTabData(
-            // todo lho map dto
+            dto.since,
+            dto.types,
+            dto.sessionId != undefined ? Uuid.fromCode(dto.sessionId) : undefined,
+            dto.longerThanMilliseconds != undefined ? Duration.fromMillis(dto.longerThanMilliseconds) : undefined,
+            dto.fetchingMoreBytesThan,
+            dto.labels
         )
     }
 }

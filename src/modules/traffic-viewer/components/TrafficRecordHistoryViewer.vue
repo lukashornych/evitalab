@@ -21,7 +21,7 @@ import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue
 import { List } from 'immutable'
 import { Command } from '@/modules/keymap/model/Command'
 import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
-import RecordHistoryList from '@/modules/traffic-viewer/components/RecordHistoryList.vue'
+import RecordHistoryList from '@/modules/traffic-viewer/components/RecordHistory.vue'
 import { TrafficRecordHistoryCriteria } from '@/modules/traffic-viewer/model/TrafficRecordHistoryCriteria'
 import RecordHistoryFilter from '@/modules/traffic-viewer/components/RecordHistoryFilter.vue'
 
@@ -53,47 +53,45 @@ const title: List<string> = List.of(
 const shareTabButtonRef = ref<InstanceType<typeof ShareTabButton> | undefined>()
 const historyListRef = ref<InstanceType<typeof RecordHistoryList> | undefined>()
 const criteria = ref<TrafficRecordHistoryCriteria>(new TrafficRecordHistoryCriteria())
+watch(criteria, () => {
+    console.log('hej')
+    reloadHistoryList()
+})
 
 const initialized = ref<boolean>(false)
+const historyListLoading = ref<boolean>(false)
 
 const currentData = computed<TrafficRecordHistoryViewerTabData>(() => {
     return new TrafficRecordHistoryViewerTabData(
-        // todo lho filters
+        criteria.value.since,
+        criteria.value.types,
+        criteria.value.sessionId,
+        criteria.value.longerThan,
+        criteria.value.fetchingMoreBytesThan,
+        criteria.value.labels
     )
 })
 watch(currentData, (data) => {
     emit('update:data', data)
 })
 
-// todo lho fix
 watch(
     historyListRef,
     () => {
-        if (!initialized.value) {
-            historyListRef.value
-                ?.reload()
-                // .then(() => {
-                //     initialized.value = true
-                //     emit('ready')
-                // })
+        if (!initialized.value && historyListRef.value != undefined ) {
+            reloadHistoryList()
+            initialized.value = true
         }
     },
     { immediate: true }
 )
 onBeforeMount(() => {
-    // todo lho ref is not ready
-    initialized.value = true
     emit('ready')
-    // historyListRef.value
-    //     ?.reload()
-        // .then(() => {
-        //
-        // })
 })
 onMounted(() => {
     // register viewer specific keyboard shortcuts
     keymap.bind(Command.TrafficRecordHistoryViewer_ShareTab, props.id, () => shareTabButtonRef.value?.share())
-    keymap.bind(Command.TrafficRecordHistoryViewer_Reload, props.id, () => historyListRef.value?.reload())
+    keymap.bind(Command.TrafficRecordHistoryViewer_Reload, props.id, () => reloadHistoryList())
 })
 onUnmounted(() => {
     // unregister console specific keyboard shortcuts
@@ -102,13 +100,19 @@ onUnmounted(() => {
 })
 
 async function reloadHistoryList(): Promise<void> {
-    historyListRef.value?.reload()
+    historyListLoading.value = true
+    await historyListRef.value?.reload()
+    historyListLoading.value = false
 }
 </script>
 
 <template>
-    <div v-if="initialized" class="traffic-recording-viewer">
-        <VTabToolbar :prepend-icon="TrafficRecordHistoryViewerTabDefinition.icon()" :title="title">
+    <div class="traffic-recording-viewer">
+        <VTabToolbar
+            :prepend-icon="TrafficRecordHistoryViewerTabDefinition.icon()"
+            :title="title"
+            :extension-height="64"
+        >
             <template #append>
                 <ShareTabButton
                     ref="shareTabButtonRef"
@@ -118,7 +122,7 @@ async function reloadHistoryList(): Promise<void> {
                     :disabled="!params.dataPointer.connection.preconfigured"
                 />
 
-                <VBtn icon @click="reloadHistoryList">
+                <VBtn icon :loading="historyListLoading" @click="reloadHistoryList">
                     <!--            todo lho new data indicator-->
                     <VIcon>mdi-refresh</VIcon>
                     <VTooltip activator="parent">
@@ -126,10 +130,16 @@ async function reloadHistoryList(): Promise<void> {
                     </VTooltip>
                 </VBtn>
             </template>
+
+            <template #extension>
+                <RecordHistoryFilter
+                    v-model="criteria"
+                    :data-pointer="params.dataPointer"
+                />
+            </template>
         </VTabToolbar>
 
         <VSheet class="traffic-recording-viewer__body">
-            <RecordHistoryFilter v-model="criteria" />
             <RecordHistoryList
                 ref="historyListRef"
                 :data-pointer="params.dataPointer"
@@ -142,19 +152,16 @@ async function reloadHistoryList(): Promise<void> {
 <style lang="scss" scoped>
 .traffic-recording-viewer {
     display: grid;
-    grid-template-rows: 3rem 1fr;
+    grid-template-rows: 6.5rem 1fr;
 
     &__body {
         position: absolute;
         left: 0;
         right: 0;
-        top: 3rem;
+        top: 6.5rem;
         bottom: 0;
         overflow-y: auto;
-
-        // todo lho validate
-        display: grid;
-        grid-template-rows: 3rem 1fr;
+        padding: 0 1rem;
     }
 }
 </style>

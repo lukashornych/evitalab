@@ -11,24 +11,28 @@ export class SessionStartContainer extends TrafficRecord {
 
     readonly catalogVersion: bigint
 
-    constructor(sessionSequenceOrder: bigint | undefined,
+    constructor(sessionSequenceOrder: bigint,
                 sessionId: Uuid,
                 recordSessionOffset: number,
+                sessionRecordsCount: number,
                 type: TrafficRecordType,
                 created: OffsetDateTime,
                 duration: Duration,
                 ioFetchedSizeBytes: number,
                 ioFetchCount: number,
+                finishedWithError: string | undefined,
                 catalogVersion: bigint) {
         super(
             sessionSequenceOrder,
             sessionId,
             recordSessionOffset,
+            sessionRecordsCount,
             type,
             created,
             duration,
             ioFetchedSizeBytes,
-            ioFetchCount
+            ioFetchCount,
+            finishedWithError
         )
         this.catalogVersion = catalogVersion
     }

@@ -47,7 +47,7 @@ export const GrpcEvitaTrafficRecordingService = {
       name: "GetTrafficRecordingLabelsNamesOrderedByCardinality",
       I: GetTrafficRecordingLabelNamesRequest,
       O: GetTrafficRecordingLabelNamesResponse,
-      kind: MethodKind.ServerStreaming,
+      kind: MethodKind.Unary,
     },
     /**
      * Procedure returns a list of top unique label values ordered by cardinality of their values present in the traffic recording.
@@ -58,7 +58,7 @@ export const GrpcEvitaTrafficRecordingService = {
       name: "GetTrafficRecordingLabelValuesOrderedByCardinality",
       I: GetTrafficRecordingValuesNamesRequest,
       O: GetTrafficRecordingValuesNamesResponse,
-      kind: MethodKind.ServerStreaming,
+      kind: MethodKind.Unary,
     },
     /**
      * Procedure that starts the traffic recording for the given criteria and settings

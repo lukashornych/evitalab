@@ -56,8 +56,8 @@ import { PaginatedList } from '@/modules/connection/model/PaginatedList'
 import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
 import { GrpcTaskStatus, GrpcUuid } from '@/modules/connection/driver/grpc/gen/GrpcEvitaDataTypes_pb'
 import {
-    GetTrafficHistoryListResponse,
-    GetTrafficRecordingStatusResponse
+    GetTrafficHistoryListResponse, GetTrafficRecordingLabelNamesResponse,
+    GetTrafficRecordingStatusResponse, GetTrafficRecordingValuesNamesResponse
 } from '@/modules/connection/driver/grpc/gen/GrpcEvitaTrafficRecordingAPI_pb'
 import { GrpcTrafficRecordingContent } from '@/modules/connection/driver/grpc/gen/GrpcTrafficRecording_pb'
 import { TrafficRecordingCaptureRequest } from '@/modules/connection/model/traffic/TrafficRecordingCaptureRequest'
@@ -745,7 +745,8 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
             connection,
             await this.getCatalog(connection, catalogName),
             async (sessionId) => {
-                const response: GetTrafficHistoryListResponse = await this.clientProvider.getEvitaTrafficRecordingClient(connection)
+                const response: GetTrafficHistoryListResponse = await this.clientProvider
+                    .getEvitaTrafficRecordingClient(connection)
                     .getTrafficRecordingHistoryList(
                         {
                             limit,
@@ -758,6 +759,56 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
                         }
                     )
                 return this.trafficRecordingConverter.convertGrpcTrafficRecords(response.trafficRecord)
+            }
+        )
+    }
+
+    async getTrafficRecordingLabelNamesOrderedByCardinality(connection: Connection,
+                                                            catalogName: string,
+                                                            nameStartsWith: string,
+                                                            limit: number): Promise<Immutable.List<string>> {
+        return this.evitaSessionProvider.executeInReadOnlySession(
+            connection,
+            await this.getCatalog(connection, catalogName),
+            async (sessionId) => {
+                const response: GetTrafficRecordingLabelNamesResponse = await this.clientProvider
+                    .getEvitaTrafficRecordingClient(connection)
+                    .getTrafficRecordingLabelsNamesOrderedByCardinality(
+                        {
+                            nameStartsWith,
+                            limit
+                        },
+                        {
+                            headers: { sessionId }
+                        }
+                    )
+                return Immutable.List(response.labelName || [])
+            }
+        )
+    }
+
+    async getTrafficRecordingLabelValuesOrderedByCardinality(connection: Connection,
+                                                            catalogName: string,
+                                                            labelName: string,
+                                                            valueStartsWith: string,
+                                                            limit: number): Promise<Immutable.List<string>> {
+        return this.evitaSessionProvider.executeInReadOnlySession(
+            connection,
+            await this.getCatalog(connection, catalogName),
+            async (sessionId) => {
+                const response: GetTrafficRecordingValuesNamesResponse = await this.clientProvider
+                    .getEvitaTrafficRecordingClient(connection)
+                    .getTrafficRecordingLabelValuesOrderedByCardinality(
+                        {
+                            labelName,
+                            valueStartsWith,
+                            limit
+                        },
+                        {
+                            headers: { sessionId }
+                        }
+                    )
+                return Immutable.List(response.labelValue || [])
             }
         )
     }

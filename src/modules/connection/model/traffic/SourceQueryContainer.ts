@@ -13,14 +13,16 @@ export class SourceQueryContainer extends TrafficRecord {
     readonly sourceQuery: string
     readonly queryType: string
 
-    constructor(sessionSequenceOrder: bigint | undefined,
+    constructor(sessionSequenceOrder: bigint,
                 sessionId: Uuid,
                 recordSessionOffset: number,
+                sessionRecordsCount: number,
                 type: TrafficRecordType,
                 created: OffsetDateTime,
                 duration: Duration,
                 ioFetchedSizeBytes: number,
                 ioFetchCount: number,
+                finishedWithError: string | undefined,
                 sourceQueryId: Uuid,
                 sourceQuery: string,
                 queryType: string) {
@@ -28,11 +30,13 @@ export class SourceQueryContainer extends TrafficRecord {
             sessionSequenceOrder,
             sessionId,
             recordSessionOffset,
+            sessionRecordsCount,
             type,
             created,
             duration,
             ioFetchedSizeBytes,
-            ioFetchCount
+            ioFetchCount,
+            finishedWithError
         )
         this.sourceQueryId = sourceQueryId
         this.sourceQuery = sourceQuery

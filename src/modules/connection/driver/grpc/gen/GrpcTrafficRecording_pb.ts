@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
-import { Int32Value, Int64Value, Message, proto3, protoInt64 } from "@bufbuild/protobuf";
+import { Int32Value, Int64Value, Message, proto3, protoInt64, StringValue } from "@bufbuild/protobuf";
 import { GrpcOffsetDateTime, GrpcUuid } from "./GrpcEvitaDataTypes_pb.js";
 import { GrpcEntityMutation } from "./GrpcEntityMutation_pb.js";
 import { GrpcEntitySchemaMutation } from "./GrpcEntitySchemaMutation_pb.js";
@@ -250,39 +250,54 @@ export class GrpcTrafficRecord extends Message<GrpcTrafficRecord> {
   recordSessionOffset = 0;
 
   /**
+   * Total count of the records in the session. This number allows clients to determine whether the recordSessionOffset
+   * is the last record in the session (i.e. when recordSessionOffset = recordsInSession - 1, then it is the last record).
+   *
+   * @generated from field: int32 sessionRecordsCount = 4;
+   */
+  sessionRecordsCount = 0;
+
+  /**
    * The type of the recording.
    *
-   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficRecordingType type = 4;
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficRecordingType type = 5;
    */
   type = GrpcTrafficRecordingType.TRAFFIC_RECORDING_SESSION_START;
 
   /**
    * The time when the recording was created.
    *
-   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcOffsetDateTime created = 5;
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcOffsetDateTime created = 6;
    */
   created?: GrpcOffsetDateTime;
 
   /**
    * The duration of the operation in milliseconds.
    *
-   * @generated from field: int32 durationInMilliseconds = 6;
+   * @generated from field: int32 durationInMilliseconds = 7;
    */
   durationInMilliseconds = 0;
 
   /**
    * The size of the data fetched from the permanent storage in bytes.
    *
-   * @generated from field: int32 ioFetchedSizeBytes = 7;
+   * @generated from field: int32 ioFetchedSizeBytes = 8;
    */
   ioFetchedSizeBytes = 0;
 
   /**
    * The number of objects fetched from the permanent storage.
    *
-   * @generated from field: int32 ioFetchCount = 8;
+   * @generated from field: int32 ioFetchCount = 9;
    */
   ioFetchCount = 0;
+
+  /**
+   * Returns non-null error message if the action the recording relates to finished with an error.
+   *
+   * @generated from field: google.protobuf.StringValue finishedWithError = 10;
+   */
+  finishedWithError?: string;
 
   /**
    * optional body of the traffic recording when it is requested by the GrpcTrafficCaptureContent
@@ -291,49 +306,49 @@ export class GrpcTrafficRecord extends Message<GrpcTrafficRecord> {
    */
   body: {
     /**
-     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficMutationContainer mutation = 9;
+     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficMutationContainer mutation = 101;
      */
     value: GrpcTrafficMutationContainer;
     case: "mutation";
   } | {
     /**
-     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficQueryContainer query = 10;
+     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficQueryContainer query = 102;
      */
     value: GrpcTrafficQueryContainer;
     case: "query";
   } | {
     /**
-     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficEntityEnrichmentContainer enrichment = 11;
+     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficEntityEnrichmentContainer enrichment = 103;
      */
     value: GrpcTrafficEntityEnrichmentContainer;
     case: "enrichment";
   } | {
     /**
-     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficEntityFetchContainer fetch = 12;
+     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficEntityFetchContainer fetch = 104;
      */
     value: GrpcTrafficEntityFetchContainer;
     case: "fetch";
   } | {
     /**
-     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficSessionCloseContainer sessionClose = 13;
+     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficSessionCloseContainer sessionClose = 105;
      */
     value: GrpcTrafficSessionCloseContainer;
     case: "sessionClose";
   } | {
     /**
-     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficSessionStartContainer sessionStart = 14;
+     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficSessionStartContainer sessionStart = 106;
      */
     value: GrpcTrafficSessionStartContainer;
     case: "sessionStart";
   } | {
     /**
-     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficSourceQueryContainer sourceQuery = 15;
+     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficSourceQueryContainer sourceQuery = 107;
      */
     value: GrpcTrafficSourceQueryContainer;
     case: "sourceQuery";
   } | {
     /**
-     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficSourceQueryStatisticsContainer sourceQueryStatistics = 16;
+     * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcTrafficSourceQueryStatisticsContainer sourceQueryStatistics = 108;
      */
     value: GrpcTrafficSourceQueryStatisticsContainer;
     case: "sourceQueryStatistics";
@@ -350,19 +365,21 @@ export class GrpcTrafficRecord extends Message<GrpcTrafficRecord> {
     { no: 1, name: "sessionSequenceOrder", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
     { no: 2, name: "sessionId", kind: "message", T: GrpcUuid },
     { no: 3, name: "recordSessionOffset", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 4, name: "type", kind: "enum", T: proto3.getEnumType(GrpcTrafficRecordingType) },
-    { no: 5, name: "created", kind: "message", T: GrpcOffsetDateTime },
-    { no: 6, name: "durationInMilliseconds", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 7, name: "ioFetchedSizeBytes", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 8, name: "ioFetchCount", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 9, name: "mutation", kind: "message", T: GrpcTrafficMutationContainer, oneof: "body" },
-    { no: 10, name: "query", kind: "message", T: GrpcTrafficQueryContainer, oneof: "body" },
-    { no: 11, name: "enrichment", kind: "message", T: GrpcTrafficEntityEnrichmentContainer, oneof: "body" },
-    { no: 12, name: "fetch", kind: "message", T: GrpcTrafficEntityFetchContainer, oneof: "body" },
-    { no: 13, name: "sessionClose", kind: "message", T: GrpcTrafficSessionCloseContainer, oneof: "body" },
-    { no: 14, name: "sessionStart", kind: "message", T: GrpcTrafficSessionStartContainer, oneof: "body" },
-    { no: 15, name: "sourceQuery", kind: "message", T: GrpcTrafficSourceQueryContainer, oneof: "body" },
-    { no: 16, name: "sourceQueryStatistics", kind: "message", T: GrpcTrafficSourceQueryStatisticsContainer, oneof: "body" },
+    { no: 4, name: "sessionRecordsCount", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 5, name: "type", kind: "enum", T: proto3.getEnumType(GrpcTrafficRecordingType) },
+    { no: 6, name: "created", kind: "message", T: GrpcOffsetDateTime },
+    { no: 7, name: "durationInMilliseconds", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 8, name: "ioFetchedSizeBytes", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 9, name: "ioFetchCount", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 10, name: "finishedWithError", kind: "message", T: StringValue },
+    { no: 101, name: "mutation", kind: "message", T: GrpcTrafficMutationContainer, oneof: "body" },
+    { no: 102, name: "query", kind: "message", T: GrpcTrafficQueryContainer, oneof: "body" },
+    { no: 103, name: "enrichment", kind: "message", T: GrpcTrafficEntityEnrichmentContainer, oneof: "body" },
+    { no: 104, name: "fetch", kind: "message", T: GrpcTrafficEntityFetchContainer, oneof: "body" },
+    { no: 105, name: "sessionClose", kind: "message", T: GrpcTrafficSessionCloseContainer, oneof: "body" },
+    { no: 106, name: "sessionStart", kind: "message", T: GrpcTrafficSessionStartContainer, oneof: "body" },
+    { no: 107, name: "sourceQuery", kind: "message", T: GrpcTrafficSourceQueryContainer, oneof: "body" },
+    { no: 108, name: "sourceQueryStatistics", kind: "message", T: GrpcTrafficSourceQueryStatisticsContainer, oneof: "body" },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcTrafficRecord {
@@ -447,16 +464,23 @@ export class GrpcTrafficMutationContainer extends Message<GrpcTrafficMutationCon
  */
 export class GrpcTrafficQueryContainer extends Message<GrpcTrafficQueryContainer> {
   /**
+   * The shortened description of the query and its purpose
+   *
+   * @generated from field: string queryDescription = 1;
+   */
+  queryDescription = "";
+
+  /**
    * The query operation.
    *
-   * @generated from field: string query = 1;
+   * @generated from field: string query = 2;
    */
   query = "";
 
   /**
    * The total number of records calculated by the query.
    *
-   * @generated from field: int32 totalRecordCount = 2;
+   * @generated from field: int32 totalRecordCount = 3;
    */
   totalRecordCount = 0;
 
@@ -464,14 +488,14 @@ export class GrpcTrafficQueryContainer extends Message<GrpcTrafficQueryContainer
    * The primary keys of the records returned by the query (in returned data chunk). I.e. number of records actually
    * returned by the pagination requirement of the query.
    *
-   * @generated from field: repeated int32 primaryKeys = 3;
+   * @generated from field: repeated int32 primaryKeys = 4;
    */
   primaryKeys: number[] = [];
 
   /**
    * The client labels associated with the query.
    *
-   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcQueryLabel labels = 4;
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcQueryLabel labels = 5;
    */
   labels: GrpcQueryLabel[] = [];
 
@@ -483,10 +507,11 @@ export class GrpcTrafficQueryContainer extends Message<GrpcTrafficQueryContainer
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "io.evitadb.externalApi.grpc.generated.GrpcTrafficQueryContainer";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "query", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "totalRecordCount", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 3, name: "primaryKeys", kind: "scalar", T: 5 /* ScalarType.INT32 */, repeated: true },
-    { no: 4, name: "labels", kind: "message", T: GrpcQueryLabel, repeated: true },
+    { no: 1, name: "queryDescription", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "query", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "totalRecordCount", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 4, name: "primaryKeys", kind: "scalar", T: 5 /* ScalarType.INT32 */, repeated: true },
+    { no: 5, name: "labels", kind: "message", T: GrpcQueryLabel, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcTrafficQueryContainer {
@@ -666,30 +691,23 @@ export class GrpcTrafficSessionCloseContainer extends Message<GrpcTrafficSession
   trafficRecordCount = 0;
 
   /**
-   * The number of records missed out in this session due to memory shortage (not sampling, sampling affects entire sessions).
-   *
-   * @generated from field: int32 trafficRecordsMissedOut = 3;
-   */
-  trafficRecordsMissedOut = 0;
-
-  /**
    * The overall number of queries executed in this session.
    *
-   * @generated from field: int32 queryCount = 4;
+   * @generated from field: int32 queryCount = 3;
    */
   queryCount = 0;
 
   /**
    * The overall number of entities fetched in this session (excluding the entities fetched by queries).
    *
-   * @generated from field: int32 entityFetchCount = 5;
+   * @generated from field: int32 entityFetchCount = 4;
    */
   entityFetchCount = 0;
 
   /**
    * The overall number of mutations executed in this session.
    *
-   * @generated from field: int32 mutationCount = 6;
+   * @generated from field: int32 mutationCount = 5;
    */
   mutationCount = 0;
 
@@ -703,10 +721,9 @@ export class GrpcTrafficSessionCloseContainer extends Message<GrpcTrafficSession
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "catalogVersion", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
     { no: 2, name: "trafficRecordCount", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 3, name: "trafficRecordsMissedOut", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 4, name: "queryCount", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 5, name: "entityFetchCount", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 6, name: "mutationCount", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 3, name: "queryCount", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 4, name: "entityFetchCount", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 5, name: "mutationCount", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcTrafficSessionCloseContainer {

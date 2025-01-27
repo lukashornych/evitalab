@@ -18,25 +18,29 @@ export class EntityFetchContainer extends TrafficRecord {
      */
     readonly primaryKey: number
 
-    constructor(sessionSequenceOrder: bigint | undefined,
+    constructor(sessionSequenceOrder: bigint,
                 sessionId: Uuid,
                 recordSessionOffset: number,
+                sessionRecordsCount: number,
                 type: TrafficRecordType,
                 created: OffsetDateTime,
                 duration: Duration,
                 ioFetchedSizeBytes: number,
                 ioFetchCount: number,
+                finishedWithError: string | undefined,
                 query: string,
                 primaryKey: number) {
         super(
             sessionSequenceOrder,
             sessionId,
             recordSessionOffset,
+            sessionRecordsCount,
             type,
             created,
             duration,
             ioFetchedSizeBytes,
-            ioFetchCount
+            ioFetchCount,
+            finishedWithError
         )
         this.query = query
         this.primaryKey = primaryKey

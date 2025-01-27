@@ -19,6 +19,9 @@ const { t } = useI18n()
 const props = withDefaults(
     defineProps<{
         label?: string,
+        hint?: string,
+        clearable?: boolean,
+        hideDetails?: boolean,
         disabled?: boolean,
         defaultTimeOffset?: string,
         min?: DateTime,
@@ -26,6 +29,9 @@ const props = withDefaults(
     }>(),
     {
         label: undefined,
+        hint: undefined,
+        clearable: false,
+        hideDetails: false,
         disabled: false,
         defaultTimeOffset: () => timeOffsetFrom(DateTime.now())
     }
@@ -234,6 +240,10 @@ function confirm(): void {
     showMenu.value = false
     model.value = computedOffsetDateTime.value
 }
+
+function clear(): void {
+    model.value = undefined
+}
 </script>
 
 <template>
@@ -242,8 +252,12 @@ function confirm(): void {
         :active="showMenu"
         :focus="showMenu"
         :label="label"
+        :hint="hint"
         :disabled="disabled"
+        :clearable="clearable"
+        :hide-details="hideDetails"
         readonly
+        @click:clear="clear"
     >
         <VMenu
             v-model="showMenu"

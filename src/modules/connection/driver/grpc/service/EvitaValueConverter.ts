@@ -43,6 +43,7 @@ import { GrpcEvitaDataType } from '../gen/GrpcEnums_pb'
 import { Currency } from '@/modules/connection/model/data-type/Currency'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { Timestamp as GrpcTimestamp } from '@bufbuild/protobuf'
+import { convertUuidBitsToCode } from '@/utils/uuid'
 
 /**
  * Convert gRPC evita value server representation into local evitaLab typescript representation
@@ -278,7 +279,7 @@ export class EvitaValueConverter {
     }
 
     convertGrpcUuid(grpcUuid: GrpcUuid): Uuid {
-        return new Uuid(grpcUuid.toJsonString(), grpcUuid.mostSignificantBits, grpcUuid.leastSignificantBits)
+        return Uuid.fromBits(grpcUuid.mostSignificantBits, grpcUuid.leastSignificantBits)
     }
 
     convertUuid(uuid: Uuid): GrpcUuid {
@@ -484,7 +485,7 @@ export class EvitaValueConverter {
     convertGrpcUuidArray(grpcUuids: GrpcUuidArray): Immutable.List<Uuid> {
         const uuids: Uuid[] = []
         for (const grpcUuid of grpcUuids.value) {
-            uuids.push(new Uuid(grpcUuid.toJsonString(), grpcUuid.mostSignificantBits, grpcUuid.leastSignificantBits))
+            uuids.push(this.convertGrpcUuid(grpcUuid))
         }
         return Immutable.List(uuids)
     }

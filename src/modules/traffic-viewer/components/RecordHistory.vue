@@ -1,5 +1,9 @@
 <script setup lang="ts">
 
+/**
+ * Lists traffic recording history
+ */
+
 import VMissingDataIndicator from '@/modules/base/component/VMissingDataIndicator.vue'
 import { useI18n } from 'vue-i18n'
 import { computed, ref } from 'vue'
@@ -12,6 +16,13 @@ import { TrafficRecordingCaptureRequest } from '@/modules/connection/model/traff
 import { TrafficRecordContent } from '@/modules/connection/model/traffic/TrafficRecordContent'
 import VListItemDivider from '@/modules/base/component/VListItemDivider.vue'
 import { TrafficRecordHistoryCriteria } from '@/modules/traffic-viewer/model/TrafficRecordHistoryCriteria'
+import {
+    TrafficRecordVisualisationDefinition
+} from '@/modules/traffic-viewer/model/TrafficRecordVisualisationDefinition'
+import RecordHistoryItem from '@/modules/traffic-viewer/components/RecordHistoryItem.vue'
+
+// note: this is enum from vuetify, but vuetify doesn't export it
+type InfiniteScrollStatus = 'ok' | 'empty' | 'loading' | 'error';
 
 const trafficViewerService: TrafficViewerService = useTrafficViewerService()
 const toaster: Toaster = useToaster()
@@ -23,10 +34,11 @@ const props = defineProps<{
 }>()
 
 const historyLoaded = ref<boolean>(false)
-const history = ref<Immutable.List<TrafficRecord> | undefined>()
+let historyRecords: TrafficRecord[] = []
+const history = ref<TrafficRecordVisualisationDefinition[]>([])
 
-const sinceSessionSequenceId = ref<bigint | undefined>(undefined)
-const sinceRecordSessionOffset = ref<number | undefined>(undefined)
+const sinceSessionSequenceId = ref<bigint | undefined>(1n)
+const sinceRecordSessionOffset = ref<number | undefined>(1)
 const limit = ref<number>(20)
 const lastPage = ref<boolean>(false)
 
@@ -39,32 +51,41 @@ const trafficRecordingCaptureRequest = computed<TrafficRecordingCaptureRequest>(
         Immutable.List(props.criteria.types),
         props.criteria.sessionId,
         props.criteria.longerThan,
-        props.criteria.fetchingMoreBytesThen,
+        props.criteria.fetchingMoreBytesThan,
         Immutable.List(props.criteria.labels)
     )
 })
 
 async function loadNextHistory(): Promise<boolean> {
     try {
-        const fetchedHistory: Immutable.List<TrafficRecord> = await trafficViewerService.getRecordHistoryList(
-            props.dataPointer.connection,
-            props.dataPointer.catalogName,
+        const fetchedRecords: Immutable.List<TrafficRecord> = await trafficViewerService.getRecordHistoryList(
+            props.dataPointer,
             trafficRecordingCaptureRequest.value,
             limit.value
         )
-        if (fetchedHistory.size === 0) {
+
+        if (fetchedRecords.size === 0) {
             lastPage.value = true
             return true
         }
 
-        history.value = fetchedHistory
-        const lastFetchedRecord: TrafficRecord = fetchedHistory.last()
-        sinceSessionSequenceId.value = lastFetchedRecord.sessionSequenceOrder
-        sinceRecordSessionOffset.value = lastFetchedRecord.recordSessionOffset
+        for (const fetchedRecord of fetchedRecords) {
+            historyRecords.push(fetchedRecord)
+        }
+        const lastFetchedRecord: TrafficRecord = fetchedRecords.last()
+        if (lastFetchedRecord.recordSessionOffset < (lastFetchedRecord.sessionRecordsCount - 1)) {
+            sinceSessionSequenceId.value = lastFetchedRecord.sessionSequenceOrder
+            sinceRecordSessionOffset.value = lastFetchedRecord.recordSessionOffset + 1
+        } else {
+            sinceSessionSequenceId.value = lastFetchedRecord.sessionSequenceOrder + 1n
+            sinceRecordSessionOffset.value = 0
+        }
         lastPage.value = false
         if (!historyLoaded.value) {
             historyLoaded.value = true
         }
+        // note: we compute the history manually here because for some reason, computed ref wasn't working
+        history.value = trafficViewerService.processRecords(props.dataPointer, historyRecords).toArray()
         return true
     } catch (e: any) {
         toaster.error(t(
@@ -78,8 +99,18 @@ async function loadNextHistory(): Promise<boolean> {
 async function reloadHistory(): Promise<void> {
     sinceSessionSequenceId.value = undefined
     sinceRecordSessionOffset.value = undefined
+    historyRecords = []
 
     await loadNextHistory()
+}
+
+async function loadScroller({ done }: { done: (status: InfiniteScrollStatus) => void }): Promise<void> {
+    const result: boolean = await loadNextHistory()
+    if (result) {
+        done('ok')
+    } else {
+        done('error')
+    }
 }
 
 defineExpose<{
@@ -90,31 +121,32 @@ defineExpose<{
 </script>
 
 <template>
-    <VList v-if="historyLoaded && history!.size > 0">
+    <VList v-if="historyLoaded && history.length > 0">
         <VInfiniteScroll
             mode="manual"
-            @load="loadNextHistory"
+            side="end"
+            @load="loadScroller"
         >
-            <template v-for="(trafficRecord, index) in history" :key="`${trafficRecord.sessionSequenceOrder}:${trafficRecord.recordSessionOffset}`">
-<!--                todo lho impl list items-->
-                <VListItem>
-                    {{ trafficRecord.type }}
-                </VListItem>
-
-                <VListItemDivider v-if="index < history!.size - 1"/>
+            <template
+                v-for="(visualisationDefinition, index) in history"
+                :key="index"
+            >
+                <RecordHistoryItem :visualisation-definition="visualisationDefinition as TrafficRecordVisualisationDefinition" />
+                <VListItemDivider v-if="index < history.length - 1"/>
             </template>
 
-<!--            todo lho only when not last page-->
-<!--            <template #load-more>-->
-<!--                -->
-<!--            </template>-->
+            <template #load-more="{ props }">
+                <VBtn v-if="!lastPage" v-bind="props">
+                    {{ t('common.button.showMore') }}
+                </VBtn>
+            </template>
         </VInfiniteScroll>
     </VList>
 
     <VMissingDataIndicator
         v-else
         icon="mdi-record-circle-outline"
-        :title="t('trafficViewer.recordHistory.list.noRecords')"
+        :title="t('trafficViewer.recordHistory.list.noRecords', { catalogName: dataPointer.catalogName })"
     />
 </template>
 

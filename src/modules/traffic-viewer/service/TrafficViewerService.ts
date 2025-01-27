@@ -11,6 +11,12 @@ import Immutable from 'immutable'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import { TrafficRecordingCaptureRequest } from '@/modules/connection/model/traffic/TrafficRecordingCaptureRequest'
 import { TrafficRecord } from '@/modules/connection/model/traffic/TrafficRecord'
+import { TrafficRecordHistoryVisualisationProcessor } from '@/modules/traffic-viewer/service/TrafficRecordHistoryVisualisationProcessor'
+import { TrafficRecordVisualisationContext } from '@/modules/traffic-viewer/model/TrafficRecordVisualisationContext'
+import { TrafficRecordHistoryDataPointer } from '@/modules/traffic-viewer/model/TrafficRecordHistoryDataPointer'
+import {
+    TrafficRecordVisualisationDefinition
+} from '@/modules/traffic-viewer/model/TrafficRecordVisualisationDefinition'
 
 export const trafficViewerServiceInjectionKey: InjectionKey<TrafficViewerService> = Symbol('trafficViewerService')
 
@@ -20,9 +26,11 @@ export const trafficViewerServiceInjectionKey: InjectionKey<TrafficViewerService
 export class TrafficViewerService {
 
     private readonly connectionService: ConnectionService
+    private readonly visualisationProcessor: TrafficRecordHistoryVisualisationProcessor
 
-    constructor(connectionService: ConnectionService) {
+    constructor(connectionService: ConnectionService, visualisationProcessor: TrafficRecordHistoryVisualisationProcessor) {
         this.connectionService = connectionService
+        this.visualisationProcessor = visualisationProcessor
     }
 
     async getAvailableCatalogs(connection: Connection): Promise<Immutable.List<Catalog>> {
@@ -69,13 +77,47 @@ export class TrafficViewerService {
         return await driver.stopTrafficRecording(connection, trafficRecorderTask)
     }
 
-    async getRecordHistoryList(connection: Connection,
-                               catalogName: string,
+    async getRecordHistoryList(dataPointer: TrafficRecordHistoryDataPointer,
                                captureRequest: TrafficRecordingCaptureRequest,
                                limit: number): Promise<Immutable.List<TrafficRecord>> {
-        const driver: EvitaDBDriver = await this.connectionService.getDriver(connection)
-        return await driver.getTrafficRecordHistoryList(connection, catalogName, captureRequest, limit)
+        const driver: EvitaDBDriver = await this.connectionService.getDriver(dataPointer.connection)
+        return await driver.getTrafficRecordHistoryList(dataPointer.connection, dataPointer.catalogName, captureRequest, limit)
     }
+
+    processRecords(dataPointer: TrafficRecordHistoryDataPointer, records: TrafficRecord[]): Immutable.List<TrafficRecordVisualisationDefinition> {
+        return this.visualisationProcessor.process(
+            new TrafficRecordVisualisationContext(dataPointer),
+            records
+        )
+    }
+
+    async getLabelNames(connection: Connection,
+                        catalogName: string,
+                        nameStartsWith: string,
+                        limit: number): Promise<Immutable.List<string>> {
+        const driver: EvitaDBDriver = await this.connectionService.getDriver(connection)
+        return await driver.getTrafficRecordingLabelNamesOrderedByCardinality(
+            connection,
+            catalogName,
+            nameStartsWith,
+            limit
+        )
+    }
+
+    async getLabelValues(connection: Connection,
+                         catalogName: string,
+                         labelName: string,
+                         valueStartsWith: string,
+                         limit: number): Promise<Immutable.List<string>> {
+    const driver: EvitaDBDriver = await this.connectionService.getDriver(connection)
+    return await driver.getTrafficRecordingLabelValuesOrderedByCardinality(
+        connection,
+        catalogName,
+        labelName,
+        valueStartsWith,
+        limit
+    )
+}
 }
 
 export function useTrafficViewerService(): TrafficViewerService {

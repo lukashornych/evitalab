@@ -47,55 +47,63 @@ export class TrafficRecordingConverter {
 
         switch (grpcTrafficRecord.body.case) {
             case 'mutation': return new MutationContainer(
-                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.type, header.created,
-                header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.sessionRecordsCount,
+                header.type, header.created, header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.finishedWithError,
                 grpcTrafficRecord.body.value.mutation //  todo lho serialize to json?
             );
             case 'query': return new QueryContainer(
-                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.type, header.created,
-                header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.sessionRecordsCount,
+                header.type, header.created, header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.finishedWithError,
+                grpcTrafficRecord.body.value.queryDescription,
                 grpcTrafficRecord.body.value.query,
                 grpcTrafficRecord.body.value.totalRecordCount,
                 Immutable.List(grpcTrafficRecord.body.value.primaryKeys),
                 this.convertGrpcQueryLabels(grpcTrafficRecord.body.value.labels)
             );
             case 'enrichment': return new EntityEnrichmentContainer(
-                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.type, header.created,
-                header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.sessionRecordsCount,
+                header.type, header.created, header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.finishedWithError,
                 grpcTrafficRecord.body.value.query,
                 grpcTrafficRecord.body.value.primaryKey
             );
             case 'fetch': return new EntityFetchContainer(
-                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.type, header.created,
-                header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.sessionRecordsCount,
+                header.type, header.created, header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.finishedWithError,
                 grpcTrafficRecord.body.value.query,
                 grpcTrafficRecord.body.value.primaryKey
             );
             case 'sessionClose': return new SessionCloseContainer(
-                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.type, header.created,
-                header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.sessionRecordsCount,
+                header.type, header.created, header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.finishedWithError,
                 grpcTrafficRecord.body.value.catalogVersion,
                 grpcTrafficRecord.body.value.trafficRecordCount,
-                grpcTrafficRecord.body.value.trafficRecordsMissedOut,
                 grpcTrafficRecord.body.value.queryCount,
                 grpcTrafficRecord.body.value.entityFetchCount,
                 grpcTrafficRecord.body.value.mutationCount
             );
             case 'sessionStart': return new SessionStartContainer(
-                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.type, header.created,
-                header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.sessionRecordsCount,
+                header.type, header.created, header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.finishedWithError,
                 grpcTrafficRecord.body.value.catalogVersion
             );
             case 'sourceQuery': return new SourceQueryContainer(
-                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.type, header.created,
-                header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.sessionRecordsCount,
+                header.type, header.created, header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.finishedWithError,
                 this.evitaValueConverter.convertGrpcUuid(grpcTrafficRecord.body.value.sourceQueryId!),
                 grpcTrafficRecord.body.value.sourceQuery,
                 grpcTrafficRecord.body.value.queryType
             );
             case 'sourceQueryStatistics': return new SourceQueryStatisticsContainer(
-                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.type, header.created,
-                header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.sessionRecordsCount,
+                header.type, header.created, header.duration, header.ioFetchedSizeBytes, header.ioFetchCount,
+                header.finishedWithError,
                 this.evitaValueConverter.convertGrpcUuid(grpcTrafficRecord.body.value.sourceQueryId!),
                 grpcTrafficRecord.body.value.returnedRecordCount,
                 grpcTrafficRecord.body.value.totalRecordCount
@@ -122,7 +130,7 @@ export class TrafficRecordingConverter {
             longerThanMilliseconds: captureRequest.longerThan != undefined
                 ? captureRequest.longerThan.toMillis()
                 : undefined,
-            fetchingMoreBytesThan: captureRequest.fetchingMoreBytesThen,
+            fetchingMoreBytesThan: captureRequest.fetchingMoreBytesThan,
             labels: captureRequest.labels != undefined
                 ? this.convertLabels(captureRequest.labels)
                 : undefined
@@ -211,11 +219,13 @@ export class TrafficRecordingConverter {
             grpcTrafficRecord.sessionSequenceOrder,
             this.evitaValueConverter.convertGrpcUuid(grpcTrafficRecord.sessionId!),
             grpcTrafficRecord.recordSessionOffset,
+            grpcTrafficRecord.sessionRecordsCount,
             this.convertGrpcTrafficRecordType(grpcTrafficRecord.type),
             this.evitaValueConverter.convertGrpcOffsetDateTime(grpcTrafficRecord.created!),
             Duration.fromMillis(grpcTrafficRecord.durationInMilliseconds),
             grpcTrafficRecord.ioFetchedSizeBytes,
-            grpcTrafficRecord.ioFetchedSizeBytes
+            grpcTrafficRecord.ioFetchedSizeBytes,
+            grpcTrafficRecord.finishedWithError
         )
     }
 }
@@ -225,30 +235,36 @@ export class TrafficRecordingConverter {
  */
 class TrafficRecordHeader {
 
-    readonly sessionSequenceOrder?: bigint
+    readonly sessionSequenceOrder: bigint
     readonly sessionId: Uuid
     readonly recordSessionOffset: number
+    readonly sessionRecordsCount: number
     readonly type: TrafficRecordType
     readonly created: OffsetDateTime
     readonly duration: Duration
     readonly ioFetchedSizeBytes: number
     readonly ioFetchCount: number
+    readonly finishedWithError?: string
 
-    constructor(sessionSequenceOrder: bigint | undefined,
+    constructor(sessionSequenceOrder: bigint,
                 sessionId: Uuid,
                 recordSessionOffset: number,
+                sessionRecordsCount: number,
                 type: TrafficRecordType,
                 created: OffsetDateTime,
                 duration: Duration,
                 ioFetchedSizeBytes: number,
-                ioFetchCount: number) {
+                ioFetchCount: number,
+                finishedWithError: string | undefined) {
         this.sessionSequenceOrder = sessionSequenceOrder
         this.sessionId = sessionId
         this.recordSessionOffset = recordSessionOffset
+        this.sessionRecordsCount = sessionRecordsCount
         this.type = type
         this.created = created
         this.duration = duration
         this.ioFetchedSizeBytes = ioFetchedSizeBytes
         this.ioFetchCount = ioFetchCount
+        this.finishedWithError = finishedWithError
     }
 }

@@ -1444,8 +1444,181 @@
       "button": {
         "reloadRecordHistory": "Reload record history"
       },
+      "filter": {
+        "label": "Filter",
+        "form": {
+          "since": {
+            "label": "Since",
+            "hint": "Specifies the time from which the history should be returned."
+          },
+          "types": {
+            "label": "Types",
+            "valueDescriptor": "{count} types selected",
+            "hint": "Specifies the types of records to be returned.",
+            "type": {
+              "Session": "Session",
+              "SourceQuery": "Source query",
+              "Query": "Query",
+              "Fetch": "Fetch",
+              "Enrichment": "Enrichment",
+              "Mutation": "Mutation"
+            }
+          },
+          "sessionId": {
+            "label": "Session ID",
+            "hint": "Specifies the session ID from which the history should be returned.",
+            "validations": {
+              "notUuid": "Session ID must be a UUID."
+            }
+          },
+          "longerThan": {
+            "label": "Longer than",
+            "unit": "ms",
+            "hint": "Specifies the minimum duration in milliseconds of the traffic recording to be returned.",
+            "validations": {
+              "notNumber": "Threshold must be integer number.",
+              "outOfRange": "Threshold must be positive number."
+            }
+          },
+          "fetchingMoreBytesThan": {
+            "label": "Fetching more bytes than",
+            "hint": "Specifies the minimum number of bytes that record should have fetched from the disk.",
+            "unit": "bytes",
+            "validations": {
+              "notNumber": "Threshold must be integer number.",
+              "outOfRange": "Threshold must be positive number."
+            }
+          },
+          "labels": {
+            "label": "Labels",
+            "hint": "Specifies the client labels that the record must have (both name and value must match)."
+          }
+        }
+      },
       "list": {
-        "noRecords": "There are no traffic records for {catalogName} catalog. You need to either enable traffic recording on server options or start recording on demand in traffic recordings."
+        "noRecords": "There are no traffic records for the {catalogName} catalog. You need to either enable traffic recording on server options or start recording on demand in traffic recordings."
+      },
+      "record": {
+        "type": {
+          "common": {
+            "metadata": {
+              "group": {
+                "default": "Default metadata"
+              },
+              "item": {
+                "sessionId": "Session ID under which the record was created",
+                "created": "Record creation time",
+                "duration": "Record processing duration",
+                "ioFetchedSizeBytes": {
+                  "tooltip": "IO fetched size in bytes",
+                  "value": "0 bytes | 1 byte | {bytes} bytes"
+                },
+                "ioFetchCount": {
+                  "tooltip": "IO fetched count",
+                  "value": "{count} fetched"
+                },
+                "finishedStatus": {
+                  "tooltip": {
+                    "success": "Record finished status",
+                    "error": "Record finished status: {error}"
+                  },
+                  "status":{
+                    "success": "Success",
+                    "error": "Error"
+                  }
+                },
+                "noStatistics": {
+                  "tooltip": "No final statistics where fetched, therefore some useful data are not displayed. Try fetching more records.",
+                  "title": "No statistics"
+                }
+              }
+            }
+          },
+          "sessionStart": {
+            "label": "Session start",
+            "title": "Session"
+          },
+          "sessionClose": {
+            "label": "Session close",
+            "metadata": {
+              "item": {
+                "catalogVersion": "User catalog version",
+                "trafficRecordCount": {
+                  "tooltip": "Traffic record count",
+                  "value": "no traffic | 1 traffic record | {count} traffic records"
+                },
+                "queryCount": {
+                  "tooltip": "Queries executed count",
+                  "value": "no queries | 1 query | {count} queries"
+                },
+                "entityFetchCount": {
+                  "tooltip": "Entities fetched count",
+                  "value": "no entities | 1 entity | {count} entities"
+                },
+                "mutationCount": {
+                  "tooltip": "Mutations executed count",
+                  "value": "no mutations | 1 mutation | {count} mutations"
+                }
+              }
+            }
+          },
+          "sourceQuery": {
+            "label": "Source query",
+            "title": "{queryType} query",
+            "action": {
+              "query": "Open query in console"
+            }
+          },
+          "sourceQueryStatistics": {
+            "label": "Source query statistics",
+            "metadata": {
+              "item": {
+                "returnedRecordCount": "Returned record count",
+                "totalRecordCount": "Total record count"
+              }
+            }
+          },
+          "query": {
+            "label": "Query",
+            "title": "Query",
+            "metadata": {
+              "group": {
+                "queryLabels": "Query labels"
+              },
+              "item": {
+                "totalRecordCount": {
+                  "tooltip": "Total record count",
+                  "value": "no records | 1 record total | {count} records total"
+                },
+                "primaryKeys": {
+                  "tooltip": "Actual returned records count",
+                  "value": "no records returned | 1 record returned | {count} records returned"
+                },
+                "queryLabel": "Query label"
+              }
+            },
+            "action": {
+              "query": "Open query in console"
+            }
+          },
+          "fetch": {
+            "label": "Fetch",
+            "title": "Entity {primaryKey} fetch",
+            "action": {
+              "query": "Open fetch query in console"
+            }
+          },
+          "enrichment": {
+            "label": "Enrichment",
+            "title": "Entity {primaryKey} enrichment",
+            "action": {
+              "query": "Open enrichment query in console"
+            }
+          },
+          "mutation": {
+            "label": "Mutation"
+          }
+        }
       }
     }
   }

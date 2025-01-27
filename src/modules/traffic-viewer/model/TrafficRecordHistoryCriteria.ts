@@ -13,6 +13,6 @@ export class TrafficRecordHistoryCriteria {
     types?: TrafficRecordType[]
     sessionId?: Uuid
     longerThan?: Duration
-    fetchingMoreBytesThen?: number
+    fetchingMoreBytesThan?: number
     labels?: Label[]
 }

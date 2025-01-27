@@ -18,7 +18,7 @@ export class TrafficRecordingCaptureRequest {
     readonly types?: Immutable.List<TrafficRecordType>
     readonly sessionId?: Uuid
     readonly longerThan?: Duration
-    readonly fetchingMoreBytesThen?: number
+    readonly fetchingMoreBytesThan?: number
     readonly labels?: Immutable.List<Label>
 
     constructor(content: TrafficRecordContent,
@@ -28,7 +28,7 @@ export class TrafficRecordingCaptureRequest {
                 types: Immutable.List<TrafficRecordType> | undefined,
                 sessionId: Uuid | undefined,
                 longerThan: Duration | undefined,
-                fetchingMoreBytesThen: number | undefined,
+                fetchingMoreBytesThan: number | undefined,
                 labels: Immutable.List<Label> | undefined) {
         this.content = content
         this.since = since
@@ -37,7 +37,7 @@ export class TrafficRecordingCaptureRequest {
         this.types = types
         this.sessionId = sessionId
         this.longerThan = longerThan
-        this.fetchingMoreBytesThen = fetchingMoreBytesThen
+        this.fetchingMoreBytesThan = fetchingMoreBytesThan
         this.labels = labels
     }
 }

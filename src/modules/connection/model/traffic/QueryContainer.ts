@@ -12,6 +12,10 @@ import { Label } from '@/modules/connection/model/traffic/Label'
 export class QueryContainer extends TrafficRecord {
 
     /**
+     * The shortened description of the query and its purpose
+     */
+    readonly queryDescription: string
+    /**
      * The query operation.
      */
     readonly query: string
@@ -29,14 +33,17 @@ export class QueryContainer extends TrafficRecord {
      */
     readonly labels: Immutable.List<Label>
 
-    constructor(sessionSequenceOrder: bigint | undefined,
+    constructor(sessionSequenceOrder: bigint,
                 sessionId: Uuid,
                 recordSessionOffset: number,
+                sessionRecordsCount: number,
                 type: TrafficRecordType,
                 created: OffsetDateTime,
                 duration: Duration,
                 ioFetchedSizeBytes: number,
                 ioFetchCount: number,
+                finishedWithError: string | undefined,
+                queryDescription: string,
                 query: string,
                 totalRecordCount: number,
                 primaryKeys: Immutable.List<number>,
@@ -45,12 +52,15 @@ export class QueryContainer extends TrafficRecord {
             sessionSequenceOrder,
             sessionId,
             recordSessionOffset,
+            sessionRecordsCount,
             type,
             created,
             duration,
             ioFetchedSizeBytes,
-            ioFetchCount
+            ioFetchCount,
+            finishedWithError
         )
+        this.queryDescription = queryDescription
         this.query = query
         this.totalRecordCount = totalRecordCount
         this.primaryKeys = primaryKeys

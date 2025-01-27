@@ -5,12 +5,65 @@ import {
     TrafficViewerService,
     trafficViewerServiceInjectionKey
 } from '@/modules/traffic-viewer/service/TrafficViewerService'
+import Immutable from 'immutable'
+import { SourceQueryContainerVisualiser } from '@/modules/traffic-viewer/service/SourceQueryContainerVisualiser'
+import { WorkspaceService, workspaceServiceInjectionKey } from '@/modules/workspace/service/WorkspaceService'
+import {
+    GraphQLConsoleTabFactory,
+    graphQLConsoleTabFactoryInjectionKey
+} from '@/modules/graphql-console/console/workspace/service/GraphQLConsoleTabFactory'
+import {
+    SourceQueryStatisticsContainerVisualiser
+} from '@/modules/traffic-viewer/service/SourceQueryStatisticsContainerVisualiser'
+import { SessionStartContainerVisualiser } from '@/modules/traffic-viewer/service/SessionStartContainerVisualiser'
+import { SessionCloseContainerVisualiser } from '@/modules/traffic-viewer/service/SessionCloseContainerVisualiser'
+import { QueryContainerVisualiser } from '@/modules/traffic-viewer/service/QueryContainerVisualiser'
+import {
+    EvitaQLConsoleTabFactory,
+    evitaQLConsoleTabFactoryInjectionKey
+} from '@/modules/evitaql-console/console/workspace/service/EvitaQLConsoleTabFactory'
+import {
+    TrafficRecordHistoryVisualisationProcessor
+} from '@/modules/traffic-viewer/service/TrafficRecordHistoryVisualisationProcessor'
+import {
+    EntityEnrichmentContainerVisualiser
+} from '@/modules/traffic-viewer/service/EntityEnrichmentContainerVisualiser'
+import { EntityFetchContainerVisualiser } from '@/modules/traffic-viewer/service/EntityFetchContainerVisualiser'
+import { MutationContainerVisualiser } from '@/modules/traffic-viewer/service/MutationContainerVisualiser'
 
 export class TrafficViewerModuleRegistrar implements ModuleRegistrar {
 
     register(builder: ModuleContextBuilder): void {
         const connectionService: ConnectionService = builder.inject(connectionServiceInjectionKey)
-        const trafficViewerService: TrafficViewerService = new TrafficViewerService(connectionService)
+        const workspaceService: WorkspaceService = builder.inject(workspaceServiceInjectionKey)
+        const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory = builder.inject(evitaQLConsoleTabFactoryInjectionKey)
+        const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = builder.inject(graphQLConsoleTabFactoryInjectionKey)
+
+        const trafficViewerService: TrafficViewerService = new TrafficViewerService(
+            connectionService,
+            new TrafficRecordHistoryVisualisationProcessor(Immutable.List([
+                new EntityEnrichmentContainerVisualiser(
+                    workspaceService,
+                    evitaQLConsoleTabFactory
+                ),
+                new EntityFetchContainerVisualiser(
+                    workspaceService,
+                    evitaQLConsoleTabFactory
+                ),
+                new MutationContainerVisualiser(),
+                new QueryContainerVisualiser(
+                    workspaceService,
+                    evitaQLConsoleTabFactory
+                ),
+                new SessionCloseContainerVisualiser(),
+                new SessionStartContainerVisualiser(),
+                new SourceQueryContainerVisualiser(
+                    workspaceService,
+                    graphQLConsoleTabFactory
+                ),
+                new SourceQueryStatisticsContainerVisualiser()
+            ]))
+        )
         builder.provide(trafficViewerServiceInjectionKey, trafficViewerService)
     }
 }

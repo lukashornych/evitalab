@@ -11,22 +11,22 @@ export class SessionCloseContainer extends TrafficRecord {
 
     readonly catalogVersion: bigint
     readonly trafficRecordCount: number
-    readonly trafficRecordsMissedOut: number
     readonly queryCount: number
     readonly entityFetchCount: number
     readonly mutationCount: number
 
-    constructor(sessionSequenceOrder: bigint | undefined,
+    constructor(sessionSequenceOrder: bigint,
                 sessionId: Uuid,
                 recordSessionOffset: number,
+                sessionRecordsCount: number,
                 type: TrafficRecordType,
                 created: OffsetDateTime,
                 duration: Duration,
                 ioFetchedSizeBytes: number,
                 ioFetchCount: number,
+                finishedWithError: string | undefined,
                 catalogVersion: bigint,
                 trafficRecordCount: number,
-                trafficRecordsMissedOut: number,
                 queryCount: number,
                 entityFetchCount: number,
                 mutationCount: number) {
@@ -34,15 +34,16 @@ export class SessionCloseContainer extends TrafficRecord {
             sessionSequenceOrder,
             sessionId,
             recordSessionOffset,
+            sessionRecordsCount,
             type,
             created,
             duration,
             ioFetchedSizeBytes,
-            ioFetchCount
+            ioFetchCount,
+            finishedWithError
         )
         this.catalogVersion = catalogVersion
         this.trafficRecordCount = trafficRecordCount
-        this.trafficRecordsMissedOut = trafficRecordsMissedOut
         this.queryCount = queryCount
         this.entityFetchCount = entityFetchCount
         this.mutationCount = mutationCount

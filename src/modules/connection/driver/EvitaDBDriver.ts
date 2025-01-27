@@ -133,6 +133,15 @@ export interface EvitaDBDriver {
                                 catalogName: string,
                                 captureRequest: TrafficRecordingCaptureRequest,
                                 limit: number): Promise<Immutable.List<TrafficRecord>>
+    getTrafficRecordingLabelNamesOrderedByCardinality(connection: Connection,
+                                                      catalogName: string,
+                                                      nameStartsWith: string,
+                                                      limit: number): Promise<Immutable.List<string>>
+    getTrafficRecordingLabelValuesOrderedByCardinality(connection: Connection,
+                                                       catalogName: string,
+                                                       labelName: string,
+                                                       valueStartsWith: string,
+                                                       limit: number): Promise<Immutable.List<string>>
 
     //TODO: Add doc
     createCollection(connection: Connection, catalogName: string, entityType: string): Promise<void>
