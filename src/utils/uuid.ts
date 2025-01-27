@@ -1,4 +1,5 @@
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { limitToSigned64Bits } from '@/utils/bigint'
 
 /**
  * Method for converting UUID bits to canonical string representation
@@ -16,7 +17,7 @@ function digits(val: bigint, ds: bigint): string {
 
 /**
  * Factory method for converting UUIDs from the canonical string
- * representation to bits.
+ * representation to 64-bit bits.
  *
  * Inspired by `com.fasterxml.uuid.impl.UUIDUtil`.
  * <a href="https://github.com/cowtowncoder/java-uuid-generator">UUID Utils from CowTownCoder</a>. Thanks.
@@ -80,5 +81,6 @@ export function convertUuidCodeToBits(code: string): { mostSignificantBits: bigi
         }
         ++i;
     }
-    return { mostSignificantBits: hi, leastSignificantBits: lo };
+    // we need to limit the bits to 64-bit because the server cannot handle unlimited integers
+    return { mostSignificantBits: limitToSigned64Bits(hi), leastSignificantBits: limitToSigned64Bits(lo) };
 }

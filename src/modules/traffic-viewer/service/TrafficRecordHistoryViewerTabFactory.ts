@@ -12,6 +12,7 @@ import { TrafficRecordHistoryDataPointer } from '@/modules/traffic-viewer/model/
 import { TrafficRecordHistoryViewerTabDataDto } from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabDataDto'
 import { Uuid } from '@/modules/connection/model/data-type/Uuid'
 import { Duration } from 'luxon'
+import { OffsetDateTime, Timestamp } from '@/modules/connection/model/data-type/OffsetDateTime'
 
 export const trafficRecordHistoryViewerTabFactoryInjectionKey: InjectionKey<TrafficRecordHistoryViewerTabFactory> = Symbol('trafficRecordingHistoryViewerTabFactory')
 
@@ -75,7 +76,12 @@ export class TrafficRecordHistoryViewerTabFactory {
         }
         const dto: TrafficRecordHistoryViewerTabDataDto = json as TrafficRecordHistoryViewerTabDataDto
         return new TrafficRecordHistoryViewerTabData(
-            dto.since,
+            dto.since != undefined
+                ? new OffsetDateTime(
+                    new Timestamp(BigInt(dto.since.seconds), dto.since.nanos),
+                    dto.since.offset
+                )
+                : undefined,
             dto.types,
             dto.sessionId != undefined ? Uuid.fromCode(dto.sessionId) : undefined,
             dto.longerThanMilliseconds != undefined ? Duration.fromMillis(dto.longerThanMilliseconds) : undefined,

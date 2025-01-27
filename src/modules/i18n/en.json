@@ -1456,12 +1456,12 @@
             "valueDescriptor": "{count} types selected",
             "hint": "Specifies the types of records to be returned.",
             "type": {
-              "Session": "Session",
-              "SourceQuery": "Source query",
-              "Query": "Query",
-              "Fetch": "Fetch",
-              "Enrichment": "Enrichment",
-              "Mutation": "Mutation"
+              "session": "Session",
+              "sourceQuery": "Source query",
+              "query": "Query",
+              "fetch": "Fetch",
+              "enrichment": "Enrichment",
+              "mutation": "Mutation"
             }
           },
           "sessionId": {
@@ -1491,7 +1491,15 @@
           },
           "labels": {
             "label": "Labels",
-            "hint": "Specifies the client labels that the record must have (both name and value must match)."
+            "hint": "Specifies the client labels that the record must have (both name and value must match).",
+            "displayedLabels": "no labels | 1 label | {count} labels",
+            "form": {
+              "newLabelName": "Name",
+              "newLabelValue": "Value"
+            },
+            "button": {
+              "addLabel": "Add label"
+            }
           }
         }
       },
@@ -1536,7 +1544,10 @@
           },
           "sessionStart": {
             "label": "Session start",
-            "title": "Session"
+            "title": "Session",
+            "action": {
+              "open": "Open traffic recording for this session"
+            }
           },
           "sessionClose": {
             "label": "Session close",

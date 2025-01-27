@@ -59,7 +59,10 @@ import {
     GetTrafficHistoryListResponse, GetTrafficRecordingLabelNamesResponse,
     GetTrafficRecordingStatusResponse, GetTrafficRecordingValuesNamesResponse
 } from '@/modules/connection/driver/grpc/gen/GrpcEvitaTrafficRecordingAPI_pb'
-import { GrpcTrafficRecordingContent } from '@/modules/connection/driver/grpc/gen/GrpcTrafficRecording_pb'
+import {
+    GrpcTrafficRecordingCaptureCriteria,
+    GrpcTrafficRecordingContent
+} from '@/modules/connection/driver/grpc/gen/GrpcTrafficRecording_pb'
 import { TrafficRecordingCaptureRequest } from '@/modules/connection/model/traffic/TrafficRecordingCaptureRequest'
 import { TrafficRecordingConverter } from '@/modules/connection/driver/grpc/service/TrafficRecordingConverter'
 import { TrafficRecord } from '@/modules/connection/model/traffic/TrafficRecord'

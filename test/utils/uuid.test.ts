@@ -11,3 +11,11 @@ function testUuid(code: string): void {
     const { mostSignificantBits, leastSignificantBits }: { mostSignificantBits: bigint, leastSignificantBits: bigint } = convertUuidCodeToBits(code)
     expect(convertUuidBitsToCode(mostSignificantBits, leastSignificantBits)).toEqual(code)
 }
+
+test('Should convert UUID code to 64-bit signed bits', () => {
+    expect(convertUuidCodeToBits('9edab4e3-ced3-4da0-8c4d-a5704676d9f2'))
+        .toStrictEqual({
+            mostSignificantBits: -7000083780273484384n,
+            leastSignificantBits: -8336825433555805710n
+        })
+})

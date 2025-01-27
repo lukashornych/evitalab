@@ -3,6 +3,7 @@ import { SessionStartContainer } from '@/modules/connection/model/traffic/Sessio
 import { TrafficRecord } from '@/modules/connection/model/traffic/TrafficRecord'
 import { TrafficRecordVisualisationContext } from '../model/TrafficRecordVisualisationContext'
 import {
+    Action,
     MetadataGroup,
     MetadataItem,
     MetadataItemSeverity,
@@ -11,11 +12,26 @@ import {
 } from '../model/TrafficRecordVisualisationDefinition'
 import { i18n } from '@/vue-plugins/i18n'
 import Immutable from 'immutable'
+import { WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
+import {
+    TrafficRecordHistoryViewerTabFactory
+} from '@/modules/traffic-viewer/service/TrafficRecordHistoryViewerTabFactory'
+import { TrafficRecordHistoryViewerTabData } from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabData'
 
 /**
  * Visualises start of session/transaction. It uses `SessionCloseContainer` record for more statistics.
  */
 export class SessionStartContainerVisualiser extends TrafficRecordVisualiser<SessionStartContainer> {
+
+    private readonly workspaceService: WorkspaceService
+    private readonly trafficRecordHistoryViewerTabFactory: TrafficRecordHistoryViewerTabFactory
+
+    constructor(workspaceService: WorkspaceService,
+                trafficRecordHistoryViewerTabFactory: TrafficRecordHistoryViewerTabFactory) {
+        super()
+        this.workspaceService = workspaceService
+        this.trafficRecordHistoryViewerTabFactory = trafficRecordHistoryViewerTabFactory
+    }
 
     canVisualise(trafficRecord: TrafficRecord): boolean {
         return trafficRecord instanceof SessionStartContainer
@@ -25,9 +41,9 @@ export class SessionStartContainerVisualiser extends TrafficRecordVisualiser<Ses
         return new TrafficRecordVisualisationDefinition(
             trafficRecord,
             i18n.global.t('trafficViewer.recordHistory.record.type.sessionStart.title'),
-            undefined,
+            trafficRecord.sessionId.toString(),
             this.constructMetadata(trafficRecord),
-            Immutable.List(),
+            this.constructActions(ctx, trafficRecord),
             TrafficRecordVisualisationControlFlag.ParentStart
         )
     }
@@ -35,7 +51,6 @@ export class SessionStartContainerVisualiser extends TrafficRecordVisualiser<Ses
     private constructMetadata(trafficRecord: SessionStartContainer): MetadataGroup[] {
         const defaultMetadata: MetadataItem[] = []
 
-        defaultMetadata.push(MetadataItem.sessionId(trafficRecord.sessionId))
         defaultMetadata.push(MetadataItem.created(trafficRecord.created))
         defaultMetadata.push(new MetadataItem(
             'noStatistics',
@@ -48,4 +63,27 @@ export class SessionStartContainerVisualiser extends TrafficRecordVisualiser<Ses
         return [MetadataGroup.default(defaultMetadata)]
     }
 
+    private constructActions(ctx: TrafficRecordVisualisationContext,
+                             trafficRecord: SessionStartContainer): Immutable.List<Action> {
+        return Immutable.List([
+            new Action(
+                i18n.global.t('trafficViewer.recordHistory.record.type.sessionStart.action.open'),
+                'mdi-open-in-new',
+                () => this.workspaceService.createTab(
+                    this.trafficRecordHistoryViewerTabFactory.createNew(
+                        ctx.dataPointer.connection,
+                        ctx.dataPointer.catalogName,
+                        new TrafficRecordHistoryViewerTabData(
+                            undefined,
+                            undefined,
+                            trafficRecord.sessionId,
+                            undefined,
+                            undefined,
+                            undefined
+                        )
+                    )
+                )
+            )
+        ])
+    }
 }

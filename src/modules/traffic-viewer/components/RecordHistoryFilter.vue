@@ -17,30 +17,16 @@ import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateTime'
 import { TrafficRecordHistoryDataPointer } from '@/modules/traffic-viewer/model/TrafficRecordHistoryDataPointer'
 import Immutable from 'immutable'
+import {
+    convertUserToSystemRecordType,
+    UserTrafficRecordType
+} from '@/modules/traffic-viewer/model/UserTrafficRecordType'
+import VLabelSelect from '@/modules/traffic-viewer/components/VLabelSelect.vue'
 
 const trafficViewerService: TrafficViewerService = useTrafficViewerService()
 const { t } = useI18n()
 
-enum UserTrafficRecordType {
-    SourceQuery = 'sourceQuery',
-    Query = 'query',
-    Fetch = 'fetch',
-    Enrichment = 'enrichment',
-    Mutation = 'mutation'
-}
-
-const userTrafficRecordTypeToSystemTrafficRecordType: Map<UserTrafficRecordType, TrafficRecordType[]> = new Map([
-    [
-        UserTrafficRecordType.SourceQuery,
-        [TrafficRecordType.SourceQuery, TrafficRecordType.SourceQueryStatistics]
-    ],
-    [UserTrafficRecordType.Query, [TrafficRecordType.Query]],
-    [UserTrafficRecordType.Fetch, [TrafficRecordType.Fetch]],
-    [UserTrafficRecordType.Enrichment, [TrafficRecordType.Enrichment]],
-    [UserTrafficRecordType.Mutation, [TrafficRecordType.Mutation]]
-])
-
-const userTrafficRecordTypeItems: any[] = Object.keys(UserTrafficRecordType).map(type => {
+const userTrafficRecordTypeItems: any[] = Object.values(UserTrafficRecordType).map(type => {
     return {
         value: type,
         title: t(`trafficViewer.recordHistory.filter.form.types.type.${type}`)
@@ -55,7 +41,7 @@ const model = defineModel<TrafficRecordHistoryCriteria>({ required: true })
 const form = ref<HTMLFormElement | null>(null)
 const formValidationState = ref<boolean | null>(null)
 
-const since = ref<DateTime | undefined>()
+const since = ref<DateTime | undefined>(model.value.since?.toDateTime())
 watch(since, async (newValue) => {
     if (await assertFormValidated()) {
         model.value.since = newValue != undefined
@@ -64,21 +50,24 @@ watch(since, async (newValue) => {
     }
 })
 
-const types = ref<UserTrafficRecordType[]>(Object.keys(UserTrafficRecordType).map(type => type as UserTrafficRecordType))
+const types = ref<UserTrafficRecordType[]>(
+    model.value.types != undefined
+        ? model.value.types
+        : []
+)
 watch(types, async (newValue) => {
     if (await assertFormValidated()) {
-        model.value.types = [
-            TrafficRecordType.SessionStart, TrafficRecordType.SessionClose,
-            ...newValue.flatMap(userType => userTrafficRecordTypeToSystemTrafficRecordType.get(userType))
-        ]
+        model.value.types = newValue
     }
 })
 
-const sessionId = ref<string>('')
+const sessionId = ref<string>(model.value.sessionId?.toString() || '')
 watch(sessionId, async (newValue) => {
     if (await assertFormValidated()) {
-        model.value.sessionId = newValue.trim().length > 0
-            ? Uuid.fromCode(newValue)
+        model.value.sessionId = newValue != undefined
+            ? newValue.trim().length > 0
+                ? Uuid.fromCode(newValue)
+                : undefined
             : undefined
     }
 })
@@ -95,7 +84,11 @@ const sessionIdRules = [
     }
 ]
 
-const longerThan = ref<string>('')
+const longerThan = ref<string>(
+    model.value.longerThan != undefined
+        ? String(model.value.longerThan.toMillis())
+        : ''
+)
 const longerThanRules = [
     (value: string): any => {
         if (value == undefined || value === '') {
@@ -123,7 +116,11 @@ watch(longerThan, async (newValue) => {
     }
 })
 
-const fetchingMoreBytesThan = ref<string>('')
+const fetchingMoreBytesThan = ref<string>(
+    model.value.fetchingMoreBytesThan != undefined
+        ? String(model.value.fetchingMoreBytesThan)
+        : ''
+)
 const fetchingMoreBytesThanRules = [
     (value: string): any => {
         if (value == undefined || value === '') {
@@ -149,7 +146,7 @@ watch(fetchingMoreBytesThan, async (newValue) => {
     }
 })
 
-const labels = ref<Label[]>([])
+const labels = ref<Label[]>(model.value.labels || [])
 watch(labels, async (newValue) => {
     if (await assertFormValidated()) {
         model.value.labels = newValue
@@ -201,6 +198,7 @@ async function assertFormValidated(): Promise<boolean> {
                     v-model="since"
                     :label="t('trafficViewer.recordHistory.filter.form.since.label')"
                     hide-details
+                    clearable
                     class="record-history-filter__input"
                     v-bind="props"
                 />
@@ -285,24 +283,23 @@ async function assertFormValidated(): Promise<boolean> {
                 {{ t('trafficViewer.recordHistory.filter.form.fetchingMoreBytesThan.hint') }}
             </template>
         </VTooltip>
-<!--        todo lho implement-->
-<!--        <VTooltip>-->
-<!--            <template #activator="{ props }">-->
-<!--                <VLabelSelect-->
-<!--                    v-model="labels"-->
-<!--                    :label="t('trafficViewer.recordHistory.filter.form.labels.label')"-->
-<!--                    :label-names-provider="loadLabelNames"-->
-<!--                    :label-values-provider="loadLabelValues"-->
-<!--                    clearable-->
-<!--                    hide-details-->
-<!--                    class="record-history-filter__input"-->
-<!--                    v-bind="props"-->
-<!--                />-->
-<!--            </template>-->
-<!--            <template #default>-->
-<!--                {{ t('trafficViewer.recordHistory.filter.form.labels.hint') }}-->
-<!--            </template>-->
-<!--        </VTooltip>-->
+        <VTooltip>
+            <template #activator="{ props }">
+                <VLabelSelect
+                    v-model="labels"
+                    :label="t('trafficViewer.recordHistory.filter.form.labels.label')"
+                    :label-names-provider="loadLabelNames"
+                    :label-values-provider="loadLabelValues"
+                    clearable
+                    hide-details
+                    class="record-history-filter__input"
+                    v-bind="props"
+                />
+            </template>
+            <template #default>
+                {{ t('trafficViewer.recordHistory.filter.form.labels.hint') }}
+            </template>
+        </VTooltip>
     </VForm>
 </template>
 

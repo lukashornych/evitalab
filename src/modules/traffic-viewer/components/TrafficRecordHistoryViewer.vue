@@ -52,9 +52,15 @@ const title: List<string> = List.of(
 
 const shareTabButtonRef = ref<InstanceType<typeof ShareTabButton> | undefined>()
 const historyListRef = ref<InstanceType<typeof RecordHistoryList> | undefined>()
-const criteria = ref<TrafficRecordHistoryCriteria>(new TrafficRecordHistoryCriteria())
+const criteria = ref<TrafficRecordHistoryCriteria>(new TrafficRecordHistoryCriteria(
+    props.data.since,
+    props.data.types,
+    props.data.sessionId,
+    props.data.longerThan,
+    props.data.fetchingMoreBytesThan,
+    props.data.labels
+))
 watch(criteria, () => {
-    console.log('hej')
     reloadHistoryList()
 })
 
@@ -91,12 +97,10 @@ onBeforeMount(() => {
 onMounted(() => {
     // register viewer specific keyboard shortcuts
     keymap.bind(Command.TrafficRecordHistoryViewer_ShareTab, props.id, () => shareTabButtonRef.value?.share())
-    keymap.bind(Command.TrafficRecordHistoryViewer_Reload, props.id, () => reloadHistoryList())
 })
 onUnmounted(() => {
     // unregister console specific keyboard shortcuts
     keymap.unbind(Command.TrafficRecordHistoryViewer_ShareTab, props.id)
-    keymap.unbind(Command.TrafficRecordHistoryViewer_Reload, props.id)
 })
 
 async function reloadHistoryList(): Promise<void> {

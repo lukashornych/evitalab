@@ -254,11 +254,16 @@ function clear(): void {
         :label="label"
         :hint="hint"
         :disabled="disabled"
-        :clearable="clearable"
         :hide-details="hideDetails"
         readonly
-        @click:clear="clear"
     >
+        <template v-if="model != undefined" #append-inner="{ isFocused }">
+<!--            todo lho fix hide icon when not focused,  -->
+            <VIcon v-show="isFocused" @click="clear">
+                mdi-close-circle
+            </VIcon>
+        </template>
+
         <VMenu
             v-model="showMenu"
             :close-on-content-click="false"

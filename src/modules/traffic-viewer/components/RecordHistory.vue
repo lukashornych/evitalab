@@ -20,9 +20,13 @@ import {
     TrafficRecordVisualisationDefinition
 } from '@/modules/traffic-viewer/model/TrafficRecordVisualisationDefinition'
 import RecordHistoryItem from '@/modules/traffic-viewer/components/RecordHistoryItem.vue'
+import { TrafficRecordType } from '@/modules/connection/model/traffic/TrafficRecordType'
+import { convertUserToSystemRecordType } from '@/modules/traffic-viewer/model/UserTrafficRecordType'
 
 // note: this is enum from vuetify, but vuetify doesn't export it
 type InfiniteScrollStatus = 'ok' | 'empty' | 'loading' | 'error';
+
+const pageSize: number = 20
 
 const trafficViewerService: TrafficViewerService = useTrafficViewerService()
 const toaster: Toaster = useToaster()
@@ -39,7 +43,7 @@ const history = ref<TrafficRecordVisualisationDefinition[]>([])
 
 const sinceSessionSequenceId = ref<bigint | undefined>(1n)
 const sinceRecordSessionOffset = ref<number | undefined>(1)
-const limit = ref<number>(20)
+const limit = ref<number>(pageSize)
 const lastPage = ref<boolean>(false)
 
 const trafficRecordingCaptureRequest = computed<TrafficRecordingCaptureRequest>(() => {
@@ -48,7 +52,12 @@ const trafficRecordingCaptureRequest = computed<TrafficRecordingCaptureRequest>(
         props.criteria.since,
         sinceSessionSequenceId.value,
         sinceRecordSessionOffset.value,
-        Immutable.List(props.criteria.types),
+        props.criteria.types != undefined
+            ? Immutable.List([
+                TrafficRecordType.SessionStart, TrafficRecordType.SessionClose,
+                ...(props.criteria.types.flatMap(userType => convertUserToSystemRecordType(userType)!))
+            ])
+            : undefined,
         props.criteria.sessionId,
         props.criteria.longerThan,
         props.criteria.fetchingMoreBytesThan,
@@ -67,6 +76,10 @@ async function loadNextHistory(): Promise<boolean> {
         if (fetchedRecords.size === 0) {
             lastPage.value = true
             return true
+        }
+        if (fetchedRecords.size < pageSize) {
+            // todo lho not working
+            lastPage.value = true
         }
 
         for (const fetchedRecord of fetchedRecords) {
@@ -136,6 +149,7 @@ defineExpose<{
             </template>
 
             <template #load-more="{ props }">
+                {{ lastPage }}
                 <VBtn v-if="!lastPage" v-bind="props">
                     {{ t('common.button.showMore') }}
                 </VBtn>

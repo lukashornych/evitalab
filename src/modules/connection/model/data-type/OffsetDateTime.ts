@@ -38,7 +38,7 @@ export class OffsetDateTime implements PrettyPrintable {
         return dateTime.setZone(this.offset)
     }
 
-    toString():string{
+    toString(): string {
         return DateTime.fromSeconds(Number(this.timestamp?.seconds), {zone: this.offset }).toISO({includeOffset: true})
     }
 }

@@ -79,6 +79,5 @@ export enum Command {
 
     // Traffic record history viewer
 
-    TrafficRecordHistoryViewer_ShareTab = 'trafficRecordHistoryViewer.shareTab',
-    TrafficRecordHistoryViewer_Reload = 'trafficRecordHistoryViewer.reload'
+    TrafficRecordHistoryViewer_ShareTab = 'trafficRecordHistoryViewer.shareTab'
 }

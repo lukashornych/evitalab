@@ -30,6 +30,9 @@ import {
 } from '@/modules/traffic-viewer/service/EntityEnrichmentContainerVisualiser'
 import { EntityFetchContainerVisualiser } from '@/modules/traffic-viewer/service/EntityFetchContainerVisualiser'
 import { MutationContainerVisualiser } from '@/modules/traffic-viewer/service/MutationContainerVisualiser'
+import {
+    TrafficRecordHistoryViewerTabFactory, trafficRecordHistoryViewerTabFactoryInjectionKey
+} from '@/modules/traffic-viewer/service/TrafficRecordHistoryViewerTabFactory'
 
 export class TrafficViewerModuleRegistrar implements ModuleRegistrar {
 
@@ -38,6 +41,7 @@ export class TrafficViewerModuleRegistrar implements ModuleRegistrar {
         const workspaceService: WorkspaceService = builder.inject(workspaceServiceInjectionKey)
         const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory = builder.inject(evitaQLConsoleTabFactoryInjectionKey)
         const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = builder.inject(graphQLConsoleTabFactoryInjectionKey)
+        const trafficRecordHistoryViewerTabFactory: TrafficRecordHistoryViewerTabFactory = builder.inject(trafficRecordHistoryViewerTabFactoryInjectionKey)
 
         const trafficViewerService: TrafficViewerService = new TrafficViewerService(
             connectionService,
@@ -56,7 +60,10 @@ export class TrafficViewerModuleRegistrar implements ModuleRegistrar {
                     evitaQLConsoleTabFactory
                 ),
                 new SessionCloseContainerVisualiser(),
-                new SessionStartContainerVisualiser(),
+                new SessionStartContainerVisualiser(
+                    workspaceService,
+                    trafficRecordHistoryViewerTabFactory
+                ),
                 new SourceQueryContainerVisualiser(
                     workspaceService,
                     graphQLConsoleTabFactory

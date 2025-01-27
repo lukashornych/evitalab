@@ -84,6 +84,5 @@ createKeyboardShortcutMapping(Command.SchemaViewer_ShareTab, 'Ctrl+L', 'Cmd+L')
 // Traffic recording viewer
 
 createKeyboardShortcutMapping(Command.TrafficRecordHistoryViewer_ShareTab, 'Ctrl+L', 'Cmd+L')
-createKeyboardShortcutMapping(Command.TrafficRecordHistoryViewer_Reload, 'R', 'R')
 
 export { keyboardShortcutMappingIndex }
