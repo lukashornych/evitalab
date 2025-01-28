@@ -210,7 +210,7 @@ async function startRecording(): Promise<boolean> {
         <template #default>
             <VAutocomplete
                 v-model="catalogName"
-                :label="t('backupViewer.backup.form.catalogName.label')"
+                :label="t('trafficViewer.recordings.startRecording.form.catalogName.label')"
                 :items="availableCatalogs"
                 :rules="catalogNameRules"
                 :disabled="!availableCatalogsLoaded"

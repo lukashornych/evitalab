@@ -1,5 +1,4 @@
 import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateTime'
-import { TrafficRecordType } from '@/modules/connection/model/traffic/TrafficRecordType'
 import { Uuid } from '@/modules/connection/model/data-type/Uuid'
 import { Duration } from 'luxon'
 import { Label } from '@/modules/connection/model/traffic/Label'
@@ -24,9 +23,7 @@ export class TrafficRecordHistoryCriteria {
                 fetchingMoreBytesThan?: number,
                 labels?: Label[]) {
         this.since = since
-        // todo lho filtering by types not working
-        this.types = types
-        // this.types = types || Object.values(UserTrafficRecordType).map(type => type as UserTrafficRecordType)
+        this.types = types || Object.values(UserTrafficRecordType).map(type => type as UserTrafficRecordType)
         this.sessionId = sessionId
         this.longerThan = longerThan
         this.fetchingMoreBytesThan = fetchingMoreBytesThan

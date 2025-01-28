@@ -90,7 +90,7 @@ export class MetadataItem {
     static duration(duration: Duration): MetadataItem {
         const durationInMillis: number = duration.toMillis()
         let durationIndicator: MetadataItemSeverity = MetadataItemSeverity.Success
-        // todo jno : verify
+        // todo jno: dynamic per record type
         if (durationInMillis > 100) {
             durationIndicator = MetadataItemSeverity.Warning
         } else if (durationInMillis > 1000) {

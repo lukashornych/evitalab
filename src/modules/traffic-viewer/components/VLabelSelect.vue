@@ -71,11 +71,12 @@ const displayedLabels = computed<string>(() => {
 })
 
 function addLabel(): void {
-    // todo lho verify we dont want multiple labels with same name
-    removeLabel(newLabelName.value)
     emit(
         'update:modelValue',
-        [...props.modelValue, new Label(newLabelName.value, newLabelValue.value)]
+        [
+            ...(props.modelValue.filter(label => label.name !== newLabelName.value)),
+            new Label(newLabelName.value, newLabelValue.value)
+        ]
     )
     newLabelName.value = ''
     newLabelValue.value = ''

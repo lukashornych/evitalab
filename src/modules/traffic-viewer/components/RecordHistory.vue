@@ -149,7 +149,6 @@ defineExpose<{
             </template>
 
             <template #load-more="{ props }">
-                {{ lastPage }}
                 <VBtn v-if="!lastPage" v-bind="props">
                     {{ t('common.button.showMore') }}
                 </VBtn>
