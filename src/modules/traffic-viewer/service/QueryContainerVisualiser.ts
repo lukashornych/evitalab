@@ -13,6 +13,8 @@ import { WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
 import { i18n } from '@/vue-plugins/i18n'
 import Immutable from 'immutable'
 import { EvitaQLConsoleTabData } from '@/modules/evitaql-console/console/workspace/model/EvitaQLConsoleTabData'
+import { TrafficRecordMetadataItemContext } from '@/modules/traffic-viewer/model/TrafficRecordMetadataItemContext'
+import { Label } from '@/modules/connection/model/traffic/Label'
 
 /**
  * Visualises query record.
@@ -45,9 +47,9 @@ export class QueryContainerVisualiser extends TrafficRecordVisualiser<QueryConta
     private constructMetadata(trafficRecord: QueryContainer): MetadataGroup[] {
         const defaultMetadata: MetadataItem[] = []
 
-        defaultMetadata.push(MetadataItem.finishedStatus(trafficRecord.finishedWithError))
         defaultMetadata.push(MetadataItem.created(trafficRecord.created))
-        defaultMetadata.push(MetadataItem.duration(trafficRecord.duration))
+        defaultMetadata.push(MetadataItem.finishedStatus(trafficRecord.finishedWithError))
+        defaultMetadata.push(MetadataItem.duration(trafficRecord.duration, [50, 100])) // todo lho/jno revise
         defaultMetadata.push(MetadataItem.ioFetchedSizeBytes(trafficRecord.ioFetchedSizeBytes))
         defaultMetadata.push(MetadataItem.ioFetchCount(trafficRecord.ioFetchCount))
         defaultMetadata.push(new MetadataItem(
@@ -74,7 +76,17 @@ export class QueryContainerVisualiser extends TrafficRecordVisualiser<QueryConta
                 i18n.global.t('trafficViewer.recordHistory.record.type.query.metadata.item.queryLabel'),
                 label.name,
                 MetadataItemSeverity.Info,
-                label.value
+                label.value,
+                (ctx: TrafficRecordMetadataItemContext) => {
+                    const historyCriteriaLabels: Label[] | undefined = ctx.historyCriteria.value.labels
+                    if (historyCriteriaLabels != undefined) {
+                        const existingLabelUnderName = historyCriteriaLabels.findIndex(it => it.name === label.name)
+                        if (existingLabelUnderName > -1) {
+                            historyCriteriaLabels.splice(existingLabelUnderName, 1)
+                        }
+                        historyCriteriaLabels.push(label)
+                    }
+                }
             ))
         }
 

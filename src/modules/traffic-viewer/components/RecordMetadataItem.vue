@@ -1,10 +1,18 @@
 <script setup lang="ts">
 
 import { MetadataItem, MetadataItemSeverity } from '@/modules/traffic-viewer/model/TrafficRecordVisualisationDefinition'
+import { TrafficRecordMetadataItemContext } from '@/modules/traffic-viewer/model/TrafficRecordMetadataItemContext'
 
 const props = defineProps<{
-    item: MetadataItem
+    item: MetadataItem,
+    ctx: TrafficRecordMetadataItemContext
 }>()
+
+function handleItemClick(): void {
+    if (props.item.onClickCallback != undefined) {
+        props.item.onClickCallback(props.ctx)
+    }
+}
 </script>
 
 <template>
@@ -14,6 +22,8 @@ const props = defineProps<{
                 :prepend-icon="item.icon"
                 :color="item.severity !== MetadataItemSeverity.Info ? item.severity : undefined"
                 v-bind="props"
+                :variant="item.onClickCallback != undefined ? 'outlined' : 'plain'"
+                @click.stop="handleItemClick"
             >
                 <span>{{ item.value }}</span>
                 <span v-if="item.details != undefined" class="text-disabled ml-1">{{ item.details }}</span>

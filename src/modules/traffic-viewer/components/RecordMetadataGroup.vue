@@ -4,13 +4,24 @@ import {
     MetadataGroup
 } from '@/modules/traffic-viewer/model/TrafficRecordVisualisationDefinition'
 import RecordMetadataItem from '@/modules/traffic-viewer/components/RecordMetadataItem.vue'
-import { computed } from 'vue'
+import { computed, Ref } from 'vue'
+import { TrafficRecordMetadataItemContext } from '@/modules/traffic-viewer/model/TrafficRecordMetadataItemContext'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
+import { useHistoryCriteria } from '@/modules/traffic-viewer/components/dependencies'
+import { TrafficRecordHistoryCriteria } from '@/modules/traffic-viewer/model/TrafficRecordHistoryCriteria'
+
+const toaster: Toaster = useToaster()
 
 const props = defineProps<{
     group: MetadataGroup
 }>()
 
+const historyCriteria: Ref<TrafficRecordHistoryCriteria> = useHistoryCriteria()
+
 const withHeader = computed<boolean>(() => props.group.identifier !== defaultMetadataGroupIdentifier)
+const ctx = computed<TrafficRecordMetadataItemContext>(() => {
+    return new TrafficRecordMetadataItemContext(toaster, historyCriteria)
+})
 </script>
 
 <template>
@@ -32,6 +43,7 @@ const withHeader = computed<boolean>(() => props.group.identifier !== defaultMet
                 v-for="(metadataItem, index) in group.items"
                 :key="index"
                 :item="metadataItem"
+                :ctx="ctx"
             />
         </div>
     </div>

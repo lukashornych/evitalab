@@ -7,9 +7,8 @@
 import { TrafficRecordHistoryCriteria } from '@/modules/traffic-viewer/model/TrafficRecordHistoryCriteria'
 import VDateTimeInput from '@/modules/base/component/VDateTimeInput.vue'
 import { DateTime, Duration } from 'luxon'
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { TrafficRecordType } from '@/modules/connection/model/traffic/TrafficRecordType'
 import { Label } from '@/modules/connection/model/traffic/Label'
 import { TrafficViewerService, useTrafficViewerService } from '@/modules/traffic-viewer/service/TrafficViewerService'
 import { Uuid } from '@/modules/connection/model/data-type/Uuid'
@@ -18,7 +17,6 @@ import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateT
 import { TrafficRecordHistoryDataPointer } from '@/modules/traffic-viewer/model/TrafficRecordHistoryDataPointer'
 import Immutable from 'immutable'
 import {
-    convertUserToSystemRecordType,
     UserTrafficRecordType
 } from '@/modules/traffic-viewer/model/UserTrafficRecordType'
 import VLabelSelect from '@/modules/traffic-viewer/components/VLabelSelect.vue'
@@ -34,37 +32,55 @@ const userTrafficRecordTypeItems: any[] = Object.values(UserTrafficRecordType).m
 })
 
 const props = defineProps<{
+    modelValue: TrafficRecordHistoryCriteria
     dataPointer: TrafficRecordHistoryDataPointer
 }>()
-const model = defineModel<TrafficRecordHistoryCriteria>({ required: true })
+const emit = defineEmits<{
+    (e: 'update:modelValue', value: TrafficRecordHistoryCriteria): void,
+    (e: 'apply'): void
+}>()
+
+const criteria = ref<TrafficRecordHistoryCriteria>(new TrafficRecordHistoryCriteria(
+    props.modelValue.since,
+    props.modelValue.types,
+    props.modelValue.sessionId,
+    props.modelValue.longerThan,
+    props.modelValue.fetchingMoreBytesThan,
+    props.modelValue.labels
+))
+const criteriaChanged = ref<boolean>(false)
+watch(criteria.value, (newValue) => {
+    emit('update:modelValue', newValue)
+    criteriaChanged.value = true
+})
 
 const form = ref<HTMLFormElement | null>(null)
 const formValidationState = ref<boolean | null>(null)
 
-const since = ref<DateTime | undefined>(model.value.since?.toDateTime())
+const since = ref<DateTime | undefined>(criteria.value.since?.toDateTime())
 watch(since, async (newValue) => {
     if (await assertFormValidated()) {
-        model.value.since = newValue != undefined
+        criteria.value.since = newValue != undefined
             ? OffsetDateTime.fromDateTime(newValue)
             : undefined
     }
 })
 
 const types = ref<UserTrafficRecordType[]>(
-    model.value.types != undefined
-        ? model.value.types
+    criteria.value.types != undefined
+        ? criteria.value.types
         : []
 )
 watch(types, async (newValue) => {
     if (await assertFormValidated()) {
-        model.value.types = newValue
+        criteria.value.types = newValue
     }
 })
 
-const sessionId = ref<string>(model.value.sessionId?.toString() || '')
+const sessionId = ref<string>(criteria.value.sessionId?.toString() || '')
 watch(sessionId, async (newValue) => {
     if (await assertFormValidated()) {
-        model.value.sessionId = newValue != undefined
+        criteria.value.sessionId = newValue != undefined
             ? newValue.trim().length > 0
                 ? Uuid.fromCode(newValue)
                 : undefined
@@ -85,8 +101,8 @@ const sessionIdRules = [
 ]
 
 const longerThan = ref<string>(
-    model.value.longerThan != undefined
-        ? String(model.value.longerThan.toMillis())
+    criteria.value.longerThan != undefined
+        ? String(criteria.value.longerThan.toMillis())
         : ''
 )
 const longerThanRules = [
@@ -108,7 +124,7 @@ const longerThanRules = [
 ]
 watch(longerThan, async (newValue) => {
     if (await assertFormValidated()) {
-        model.value.longerThan = newValue == undefined
+        criteria.value.longerThan = newValue == undefined
             ? undefined
             : newValue.trim().length > 0
                 ? Duration.fromMillis(Number(newValue.trim()))
@@ -117,8 +133,8 @@ watch(longerThan, async (newValue) => {
 })
 
 const fetchingMoreBytesThan = ref<string>(
-    model.value.fetchingMoreBytesThan != undefined
-        ? String(model.value.fetchingMoreBytesThan)
+    criteria.value.fetchingMoreBytesThan != undefined
+        ? String(criteria.value.fetchingMoreBytesThan)
         : ''
 )
 const fetchingMoreBytesThanRules = [
@@ -138,7 +154,7 @@ const fetchingMoreBytesThanRules = [
 ]
 watch(fetchingMoreBytesThan, async (newValue) => {
     if (await assertFormValidated()) {
-        model.value.fetchingMoreBytesThan = newValue == undefined
+        criteria.value.fetchingMoreBytesThan = newValue == undefined
             ? undefined
             : newValue.trim().length > 0
                 ? Number(newValue.trim())
@@ -146,10 +162,10 @@ watch(fetchingMoreBytesThan, async (newValue) => {
     }
 })
 
-const labels = ref<Label[]>(model.value.labels || [])
+const labels = ref<Label[]>(criteria.value.labels || [])
 watch(labels, async (newValue) => {
     if (await assertFormValidated()) {
-        model.value.labels = newValue
+        criteria.value.labels = newValue
     }
 })
 
@@ -172,7 +188,6 @@ async function loadLabelValues(labelName: string, valueStartsWith: string): Prom
     )
 }
 
-
 async function assertFormValidated(): Promise<boolean> {
     if (form.value == undefined) {
         throw new UnexpectedError('Missing form reference.')
@@ -182,6 +197,11 @@ async function assertFormValidated(): Promise<boolean> {
     const { valid }: any = await form.value.validate()
     return valid
 }
+
+function applyChangedCriteria(): void {
+    emit('apply')
+    criteriaChanged.value = false
+}
 </script>
 
 <template>
@@ -189,121 +209,143 @@ async function assertFormValidated(): Promise<boolean> {
         v-model="formValidationState"
         ref="form"
         validate-on="blur"
-        class="record-history-filter"
+        class="record-history-filter-form"
     >
-        <span class="record-history-filter__label text-disabled">{{ t('trafficViewer.recordHistory.filter.label') }}:</span>
-        <VTooltip>
-            <template #activator="{ props }">
-                <VDateTimeInput
-                    v-model="since"
-                    :label="t('trafficViewer.recordHistory.filter.form.since.label')"
-                    hide-details
-                    clearable
-                    class="record-history-filter__input"
-                    v-bind="props"
-                />
-            </template>
-            <template #default>
-                {{ t('trafficViewer.recordHistory.filter.form.since.hint') }}
-            </template>
-        </VTooltip>
-        <VTooltip>
-            <template #activator="{ props }">
-                <VSelect
-                    v-model="types"
-                    :items="userTrafficRecordTypeItems"
-                    :label="t('trafficViewer.recordHistory.filter.form.types.label')"
-                    multiple
-                    clearable
-                    hide-details
-                    class="record-history-filter__input"
-                    v-bind="props"
-                >
-                    <template #selection="{ index }">
+        <div class="record-history-filter">
+            <span class="record-history-filter__label text-disabled">{{ t('trafficViewer.recordHistory.filter.label') }}:</span>
+            <VTooltip>
+                <template #activator="{ props }">
+                    <VDateTimeInput
+                        v-model="since"
+                        :label="t('trafficViewer.recordHistory.filter.form.since.label')"
+                        hide-details
+                        clearable
+                        class="record-history-filter__input"
+                        v-bind="props"
+                    />
+                </template>
+                <template #default>
+                    {{ t('trafficViewer.recordHistory.filter.form.since.hint') }}
+                </template>
+            </VTooltip>
+            <VTooltip>
+                <template #activator="{ props }">
+                    <VSelect
+                        v-model="types"
+                        :items="userTrafficRecordTypeItems"
+                        :label="t('trafficViewer.recordHistory.filter.form.types.label')"
+                        multiple
+                        clearable
+                        hide-details
+                        class="record-history-filter__input"
+                        v-bind="props"
+                    >
+                        <template #selection="{ index }">
                         <span
                             v-if="index === 0"
-                            class="text-grey text-caption align-self-center"
+                            class="text-grey text-caption align-self-center text-truncate"
                         >
                             {{ t('trafficViewer.recordHistory.filter.form.types.valueDescriptor', { count: types.length }) }}
                           </span>
-                    </template>
-                </VSelect>
-            </template>
-            <template #default>
-                {{ t('trafficViewer.recordHistory.filter.form.types.hint') }}
-            </template>
-        </VTooltip>
-        <VTooltip>
+                        </template>
+                    </VSelect>
+                </template>
+                <template #default>
+                    {{ t('trafficViewer.recordHistory.filter.form.types.hint') }}
+                </template>
+            </VTooltip>
+            <VTooltip>
+                <template #activator="{ props }">
+                    <VTextField
+                        v-model="sessionId"
+                        :label="t('trafficViewer.recordHistory.filter.form.sessionId.label')"
+                        :rules="sessionIdRules"
+                        clearable
+                        hide-details
+                        class="record-history-filter__input"
+                        v-bind="props"
+                    />
+                </template>
+                <template #default>
+                    {{ t('trafficViewer.recordHistory.filter.form.sessionId.hint') }}
+                </template>
+            </VTooltip>
+            <VTooltip>
+                <template #activator="{ props }">
+                    <VTextField
+                        v-model="longerThan"
+                        :label="t('trafficViewer.recordHistory.filter.form.longerThan.label')"
+                        :suffix="t('trafficViewer.recordHistory.filter.form.longerThan.unit')"
+                        :rules="longerThanRules"
+                        clearable
+                        hide-details
+                        class="record-history-filter__input"
+                        v-bind="props"
+                    />
+                </template>
+                <template #default>
+                    {{ t('trafficViewer.recordHistory.filter.form.longerThan.hint') }}
+                </template>
+            </VTooltip>
+            <VTooltip>
+                <template #activator="{ props }">
+                    <VTextField
+                        v-model="fetchingMoreBytesThan"
+                        :label="t('trafficViewer.recordHistory.filter.form.fetchingMoreBytesThan.label')"
+                        :suffix="t('trafficViewer.recordHistory.filter.form.fetchingMoreBytesThan.unit')"
+                        :rules="fetchingMoreBytesThanRules"
+                        clearable
+                        hide-details
+                        class="record-history-filter__input"
+                        v-bind="props"
+                    />
+                </template>
+                <template #default>
+                    {{ t('trafficViewer.recordHistory.filter.form.fetchingMoreBytesThan.hint') }}
+                </template>
+            </VTooltip>
+            <VTooltip>
+                <template #activator="{ props }">
+                    <VLabelSelect
+                        v-model="labels"
+                        :label="t('trafficViewer.recordHistory.filter.form.labels.label')"
+                        :label-names-provider="loadLabelNames"
+                        :label-values-provider="loadLabelValues"
+                        clearable
+                        hide-details
+                        class="record-history-filter__input"
+                        v-bind="props"
+                    />
+                </template>
+                <template #default>
+                    {{ t('trafficViewer.recordHistory.filter.form.labels.hint') }}
+                </template>
+            </VTooltip>
+        </div>
+
+        <VTooltip v-if="criteriaChanged">
             <template #activator="{ props }">
-                <VTextField
-                    v-model="sessionId"
-                    :label="t('trafficViewer.recordHistory.filter.form.sessionId.label')"
-                    :rules="sessionIdRules"
-                    clearable
-                    hide-details
-                    class="record-history-filter__input"
-                    v-bind="props"
-                />
+                <VBtn icon @click="applyChangedCriteria" v-bind="props">
+                    <VIcon>mdi-send</VIcon>
+                </VBtn>
             </template>
             <template #default>
-                {{ t('trafficViewer.recordHistory.filter.form.sessionId.hint') }}
-            </template>
-        </VTooltip>
-        <VTooltip>
-            <template #activator="{ props }">
-                <VTextField
-                    v-model="longerThan"
-                    :label="t('trafficViewer.recordHistory.filter.form.longerThan.label')"
-                    :suffix="t('trafficViewer.recordHistory.filter.form.longerThan.unit')"
-                    :rules="longerThanRules"
-                    clearable
-                    hide-details
-                    class="record-history-filter__input"
-                    v-bind="props"
-                />
-            </template>
-            <template #default>
-                {{ t('trafficViewer.recordHistory.filter.form.longerThan.hint') }}
-            </template>
-        </VTooltip>
-        <VTooltip>
-            <template #activator="{ props }">
-                <VTextField
-                    v-model="fetchingMoreBytesThan"
-                    :label="t('trafficViewer.recordHistory.filter.form.fetchingMoreBytesThan.label')"
-                    :suffix="t('trafficViewer.recordHistory.filter.form.fetchingMoreBytesThan.unit')"
-                    :rules="fetchingMoreBytesThanRules"
-                    clearable
-                    hide-details
-                    class="record-history-filter__input"
-                    v-bind="props"
-                />
-            </template>
-            <template #default>
-                {{ t('trafficViewer.recordHistory.filter.form.fetchingMoreBytesThan.hint') }}
-            </template>
-        </VTooltip>
-        <VTooltip>
-            <template #activator="{ props }">
-                <VLabelSelect
-                    v-model="labels"
-                    :label="t('trafficViewer.recordHistory.filter.form.labels.label')"
-                    :label-names-provider="loadLabelNames"
-                    :label-values-provider="loadLabelValues"
-                    clearable
-                    hide-details
-                    class="record-history-filter__input"
-                    v-bind="props"
-                />
-            </template>
-            <template #default>
-                {{ t('trafficViewer.recordHistory.filter.form.labels.hint') }}
+                {{ t('trafficViewer.recordHistory.filter.button.apply') }}
             </template>
         </VTooltip>
     </VForm>
 </template>
 
 <style lang="scss" scoped>
+.record-history-filter-form {
+    width: 100%;
+    display: flex;
+    height: 3.5rem;
+    padding: 0 0.25rem;
+    align-items: center;
+    gap: 0.25rem;
+}
+
 .record-history-filter {
     width: 100%;
     height: 3.5rem;
@@ -312,7 +354,7 @@ async function assertFormValidated(): Promise<boolean> {
     flex-wrap: nowrap;
     justify-content: space-evenly;
     align-items: center;
-    padding: 0.5rem;
+    padding: 0 0.25rem;
     // todo lho not working properly
     overflow-x: auto;
 

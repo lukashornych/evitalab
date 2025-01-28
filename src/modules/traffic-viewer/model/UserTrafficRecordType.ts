@@ -4,6 +4,7 @@ import { TrafficRecordType } from '@/modules/connection/model/traffic/TrafficRec
  * Simplified and grouped traffic record types for users to choose from
  */
 export enum UserTrafficRecordType {
+    Session = 'session',
     SourceQuery = 'sourceQuery',
     Query = 'query',
     Fetch = 'fetch',
@@ -12,6 +13,10 @@ export enum UserTrafficRecordType {
 }
 
 const userTrafficRecordTypeToSystemTrafficRecordType: Map<UserTrafficRecordType, TrafficRecordType[]> = new Map([
+    [
+        UserTrafficRecordType.Session,
+        [TrafficRecordType.SessionStart, TrafficRecordType.SessionClose]
+    ],
     [
         UserTrafficRecordType.SourceQuery,
         [TrafficRecordType.SourceQuery, TrafficRecordType.SourceQueryStatistics]

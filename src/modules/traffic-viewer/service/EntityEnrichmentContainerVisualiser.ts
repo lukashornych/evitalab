@@ -44,9 +44,9 @@ export class EntityEnrichmentContainerVisualiser extends TrafficRecordVisualiser
     private constructMetadata(trafficRecord: EntityEnrichmentContainer): MetadataGroup[] {
         const defaultMetadata: MetadataItem[] = []
 
-        defaultMetadata.push(MetadataItem.finishedStatus(trafficRecord.finishedWithError))
         defaultMetadata.push(MetadataItem.created(trafficRecord.created))
-        defaultMetadata.push(MetadataItem.duration(trafficRecord.duration))
+        defaultMetadata.push(MetadataItem.finishedStatus(trafficRecord.finishedWithError))
+        defaultMetadata.push(MetadataItem.duration(trafficRecord.duration, [50, 100])) // todo lho/jno revise
         defaultMetadata.push(MetadataItem.ioFetchedSizeBytes(trafficRecord.ioFetchedSizeBytes))
         defaultMetadata.push(MetadataItem.ioFetchCount(trafficRecord.ioFetchCount))
 

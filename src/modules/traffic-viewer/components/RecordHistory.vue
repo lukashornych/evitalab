@@ -37,6 +37,7 @@ const props = defineProps<{
     criteria: TrafficRecordHistoryCriteria
 }>()
 
+
 const historyLoaded = ref<boolean>(false)
 let historyRecords: TrafficRecord[] = []
 const history = ref<TrafficRecordVisualisationDefinition[]>([])
@@ -54,7 +55,6 @@ const trafficRecordingCaptureRequest = computed<TrafficRecordingCaptureRequest>(
         sinceRecordSessionOffset.value,
         props.criteria.types != undefined
             ? Immutable.List([
-                TrafficRecordType.SessionStart, TrafficRecordType.SessionClose,
                 ...(props.criteria.types.flatMap(userType => convertUserToSystemRecordType(userType)!))
             ])
             : undefined,

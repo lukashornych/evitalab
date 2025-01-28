@@ -4,6 +4,8 @@ import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateT
 import { Duration } from 'luxon'
 import { i18n } from '@/vue-plugins/i18n'
 import { TrafficRecord } from '@/modules/connection/model/traffic/TrafficRecord'
+import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
+import { TrafficRecordMetadataItemContext } from '@/modules/traffic-viewer/model/TrafficRecordMetadataItemContext'
 
 /**
  * Defines how a particular traffic record should be displayed in UI
@@ -59,42 +61,52 @@ export class MetadataItem {
     readonly value: string
     readonly severity: MetadataItemSeverity
     readonly details?: string
+    readonly onClickCallback?: (ctx: TrafficRecordMetadataItemContext) => void
 
-    constructor(identifier: string | undefined, icon: string, tooltip: string, value: string, severity?: MetadataItemSeverity, details?: string) {
+    constructor(identifier: string | undefined,
+                icon: string,
+                tooltip: string,
+                value: string,
+                severity?: MetadataItemSeverity,
+                details?: string,
+                onClickCallback?: (ctx: TrafficRecordMetadataItemContext) => void) {
         this.identifier = identifier
         this.icon = icon
         this.tooltip = tooltip
         this.value = value
         this.severity = severity || MetadataItemSeverity.Info
         this.details = details
-    }
-
-    static sessionId(sessionId: Uuid): MetadataItem {
-        return new MetadataItem(
-            'sessionId',
-            'mdi-identifier',
-            i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.sessionId'),
-            sessionId.toString()
-        )
+        this.onClickCallback = onClickCallback
     }
 
     static created(created: OffsetDateTime): MetadataItem {
         return new MetadataItem(
             'created',
             'mdi-clock-outline',
-            i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.created'),
-            created.getPrettyPrintableString()
+            i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.created.tooltip'),
+            created.getPrettyPrintableString(),
+            MetadataItemSeverity.Info,
+            undefined,
+            (ctx: TrafficRecordMetadataItemContext): void => {
+                navigator.clipboard.writeText(`${created.toString()}`).then(() => {
+                    ctx.toaster.info(i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.created.notification.copiedToClipboard'))
+                }).catch(() => {
+                    ctx.toaster.error(new UnexpectedError(i18n.global.t('common.notification.failedToCopyToClipboard')))
+                })
+            }
         )
     }
 
-    static duration(duration: Duration): MetadataItem {
+    static duration(duration: Duration,
+                    thresholds?: [number, number]): MetadataItem {
         const durationInMillis: number = duration.toMillis()
         let durationIndicator: MetadataItemSeverity = MetadataItemSeverity.Success
-        // todo jno: dynamic per record type
-        if (durationInMillis > 100) {
-            durationIndicator = MetadataItemSeverity.Warning
-        } else if (durationInMillis > 1000) {
-            durationIndicator = MetadataItemSeverity.Failure
+        if (thresholds != undefined) {
+            if (durationInMillis > thresholds[1]) {
+                durationIndicator = MetadataItemSeverity.Failure
+            } else if (durationInMillis > thresholds[0]) {
+                durationIndicator = MetadataItemSeverity.Warning
+            }
         }
 
         return new MetadataItem(
@@ -114,7 +126,7 @@ export class MetadataItem {
             'mdi-download-network-outline',
             i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.ioFetchedSizeBytes.tooltip'),
             // @ts-ignore
-            i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.ioFetchedSizeBytes.value', ioFetchedSizeBytes, { bytes: ioFetchedSizeBytes }),
+            i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.ioFetchedSizeBytes.value', ioFetchedSizeBytes, { count: ioFetchedSizeBytes }),
         )
     }
 

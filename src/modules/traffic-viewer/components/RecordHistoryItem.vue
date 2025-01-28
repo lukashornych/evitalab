@@ -12,7 +12,7 @@ import VListItemDivider from '@/modules/base/component/VListItemDivider.vue'
 
 const props = withDefaults(
     defineProps<{
-        visualisationDefinition: TrafficRecordVisualisationDefinition
+        visualisationDefinition: TrafficRecordVisualisationDefinition,
         hasParent?: boolean
     }>(),
     {

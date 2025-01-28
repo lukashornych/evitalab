@@ -1501,6 +1501,9 @@
               "addLabel": "Add label"
             }
           }
+        },
+        "button": {
+          "apply": "Apply filter"
         }
       },
       "list": {
@@ -1515,15 +1518,20 @@
               },
               "item": {
                 "sessionId": "Session ID under which the record was created",
-                "created": "Record creation time",
+                "created": {
+                  "tooltip": "Record creation time",
+                  "notification": {
+                    "copiedToClipboard": "Datetime of record creation has been copied to clipboard"
+                  }
+                },
                 "duration": "Record processing duration",
                 "ioFetchedSizeBytes": {
-                  "tooltip": "IO fetched size in bytes",
-                  "value": "0 bytes | 1 byte | {bytes} bytes"
+                  "tooltip": "Number of bytes read from disk",
+                  "value": "0 bytes fetched | 1 byte fetched | {count} bytes fetched"
                 },
                 "ioFetchCount": {
-                  "tooltip": "IO fetched count",
-                  "value": "{count} fetched"
+                  "tooltip": "Number of I/O accesses to disk",
+                  "value": "{count} disk accesses"
                 },
                 "finishedStatus": {
                   "tooltip": {
@@ -1553,7 +1561,7 @@
             "label": "Session close",
             "metadata": {
               "item": {
-                "catalogVersion": "User catalog version",
+                "catalogVersion": "Used catalog version",
                 "trafficRecordCount": {
                   "tooltip": "Traffic record count",
                   "value": "no traffic | 1 traffic record | {count} traffic records"

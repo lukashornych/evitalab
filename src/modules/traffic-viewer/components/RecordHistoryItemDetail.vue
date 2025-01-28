@@ -2,13 +2,9 @@
 
 import {
     Action,
-    MetadataItemSeverity,
     TrafficRecordVisualisationDefinition
 } from '@/modules/traffic-viewer/model/TrafficRecordVisualisationDefinition'
-import { useI18n } from 'vue-i18n'
 import RecordMetadata from '@/modules/traffic-viewer/components/RecordMetadata.vue'
-
-const { t } = useI18n()
 
 const props = defineProps<{
     definition: TrafficRecordVisualisationDefinition

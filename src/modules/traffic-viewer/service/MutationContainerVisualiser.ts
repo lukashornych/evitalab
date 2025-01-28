@@ -32,9 +32,9 @@ export class MutationContainerVisualiser extends TrafficRecordVisualiser<Mutatio
     private constructMetadata(trafficRecord: MutationContainer): MetadataGroup[] {
         const defaultMetadata: MetadataItem[] = []
 
-        defaultMetadata.push(MetadataItem.finishedStatus(trafficRecord.finishedWithError))
         defaultMetadata.push(MetadataItem.created(trafficRecord.created))
-        defaultMetadata.push(MetadataItem.duration(trafficRecord.duration))
+        defaultMetadata.push(MetadataItem.finishedStatus(trafficRecord.finishedWithError))
+        defaultMetadata.push(MetadataItem.duration(trafficRecord.duration, [100, 500]))  // todo lho/jno revise
         defaultMetadata.push(MetadataItem.ioFetchedSizeBytes(trafficRecord.ioFetchedSizeBytes))
         defaultMetadata.push(MetadataItem.ioFetchCount(trafficRecord.ioFetchCount))
 

@@ -24,6 +24,7 @@ import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
 import RecordHistoryList from '@/modules/traffic-viewer/components/RecordHistory.vue'
 import { TrafficRecordHistoryCriteria } from '@/modules/traffic-viewer/model/TrafficRecordHistoryCriteria'
 import RecordHistoryFilter from '@/modules/traffic-viewer/components/RecordHistoryFilter.vue'
+import { provideHistoryCriteria } from '@/modules/traffic-viewer/components/dependencies'
 
 const keymap: Keymap = useKeymap()
 const { t } = useI18n()
@@ -60,9 +61,7 @@ const criteria = ref<TrafficRecordHistoryCriteria>(new TrafficRecordHistoryCrite
     props.data.fetchingMoreBytesThan,
     props.data.labels
 ))
-watch(criteria, () => {
-    reloadHistoryList()
-})
+provideHistoryCriteria(criteria)
 
 const initialized = ref<boolean>(false)
 const historyListLoading = ref<boolean>(false)
@@ -139,6 +138,7 @@ async function reloadHistoryList(): Promise<void> {
                 <RecordHistoryFilter
                     v-model="criteria"
                     :data-pointer="params.dataPointer"
+                    @apply="reloadHistoryList"
                 />
             </template>
         </VTabToolbar>

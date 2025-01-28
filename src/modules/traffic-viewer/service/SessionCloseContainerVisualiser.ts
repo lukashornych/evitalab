@@ -62,7 +62,7 @@ export class SessionCloseContainerVisualiser extends TrafficRecordVisualiser<Ses
         defaultMetadata.push(MetadataItem.ioFetchCount(trafficRecord.ioFetchCount))
         defaultMetadata.push(new MetadataItem(
             undefined,
-            'mdi-counter',
+            'mdi-update',
             i18n.global.t('trafficViewer.recordHistory.record.type.sessionClose.metadata.item.catalogVersion'),
             String(trafficRecord.catalogVersion)
         ))
