@@ -12,6 +12,7 @@ import { i18n } from '@/vue-plugins/i18n'
 import Immutable from 'immutable'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { SourceQueryContainer } from '@/modules/connection/model/traffic/SourceQueryContainer'
+import { formatCount } from '@/utils/string'
 
 /**
  * Source query statistics container isn't visualised but controls the flow of rendered UI.
@@ -65,13 +66,13 @@ export class SourceQueryStatisticsContainerVisualiser extends TrafficRecordVisua
             undefined, // don't need to reference it
             'mdi-counter',
             i18n.global.t('trafficViewer.recordHistory.record.type.sourceQueryStatistics.metadata.item.returnedRecordCount'),
-            String(trafficRecord.totalRecordCount)
+            formatCount(trafficRecord.totalRecordCount)
         ))
         defaultMetadata.push(new MetadataItem(
             undefined, // don't need to reference it
             'mdi-counter',
             i18n.global.t('trafficViewer.recordHistory.record.type.sourceQueryStatistics.metadata.item.totalRecordCount'),
-            String(trafficRecord.totalRecordCount)
+            formatCount(trafficRecord.totalRecordCount)
         ))
 
         return [MetadataGroup.default(defaultMetadata)]

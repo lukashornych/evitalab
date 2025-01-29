@@ -37,7 +37,6 @@ async function stopRecording(): Promise<boolean> {
         return false
     }
 }
-
 </script>
 
 <template>

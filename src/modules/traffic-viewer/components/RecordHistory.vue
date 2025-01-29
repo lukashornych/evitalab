@@ -21,9 +21,15 @@ import {
 } from '@/modules/traffic-viewer/model/TrafficRecordVisualisationDefinition'
 import RecordHistoryItem from '@/modules/traffic-viewer/components/RecordHistoryItem.vue'
 import { convertUserToSystemRecordType } from '@/modules/traffic-viewer/model/UserTrafficRecordType'
+import { Code, ConnectError } from '@connectrpc/connect'
 
 // note: this is enum from vuetify, but vuetify doesn't export it
 type InfiniteScrollStatus = 'ok' | 'empty' | 'loading' | 'error';
+
+enum TrafficFetchErrorType {
+    NoActiveTrafficRecording = 'noActiveTrafficRecording',
+    IndexCreating = 'indexCreating'
+}
 
 const pageSize: number = 20
 
@@ -36,7 +42,7 @@ const props = defineProps<{
     criteria: TrafficRecordHistoryCriteria
 }>()
 
-
+const historyFetchError = ref<TrafficFetchErrorType | undefined>(undefined)
 const historyLoaded = ref<boolean>(false)
 let historyRecords: TrafficRecord[] = []
 const history = ref<TrafficRecordVisualisationDefinition[]>([])
@@ -71,9 +77,9 @@ async function loadNextHistory(): Promise<boolean> {
             trafficRecordingCaptureRequest.value,
             limit.value
         )
+        historyFetchError.value = undefined
 
         if (fetchedRecords.size === 0) {
-            // todo lho musi se vynulovat i formatovana historie
             lastPage.value = true
             return true
         }
@@ -101,6 +107,17 @@ async function loadNextHistory(): Promise<boolean> {
         history.value = trafficViewerService.processRecords(props.dataPointer, historyRecords).toArray()
         return true
     } catch (e: any) {
+        if (e instanceof ConnectError && e.code === Code.InvalidArgument) {
+            // todo lho rework when connect library can provide metadata
+            if (e.message.toLowerCase().includes('no on-demand traffic recording has been started')) {
+                historyFetchError.value = TrafficFetchErrorType.NoActiveTrafficRecording
+                return false
+            }
+            if (e.message.toLowerCase().includes('issuing creation') || e.message.toLowerCase().includes('index is currently being build')) {
+                historyFetchError.value = TrafficFetchErrorType.IndexCreating
+                return false
+            }
+        }
         toaster.error(t(
             'trafficViewer.recordings.notification.couldNotLoadRecordings',
             { reason: e.message }
@@ -113,6 +130,7 @@ async function reloadHistory(): Promise<void> {
     sinceSessionSequenceId.value = undefined
     sinceRecordSessionOffset.value = undefined
     historyRecords = []
+    history.value = []
 
     await loadNextHistory()
 }
@@ -134,7 +152,7 @@ defineExpose<{
 </script>
 
 <template>
-    <VList v-if="historyLoaded && history.length > 0">
+    <VList v-if="historyFetchError == undefined && historyLoaded && history.length > 0">
         <VInfiniteScroll
             mode="manual"
             side="end"
@@ -155,6 +173,20 @@ defineExpose<{
             </template>
         </VInfiniteScroll>
     </VList>
+
+    <VMissingDataIndicator
+        v-else-if="historyFetchError === TrafficFetchErrorType.NoActiveTrafficRecording"
+        icon="mdi-alert-circle-outline"
+        color="error"
+        :title="t('trafficViewer.recordHistory.list.noActiveTrafficRecording', { catalogName: dataPointer.catalogName })"
+    />
+
+    <VMissingDataIndicator
+        v-else-if="historyFetchError === TrafficFetchErrorType.IndexCreating"
+        icon="mdi-information-outline"
+        color="warning"
+        :title="t('trafficViewer.recordHistory.list.indexCreating', { catalogName: dataPointer.catalogName })"
+    />
 
     <VMissingDataIndicator
         v-else

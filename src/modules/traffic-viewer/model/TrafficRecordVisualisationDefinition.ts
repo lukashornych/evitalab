@@ -6,6 +6,7 @@ import { i18n } from '@/vue-plugins/i18n'
 import { TrafficRecord } from '@/modules/connection/model/traffic/TrafficRecord'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { TrafficRecordMetadataItemContext } from '@/modules/traffic-viewer/model/TrafficRecordMetadataItemContext'
+import { formatByteSize, formatCount } from '@/utils/string'
 
 /**
  * Defines how a particular traffic record should be displayed in UI
@@ -125,8 +126,12 @@ export class MetadataItem {
             'ioFetchedSizeBytes',
             'mdi-download-network-outline',
             i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.ioFetchedSizeBytes.tooltip'),
-            // @ts-ignore
-            i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.ioFetchedSizeBytes.value', ioFetchedSizeBytes, { count: ioFetchedSizeBytes }),
+            i18n.global.t(
+                'trafficViewer.recordHistory.record.type.common.metadata.item.ioFetchedSizeBytes.value',
+                // @ts-ignore
+                ioFetchedSizeBytes,
+                { named: { count: formatByteSize(ioFetchedSizeBytes) } }
+            ),
         )
     }
 
@@ -135,7 +140,10 @@ export class MetadataItem {
             'ioFetchedSizeBytes',
             'mdi-download-network-outline',
             i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.ioFetchCount.tooltip'),
-            i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.ioFetchCount.value', { count: ioFetchCount }),
+            i18n.global.t(
+                'trafficViewer.recordHistory.record.type.common.metadata.item.ioFetchCount.value',
+                { count: formatCount(ioFetchCount) }
+            ),
         )
     }
 

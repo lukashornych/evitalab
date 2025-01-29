@@ -12,6 +12,7 @@ import { SessionStartContainer } from '@/modules/connection/model/traffic/Sessio
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import Immutable from 'immutable'
 import { i18n } from '@/vue-plugins/i18n'
+import { formatCount } from '@/utils/string'
 
 /**
  * Session close container isn't visualised but controls the flow of rendered UI.
@@ -70,29 +71,45 @@ export class SessionCloseContainerVisualiser extends TrafficRecordVisualiser<Ses
             undefined,
             'mdi-counter',
             i18n.global.t('trafficViewer.recordHistory.record.type.sessionClose.metadata.item.trafficRecordCount.tooltip'),
-            // @ts-ignore
-            i18n.global.t('trafficViewer.recordHistory.record.type.sessionClose.metadata.item.trafficRecordCount.value', trafficRecord.trafficRecordCount, { count: trafficRecord.trafficRecordCount }),
+            i18n.global.t(
+                'trafficViewer.recordHistory.record.type.sessionClose.metadata.item.trafficRecordCount.value',
+                // @ts-ignore
+                trafficRecord.trafficRecordCount,
+                { named: { count: formatCount(trafficRecord.trafficRecordCount) } }
+            ),
         ))
         defaultMetadata.push(new MetadataItem(
             undefined,
             'mdi-counter',
             i18n.global.t('trafficViewer.recordHistory.record.type.sessionClose.metadata.item.queryCount.tooltip'),
-            // @ts-ignore
-            i18n.global.t('trafficViewer.recordHistory.record.type.sessionClose.metadata.item.queryCount.value', trafficRecord.queryCount, { count: trafficRecord.queryCount }),
+            i18n.global.t(
+                'trafficViewer.recordHistory.record.type.sessionClose.metadata.item.queryCount.value',
+                // @ts-ignore
+                trafficRecord.queryCount,
+                { named: { count: formatCount(trafficRecord.queryCount) } }
+            ),
         ))
         defaultMetadata.push(new MetadataItem(
             undefined,
             'mdi-counter',
             i18n.global.t('trafficViewer.recordHistory.record.type.sessionClose.metadata.item.entityFetchCount.tooltip'),
-            // @ts-ignore
-            i18n.global.t('trafficViewer.recordHistory.record.type.sessionClose.metadata.item.entityFetchCount.value', trafficRecord.entityFetchCount, { count: trafficRecord.entityFetchCount }),
+            i18n.global.t(
+                'trafficViewer.recordHistory.record.type.sessionClose.metadata.item.entityFetchCount.value',
+                // @ts-ignore
+                trafficRecord.entityFetchCount,
+                { named: { count: formatCount(trafficRecord.entityFetchCount) } }
+            ),
         ))
         defaultMetadata.push(new MetadataItem(
             undefined,
             'mdi-counter',
             i18n.global.t('trafficViewer.recordHistory.record.type.sessionClose.metadata.item.mutationCount.tooltip'),
-            // @ts-ignore
-            i18n.global.t('trafficViewer.recordHistory.record.type.sessionClose.metadata.item.mutationCount.value', trafficRecord.mutationCount, { count: trafficRecord.mutationCount }),
+            i18n.global.t(
+                'trafficViewer.recordHistory.record.type.sessionClose.metadata.item.mutationCount.value',
+                // @ts-ignore
+                trafficRecord.mutationCount,
+                { named: { count: formatCount(trafficRecord.mutationCount) } }
+            ),
         ))
 
         return [MetadataGroup.default(defaultMetadata)]

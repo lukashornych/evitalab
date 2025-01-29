@@ -764,11 +764,11 @@ export class GrpcTrafficSourceQueryContainer extends Message<GrpcTrafficSourceQu
   sourceQuery = "";
 
   /**
-   * type of the query (e.g. GraphQL, REST, etc.)
+   * The automatic labels associated with the query.
    *
-   * @generated from field: string queryType = 3;
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcQueryLabel labels = 3;
    */
-  queryType = "";
+  labels: GrpcQueryLabel[] = [];
 
   constructor(data?: PartialMessage<GrpcTrafficSourceQueryContainer>) {
     super();
@@ -780,7 +780,7 @@ export class GrpcTrafficSourceQueryContainer extends Message<GrpcTrafficSourceQu
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "sourceQueryId", kind: "message", T: GrpcUuid },
     { no: 2, name: "sourceQuery", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "queryType", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "labels", kind: "message", T: GrpcQueryLabel, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GrpcTrafficSourceQueryContainer {

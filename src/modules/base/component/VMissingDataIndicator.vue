@@ -5,14 +5,15 @@
 
 const props = defineProps<{
     icon?: string,
-    title?: string
+    title?: string,
+    color?: string
 }>()
 </script>
 
 <template>
     <div class="missing-data-indicator text-disabled">
         <slot>
-            <VIcon>{{ icon }}</VIcon>
+            <VIcon :color="color">{{ icon }}</VIcon>
             <span class="missing-data-indicator__title">{{ title }}</span>
         </slot>
     </div>

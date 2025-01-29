@@ -1507,7 +1507,9 @@
         }
       },
       "list": {
-        "noRecords": "There are no traffic records for the {catalogName} catalog. You need to either enable traffic recording on server options or start recording on demand in traffic recordings."
+        "noActiveTrafficRecording": "There is no active traffic recording for the {catalogName} catalog. You need to either enable traffic recording on server options or start recording on demand in traffic recordings.",
+        "indexCreating": "Index is being created for the active traffic recording for the {catalogName} catalog. Please wait and reload history in a few moments.",
+        "noRecords": "There are no traffic records for defined filter."
       },
       "record": {
         "type": {
@@ -1521,13 +1523,13 @@
                 "created": {
                   "tooltip": "Record creation time",
                   "notification": {
-                    "copiedToClipboard": "Datetime of record creation has been copied to clipboard"
+                    "copiedToClipboard": "Date time of record creation has been copied to clipboard"
                   }
                 },
                 "duration": "Record processing duration",
                 "ioFetchedSizeBytes": {
                   "tooltip": "Number of bytes read from disk",
-                  "value": "0 bytes fetched | 1 byte fetched | {count} bytes fetched"
+                  "value": "0 bytes fetched | 1 byte fetched | {count} fetched"
                 },
                 "ioFetchCount": {
                   "tooltip": "Number of I/O accesses to disk",
@@ -1583,7 +1585,15 @@
           },
           "sourceQuery": {
             "label": "Source query",
-            "title": "{queryType} query",
+            "title": "Source query: {queryType}",
+            "metadata": {
+              "group": {
+                "queryLabels": "Query labels"
+              },
+              "item": {
+                "queryLabel": "Query label"
+              }
+            },
             "action": {
               "query": "Open query in console"
             }

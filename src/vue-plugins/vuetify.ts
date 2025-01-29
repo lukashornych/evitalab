@@ -68,7 +68,8 @@ export default createVuetify({
             variant: 'plain'
         },
         VChip: {
-            color: 'gray-light'
+            color: 'gray-light',
+            variant: 'plain'
         },
         VSelect: {
             variant: 'solo-filled',

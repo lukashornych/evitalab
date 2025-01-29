@@ -98,7 +98,7 @@ export class TrafficRecordingConverter {
                 header.finishedWithError,
                 this.evitaValueConverter.convertGrpcUuid(grpcTrafficRecord.body.value.sourceQueryId!),
                 grpcTrafficRecord.body.value.sourceQuery,
-                grpcTrafficRecord.body.value.queryType
+                this.convertGrpcQueryLabels(grpcTrafficRecord.body.value.labels)
             );
             case 'sourceQueryStatistics': return new SourceQueryStatisticsContainer(
                 header.sessionSequenceOrder, header.sessionId, header.recordSessionOffset, header.sessionRecordsCount,

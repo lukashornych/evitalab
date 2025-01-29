@@ -14,13 +14,26 @@ export const GrpcEvitaTrafficRecordingService = {
   methods: {
     /**
      * Procedure that returns requested list of past traffic records with limited size that match the request criteria.
-     * Order of the returned records is from the newest sessions to the oldest,
-     * traffic records within the session are ordered from the newest to the oldest.
+     * Order of the returned records is from the oldest sessions to the newest,
+     * traffic records within the session are ordered from the oldest to the newest.
      *
      * @generated from rpc io.evitadb.externalApi.grpc.generated.GrpcEvitaTrafficRecordingService.GetTrafficRecordingHistoryList
      */
     getTrafficRecordingHistoryList: {
       name: "GetTrafficRecordingHistoryList",
+      I: GetTrafficHistoryListRequest,
+      O: GetTrafficHistoryListResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Procedure that returns requested list of past traffic records with limited size that match the request criteria.
+     * Order of the returned records is from the newest sessions to the oldest,
+     * traffic records within the session are ordered from the newest to the oldest.
+     *
+     * @generated from rpc io.evitadb.externalApi.grpc.generated.GrpcEvitaTrafficRecordingService.GetTrafficRecordingHistoryListReversed
+     */
+    getTrafficRecordingHistoryListReversed: {
+      name: "GetTrafficRecordingHistoryListReversed",
       I: GetTrafficHistoryListRequest,
       O: GetTrafficHistoryListResponse,
       kind: MethodKind.Unary,

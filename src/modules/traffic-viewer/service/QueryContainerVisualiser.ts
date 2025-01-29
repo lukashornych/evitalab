@@ -15,6 +15,7 @@ import Immutable from 'immutable'
 import { EvitaQLConsoleTabData } from '@/modules/evitaql-console/console/workspace/model/EvitaQLConsoleTabData'
 import { TrafficRecordMetadataItemContext } from '@/modules/traffic-viewer/model/TrafficRecordMetadataItemContext'
 import { Label } from '@/modules/connection/model/traffic/Label'
+import { formatCount } from '@/utils/string'
 
 /**
  * Visualises query record.
@@ -56,15 +57,23 @@ export class QueryContainerVisualiser extends TrafficRecordVisualiser<QueryConta
             undefined, // don't need to reference it
             'mdi-counter',
             i18n.global.t('trafficViewer.recordHistory.record.type.query.metadata.item.totalRecordCount.tooltip'),
-            // @ts-ignore
-            i18n.global.t('trafficViewer.recordHistory.record.type.query.metadata.item.totalRecordCount.value', trafficRecord.totalRecordCount, { count: trafficRecord.totalRecordCount })
+            i18n.global.t(
+                'trafficViewer.recordHistory.record.type.query.metadata.item.totalRecordCount.value',
+                // @ts-ignore
+                trafficRecord.totalRecordCount,
+                { named: { count: formatCount(trafficRecord.totalRecordCount) } }
+            )
         ))
         defaultMetadata.push(new MetadataItem(
             undefined, // don't need to reference it
             'mdi-identifier',
             i18n.global.t('trafficViewer.recordHistory.record.type.query.metadata.item.primaryKeys.tooltip'),
-            // @ts-ignore
-            i18n.global.t('trafficViewer.recordHistory.record.type.query.metadata.item.primaryKeys.value', trafficRecord.primaryKeys.size, { count: trafficRecord.primaryKeys.size })
+            i18n.global.t(
+                'trafficViewer.recordHistory.record.type.query.metadata.item.primaryKeys.value',
+                // @ts-ignore
+                trafficRecord.primaryKeys.size,
+                { named: { count: formatCount(trafficRecord.primaryKeys.size) } }
+            )
         ))
 
         const queryLabelsMetadata: MetadataItem[] = []
@@ -79,13 +88,11 @@ export class QueryContainerVisualiser extends TrafficRecordVisualiser<QueryConta
                 label.value,
                 (ctx: TrafficRecordMetadataItemContext) => {
                     const historyCriteriaLabels: Label[] | undefined = ctx.historyCriteria.value.labels
-                    if (historyCriteriaLabels != undefined) {
-                        const existingLabelUnderName = historyCriteriaLabels.findIndex(it => it.name === label.name)
-                        if (existingLabelUnderName > -1) {
-                            historyCriteriaLabels.splice(existingLabelUnderName, 1)
-                        }
-                        historyCriteriaLabels.push(label)
+                    const existingLabelUnderName = historyCriteriaLabels.findIndex(it => it.name === label.name)
+                    if (existingLabelUnderName > -1) {
+                        historyCriteriaLabels.splice(existingLabelUnderName, 1)
                     }
+                    historyCriteriaLabels.push(label)
                 }
             ))
         }

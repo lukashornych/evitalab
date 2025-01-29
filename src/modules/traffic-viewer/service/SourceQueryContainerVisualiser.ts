@@ -15,6 +15,8 @@ import { GraphQLConsoleTabFactory } from '@/modules/graphql-console/console/work
 import { TrafficRecordVisualisationContext } from '@/modules/traffic-viewer/model/TrafficRecordVisualisationContext'
 import { GraphQLInstanceType } from '@/modules/graphql-console/console/model/GraphQLInstanceType'
 import { GraphQLConsoleTabData } from '@/modules/graphql-console/console/workspace/model/GraphQLConsoleTabData'
+import { Label, labelSourceType } from '@/modules/connection/model/traffic/Label'
+import { TrafficRecordMetadataItemContext } from '@/modules/traffic-viewer/model/TrafficRecordMetadataItemContext'
 
 /**
  * Visualises the source query container record. Uses statistics from the `SourceQueryStatisticsContainer`.
@@ -37,14 +39,26 @@ export class SourceQueryContainerVisualiser extends TrafficRecordVisualiser<Sour
 
     visualise(ctx: TrafficRecordVisualisationContext,
               trafficRecord: SourceQueryContainer): TrafficRecordVisualisationDefinition {
+        const queryType: QueryType | undefined = this.resolveQueryType(trafficRecord)
         return new TrafficRecordVisualisationDefinition(
             trafficRecord,
-            i18n.global.t('trafficViewer.recordHistory.record.type.sourceQuery.title', { queryType: trafficRecord.queryType }),
+            i18n.global.t(
+                'trafficViewer.recordHistory.record.type.sourceQuery.title',
+                { queryType: queryType || '?' }
+            ),
             undefined,
             this.constructMetadata(trafficRecord),
-            this.constructActions(ctx, trafficRecord),
+            this.constructActions(ctx, trafficRecord, queryType),
             TrafficRecordVisualisationControlFlag.ParentStart
         )
+    }
+
+    private resolveQueryType(trafficRecord: SourceQueryContainer): QueryType | undefined {
+        const label: Label | undefined = trafficRecord.labels.find(label => label.name === labelSourceType)
+        if (label == undefined) {
+            return undefined
+        }
+        return label.value!.substring(1, label.value!.length - 1) as QueryType
     }
 
     private constructMetadata(trafficRecord: SourceQueryContainer): MetadataGroup[] {
@@ -59,15 +73,46 @@ export class SourceQueryContainerVisualiser extends TrafficRecordVisualiser<Sour
             MetadataItemSeverity.Warning
         ))
 
-        return [MetadataGroup.default(defaultMetadata)]
+        const queryLabelsMetadata: MetadataItem[] = []
+
+        for (const label of trafficRecord.labels) {
+            queryLabelsMetadata.push(new MetadataItem(
+                undefined, // don't need to reference it
+                'mdi-tag-outline',
+                i18n.global.t('trafficViewer.recordHistory.record.type.sourceQuery.metadata.item.queryLabel'),
+                label.name,
+                MetadataItemSeverity.Info,
+                label.value,
+                (ctx: TrafficRecordMetadataItemContext) => {
+                    const historyCriteriaLabels: Label[] | undefined = ctx.historyCriteria.value.labels
+                    const existingLabelUnderName = historyCriteriaLabels.findIndex(it => it.name === label.name)
+                    if (existingLabelUnderName > -1) {
+                        historyCriteriaLabels.splice(existingLabelUnderName, 1)
+                    }
+                    historyCriteriaLabels.push(label)
+                }
+            ))
+        }
+
+        return [
+            MetadataGroup.default(defaultMetadata),
+            new MetadataGroup(
+                undefined,
+                'mdi-tag-outline',
+                i18n.global.t('trafficViewer.recordHistory.record.type.sourceQuery.metadata.group.queryLabels'),
+                i18n.global.t('trafficViewer.recordHistory.record.type.sourceQuery.metadata.group.queryLabels'),
+                queryLabelsMetadata
+            )
+        ]
     }
 
     private constructActions(ctx: TrafficRecordVisualisationContext,
-                             trafficRecord: SourceQueryContainer): Immutable.List<Action> {
+                             trafficRecord: SourceQueryContainer,
+                             queryType: QueryType | undefined): Immutable.List<Action> {
         const actions: Action[] = []
 
         let queryActionCallback: (() => void) | undefined = undefined
-        if (trafficRecord.queryType === QueryType.GraphQL) {
+        if (queryType === QueryType.GraphQL) {
             const sourceQuery: { query: string, variables: any, extensions: any } = JSON.parse(trafficRecord.sourceQuery)
             queryActionCallback = () => this.workspaceService.createTab(
                 this.graphQLConsoleTabFactory.createNew(

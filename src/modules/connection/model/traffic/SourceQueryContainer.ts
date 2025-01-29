@@ -3,6 +3,8 @@ import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateT
 import { Duration } from 'luxon'
 import { TrafficRecord } from '@/modules/connection/model/traffic/TrafficRecord'
 import { TrafficRecordType } from '@/modules/connection/model/traffic/TrafficRecordType'
+import { Label } from '@/modules/connection/model/traffic/Label'
+import Immutable from 'immutable'
 
 /**
  * This container holds information about the source query.
@@ -11,7 +13,7 @@ export class SourceQueryContainer extends TrafficRecord {
 
     readonly sourceQueryId: Uuid
     readonly sourceQuery: string
-    readonly queryType: string
+    readonly labels: Immutable.List<Label>
 
     constructor(sessionSequenceOrder: bigint,
                 sessionId: Uuid,
@@ -25,7 +27,7 @@ export class SourceQueryContainer extends TrafficRecord {
                 finishedWithError: string | undefined,
                 sourceQueryId: Uuid,
                 sourceQuery: string,
-                queryType: string) {
+                labels: Immutable.List<Label>) {
         super(
             sessionSequenceOrder,
             sessionId,
@@ -40,6 +42,6 @@ export class SourceQueryContainer extends TrafficRecord {
         )
         this.sourceQueryId = sourceQueryId
         this.sourceQuery = sourceQuery
-        this.queryType = queryType
+        this.labels = labels
     }
 }

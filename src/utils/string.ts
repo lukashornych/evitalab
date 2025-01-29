@@ -52,3 +52,15 @@ export function formatByteSize(sizeInBytes: number): string {
         return `${sizeFormatter.format(sizeInBytes)} B`
     }
 }
+
+export function formatCount(count: number): string {
+    if (Math.floor(count / 1_000_000_000) > 0) {
+        return `${sizeFormatter.format(count / 1_000_000_000)}G`
+    } else if (Math.floor(count / 100_000) > 0) {
+        return `${sizeFormatter.format(count / 100_000)}M`
+    } else if (Math.floor(count / 1_000) > 0) {
+        return `${sizeFormatter.format(count / 1_000)}k`
+    } else {
+        return `${sizeFormatter.format(count)}`;
+    }
+}

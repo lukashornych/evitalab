@@ -14,7 +14,7 @@ export class TrafficRecordHistoryCriteria {
     sessionId?: Uuid
     longerThan?: Duration
     fetchingMoreBytesThan?: number
-    labels?: Label[]
+    labels: Label[]
 
     constructor(since?: OffsetDateTime,
                 types?: UserTrafficRecordType[],
@@ -27,6 +27,6 @@ export class TrafficRecordHistoryCriteria {
         this.sessionId = sessionId
         this.longerThan = longerThan
         this.fetchingMoreBytesThan = fetchingMoreBytesThan
-        this.labels = labels
+        this.labels = labels || []
     }
 }
