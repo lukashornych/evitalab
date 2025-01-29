@@ -34,7 +34,7 @@ export class MutationContainerVisualiser extends TrafficRecordVisualiser<Mutatio
 
         defaultMetadata.push(MetadataItem.created(trafficRecord.created))
         defaultMetadata.push(MetadataItem.finishedStatus(trafficRecord.finishedWithError))
-        defaultMetadata.push(MetadataItem.duration(trafficRecord.duration, [100, 500]))  // todo lho/jno revise
+        defaultMetadata.push(MetadataItem.duration(trafficRecord.duration, [20, 60]))
         defaultMetadata.push(MetadataItem.ioFetchedSizeBytes(trafficRecord.ioFetchedSizeBytes))
         defaultMetadata.push(MetadataItem.ioFetchCount(trafficRecord.ioFetchCount))
 

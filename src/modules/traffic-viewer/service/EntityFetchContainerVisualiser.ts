@@ -46,7 +46,7 @@ export class EntityFetchContainerVisualiser extends TrafficRecordVisualiser<Enti
 
         defaultMetadata.push(MetadataItem.created(trafficRecord.created))
         defaultMetadata.push(MetadataItem.finishedStatus(trafficRecord.finishedWithError))
-        defaultMetadata.push(MetadataItem.duration(trafficRecord.duration, [50, 100])) // todo lho/jno revise
+        defaultMetadata.push(MetadataItem.duration(trafficRecord.duration, [10, 20]))
         defaultMetadata.push(MetadataItem.ioFetchedSizeBytes(trafficRecord.ioFetchedSizeBytes))
         defaultMetadata.push(MetadataItem.ioFetchCount(trafficRecord.ioFetchCount))
 

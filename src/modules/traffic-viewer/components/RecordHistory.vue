@@ -20,7 +20,6 @@ import {
     TrafficRecordVisualisationDefinition
 } from '@/modules/traffic-viewer/model/TrafficRecordVisualisationDefinition'
 import RecordHistoryItem from '@/modules/traffic-viewer/components/RecordHistoryItem.vue'
-import { TrafficRecordType } from '@/modules/connection/model/traffic/TrafficRecordType'
 import { convertUserToSystemRecordType } from '@/modules/traffic-viewer/model/UserTrafficRecordType'
 
 // note: this is enum from vuetify, but vuetify doesn't export it
@@ -74,6 +73,7 @@ async function loadNextHistory(): Promise<boolean> {
         )
 
         if (fetchedRecords.size === 0) {
+            // todo lho musi se vynulovat i formatovana historie
             lastPage.value = true
             return true
         }

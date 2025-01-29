@@ -8,6 +8,8 @@ const offsetDateTimeFormatter = new Intl.DateTimeFormat([], {
 })
 
 //TODO add doc
+
+// todo lho minutes are wrong
 export class OffsetDateTime implements PrettyPrintable {
     readonly timestamp: Timestamp
     readonly offset: string

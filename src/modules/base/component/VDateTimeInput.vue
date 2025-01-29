@@ -243,6 +243,7 @@ function confirm(): void {
 
 function clear(): void {
     model.value = undefined
+    // todo lho clear individual data
 }
 </script>
 

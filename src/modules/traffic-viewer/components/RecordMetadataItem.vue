@@ -23,7 +23,7 @@ function handleItemClick(): void {
                 :color="item.severity !== MetadataItemSeverity.Info ? item.severity : undefined"
                 v-bind="props"
                 :variant="item.onClickCallback != undefined ? 'outlined' : 'plain'"
-                @click.stop="handleItemClick"
+                @click.stop="item.onClickCallback != undefined ? handleItemClick : undefined"
             >
                 <span>{{ item.value }}</span>
                 <span v-if="item.details != undefined" class="text-disabled ml-1">{{ item.details }}</span>

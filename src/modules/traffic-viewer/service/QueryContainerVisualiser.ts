@@ -49,7 +49,7 @@ export class QueryContainerVisualiser extends TrafficRecordVisualiser<QueryConta
 
         defaultMetadata.push(MetadataItem.created(trafficRecord.created))
         defaultMetadata.push(MetadataItem.finishedStatus(trafficRecord.finishedWithError))
-        defaultMetadata.push(MetadataItem.duration(trafficRecord.duration, [50, 100])) // todo lho/jno revise
+        defaultMetadata.push(MetadataItem.duration(trafficRecord.duration, [30, 60]))
         defaultMetadata.push(MetadataItem.ioFetchedSizeBytes(trafficRecord.ioFetchedSizeBytes))
         defaultMetadata.push(MetadataItem.ioFetchCount(trafficRecord.ioFetchCount))
         defaultMetadata.push(new MetadataItem(

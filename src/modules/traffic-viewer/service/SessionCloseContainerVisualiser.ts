@@ -57,7 +57,7 @@ export class SessionCloseContainerVisualiser extends TrafficRecordVisualiser<Ses
         const defaultMetadata: MetadataItem[] = []
 
         defaultMetadata.push(MetadataItem.finishedStatus(trafficRecord.finishedWithError))
-        defaultMetadata.push(MetadataItem.duration(trafficRecord.duration))
+        defaultMetadata.push(MetadataItem.duration(trafficRecord.duration, [5000, 60000]))
         defaultMetadata.push(MetadataItem.ioFetchedSizeBytes(trafficRecord.ioFetchedSizeBytes))
         defaultMetadata.push(MetadataItem.ioFetchCount(trafficRecord.ioFetchCount))
         defaultMetadata.push(new MetadataItem(
