@@ -25,6 +25,7 @@ import RecordHistoryList from '@/modules/traffic-viewer/components/RecordHistory
 import { TrafficRecordHistoryCriteria } from '@/modules/traffic-viewer/model/TrafficRecordHistoryCriteria'
 import RecordHistoryFilter from '@/modules/traffic-viewer/components/RecordHistoryFilter.vue'
 import { provideHistoryCriteria } from '@/modules/traffic-viewer/components/dependencies'
+import StartPointerButton from '@/modules/traffic-viewer/components/StartPointerButton.vue'
 
 const keymap: Keymap = useKeymap()
 const { t } = useI18n()
@@ -65,6 +66,8 @@ provideHistoryCriteria(criteria)
 
 const initialized = ref<boolean>(false)
 const historyListLoading = ref<boolean>(false)
+const historyStartPointerLoading = ref<boolean>(false)
+const historyStartPointerActive = ref<boolean>(false)
 
 const currentData = computed<TrafficRecordHistoryViewerTabData>(() => {
     return new TrafficRecordHistoryViewerTabData(
@@ -102,6 +105,18 @@ onUnmounted(() => {
     keymap.unbind(Command.TrafficRecordHistoryViewer_ShareTab, props.id)
 })
 
+async function moveStartPointerToNewest(): Promise<void> {
+    historyStartPointerLoading.value = true
+    await historyListRef.value?.moveStartPointerToNewest()
+    historyStartPointerLoading.value = false
+}
+
+function removeStartPointer(): void {
+    historyStartPointerLoading.value = true
+    historyListRef.value?.removeStartPointer()
+    historyStartPointerLoading.value = false
+}
+
 async function reloadHistoryList(): Promise<void> {
     historyListLoading.value = true
     await historyListRef.value?.reload()
@@ -125,7 +140,14 @@ async function reloadHistoryList(): Promise<void> {
                     :disabled="!params.dataPointer.connection.preconfigured"
                 />
 
-                <VBtn icon :loading="historyListLoading" @click="reloadHistoryList">
+                <StartPointerButton
+                    :active="historyStartPointerActive"
+                    :loading="historyStartPointerLoading"
+                    @move-start-pointer-to-newest="moveStartPointerToNewest"
+                    @remove-start-pointer="removeStartPointer"
+                />
+
+                <VBtn icon density="compact" :loading="historyListLoading" @click="reloadHistoryList">
                     <!--            todo lho new data indicator-->
                     <VIcon>mdi-refresh</VIcon>
                     <VTooltip activator="parent">
@@ -148,6 +170,7 @@ async function reloadHistoryList(): Promise<void> {
                 ref="historyListRef"
                 :data-pointer="params.dataPointer"
                 :criteria="criteria"
+                @update:start-pointer-active="historyStartPointerActive = $event"
             />
         </VSheet>
     </div>

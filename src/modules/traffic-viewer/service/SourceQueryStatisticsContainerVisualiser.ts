@@ -65,14 +65,24 @@ export class SourceQueryStatisticsContainerVisualiser extends TrafficRecordVisua
         defaultMetadata.push(new MetadataItem(
             undefined, // don't need to reference it
             'mdi-counter',
-            i18n.global.t('trafficViewer.recordHistory.record.type.sourceQueryStatistics.metadata.item.returnedRecordCount'),
-            formatCount(trafficRecord.totalRecordCount)
+            i18n.global.t('trafficViewer.recordHistory.record.type.sourceQueryStatistics.metadata.item.returnedRecordCount.tooltip'),
+            i18n.global.t(
+                'trafficViewer.recordHistory.record.type.sourceQueryStatistics.metadata.item.returnedRecordCount.value',
+                //@ts-ignore
+                trafficRecord.returnedRecordCount,
+                { named: { count: formatCount(trafficRecord.returnedRecordCount) } }
+            )
         ))
         defaultMetadata.push(new MetadataItem(
             undefined, // don't need to reference it
             'mdi-counter',
-            i18n.global.t('trafficViewer.recordHistory.record.type.sourceQueryStatistics.metadata.item.totalRecordCount'),
-            formatCount(trafficRecord.totalRecordCount)
+            i18n.global.t('trafficViewer.recordHistory.record.type.sourceQueryStatistics.metadata.item.totalRecordCount.tooltip'),
+            i18n.global.t(
+                'trafficViewer.recordHistory.record.type.sourceQueryStatistics.metadata.item.totalRecordCount.value',
+                //@ts-ignore
+                trafficRecord.totalRecordCount,
+                { named: { count: formatCount(trafficRecord.totalRecordCount) } }
+            )
         ))
 
         return [MetadataGroup.default(defaultMetadata)]

@@ -132,7 +132,8 @@ export interface EvitaDBDriver {
     getTrafficRecordHistoryList(connection: Connection,
                                 catalogName: string,
                                 captureRequest: TrafficRecordingCaptureRequest,
-                                limit: number): Promise<Immutable.List<TrafficRecord>>
+                                limit: number,
+                                reverse?: boolean): Promise<Immutable.List<TrafficRecord>>
     getTrafficRecordingLabelNamesOrderedByCardinality(connection: Connection,
                                                       catalogName: string,
                                                       nameStartsWith: string,

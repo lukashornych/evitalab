@@ -54,15 +54,12 @@ import { ServerStatus } from '@/modules/connection/model/status/ServerStatus'
 import { ServerFileConverter } from '@/modules/connection/driver/grpc/service/ServerFileConverter'
 import { PaginatedList } from '@/modules/connection/model/PaginatedList'
 import { ServerFile } from '@/modules/connection/model/server-file/ServerFile'
-import { GrpcTaskStatus, GrpcUuid } from '@/modules/connection/driver/grpc/gen/GrpcEvitaDataTypes_pb'
+import { GrpcTaskStatus } from '@/modules/connection/driver/grpc/gen/GrpcEvitaDataTypes_pb'
 import {
+    GetTrafficHistoryListRequest,
     GetTrafficHistoryListResponse, GetTrafficRecordingLabelNamesResponse,
     GetTrafficRecordingStatusResponse, GetTrafficRecordingValuesNamesResponse
 } from '@/modules/connection/driver/grpc/gen/GrpcEvitaTrafficRecordingAPI_pb'
-import {
-    GrpcTrafficRecordingCaptureCriteria,
-    GrpcTrafficRecordingContent
-} from '@/modules/connection/driver/grpc/gen/GrpcTrafficRecording_pb'
 import { TrafficRecordingCaptureRequest } from '@/modules/connection/model/traffic/TrafficRecordingCaptureRequest'
 import { TrafficRecordingConverter } from '@/modules/connection/driver/grpc/service/TrafficRecordingConverter'
 import { TrafficRecord } from '@/modules/connection/model/traffic/TrafficRecord'
@@ -743,24 +740,32 @@ export class EvitaDBDriverGrpc implements EvitaDBDriver {
     async getTrafficRecordHistoryList(connection: Connection,
                                       catalogName: string,
                                       captureRequest: TrafficRecordingCaptureRequest,
-                                      limit: number): Promise<Immutable.List<TrafficRecord>> {
+                                      limit: number,
+                                      reverse: boolean = false): Promise<Immutable.List<TrafficRecord>> {
         return this.evitaSessionProvider.executeInReadOnlySession(
             connection,
             await this.getCatalog(connection, catalogName),
             async (sessionId) => {
-                const response: GetTrafficHistoryListResponse = await this.clientProvider
-                    .getEvitaTrafficRecordingClient(connection)
-                    .getTrafficRecordingHistoryList(
-                        {
-                            limit,
-                            criteria: this.trafficRecordingConverter.convertTrafficRecordingCaptureRequest(
-                                captureRequest
-                            )
-                        },
-                        {
-                            headers: { sessionId }
-                        }
+                const request: GetTrafficHistoryListRequest = new GetTrafficHistoryListRequest({
+                    limit,
+                    criteria: this.trafficRecordingConverter.convertTrafficRecordingCaptureRequest(
+                        captureRequest
                     )
+                })
+                const metadata = {
+                    headers: { sessionId }
+                }
+
+                let response: GetTrafficHistoryListResponse
+                if (!reverse) {
+                    response = await this.clientProvider
+                        .getEvitaTrafficRecordingClient(connection)
+                        .getTrafficRecordingHistoryList(request, metadata)
+                } else {
+                    response = await this.clientProvider
+                        .getEvitaTrafficRecordingClient(connection)
+                        .getTrafficRecordingHistoryListReversed(request, metadata)
+                }
                 return this.trafficRecordingConverter.convertGrpcTrafficRecords(response.trafficRecord)
             }
         )

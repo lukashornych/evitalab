@@ -6,7 +6,7 @@
 
 import VMissingDataIndicator from '@/modules/base/component/VMissingDataIndicator.vue'
 import { useI18n } from 'vue-i18n'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
 import { TrafficViewerService, useTrafficViewerService } from '@/modules/traffic-viewer/service/TrafficViewerService'
 import { TrafficRecordHistoryDataPointer } from '@/modules/traffic-viewer/model/TrafficRecordHistoryDataPointer'
@@ -31,6 +31,39 @@ enum TrafficFetchErrorType {
     IndexCreating = 'indexCreating'
 }
 
+class StartRecordsPointer {
+    readonly sinceSessionSequenceId: bigint
+    readonly sinceRecordSessionOffset: number
+
+    constructor(sinceSessionSequenceId: bigint, sinceRecordSessionOffset: number) {
+        this.sinceSessionSequenceId = sinceSessionSequenceId
+        this.sinceRecordSessionOffset = sinceRecordSessionOffset
+    }
+}
+
+class RecordsPointer {
+    private _sinceSessionSequenceId: bigint = 1n
+    private _sinceRecordSessionOffset: number = 0
+
+    get sinceSessionSequenceId(): bigint {
+        return this._sinceSessionSequenceId
+    }
+
+    get sinceRecordSessionOffset(): number {
+        return this._sinceRecordSessionOffset
+    }
+
+    reset(startPointer?: StartRecordsPointer): void {
+        this._sinceSessionSequenceId = startPointer?.sinceSessionSequenceId || 1n
+        this._sinceRecordSessionOffset = startPointer?.sinceRecordSessionOffset || 0
+    }
+
+    move(sinceSessionSequenceId: bigint, sinceRecordSessionOffset: number) {
+        this._sinceSessionSequenceId = sinceSessionSequenceId
+        this._sinceRecordSessionOffset = sinceRecordSessionOffset
+    }
+}
+
 const pageSize: number = 20
 
 const trafficViewerService: TrafficViewerService = useTrafficViewerService()
@@ -39,25 +72,27 @@ const { t } = useI18n()
 
 const props = defineProps<{
     dataPointer: TrafficRecordHistoryDataPointer,
-    criteria: TrafficRecordHistoryCriteria
+    criteria: TrafficRecordHistoryCriteria,
+}>()
+const emit = defineEmits<{
+    (e: 'update:startPointerActive', value: boolean): void
 }>()
 
-const historyFetchError = ref<TrafficFetchErrorType | undefined>(undefined)
-const historyLoaded = ref<boolean>(false)
-let historyRecords: TrafficRecord[] = []
+const fetchError = ref<TrafficFetchErrorType | undefined>(undefined)
+let records: TrafficRecord[] = []
 const history = ref<TrafficRecordVisualisationDefinition[]>([])
 
-const sinceSessionSequenceId = ref<bigint | undefined>(1n)
-const sinceRecordSessionOffset = ref<number | undefined>(1)
+const startPointer = ref<StartRecordsPointer | undefined>(undefined)
+watch(startPointer, () => reloadHistory(), { deep: true })
+const nextPagePointer = ref<RecordsPointer>(new RecordsPointer())
 const limit = ref<number>(pageSize)
-const lastPage = ref<boolean>(false)
 
 const trafficRecordingCaptureRequest = computed<TrafficRecordingCaptureRequest>(() => {
     return new TrafficRecordingCaptureRequest(
         TrafficRecordContent.Body,
         props.criteria.since,
-        sinceSessionSequenceId.value,
-        sinceRecordSessionOffset.value,
+        nextPagePointer.value.sinceSessionSequenceId,
+        nextPagePointer.value.sinceRecordSessionOffset,
         props.criteria.types != undefined
             ? Immutable.List([
                 ...(props.criteria.types.flatMap(userType => convertUserToSystemRecordType(userType)!))
@@ -70,93 +105,151 @@ const trafficRecordingCaptureRequest = computed<TrafficRecordingCaptureRequest>(
     )
 })
 
-async function loadNextHistory(): Promise<boolean> {
+async function loadNextHistory({ done }: { done: (status: InfiniteScrollStatus) => void }): Promise<void> {
     try {
-        const fetchedRecords: Immutable.List<TrafficRecord> = await trafficViewerService.getRecordHistoryList(
-            props.dataPointer,
-            trafficRecordingCaptureRequest.value,
-            limit.value
-        )
-        historyFetchError.value = undefined
+        const fetchedRecords: Immutable.List<TrafficRecord> = await fetchRecords()
+        // todo lho remove
+        console.log('next', fetchedRecords.toArray())
+        fetchError.value = undefined
 
         if (fetchedRecords.size === 0) {
-            lastPage.value = true
-            return true
-        }
-        if (fetchedRecords.size < pageSize) {
-            // todo lho not working
-            lastPage.value = true
+            toaster.info(t('trafficViewer.recordHistory.list.notification.noNewerRecords'))
+            done('ok')
+            return
         }
 
-        for (const fetchedRecord of fetchedRecords) {
-            historyRecords.push(fetchedRecord)
-        }
-        const lastFetchedRecord: TrafficRecord = fetchedRecords.last()
-        if (lastFetchedRecord.recordSessionOffset < (lastFetchedRecord.sessionRecordsCount - 1)) {
-            sinceSessionSequenceId.value = lastFetchedRecord.sessionSequenceOrder
-            sinceRecordSessionOffset.value = lastFetchedRecord.recordSessionOffset + 1
-        } else {
-            sinceSessionSequenceId.value = lastFetchedRecord.sessionSequenceOrder + 1n
-            sinceRecordSessionOffset.value = 0
-        }
-        lastPage.value = false
-        if (!historyLoaded.value) {
-            historyLoaded.value = true
-        }
-        // note: we compute the history manually here because for some reason, computed ref wasn't working
-        history.value = trafficViewerService.processRecords(props.dataPointer, historyRecords).toArray()
-        return true
-    } catch (e: any) {
-        if (e instanceof ConnectError && e.code === Code.InvalidArgument) {
-            // todo lho rework when connect library can provide metadata
-            if (e.message.toLowerCase().includes('no on-demand traffic recording has been started')) {
-                historyFetchError.value = TrafficFetchErrorType.NoActiveTrafficRecording
-                return false
-            }
-            if (e.message.toLowerCase().includes('issuing creation') || e.message.toLowerCase().includes('index is currently being build')) {
-                historyFetchError.value = TrafficFetchErrorType.IndexCreating
-                return false
-            }
-        }
-        toaster.error(t(
-            'trafficViewer.recordings.notification.couldNotLoadRecordings',
-            { reason: e.message }
-        ))
-        return false
-    }
-}
-
-async function reloadHistory(): Promise<void> {
-    sinceSessionSequenceId.value = undefined
-    sinceRecordSessionOffset.value = undefined
-    historyRecords = []
-    history.value = []
-
-    await loadNextHistory()
-}
-
-async function loadScroller({ done }: { done: (status: InfiniteScrollStatus) => void }): Promise<void> {
-    const result: boolean = await loadNextHistory()
-    if (result) {
+        moveNextPagePointer(fetchedRecords)
+        pushNewRecords(fetchedRecords)
+        processRecords()
         done('ok')
-    } else {
+    } catch (e: any) {
+        handleRecordFetchError(e)
         done('error')
     }
 }
 
+async function reloadHistory(): Promise<void> {
+    nextPagePointer.value.reset(startPointer.value)
+    records = []
+    history.value = []
+    fetchError.value = undefined
+
+    try {
+        const fetchedRecords: Immutable.List<TrafficRecord> = await fetchRecords()
+        // todo lho remove
+        console.log('new', trafficRecordingCaptureRequest.value, fetchedRecords.toArray())
+        if (fetchedRecords.size === 0) {
+            return
+        }
+
+        moveNextPagePointer(fetchedRecords)
+        pushNewRecords(fetchedRecords)
+        processRecords()
+    } catch (e: any) {
+        handleRecordFetchError(e)
+    }
+}
+
+async function fetchRecords(): Promise<Immutable.List<TrafficRecord>> {
+    return await trafficViewerService.getRecordHistoryList(
+        props.dataPointer,
+        trafficRecordingCaptureRequest.value,
+        limit.value
+    )
+}
+
+function moveNextPagePointer(fetchedRecords: Immutable.List<TrafficRecord>): void {
+    const lastFetchedRecord: TrafficRecord = fetchedRecords.last()
+    if (lastFetchedRecord.recordSessionOffset < (lastFetchedRecord.sessionRecordsCount - 1)) {
+        nextPagePointer.value.move(lastFetchedRecord.sessionSequenceOrder, lastFetchedRecord.recordSessionOffset + 1)
+    } else {
+        nextPagePointer.value.move(lastFetchedRecord.sessionSequenceOrder + 1n, 0)
+    }
+}
+
+function pushNewRecords(newRecords: Immutable.List<TrafficRecord>): void {
+    for (const newRecord of newRecords) {
+        records.push(newRecord)
+    }
+}
+
+function processRecords(): void {
+    // note: we compute the history manually here because for some reason, computed ref wasn't working
+    history.value = trafficViewerService.processRecords(props.dataPointer, records).toArray()
+}
+
+function handleRecordFetchError(e: any): void {
+    if (e instanceof ConnectError && e.code === Code.InvalidArgument) {
+        // todo lho rework when connect library can provide metadata
+        if (e.message.toLowerCase().includes('no on-demand traffic recording has been started')) {
+            fetchError.value = TrafficFetchErrorType.NoActiveTrafficRecording
+            return
+        }
+        if (e.message.toLowerCase().includes('issuing creation') || e.message.toLowerCase().includes('index is currently being build')) {
+            fetchError.value = TrafficFetchErrorType.IndexCreating
+            return
+        }
+    }
+    toaster.error(t(
+        'trafficViewer.recordingHistory.notification.couldNotLoadRecords',
+        { reason: e.message }
+    ))
+}
+
+async function moveStartPointerToNewest(): Promise<void> {
+    try {
+        const latestRecords: Immutable.List<TrafficRecord> = await trafficViewerService.getRecordHistoryList(
+            props.dataPointer,
+            trafficRecordingCaptureRequest.value,
+            1,
+            true
+        )
+        // todo lho remove
+        console.log('latest', latestRecords.toArray())
+        if (latestRecords.size === 0) {
+            startPointer.value = undefined
+            emit('update:startPointerActive', false)
+        } else {
+            const latestRecord: TrafficRecord = latestRecords.get(0)!
+            if (latestRecord.recordSessionOffset < (latestRecord.sessionRecordsCount - 1)) {
+                startPointer.value = new StartRecordsPointer(latestRecord.sessionSequenceOrder, latestRecord.recordSessionOffset + 1)
+            } else {
+                startPointer.value = new StartRecordsPointer(latestRecord.sessionSequenceOrder + 1n, 0)
+            }
+            emit('update:startPointerActive', true)
+        }
+    } catch (e: any) {
+        toaster.error(t(
+            'trafficViewer.recordHistory.notification.couldNotLoadLatestRecording',
+            { reason: e.message }
+        ))
+        emit('update:startPointerActive', false)
+    }
+
+}
+
+function removeStartPointer(): void {
+    startPointer.value = undefined
+    emit('update:startPointerActive', false)
+}
+
 defineExpose<{
-    reload(): Promise<void>
+    reload(): Promise<void>,
+    moveStartPointerToNewest(): Promise<void>,
+    removeStartPointer(): void
 }>({
-    reload: () => reloadHistory()
+    reload: () => reloadHistory(),
+    moveStartPointerToNewest,
+    removeStartPointer,
 })
 </script>
 
 <template>
-    <VList v-if="historyFetchError == undefined && historyLoaded && history.length > 0">
+    <VList v-if="fetchError == undefined && history.length > 0">
         <VInfiniteScroll
             mode="manual"
             side="end"
-            @load="loadScroller"
+            @load="loadNextHistory"
         >
             <template
                 v-for="(visualisationDefinition, index) in history"
@@ -167,31 +260,31 @@ defineExpose<{
             </template>
 
             <template #load-more="{ props }">
-                <VBtn v-if="!lastPage" v-bind="props">
-                    {{ t('common.button.showMore') }}
+                <VBtn v-bind="props">
+                    {{ t('trafficViewer.recordHistory.list.button.loadMore') }}
                 </VBtn>
             </template>
         </VInfiniteScroll>
     </VList>
 
     <VMissingDataIndicator
-        v-else-if="historyFetchError === TrafficFetchErrorType.NoActiveTrafficRecording"
+        v-else-if="fetchError === TrafficFetchErrorType.NoActiveTrafficRecording"
         icon="mdi-alert-circle-outline"
         color="error"
-        :title="t('trafficViewer.recordHistory.list.noActiveTrafficRecording', { catalogName: dataPointer.catalogName })"
+        :title="t('trafficViewer.recordHistory.list.info.noActiveTrafficRecording', { catalogName: dataPointer.catalogName })"
     />
 
     <VMissingDataIndicator
-        v-else-if="historyFetchError === TrafficFetchErrorType.IndexCreating"
+        v-else-if="fetchError === TrafficFetchErrorType.IndexCreating"
         icon="mdi-information-outline"
         color="warning"
-        :title="t('trafficViewer.recordHistory.list.indexCreating', { catalogName: dataPointer.catalogName })"
+        :title="t('trafficViewer.recordHistory.list.info.indexCreating', { catalogName: dataPointer.catalogName })"
     />
 
     <VMissingDataIndicator
         v-else
         icon="mdi-record-circle-outline"
-        :title="t('trafficViewer.recordHistory.list.noRecords', { catalogName: dataPointer.catalogName })"
+        :title="t('trafficViewer.recordHistory.list.info.noRecords', { catalogName: dataPointer.catalogName })"
     />
 </template>
 

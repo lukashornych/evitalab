@@ -56,23 +56,23 @@ export class QueryContainerVisualiser extends TrafficRecordVisualiser<QueryConta
         defaultMetadata.push(new MetadataItem(
             undefined, // don't need to reference it
             'mdi-counter',
-            i18n.global.t('trafficViewer.recordHistory.record.type.query.metadata.item.totalRecordCount.tooltip'),
-            i18n.global.t(
-                'trafficViewer.recordHistory.record.type.query.metadata.item.totalRecordCount.value',
-                // @ts-ignore
-                trafficRecord.totalRecordCount,
-                { named: { count: formatCount(trafficRecord.totalRecordCount) } }
-            )
-        ))
-        defaultMetadata.push(new MetadataItem(
-            undefined, // don't need to reference it
-            'mdi-identifier',
             i18n.global.t('trafficViewer.recordHistory.record.type.query.metadata.item.primaryKeys.tooltip'),
             i18n.global.t(
                 'trafficViewer.recordHistory.record.type.query.metadata.item.primaryKeys.value',
                 // @ts-ignore
                 trafficRecord.primaryKeys.size,
                 { named: { count: formatCount(trafficRecord.primaryKeys.size) } }
+            )
+        ))
+        defaultMetadata.push(new MetadataItem(
+            undefined, // don't need to reference it
+            'mdi-counter',
+            i18n.global.t('trafficViewer.recordHistory.record.type.query.metadata.item.totalRecordCount.tooltip'),
+            i18n.global.t(
+                'trafficViewer.recordHistory.record.type.query.metadata.item.totalRecordCount.value',
+                // @ts-ignore
+                trafficRecord.totalRecordCount,
+                { named: { count: formatCount(trafficRecord.totalRecordCount) } }
             )
         ))
 

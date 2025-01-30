@@ -79,9 +79,10 @@ export class TrafficViewerService {
 
     async getRecordHistoryList(dataPointer: TrafficRecordHistoryDataPointer,
                                captureRequest: TrafficRecordingCaptureRequest,
-                               limit: number): Promise<Immutable.List<TrafficRecord>> {
+                               limit: number,
+                               reverse: boolean = false): Promise<Immutable.List<TrafficRecord>> {
         const driver: EvitaDBDriver = await this.connectionService.getDriver(dataPointer.connection)
-        return await driver.getTrafficRecordHistoryList(dataPointer.connection, dataPointer.catalogName, captureRequest, limit)
+        return await driver.getTrafficRecordHistoryList(dataPointer.connection, dataPointer.catalogName, captureRequest, limit, reverse)
     }
 
     processRecords(dataPointer: TrafficRecordHistoryDataPointer, records: TrafficRecord[]): Immutable.List<TrafficRecordVisualisationDefinition> {

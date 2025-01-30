@@ -1441,8 +1441,15 @@
     },
     "recordHistory": {
       "title": "Active traffic recording",
+      "notification": {
+        "couldNotLoadRecords": "Could not load traffic records: {reason}",
+        "couldNotLoadLatestRecording": "Could not load latest traffic record: {reason}"
+      },
       "button": {
-        "reloadRecordHistory": "Reload record history"
+        "reloadRecordHistory": "Reload record history",
+        "moveStartPointerToNewest": "Load only records newer than now",
+        "removeStartPointer": "Load entire record history",
+        "modifyStartPointer": "Change start of loaded record history"
       },
       "filter": {
         "label": "Filter",
@@ -1507,9 +1514,17 @@
         }
       },
       "list": {
-        "noActiveTrafficRecording": "There is no active traffic recording for the {catalogName} catalog. You need to either enable traffic recording on server options or start recording on demand in traffic recordings.",
-        "indexCreating": "Index is being created for the active traffic recording for the {catalogName} catalog. Please wait and reload history in a few moments.",
-        "noRecords": "There are no traffic records for defined filter."
+        "info": {
+          "noActiveTrafficRecording": "There is no active traffic recording for the {catalogName} catalog. You need to either enable traffic recording on server options or start recording on demand in traffic recordings.",
+          "indexCreating": "Index is being created for the active traffic recording for the {catalogName} catalog. Please wait and reload history in a few moments.",
+          "noRecords": "There are no traffic records for defined filter."
+        },
+        "button": {
+          "loadMore": "Load more"
+        },
+        "notification": {
+          "noNewerRecords": "No newer records exist."
+        }
       },
       "record": {
         "type": {
@@ -1602,8 +1617,14 @@
             "label": "Source query statistics",
             "metadata": {
               "item": {
-                "returnedRecordCount": "Returned record count",
-                "totalRecordCount": "Total record count"
+                "returnedRecordCount": {
+                  "tooltip": "Returned record count",
+                  "value": "no records returned | 1 record returned | {count} records returned"
+                },
+                "totalRecordCount": {
+                  "tooltip": "Total record count",
+                  "value": "no records | 1 record total | {count} records total"
+                }
               }
             }
           },
