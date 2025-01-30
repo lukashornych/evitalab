@@ -285,6 +285,12 @@
     "schemaViewer": {
       "_title": "Schema viewer",
       "shareTab": "Share tab"
+    },
+    "trafficRecordHistoryViewer": {
+      "_title": "Traffic record history viewer",
+      "shareTab": "Share tab",
+      "reloadRecordHistory": "Reload record history",
+      "moveStartPointer": "Load only records newer than now"
     }
   },
   "explorer": {
