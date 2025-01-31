@@ -26,6 +26,7 @@ import { TrafficRecordHistoryCriteria } from '@/modules/traffic-viewer/model/Tra
 import RecordHistoryFilter from '@/modules/traffic-viewer/components/RecordHistoryFilter.vue'
 import { provideHistoryCriteria } from '@/modules/traffic-viewer/components/dependencies'
 import StartPointerButton from '@/modules/traffic-viewer/components/StartPointerButton.vue'
+import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
 
 const keymap: Keymap = useKeymap()
 const { t } = useI18n()
@@ -99,10 +100,14 @@ onBeforeMount(() => {
 onMounted(() => {
     // register viewer specific keyboard shortcuts
     keymap.bind(Command.TrafficRecordHistoryViewer_ShareTab, props.id, () => shareTabButtonRef.value?.share())
+    keymap.bind(Command.TrafficRecordHistoryViewer_ReloadRecordHistory, props.id, async () => await reloadHistoryList())
+    keymap.bind(Command.TrafficRecordHistoryViewer_MoveStartPointer, props.id, async () => await moveStartPointerToNewest())
 })
 onUnmounted(() => {
     // unregister console specific keyboard shortcuts
     keymap.unbind(Command.TrafficRecordHistoryViewer_ShareTab, props.id)
+    keymap.unbind(Command.TrafficRecordHistoryViewer_ReloadRecordHistory, props.id)
+    keymap.unbind(Command.TrafficRecordHistoryViewer_MoveStartPointer, props.id)
 })
 
 async function moveStartPointerToNewest(): Promise<void> {
@@ -150,9 +155,9 @@ async function reloadHistoryList(): Promise<void> {
                 <VBtn icon density="compact" :loading="historyListLoading" @click="reloadHistoryList">
                     <!--            todo lho new data indicator-->
                     <VIcon>mdi-refresh</VIcon>
-                    <VTooltip activator="parent">
+                    <VActionTooltip activator="parent" :command="Command.TrafficRecordHistoryViewer_ReloadRecordHistory">
                         {{ t('trafficViewer.recordHistory.button.reloadRecordHistory') }}
-                    </VTooltip>
+                    </VActionTooltip>
                 </VBtn>
             </template>
 

@@ -5,6 +5,8 @@
  */
 
 import { useI18n } from 'vue-i18n'
+import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
+import { Command } from '@/modules/keymap/model/Command'
 
 const { t } = useI18n()
 
@@ -30,9 +32,9 @@ function removeStartPointer(): void {
     <template v-if="!active">
         <VBtn icon :loading="loading" density="compact" @click="moveStartPointerToNewest">
             <VIcon>mdi-arrow-expand-down</VIcon>
-            <VTooltip activator="parent">
+            <VActionTooltip activator="parent" :command="Command.TrafficRecordHistoryViewer_MoveStartPointer">
                 {{ t('trafficViewer.recordHistory.button.moveStartPointerToNewest') }}
-            </VTooltip>
+            </VActionTooltip>
         </VBtn>
     </template>
     <template v-else>
@@ -42,9 +44,9 @@ function removeStartPointer(): void {
                     <VBadge color="success" dot>
                         <VIcon>mdi-arrow-expand-down</VIcon>
                     </VBadge>
-                    <VTooltip activator="parent">
+                    <VActionTooltip activator="parent" :command="Command.TrafficRecordHistoryViewer_MoveStartPointer">
                         {{ t('trafficViewer.recordHistory.button.modifyStartPointer') }}
-                    </VTooltip>
+                    </VActionTooltip>
                 </VBtn>
             </template>
             <template #default>
