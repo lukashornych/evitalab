@@ -108,8 +108,6 @@ const trafficRecordingCaptureRequest = computed<TrafficRecordingCaptureRequest>(
 async function loadNextHistory({ done }: { done: (status: InfiniteScrollStatus) => void }): Promise<void> {
     try {
         const fetchedRecords: Immutable.List<TrafficRecord> = await fetchRecords()
-        // todo lho remove
-        console.log('next', fetchedRecords.toArray())
         fetchError.value = undefined
 
         if (fetchedRecords.size === 0) {
@@ -136,8 +134,6 @@ async function reloadHistory(): Promise<void> {
 
     try {
         const fetchedRecords: Immutable.List<TrafficRecord> = await fetchRecords()
-        // todo lho remove
-        console.log('new', trafficRecordingCaptureRequest.value, fetchedRecords.toArray())
         if (fetchedRecords.size === 0) {
             return
         }
@@ -204,8 +200,6 @@ async function moveStartPointerToNewest(): Promise<void> {
             1,
             true
         )
-        // todo lho remove
-        console.log('latest', latestRecords.toArray())
         if (latestRecords.size === 0) {
             startPointer.value = undefined
             emit('update:startPointerActive', false)

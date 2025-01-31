@@ -143,6 +143,7 @@ async function reloadHistoryList(): Promise<void> {
                     :tab-params="params"
                     :tab-data="currentData"
                     :disabled="!params.dataPointer.connection.preconfigured"
+                    :command="Command.TrafficRecordHistoryViewer_ShareTab"
                 />
 
                 <StartPointerButton
