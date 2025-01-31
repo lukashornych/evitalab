@@ -35,9 +35,9 @@ class StartRecordsPointer {
     readonly sinceSessionSequenceId: bigint
     readonly sinceRecordSessionOffset: number
 
-    constructor(sinceSessionSequenceId: bigint, sinceRecordSessionOffset: number) {
+    constructor(sinceSessionSequenceId: bigint) {
         this.sinceSessionSequenceId = sinceSessionSequenceId
-        this.sinceRecordSessionOffset = sinceRecordSessionOffset
+        this.sinceRecordSessionOffset = 0
     }
 }
 
@@ -211,11 +211,7 @@ async function moveStartPointerToNewest(): Promise<void> {
             emit('update:startPointerActive', false)
         } else {
             const latestRecord: TrafficRecord = latestRecords.get(0)!
-            if (latestRecord.recordSessionOffset < (latestRecord.sessionRecordsCount - 1)) {
-                startPointer.value = new StartRecordsPointer(latestRecord.sessionSequenceOrder, latestRecord.recordSessionOffset + 1)
-            } else {
-                startPointer.value = new StartRecordsPointer(latestRecord.sessionSequenceOrder + 1n, 0)
-            }
+            startPointer.value = new StartRecordsPointer(latestRecord.sessionSequenceOrder + 1n)
             emit('update:startPointerActive', true)
         }
     } catch (e: any) {
