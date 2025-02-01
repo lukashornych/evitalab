@@ -1398,11 +1398,10 @@
           },
           "maxDurationInMilliseconds": {
             "label": "Maximum duration",
-            "hint": "The duration of the recording in milliseconds, after this time the recording will be stopped automatically.",
-            "unit": "ms",
+            "hint": "The duration of the recording, after this time the recording will be stopped automatically. Use combination of h, m, s, or ms units.",
             "validations": {
-              "notNumber": "Maximum duration must be integer number.",
-              "outOfRange": "Maximum duration must be positive number."
+              "notDuration": "Maximum duration must be duration string.",
+              "outOfRange": "Maximum duration must be positive number and less than 2^63-1 in milliseconds."
             }
           },
           "exportFile": {
@@ -1411,20 +1410,26 @@
           },
           "maxFileSizeInBytes": {
             "label": "Maximum file size",
-            "hint": "The size of the recording in bytes, after this size the recording will be stopped automatically.",
+            "hint": {
+              "default": "The size of the recording in bytes, after this size the recording will be stopped automatically. You can use k, M, G, Ki, Mi, or Gi unit prefix.",
+              "rounded": "The size of the recording will be rounded to full bytes."
+            },
             "unit": "bytes",
             "validations": {
-              "notNumber": "Maximum file size must be integer number.",
-              "outOfRange": "Maximum file size must be positive number."
+              "notByteSize": "Maximum file size must be byte size.",
+              "outOfRange": "Maximum file size must be positive number and less than 2^63-1."
             }
           },
           "chunkFileSizeInBytes": {
             "label": "Chunk file size",
-            "hint": "The size of the chunk file in bytes. Individual files in the export file will be approximately this size.",
+            "hint": {
+              "default": "The size of the chunk file in bytes. Individual files in the export file will be approximately this size. You can use k, M, G, Ki, Mi, or Gi unit prefix.",
+              "rounded": "The size of the chunk file will be rounded to full bytes."
+            },
             "unit": "bytes",
             "validations": {
-              "notNumber": "Chunk file size must be integer number.",
-              "outOfRange": "Chunk file size must be positive number."
+              "notByteSize": "Chunk file size must be byte size.",
+              "outOfRange": "Chunk file size must be positive number and less than 2^63-1."
             }
           }
         },
@@ -1561,7 +1566,7 @@
                     "success": "Record finished status",
                     "error": "Record finished status: {error}"
                   },
-                  "status":{
+                  "status": {
                     "success": "Success",
                     "error": "Error"
                   }

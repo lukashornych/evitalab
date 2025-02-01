@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { Connection } from '@/modules/connection/model/Connection'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
 import VFormDialog from '@/modules/base/component/VFormDialog.vue'
 import { TrafficViewerService, useTrafficViewerService } from '@/modules/traffic-viewer/service/TrafficViewerService'
 import { TaskStatus } from '@/modules/connection/model/task/TaskStatus'
 import Immutable from 'immutable'
 import { Catalog } from '@/modules/connection/model/Catalog'
+import {
+    int64MaxValue,
+    parseHumanByteSizeToBigInt
+} from '@/utils/number'
+import { parseHumanDurationToMs } from '@/utils/duration'
 
 const trafficViewerService: TrafficViewerService = useTrafficViewerService()
 const toaster: Toaster = useToaster()
@@ -47,7 +52,27 @@ watch(
     }
 )
 const maxFileSizeInBytes = ref<string | undefined>(undefined)
+const maxFileSizeInBytesRounded = computed<boolean>(() => {
+    if (maxFileSizeInBytes.value == undefined || maxFileSizeInBytes.value.trim().length === 0) {
+        return false
+    }
+    try {
+        return parseHumanByteSizeToBigInt(maxFileSizeInBytes.value)[1]
+    } catch (e) {
+        return false
+    }
+})
 const chunkFileSizeInBytes = ref<string | undefined>(undefined)
+const chunkFileSizeInBytesRounded = computed<boolean>(() => {
+    if (chunkFileSizeInBytes.value == undefined || chunkFileSizeInBytes.value.trim().length === 0) {
+        return false
+    }
+    try {
+        return parseHumanByteSizeToBigInt(chunkFileSizeInBytes.value)[1]
+    } catch (e) {
+        return false
+    }
+})
 
 const catalogNameRules = [
     (value: string): any => {
@@ -80,13 +105,14 @@ const maxDurationInMillisecondsRules = [
         if (value == undefined || value === '') {
             return true
         }
-        let number: bigint
+
+        let duration: bigint
         try {
-            number = BigInt(value)
+            duration = parseHumanDurationToMs(value.trim())
         } catch (e) {
-            return t('trafficViewer.recordings.startRecording.form.maxDurationInMilliseconds.validations.notNumber')
+            return t('trafficViewer.recordings.startRecording.form.maxDurationInMilliseconds.validations.notDuration')
         }
-        if (number < 0) {
+        if (duration < 0 || duration > int64MaxValue) {
             return t('trafficViewer.recordings.startRecording.form.maxDurationInMilliseconds.validations.outOfRange')
         }
         return true
@@ -102,11 +128,11 @@ const maxFileSizeInBytesRules = [
         }
         let number: bigint
         try {
-            number = BigInt(value)
+            number = parseHumanByteSizeToBigInt(value)[0]
         } catch (e) {
-            return t('trafficViewer.recordings.startRecording.form.maxFileSizeInBytes.validations.notNumber')
+            return t('trafficViewer.recordings.startRecording.form.maxFileSizeInBytes.validations.notByteSize')
         }
-        if (number < 0) {
+        if (number < 0 || number > int64MaxValue) {
             return t('trafficViewer.recordings.startRecording.form.maxFileSizeInBytes.validations.outOfRange')
         }
         return true
@@ -122,11 +148,11 @@ const chunkFileSizeInBytesRules = [
         }
         let number: bigint
         try {
-            number = BigInt(value)
+            number = parseHumanByteSizeToBigInt(value)[0]
         } catch (e) {
-            return t('trafficViewer.recordings.startRecording.form.chunkFileSizeInBytes.validations.notNumber')
+            return t('trafficViewer.recordings.startRecording.form.chunkFileSizeInBytes.validations.notByteSize')
         }
-        if (number < 0) {
+        if (number < 0 || number > int64MaxValue) {
             return t('trafficViewer.recordings.startRecording.form.chunkFileSizeInBytes.validations.outOfRange')
         }
         return true
@@ -165,14 +191,14 @@ async function startRecording(): Promise<boolean> {
             catalogName.value!,
             Number(samplingRate.value),
             (maxDurationInMilliseconds.value != undefined && (maxDurationInMilliseconds.value as string).trim().length > 0)
-                ? BigInt(maxDurationInMilliseconds.value)
+                ? parseHumanDurationToMs(maxDurationInMilliseconds.value.trim())
                 : undefined,
             exportFile.value,
             (exportFile.value && maxFileSizeInBytes.value != undefined && (maxFileSizeInBytes.value as string).trim().length > 0)
-                ? BigInt(maxFileSizeInBytes.value)
+                ? parseHumanByteSizeToBigInt(maxFileSizeInBytes.value.trim())[0]
                 : undefined,
             (exportFile.value && chunkFileSizeInBytes.value != undefined && (chunkFileSizeInBytes.value as string).trim().length > 0)
-                ? BigInt(chunkFileSizeInBytes.value)
+                ? parseHumanByteSizeToBigInt(chunkFileSizeInBytes.value.trim())[0]
                 : undefined
         )
         toaster.success(t('trafficViewer.recordings.startRecording.notification.recordingStarted'))
@@ -228,7 +254,6 @@ async function startRecording(): Promise<boolean> {
                 :label="t('trafficViewer.recordings.startRecording.form.maxDurationInMilliseconds.label')"
                 :hint="t('trafficViewer.recordings.startRecording.form.maxDurationInMilliseconds.hint')"
                 clearable
-                :suffix="t('trafficViewer.recordings.startRecording.form.maxDurationInMilliseconds.unit')"
                 :rules="maxDurationInMillisecondsRules"
             />
             <VCheckbox
@@ -240,7 +265,7 @@ async function startRecording(): Promise<boolean> {
                 v-show="exportFile"
                 v-model="maxFileSizeInBytes"
                 :label="t('trafficViewer.recordings.startRecording.form.maxFileSizeInBytes.label')"
-                :hint="t('trafficViewer.recordings.startRecording.form.maxFileSizeInBytes.hint')"
+                :hint="maxFileSizeInBytesRounded ? t('trafficViewer.recordings.startRecording.form.maxFileSizeInBytes.hint.rounded') : t('trafficViewer.recordings.startRecording.form.maxFileSizeInBytes.hint.default')"
                 clearable
                 :suffix="t('trafficViewer.recordings.startRecording.form.maxFileSizeInBytes.unit')"
                 :rules="maxFileSizeInBytesRules"
@@ -249,7 +274,7 @@ async function startRecording(): Promise<boolean> {
                 v-show="exportFile"
                 v-model="chunkFileSizeInBytes"
                 :label="t('trafficViewer.recordings.startRecording.form.chunkFileSizeInBytes.label')"
-                :hint="t('trafficViewer.recordings.startRecording.form.chunkFileSizeInBytes.hint')"
+                :hint="chunkFileSizeInBytesRounded ? t('trafficViewer.recordings.startRecording.form.chunkFileSizeInBytes.hint.rounded') : t('trafficViewer.recordings.startRecording.form.chunkFileSizeInBytes.hint.default')"
                 clearable
                 :suffix="t('trafficViewer.recordings.startRecording.form.chunkFileSizeInBytes.unit')"
                 :rules="chunkFileSizeInBytesRules"
