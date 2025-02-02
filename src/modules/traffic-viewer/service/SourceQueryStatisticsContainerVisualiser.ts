@@ -3,7 +3,7 @@ import { TrafficRecordVisualiser } from '@/modules/traffic-viewer/service/Traffi
 import { TrafficRecordVisualisationContext } from '../model/TrafficRecordVisualisationContext'
 import {
     MetadataGroup,
-    MetadataItem,
+    MetadataItem, metadataItemFinishedStatusIdentifier,
     TrafficRecordVisualisationDefinition
 } from '../model/TrafficRecordVisualisationDefinition'
 import { SourceQueryStatisticsContainer } from '@/modules/connection/model/traffic/SourceQueryStatisticsContainer'
@@ -28,16 +28,24 @@ export class SourceQueryStatisticsContainerVisualiser extends TrafficRecordVisua
         }
 
         const defaultMetadata: MetadataGroup = visualisedSourceQueryRecord.defaultMetadata!
-        const newMergedDefaultMetadata: MetadataItem[] = defaultMetadata.items.filter(flag => flag.identifier !== 'noStatistics')
-        newMergedDefaultMetadata.push(...this.constructMetadata(trafficRecord))
+        const originalFinishedStatus: MetadataItem | undefined = defaultMetadata.items.find(item => item.identifier === metadataItemFinishedStatusIdentifier)
+        const newMergedDefaultMetadata: MetadataItem[] = defaultMetadata.items.filter(item =>
+            item.identifier !== metadataItemFinishedStatusIdentifier &&
+            item.identifier !== 'noStatistics')
+        newMergedDefaultMetadata.push(...this.constructMetadata(trafficRecord, originalFinishedStatus))
 
         defaultMetadata.items = newMergedDefaultMetadata
     }
 
-    private constructMetadata(trafficRecord: SourceQueryStatisticsContainer): MetadataItem[] {
+    private constructMetadata(trafficRecord: SourceQueryStatisticsContainer,
+                              originalFinishedStatus: MetadataItem | undefined): MetadataItem[] {
         const defaultMetadata: MetadataItem[] = []
 
-        defaultMetadata.push(MetadataItem.finishedStatus(trafficRecord.finishedWithError))
+        const finishedWithError: string = [originalFinishedStatus, trafficRecord.finishedWithError]
+            .filter(status => status != undefined)
+            .join('; ')
+
+        defaultMetadata.push(MetadataItem.finishedStatus(finishedWithError.length > 0 ? finishedWithError : undefined))
         defaultMetadata.push(MetadataItem.duration(trafficRecord.duration, [30, 60]))
         defaultMetadata.push(MetadataItem.ioFetchedSizeBytes(trafficRecord.ioFetchedSizeBytes))
         defaultMetadata.push(MetadataItem.ioFetchCount(trafficRecord.ioFetchCount))

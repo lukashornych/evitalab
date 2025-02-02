@@ -45,6 +45,12 @@ export class TrafficRecordVisualisationDefinition {
     }
 }
 
+export const metadataItemCreatedIdentifier: string = 'created'
+export const metadataItemDurationIdentifier: string = 'duration'
+export const metadataItemIoFetchedSizeBytesIdentifier: string = 'ioFetchedSizeBytes'
+export const metadataItemIoFetchCountIdentifier: string = 'ioFetchCount'
+export const metadataItemFinishedStatusIdentifier: string = 'finishedStatus'
+
 export class MetadataItem {
     readonly identifier: string | undefined
     readonly icon: string
@@ -72,7 +78,7 @@ export class MetadataItem {
 
     static created(created: OffsetDateTime): MetadataItem {
         return new MetadataItem(
-            'created',
+            metadataItemCreatedIdentifier,
             'mdi-clock-outline',
             i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.created.tooltip'),
             created.getPrettyPrintableString(),
@@ -101,7 +107,7 @@ export class MetadataItem {
         }
 
         return new MetadataItem(
-            'duration',
+            metadataItemDurationIdentifier,
             'mdi-timer-outline',
             i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.duration'),
             // note: typescript cannot comprehend that there is luxon extensions that overrides it...
@@ -113,7 +119,7 @@ export class MetadataItem {
 
     static ioFetchedSizeBytes(ioFetchedSizeBytes: number): MetadataItem {
         return new MetadataItem(
-            'ioFetchedSizeBytes',
+            metadataItemIoFetchedSizeBytesIdentifier,
             'mdi-download-network-outline',
             i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.ioFetchedSizeBytes.tooltip'),
             i18n.global.t(
@@ -127,7 +133,7 @@ export class MetadataItem {
 
     static ioFetchCount(ioFetchCount: number): MetadataItem {
         return new MetadataItem(
-            'ioFetchedSizeBytes',
+            metadataItemIoFetchCountIdentifier,
             'mdi-download-network-outline',
             i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.ioFetchCount.tooltip'),
             i18n.global.t(
@@ -138,10 +144,9 @@ export class MetadataItem {
     }
 
     static finishedStatus(finishedWithError: string | undefined): MetadataItem {
-        const identifier: string = 'finishedStatus'
         if (finishedWithError == undefined) {
             return new MetadataItem(
-                identifier,
+                metadataItemFinishedStatusIdentifier,
                 'mdi-check',
                 i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.finishedStatus.tooltip.success'),
                 i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.finishedStatus.status.success'),
@@ -149,7 +154,7 @@ export class MetadataItem {
             )
         } else {
             return new MetadataItem(
-                identifier,
+                metadataItemFinishedStatusIdentifier,
                 'mdi-alert-circle-outline',
                 i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.finishedStatus.tooltip.error', { error: finishedWithError }),
                 i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.finishedStatus.status.error'),
