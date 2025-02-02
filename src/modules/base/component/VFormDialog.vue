@@ -9,7 +9,6 @@ import VRejectDialogButton from '@/modules/base/component/VRejectDialogButton.vu
 import VConfirmDialogButton from '@/modules/base/component/VConfirmDialogButton.vue'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 
 const { t } = useI18n()
 
@@ -50,13 +49,12 @@ function cancel(): void {
 }
 
 async function confirm(): Promise<void> {
-    if (form.value == undefined) {
-        throw new UnexpectedError('Missing form reference.')
-    }
-    //@ts-ignore
-    const { valid }: any = await form.value.validate()
-    if (!valid) {
-        return
+    if (form.value != undefined) {
+        //@ts-ignore
+        const { valid }: any = await form.value.validate()
+        if (!valid) {
+            return
+        }
     }
 
     submitting.value = true
