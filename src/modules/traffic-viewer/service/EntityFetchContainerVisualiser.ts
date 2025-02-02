@@ -33,26 +33,30 @@ export class EntityFetchContainerVisualiser extends TrafficRecordVisualiser<Enti
     }
 
     visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: EntityFetchContainer): void {
+        const visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSessionRecord(trafficRecord.sessionId)
+
         const visualisedRecord: TrafficRecordVisualisationDefinition = new TrafficRecordVisualisationDefinition(
             trafficRecord,
             i18n.global.t('trafficViewer.recordHistory.record.type.fetch.title', { primaryKey: trafficRecord.primaryKey }),
             undefined,
-            this.constructMetadata(trafficRecord),
+            this.constructMetadata(trafficRecord, visualisedSessionRecord),
             this.constructActions(ctx, trafficRecord)
         )
 
-        const visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSessionRecord(trafficRecord.sessionId)
         if (visualisedSessionRecord != undefined) {
             visualisedSessionRecord.addChild(visualisedRecord)
             return
         }
-
         ctx.addRootVisualisedRecord(visualisedRecord)
     }
 
-    private constructMetadata(trafficRecord: EntityFetchContainer): MetadataGroup[] {
+    private constructMetadata(trafficRecord: EntityFetchContainer,
+                              visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined): MetadataGroup[] {
         const defaultMetadata: MetadataItem[] = []
 
+        if (visualisedSessionRecord == undefined) {
+            defaultMetadata.push(MetadataItem.sessionId(trafficRecord.sessionId))
+        }
         defaultMetadata.push(MetadataItem.created(trafficRecord.created))
         defaultMetadata.push(MetadataItem.finishedStatus(trafficRecord.finishedWithError))
         defaultMetadata.push(MetadataItem.duration(trafficRecord.duration, [10, 20]))

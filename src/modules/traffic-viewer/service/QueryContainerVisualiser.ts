@@ -37,38 +37,44 @@ export class QueryContainerVisualiser extends TrafficRecordVisualiser<QueryConta
     }
 
     visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: QueryContainer): void {
-        const visualisedRecord: TrafficRecordVisualisationDefinition = new TrafficRecordVisualisationDefinition(
-            trafficRecord,
-            i18n.global.t('trafficViewer.recordHistory.record.type.query.title'),
-            trafficRecord.queryDescription,
-            this.constructMetadata(trafficRecord),
-            this.constructActions(ctx, trafficRecord)
-        )
+        const visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSessionRecord(trafficRecord.sessionId)
 
         const sourceQueryId: string | undefined = trafficRecord.labels
             .find(label => label.name === labelSourceQuery)
             ?.value
+        let visualisedSourceQueryRecord: TrafficRecordVisualisationDefinition | undefined = undefined
         if (sourceQueryId != undefined) {
             const normalizedSourceQueryId: string = sourceQueryId.substring(1, sourceQueryId.length - 1)
-            const visualisedSourceQueryRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSourceQueryRecord(normalizedSourceQueryId)
-            if (visualisedSourceQueryRecord != undefined) {
-                visualisedSourceQueryRecord.addChild(visualisedRecord)
-                return
-            }
+            visualisedSourceQueryRecord = ctx.getVisualisedSourceQueryRecord(normalizedSourceQueryId)
         }
 
-        const visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSessionRecord(trafficRecord.sessionId)
+        const visualisedRecord: TrafficRecordVisualisationDefinition = new TrafficRecordVisualisationDefinition(
+            trafficRecord,
+            i18n.global.t('trafficViewer.recordHistory.record.type.query.title'),
+            trafficRecord.queryDescription,
+            this.constructMetadata(trafficRecord, visualisedSessionRecord, visualisedSourceQueryRecord),
+            this.constructActions(ctx, trafficRecord)
+        )
+
+        if (visualisedSourceQueryRecord != undefined) {
+            visualisedSourceQueryRecord.addChild(visualisedRecord)
+            return
+        }
         if (visualisedSessionRecord != undefined) {
             visualisedSessionRecord.addChild(visualisedRecord)
             return
         }
-
         ctx.addRootVisualisedRecord(visualisedRecord)
     }
 
-    private constructMetadata(trafficRecord: QueryContainer): MetadataGroup[] {
+    private constructMetadata(trafficRecord: QueryContainer,
+                              visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined,
+                              visualisedSourceQueryRecord: TrafficRecordVisualisationDefinition | undefined): MetadataGroup[] {
         const defaultMetadata: MetadataItem[] = []
 
+        if (visualisedSessionRecord == undefined && visualisedSourceQueryRecord == undefined) {
+            defaultMetadata.push(MetadataItem.sessionId(trafficRecord.sessionId))
+        }
         defaultMetadata.push(MetadataItem.created(trafficRecord.created))
         defaultMetadata.push(MetadataItem.finishedStatus(trafficRecord.finishedWithError))
         defaultMetadata.push(MetadataItem.duration(trafficRecord.duration, [30, 60]))

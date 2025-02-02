@@ -1545,7 +1545,12 @@
                 "default": "Default metadata"
               },
               "item": {
-                "sessionId": "Session ID under which the record was created",
+                "sessionId": {
+                  "tooltip": "Session ID under which the record was created",
+                  "notification": {
+                    "copiedToClipboard": "Session ID has been copied to clipboard"
+                  }
+                },
                 "created": {
                   "tooltip": "Record creation time",
                   "notification": {

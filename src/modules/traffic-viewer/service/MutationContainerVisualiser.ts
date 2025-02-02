@@ -20,26 +20,30 @@ export class MutationContainerVisualiser extends TrafficRecordVisualiser<Mutatio
     }
 
     visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: MutationContainer): void {
+        const visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSessionRecord(trafficRecord.sessionId)
+
         const visualisedRecord: TrafficRecordVisualisationDefinition = new TrafficRecordVisualisationDefinition(
             trafficRecord,
             i18n.global.t('trafficViewer.recordHistory.record.type.mutation.title'),
             JSON.stringify(trafficRecord.serializedMutation), // todo lho do better
-            this.constructMetadata(trafficRecord),
+            this.constructMetadata(trafficRecord, visualisedSessionRecord),
             Immutable.List()
         )
 
-        const visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSessionRecord(trafficRecord.sessionId)
         if (visualisedSessionRecord != undefined) {
             visualisedSessionRecord.addChild(visualisedRecord)
             return
         }
-
         ctx.addRootVisualisedRecord(visualisedRecord)
     }
 
-    private constructMetadata(trafficRecord: MutationContainer): MetadataGroup[] {
+    private constructMetadata(trafficRecord: MutationContainer,
+                              visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined): MetadataGroup[] {
         const defaultMetadata: MetadataItem[] = []
 
+        if (visualisedSessionRecord == undefined) {
+            defaultMetadata.push(MetadataItem.sessionId(trafficRecord.sessionId))
+        }
         defaultMetadata.push(MetadataItem.created(trafficRecord.created))
         defaultMetadata.push(MetadataItem.finishedStatus(trafficRecord.finishedWithError))
         defaultMetadata.push(MetadataItem.duration(trafficRecord.duration, [20, 60]))

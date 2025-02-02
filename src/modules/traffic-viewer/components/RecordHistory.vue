@@ -217,7 +217,7 @@ function handleRecordFetchError(e: any): void {
         }
     }
     toaster.error(t(
-        'trafficViewer.recordingHistory.notification.couldNotLoadRecords',
+        'trafficViewer.recordHistory.notification.couldNotLoadRecords',
         { reason: e.message }
     ))
 }

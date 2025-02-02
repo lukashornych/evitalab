@@ -6,6 +6,7 @@ import { TrafficRecord } from '@/modules/connection/model/traffic/TrafficRecord'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { TrafficRecordMetadataItemContext } from '@/modules/traffic-viewer/model/TrafficRecordMetadataItemContext'
 import { formatByteSize, formatCount } from '@/utils/string'
+import { Uuid } from '@/modules/connection/model/data-type/Uuid'
 
 /**
  * Defines how a particular traffic record should be displayed in UI
@@ -45,6 +46,7 @@ export class TrafficRecordVisualisationDefinition {
     }
 }
 
+export const metadataItemSessionIdIdentifier: string = 'sessionId'
 export const metadataItemCreatedIdentifier: string = 'created'
 export const metadataItemDurationIdentifier: string = 'duration'
 export const metadataItemIoFetchedSizeBytesIdentifier: string = 'ioFetchedSizeBytes'
@@ -74,6 +76,24 @@ export class MetadataItem {
         this.severity = severity || MetadataItemSeverity.Info
         this.details = details
         this.onClickCallback = onClickCallback
+    }
+
+    static sessionId(sessionId: Uuid): MetadataItem {
+        return new MetadataItem(
+            metadataItemSessionIdIdentifier,
+            'mdi-file-tree',
+            i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.sessionId.tooltip'),
+            sessionId.toString(),
+            MetadataItemSeverity.Info,
+            undefined,
+            (ctx: TrafficRecordMetadataItemContext): void => {
+                navigator.clipboard.writeText(`${sessionId.toString()}`).then(() => {
+                    ctx.toaster.info(i18n.global.t('trafficViewer.recordHistory.record.type.common.metadata.item.sessionId.notification.copiedToClipboard'))
+                }).catch(() => {
+                    ctx.toaster.error(new UnexpectedError(i18n.global.t('common.notification.failedToCopyToClipboard')))
+                })
+            }
+        )
     }
 
     static created(created: OffsetDateTime): MetadataItem {

@@ -43,6 +43,8 @@ export class SourceQueryContainerVisualiser extends TrafficRecordVisualiser<Sour
     }
 
     visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: SourceQueryContainer): void {
+        const visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSessionRecord(trafficRecord.sessionId)
+
         const queryType: QueryType | undefined = this.resolveQueryType(trafficRecord)
         const visualisedRecord: TrafficRecordVisualisationDefinition = new TrafficRecordVisualisationDefinition(
             trafficRecord,
@@ -51,17 +53,15 @@ export class SourceQueryContainerVisualiser extends TrafficRecordVisualiser<Sour
                 { queryType: queryType || '?' }
             ),
             undefined,
-            this.constructMetadata(trafficRecord),
+            this.constructMetadata(trafficRecord, visualisedSessionRecord),
             this.constructActions(ctx, trafficRecord, queryType)
         )
         ctx.addVisualisedSourceQueryRecord(trafficRecord.sourceQueryId.toString(), visualisedRecord)
 
-        const visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSessionRecord(trafficRecord.sessionId)
         if (visualisedSessionRecord != undefined) {
             visualisedSessionRecord.addChild(visualisedRecord)
             return
         }
-
         ctx.addRootVisualisedRecord(visualisedRecord)
     }
 
@@ -73,9 +73,13 @@ export class SourceQueryContainerVisualiser extends TrafficRecordVisualiser<Sour
         return label.value!.substring(1, label.value!.length - 1) as QueryType
     }
 
-    private constructMetadata(trafficRecord: SourceQueryContainer): MetadataGroup[] {
+    private constructMetadata(trafficRecord: SourceQueryContainer,
+                              visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined): MetadataGroup[] {
         const defaultMetadata: MetadataItem[] = []
 
+        if (visualisedSessionRecord == undefined) {
+            defaultMetadata.push(MetadataItem.sessionId(trafficRecord.sessionId))
+        }
         defaultMetadata.push(MetadataItem.created(trafficRecord.created))
         defaultMetadata.push(new MetadataItem(
             'noStatistics',
