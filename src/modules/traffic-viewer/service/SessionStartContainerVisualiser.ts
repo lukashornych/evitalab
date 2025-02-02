@@ -7,7 +7,6 @@ import {
     MetadataGroup,
     MetadataItem,
     MetadataItemSeverity,
-    TrafficRecordVisualisationControlFlag,
     TrafficRecordVisualisationDefinition
 } from '../model/TrafficRecordVisualisationDefinition'
 import { i18n } from '@/vue-plugins/i18n'
@@ -37,15 +36,16 @@ export class SessionStartContainerVisualiser extends TrafficRecordVisualiser<Ses
         return trafficRecord instanceof SessionStartContainer
     }
 
-    visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: SessionStartContainer): TrafficRecordVisualisationDefinition {
-        return new TrafficRecordVisualisationDefinition(
+    visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: SessionStartContainer): void {
+        const visualisedRecord: TrafficRecordVisualisationDefinition = new TrafficRecordVisualisationDefinition(
             trafficRecord,
             i18n.global.t('trafficViewer.recordHistory.record.type.sessionStart.title'),
             trafficRecord.sessionId.toString(),
             this.constructMetadata(trafficRecord),
-            this.constructActions(ctx, trafficRecord),
-            TrafficRecordVisualisationControlFlag.ParentStart
+            this.constructActions(ctx, trafficRecord)
         )
+        ctx.addVisualisedSessionRecord(trafficRecord.sessionId, visualisedRecord)
+        ctx.addRootVisualisedRecord(visualisedRecord)
     }
 
     private constructMetadata(trafficRecord: SessionStartContainer): MetadataGroup[] {

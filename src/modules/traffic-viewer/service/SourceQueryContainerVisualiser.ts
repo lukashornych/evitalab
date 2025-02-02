@@ -3,10 +3,10 @@ import { SourceQueryContainer } from '@/modules/connection/model/traffic/SourceQ
 import { TrafficRecord } from '@/modules/connection/model/traffic/TrafficRecord'
 import Immutable from 'immutable'
 import {
-    Action, MetadataGroup,
+    Action,
+    MetadataGroup,
     MetadataItem,
     MetadataItemSeverity,
-    TrafficRecordVisualisationControlFlag,
     TrafficRecordVisualisationDefinition
 } from '../model/TrafficRecordVisualisationDefinition'
 import { i18n } from '@/vue-plugins/i18n'
@@ -17,6 +17,8 @@ import { GraphQLInstanceType } from '@/modules/graphql-console/console/model/Gra
 import { GraphQLConsoleTabData } from '@/modules/graphql-console/console/workspace/model/GraphQLConsoleTabData'
 import { Label, labelSourceType } from '@/modules/connection/model/traffic/Label'
 import { TrafficRecordMetadataItemContext } from '@/modules/traffic-viewer/model/TrafficRecordMetadataItemContext'
+import { EvitaQLConsoleTabFactory } from '@/modules/evitaql-console/console/workspace/service/EvitaQLConsoleTabFactory'
+import { EvitaQLConsoleTabData } from '@/modules/evitaql-console/console/workspace/model/EvitaQLConsoleTabData'
 
 /**
  * Visualises the source query container record. Uses statistics from the `SourceQueryStatisticsContainer`.
@@ -25,22 +27,24 @@ export class SourceQueryContainerVisualiser extends TrafficRecordVisualiser<Sour
 
     private readonly workspaceService: WorkspaceService
     private readonly graphQLConsoleTabFactory: GraphQLConsoleTabFactory
+    private readonly evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory
 
     constructor(workspaceService: WorkspaceService,
-                graphQLConsoleTabFactory: GraphQLConsoleTabFactory) {
+                graphQLConsoleTabFactory: GraphQLConsoleTabFactory,
+                evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory) {
         super()
         this.workspaceService = workspaceService
         this.graphQLConsoleTabFactory = graphQLConsoleTabFactory
+        this.evitaQLConsoleTabFactory = evitaQLConsoleTabFactory
     }
 
     canVisualise(trafficRecord: TrafficRecord): boolean {
         return trafficRecord instanceof SourceQueryContainer
     }
 
-    visualise(ctx: TrafficRecordVisualisationContext,
-              trafficRecord: SourceQueryContainer): TrafficRecordVisualisationDefinition {
+    visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: SourceQueryContainer): void {
         const queryType: QueryType | undefined = this.resolveQueryType(trafficRecord)
-        return new TrafficRecordVisualisationDefinition(
+        const visualisedRecord: TrafficRecordVisualisationDefinition = new TrafficRecordVisualisationDefinition(
             trafficRecord,
             i18n.global.t(
                 'trafficViewer.recordHistory.record.type.sourceQuery.title',
@@ -48,9 +52,17 @@ export class SourceQueryContainerVisualiser extends TrafficRecordVisualiser<Sour
             ),
             undefined,
             this.constructMetadata(trafficRecord),
-            this.constructActions(ctx, trafficRecord, queryType),
-            TrafficRecordVisualisationControlFlag.ParentStart
+            this.constructActions(ctx, trafficRecord, queryType)
         )
+        ctx.addVisualisedSourceQueryRecord(trafficRecord.sourceQueryId.toString(), visualisedRecord)
+
+        const visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSessionRecord(trafficRecord.sessionId)
+        if (visualisedSessionRecord != undefined) {
+            visualisedSessionRecord.addChild(visualisedRecord)
+            return
+        }
+
+        ctx.addRootVisualisedRecord(visualisedRecord)
     }
 
     private resolveQueryType(trafficRecord: SourceQueryContainer): QueryType | undefined {
@@ -125,12 +137,22 @@ export class SourceQueryContainerVisualiser extends TrafficRecordVisualiser<Sour
                     )
                 )
             )
+        } else if (queryType === QueryType.Grpc) {
+            queryActionCallback = () => this.workspaceService.createTab(
+                this.evitaQLConsoleTabFactory.createNew(
+                    ctx.dataPointer.connection,
+                    ctx.dataPointer.catalogName,
+                    new EvitaQLConsoleTabData(trafficRecord.sourceQuery)
+                )
+            )
         }
-        actions.push(new Action(
-            i18n.global.t('trafficViewer.recordHistory.record.type.sourceQuery.action.query'),
-            'mdi-play',
-            queryActionCallback
-        ))
+        if (queryActionCallback != undefined) {
+            actions.push(new Action(
+                i18n.global.t('trafficViewer.recordHistory.record.type.sourceQuery.action.query'),
+                'mdi-play',
+                queryActionCallback
+            ))
+        }
 
         return Immutable.List(actions)
     }
@@ -141,5 +163,6 @@ export class SourceQueryContainerVisualiser extends TrafficRecordVisualiser<Sour
  */
 enum QueryType {
     GraphQL = 'GraphQL',
+    Grpc = 'gRPC',
     REST = 'REST'
 }

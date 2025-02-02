@@ -4,7 +4,8 @@ import { TrafficRecord } from '@/modules/connection/model/traffic/TrafficRecord'
 import { TrafficRecordVisualisationContext } from '../model/TrafficRecordVisualisationContext'
 import {
     Action,
-    MetadataGroup, MetadataItem,
+    MetadataGroup,
+    MetadataItem,
     TrafficRecordVisualisationDefinition
 } from '../model/TrafficRecordVisualisationDefinition'
 import { i18n } from '@/vue-plugins/i18n'
@@ -31,14 +32,22 @@ export class EntityFetchContainerVisualiser extends TrafficRecordVisualiser<Enti
         return trafficRecord instanceof EntityFetchContainer
     }
 
-    visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: EntityFetchContainer): TrafficRecordVisualisationDefinition {
-        return new TrafficRecordVisualisationDefinition(
+    visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: EntityFetchContainer): void {
+        const visualisedRecord: TrafficRecordVisualisationDefinition = new TrafficRecordVisualisationDefinition(
             trafficRecord,
             i18n.global.t('trafficViewer.recordHistory.record.type.fetch.title', { primaryKey: trafficRecord.primaryKey }),
             undefined,
             this.constructMetadata(trafficRecord),
             this.constructActions(ctx, trafficRecord)
         )
+
+        const visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSessionRecord(trafficRecord.sessionId)
+        if (visualisedSessionRecord != undefined) {
+            visualisedSessionRecord.addChild(visualisedRecord)
+            return
+        }
+
+        ctx.addRootVisualisedRecord(visualisedRecord)
     }
 
     private constructMetadata(trafficRecord: EntityFetchContainer): MetadataGroup[] {

@@ -22,6 +22,7 @@ import {
 import RecordHistoryItem from '@/modules/traffic-viewer/components/RecordHistoryItem.vue'
 import { convertUserToSystemRecordType } from '@/modules/traffic-viewer/model/UserTrafficRecordType'
 import { Code, ConnectError } from '@connectrpc/connect'
+import { TrafficRecordType } from '@/modules/connection/model/traffic/TrafficRecordType'
 
 // note: this is enum from vuetify, but vuetify doesn't export it
 type InfiniteScrollStatus = 'ok' | 'empty' | 'loading' | 'error';
@@ -87,17 +88,34 @@ watch(startPointer, () => reloadHistory(), { deep: true })
 const nextPagePointer = ref<RecordsPointer>(new RecordsPointer())
 const limit = ref<number>(pageSize)
 
-const trafficRecordingCaptureRequest = computed<TrafficRecordingCaptureRequest>(() => {
+const selectedSystemRecordTypes = computed<Immutable.List<TrafficRecordType> | undefined>(() => {
+    if (props.criteria.types == undefined) {
+        return undefined
+    }
+    return Immutable.List([
+        ...(props.criteria.types.flatMap(userType => convertUserToSystemRecordType(userType)!))
+    ])
+})
+const nextPageRequest = computed<TrafficRecordingCaptureRequest>(() => {
     return new TrafficRecordingCaptureRequest(
         TrafficRecordContent.Body,
         props.criteria.since,
         nextPagePointer.value.sinceSessionSequenceId,
         nextPagePointer.value.sinceRecordSessionOffset,
-        props.criteria.types != undefined
-            ? Immutable.List([
-                ...(props.criteria.types.flatMap(userType => convertUserToSystemRecordType(userType)!))
-            ])
-            : undefined,
+        selectedSystemRecordTypes.value,
+        props.criteria.sessionId,
+        props.criteria.longerThan,
+        props.criteria.fetchingMoreBytesThan,
+        Immutable.List(props.criteria.labels)
+    )
+})
+const lastRecordRequest = computed<TrafficRecordingCaptureRequest>(() => {
+    return new TrafficRecordingCaptureRequest(
+        TrafficRecordContent.Body,
+        props.criteria.since,
+        undefined,
+        undefined,
+        selectedSystemRecordTypes.value,
         props.criteria.sessionId,
         props.criteria.longerThan,
         props.criteria.fetchingMoreBytesThan,
@@ -149,7 +167,7 @@ async function reloadHistory(): Promise<void> {
 async function fetchRecords(): Promise<Immutable.List<TrafficRecord>> {
     return await trafficViewerService.getRecordHistoryList(
         props.dataPointer,
-        trafficRecordingCaptureRequest.value,
+        nextPageRequest.value,
         limit.value
     )
 }
@@ -196,7 +214,7 @@ async function moveStartPointerToNewest(): Promise<void> {
     try {
         const latestRecords: Immutable.List<TrafficRecord> = await trafficViewerService.getRecordHistoryList(
             props.dataPointer,
-            trafficRecordingCaptureRequest.value,
+            lastRecordRequest.value,
             1,
             true
         )

@@ -1,7 +1,9 @@
 import { i18n } from '@/vue-plugins/i18n'
 import { ConnectionService } from '@/modules/connection/service/ConnectionService'
 import { Connection } from '@/modules/connection/model/Connection'
-import { TrafficRecordingsViewerTabDefinition } from '@/modules/traffic-viewer/model/TrafficRecordingsViewerTabDefinition'
+import {
+    TrafficRecordingsViewerTabDefinition
+} from '@/modules/traffic-viewer/model/TrafficRecordingsViewerTabDefinition'
 import { TrafficRecordingsViewerTabParams } from '@/modules/traffic-viewer/model/TrafficRecordingsViewerTabParams'
 import { TabParamsDto } from '@/modules/workspace/tab/model/TabParamsDto'
 import { TrafficRecordingsViewerTabParamsDto } from '@/modules/traffic-viewer/model/TrafficRecordingsViewerTabParamsDto'

@@ -1,5 +1,4 @@
 import Immutable from 'immutable'
-import { Uuid } from '@/modules/connection/model/data-type/Uuid'
 import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateTime'
 import { Duration } from 'luxon'
 import { i18n } from '@/vue-plugins/i18n'
@@ -14,7 +13,6 @@ import { formatByteSize, formatCount } from '@/utils/string'
 export class TrafficRecordVisualisationDefinition {
 
     readonly source: TrafficRecord
-    readonly controlFlag: TrafficRecordVisualisationControlFlag
 
     readonly title: string
     readonly details?: string
@@ -26,10 +24,8 @@ export class TrafficRecordVisualisationDefinition {
                 title: string,
                 details: string | undefined,
                 metadata: MetadataGroup[],
-                actions: Immutable.List<Action>,
-                controlFlag: TrafficRecordVisualisationControlFlag = TrafficRecordVisualisationControlFlag.Basic) {
+                actions: Immutable.List<Action>) {
         this.source = source
-        this.controlFlag = controlFlag
         this.title = title
         this.details = details
         this.metadata = metadata
@@ -47,12 +43,6 @@ export class TrafficRecordVisualisationDefinition {
     get defaultMetadata(): MetadataGroup | undefined {
         return this.metadata.find(group => group.identifier === defaultMetadataGroupIdentifier)
     }
-}
-
-export enum TrafficRecordVisualisationControlFlag {
-    Basic = 'basic',
-    ParentStart = 'parentStart',
-    ParentEnd = 'parentEnd'
 }
 
 export class MetadataItem {

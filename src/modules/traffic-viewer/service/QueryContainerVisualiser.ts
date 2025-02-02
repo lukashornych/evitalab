@@ -3,7 +3,8 @@ import { QueryContainer } from '@/modules/connection/model/traffic/QueryContaine
 import { TrafficRecord } from '@/modules/connection/model/traffic/TrafficRecord'
 import { TrafficRecordVisualisationContext } from '../model/TrafficRecordVisualisationContext'
 import {
-    Action, MetadataGroup,
+    Action,
+    MetadataGroup,
     MetadataItem,
     MetadataItemSeverity,
     TrafficRecordVisualisationDefinition
@@ -14,7 +15,7 @@ import { i18n } from '@/vue-plugins/i18n'
 import Immutable from 'immutable'
 import { EvitaQLConsoleTabData } from '@/modules/evitaql-console/console/workspace/model/EvitaQLConsoleTabData'
 import { TrafficRecordMetadataItemContext } from '@/modules/traffic-viewer/model/TrafficRecordMetadataItemContext'
-import { Label } from '@/modules/connection/model/traffic/Label'
+import { Label, labelSourceQuery } from '@/modules/connection/model/traffic/Label'
 import { formatCount } from '@/utils/string'
 
 /**
@@ -35,14 +36,34 @@ export class QueryContainerVisualiser extends TrafficRecordVisualiser<QueryConta
         return trafficRecord instanceof QueryContainer
     }
 
-    visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: QueryContainer): TrafficRecordVisualisationDefinition {
-        return new TrafficRecordVisualisationDefinition(
+    visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: QueryContainer): void {
+        const visualisedRecord: TrafficRecordVisualisationDefinition = new TrafficRecordVisualisationDefinition(
             trafficRecord,
             i18n.global.t('trafficViewer.recordHistory.record.type.query.title'),
             trafficRecord.queryDescription,
             this.constructMetadata(trafficRecord),
             this.constructActions(ctx, trafficRecord)
         )
+
+        const sourceQueryId: string | undefined = trafficRecord.labels
+            .find(label => label.name === labelSourceQuery)
+            ?.value
+        if (sourceQueryId != undefined) {
+            const normalizedSourceQueryId: string = sourceQueryId.substring(1, sourceQueryId.length - 1)
+            const visualisedSourceQueryRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSourceQueryRecord(normalizedSourceQueryId)
+            if (visualisedSourceQueryRecord != undefined) {
+                visualisedSourceQueryRecord.addChild(visualisedRecord)
+                return
+            }
+        }
+
+        const visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSessionRecord(trafficRecord.sessionId)
+        if (visualisedSessionRecord != undefined) {
+            visualisedSessionRecord.addChild(visualisedRecord)
+            return
+        }
+
+        ctx.addRootVisualisedRecord(visualisedRecord)
     }
 
     private constructMetadata(trafficRecord: QueryContainer): MetadataGroup[] {

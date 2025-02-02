@@ -65,7 +65,8 @@ export class TrafficViewerModuleRegistrar implements ModuleRegistrar {
                 ),
                 new SourceQueryContainerVisualiser(
                     workspaceService,
-                    graphQLConsoleTabFactory
+                    graphQLConsoleTabFactory,
+                    evitaQLConsoleTabFactory
                 ),
                 new SourceQueryStatisticsContainerVisualiser()
             ]))

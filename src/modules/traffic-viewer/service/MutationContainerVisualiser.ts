@@ -19,14 +19,22 @@ export class MutationContainerVisualiser extends TrafficRecordVisualiser<Mutatio
         return trafficRecord instanceof MutationContainer
     }
 
-    visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: MutationContainer): TrafficRecordVisualisationDefinition {
-        return new TrafficRecordVisualisationDefinition(
+    visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: MutationContainer): void {
+        const visualisedRecord: TrafficRecordVisualisationDefinition = new TrafficRecordVisualisationDefinition(
             trafficRecord,
             i18n.global.t('trafficViewer.recordHistory.record.type.mutation.title'),
             JSON.stringify(trafficRecord.serializedMutation), // todo lho do better
             this.constructMetadata(trafficRecord),
             Immutable.List()
         )
+
+        const visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSessionRecord(trafficRecord.sessionId)
+        if (visualisedSessionRecord != undefined) {
+            visualisedSessionRecord.addChild(visualisedRecord)
+            return
+        }
+
+        ctx.addRootVisualisedRecord(visualisedRecord)
     }
 
     private constructMetadata(trafficRecord: MutationContainer): MetadataGroup[] {

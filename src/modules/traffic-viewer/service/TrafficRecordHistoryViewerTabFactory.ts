@@ -3,13 +3,19 @@ import { mandatoryInject } from '@/utils/reactivity'
 import { ConnectionService } from '@/modules/connection/service/ConnectionService'
 import { Connection } from '@/modules/connection/model/Connection'
 import { TrafficRecordHistoryViewerTabData } from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabData'
-import { TrafficRecordHistoryViewerTabDefinition } from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabDefinition'
+import {
+    TrafficRecordHistoryViewerTabDefinition
+} from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabDefinition'
 import { TabParamsDto } from '@/modules/workspace/tab/model/TabParamsDto'
 import { TabDataDto } from '@/modules/workspace/tab/model/TabDataDto'
 import { TrafficRecordHistoryViewerTabParams } from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabParams'
-import { TrafficRecordHistoryViewerTabParamsDto } from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabParamsDto'
+import {
+    TrafficRecordHistoryViewerTabParamsDto
+} from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabParamsDto'
 import { TrafficRecordHistoryDataPointer } from '@/modules/traffic-viewer/model/TrafficRecordHistoryDataPointer'
-import { TrafficRecordHistoryViewerTabDataDto } from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabDataDto'
+import {
+    TrafficRecordHistoryViewerTabDataDto
+} from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabDataDto'
 import { Uuid } from '@/modules/connection/model/data-type/Uuid'
 import { Duration } from 'luxon'
 import { OffsetDateTime, Timestamp } from '@/modules/connection/model/data-type/OffsetDateTime'

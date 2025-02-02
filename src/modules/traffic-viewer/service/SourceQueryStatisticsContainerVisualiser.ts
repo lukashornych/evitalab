@@ -4,14 +4,10 @@ import { TrafficRecordVisualisationContext } from '../model/TrafficRecordVisuali
 import {
     MetadataGroup,
     MetadataItem,
-    TrafficRecordVisualisationControlFlag,
     TrafficRecordVisualisationDefinition
 } from '../model/TrafficRecordVisualisationDefinition'
 import { SourceQueryStatisticsContainer } from '@/modules/connection/model/traffic/SourceQueryStatisticsContainer'
 import { i18n } from '@/vue-plugins/i18n'
-import Immutable from 'immutable'
-import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
-import { SourceQueryContainer } from '@/modules/connection/model/traffic/SourceQueryContainer'
 import { formatCount } from '@/utils/string'
 
 /**
@@ -24,37 +20,21 @@ export class SourceQueryStatisticsContainerVisualiser extends TrafficRecordVisua
         return trafficRecord instanceof SourceQueryStatisticsContainer
     }
 
-    visualise(ctx: TrafficRecordVisualisationContext,
-              trafficRecord: SourceQueryStatisticsContainer): TrafficRecordVisualisationDefinition {
-        return new TrafficRecordVisualisationDefinition(
-            trafficRecord,
-            'SourceQueryStatisticsContainer', // will not be visible
-            undefined,
-            this.constructMetadata(trafficRecord),
-            Immutable.List(),
-            TrafficRecordVisualisationControlFlag.ParentEnd
-        )
-    }
-
-    mergeDefinitions(ctx: TrafficRecordVisualisationContext,
-                     targetVisualisationDefinition: TrafficRecordVisualisationDefinition,
-                     visualisationDefinitionToMerge: TrafficRecordVisualisationDefinition): void {
-        if (!(targetVisualisationDefinition.source instanceof SourceQueryContainer) ||
-            !(visualisationDefinitionToMerge.source instanceof SourceQueryStatisticsContainer)) {
-            throw new UnexpectedError(
-                `Only 'SourceQueryContainer' target traffic record is supported for merge with 'SourceQueryStatisticsContainer'` +
-                ` but target was '${targetVisualisationDefinition.source.type}' and source was '${visualisationDefinitionToMerge.source.type}'.`
-            )
+    visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: SourceQueryStatisticsContainer): void {
+        const visualisedSourceQueryRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSourceQueryRecord(trafficRecord.sourceQueryId.toString())
+        if (visualisedSourceQueryRecord == undefined) {
+            console.warn(`No 'SourceQueryContainer' fount for source query ID '${trafficRecord.sourceQueryId.toString()}'. Skipping 'SourceQueryStatisticsContainer'...`)
+            return
         }
 
-        const defaultMetadata: MetadataGroup = targetVisualisationDefinition.defaultMetadata!
+        const defaultMetadata: MetadataGroup = visualisedSourceQueryRecord.defaultMetadata!
         const newMergedDefaultMetadata: MetadataItem[] = defaultMetadata.items.filter(flag => flag.identifier !== 'noStatistics')
-        newMergedDefaultMetadata.push(...visualisationDefinitionToMerge.defaultMetadata!.items)
+        newMergedDefaultMetadata.push(...this.constructMetadata(trafficRecord))
 
         defaultMetadata.items = newMergedDefaultMetadata
     }
 
-    private constructMetadata(trafficRecord: SourceQueryStatisticsContainer): MetadataGroup[] {
+    private constructMetadata(trafficRecord: SourceQueryStatisticsContainer): MetadataItem[] {
         const defaultMetadata: MetadataItem[] = []
 
         defaultMetadata.push(MetadataItem.finishedStatus(trafficRecord.finishedWithError))
@@ -85,7 +65,7 @@ export class SourceQueryStatisticsContainerVisualiser extends TrafficRecordVisua
             )
         ))
 
-        return [MetadataGroup.default(defaultMetadata)]
+        return defaultMetadata
     }
 
 }

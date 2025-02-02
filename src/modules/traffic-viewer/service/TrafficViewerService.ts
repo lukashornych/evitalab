@@ -11,7 +11,9 @@ import Immutable from 'immutable'
 import { Catalog } from '@/modules/connection/model/Catalog'
 import { TrafficRecordingCaptureRequest } from '@/modules/connection/model/traffic/TrafficRecordingCaptureRequest'
 import { TrafficRecord } from '@/modules/connection/model/traffic/TrafficRecord'
-import { TrafficRecordHistoryVisualisationProcessor } from '@/modules/traffic-viewer/service/TrafficRecordHistoryVisualisationProcessor'
+import {
+    TrafficRecordHistoryVisualisationProcessor
+} from '@/modules/traffic-viewer/service/TrafficRecordHistoryVisualisationProcessor'
 import { TrafficRecordVisualisationContext } from '@/modules/traffic-viewer/model/TrafficRecordVisualisationContext'
 import { TrafficRecordHistoryDataPointer } from '@/modules/traffic-viewer/model/TrafficRecordHistoryDataPointer'
 import {
@@ -86,10 +88,9 @@ export class TrafficViewerService {
     }
 
     processRecords(dataPointer: TrafficRecordHistoryDataPointer, records: TrafficRecord[]): Immutable.List<TrafficRecordVisualisationDefinition> {
-        return this.visualisationProcessor.process(
-            new TrafficRecordVisualisationContext(dataPointer),
-            records
-        )
+        const context: TrafficRecordVisualisationContext = new TrafficRecordVisualisationContext(dataPointer)
+        this.visualisationProcessor.process(context, records)
+        return context.getVisualisedRecords()
     }
 
     async getLabelNames(connection: Connection,
