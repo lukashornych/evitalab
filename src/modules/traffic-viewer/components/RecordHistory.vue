@@ -299,7 +299,13 @@ defineExpose<{
         icon="mdi-information-outline"
         color="warning"
         :title="t('trafficViewer.recordHistory.list.info.indexCreating', { catalogName: dataPointer.catalogName })"
-    />
+    >
+        <template #actions>
+            <VBtn :loading="fetchingNewRecordsWhenThereArentAny" @click="tryReloadHistoryForPossibleNewRecords">
+                {{ t('trafficViewer.recordHistory.button.reloadRecordHistory') }}
+            </VBtn>
+        </template>
+    </VMissingDataIndicator>
 
     <VMissingDataIndicator
         v-else
