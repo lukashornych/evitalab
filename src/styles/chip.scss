@@ -22,7 +22,7 @@
 .v-chip--variant-plain {
   cursor: default;
   opacity: 1;
-  color: $gray-light !important;
+  color: $gray-light;
   background-color: $gray-dark; // todo lho overrides custom prop-defined color of chip
 }
 
