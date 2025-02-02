@@ -72,6 +72,6 @@ export class Timestamp {
     }
 
     toDate(): Date {
-        return new Date((Number(this.seconds) * 1000) + Math.round(this.nanos / 1000))
+        return new Date((Number(this.seconds) * 1000) + Math.round(this.nanos / 1000000))
     }
 }
