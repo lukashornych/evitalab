@@ -15,6 +15,10 @@ const props = defineProps<{
         <slot>
             <VIcon :color="color">{{ icon }}</VIcon>
             <span class="missing-data-indicator__title">{{ title }}</span>
+
+            <div class="missing-data-indicator__actions">
+                <slot name="actions" />
+            </div>
         </slot>
     </div>
 </template>
@@ -39,6 +43,13 @@ const props = defineProps<{
     &__title {
         max-width: 35rem;
         text-align: center;
+    }
+
+    &__actions {
+        margin-top: 0.5rem;
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
     }
 }
 </style>

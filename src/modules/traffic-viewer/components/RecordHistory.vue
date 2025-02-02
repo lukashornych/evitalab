@@ -88,6 +88,8 @@ watch(startPointer, () => reloadHistory(), { deep: true })
 const nextPagePointer = ref<RecordsPointer>(new RecordsPointer())
 const limit = ref<number>(pageSize)
 
+const fetchingNewRecordsWhenThereArentAny = ref<boolean>(false)
+
 const selectedSystemRecordTypes = computed<Immutable.List<TrafficRecordType> | undefined>(() => {
     if (props.criteria.types == undefined) {
         return undefined
@@ -161,6 +163,16 @@ async function reloadHistory(): Promise<void> {
         processRecords()
     } catch (e: any) {
         handleRecordFetchError(e)
+    }
+}
+
+async function tryReloadHistoryForPossibleNewRecords(): Promise<void> {
+    fetchingNewRecordsWhenThereArentAny.value = true
+    await reloadHistory()
+    fetchingNewRecordsWhenThereArentAny.value = false
+    if (history.value.length === 0) {
+        toaster.info(t('trafficViewer.recordHistory.list.notification.noNewerRecords'))
+        return
     }
 }
 
@@ -293,7 +305,13 @@ defineExpose<{
         v-else
         icon="mdi-record-circle-outline"
         :title="t('trafficViewer.recordHistory.list.info.noRecords', { catalogName: dataPointer.catalogName })"
-    />
+    >
+        <template #actions>
+            <VBtn :loading="fetchingNewRecordsWhenThereArentAny" @click="tryReloadHistoryForPossibleNewRecords">
+                {{ t('trafficViewer.recordHistory.button.reloadRecordHistory') }}
+            </VBtn>
+        </template>
+    </VMissingDataIndicator>
 </template>
 
 <style lang="scss" scoped>
