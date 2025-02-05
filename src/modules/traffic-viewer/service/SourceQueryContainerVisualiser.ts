@@ -15,7 +15,7 @@ import { GraphQLConsoleTabFactory } from '@/modules/graphql-console/console/work
 import { TrafficRecordVisualisationContext } from '@/modules/traffic-viewer/model/TrafficRecordVisualisationContext'
 import { GraphQLInstanceType } from '@/modules/graphql-console/console/model/GraphQLInstanceType'
 import { GraphQLConsoleTabData } from '@/modules/graphql-console/console/workspace/model/GraphQLConsoleTabData'
-import { Label, labelSourceType } from '@/modules/connection/model/traffic/Label'
+import { Label, labelSourceType, systemLabels } from '@/modules/connection/model/traffic/Label'
 import { TrafficRecordMetadataItemContext } from '@/modules/traffic-viewer/model/TrafficRecordMetadataItemContext'
 import { EvitaQLConsoleTabFactory } from '@/modules/evitaql-console/console/workspace/service/EvitaQLConsoleTabFactory'
 import { EvitaQLConsoleTabData } from '@/modules/evitaql-console/console/workspace/model/EvitaQLConsoleTabData'
@@ -97,6 +97,9 @@ export class SourceQueryContainerVisualiser extends TrafficRecordVisualiser<Sour
         const queryLabelsMetadata: MetadataItem[] = []
 
         for (const label of trafficRecord.labels) {
+            if (systemLabels.includes(label.name)) {
+                continue
+            }
             queryLabelsMetadata.push(new MetadataItem(
                 undefined, // don't need to reference it
                 'mdi-tag-outline',

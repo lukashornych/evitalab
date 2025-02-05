@@ -15,7 +15,7 @@ import { i18n } from '@/vue-plugins/i18n'
 import Immutable from 'immutable'
 import { EvitaQLConsoleTabData } from '@/modules/evitaql-console/console/workspace/model/EvitaQLConsoleTabData'
 import { TrafficRecordMetadataItemContext } from '@/modules/traffic-viewer/model/TrafficRecordMetadataItemContext'
-import { Label, labelSourceQuery } from '@/modules/connection/model/traffic/Label'
+import { Label, labelSourceQuery, systemLabels } from '@/modules/connection/model/traffic/Label'
 import { formatCount } from '@/utils/string'
 import { TrafficRecordPreparationContext } from '@/modules/traffic-viewer/model/TrafficRecordPreparationContext'
 
@@ -113,6 +113,9 @@ export class QueryContainerVisualiser extends TrafficRecordVisualiser<QueryConta
         const queryLabelsMetadata: MetadataItem[] = []
 
         for (const label of trafficRecord.labels) {
+            if (systemLabels.includes(label.name)) {
+                continue
+            }
             queryLabelsMetadata.push(new MetadataItem(
                 undefined, // don't need to reference it
                 'mdi-tag-outline',
