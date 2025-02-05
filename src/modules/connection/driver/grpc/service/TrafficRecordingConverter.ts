@@ -224,7 +224,7 @@ export class TrafficRecordingConverter {
             this.evitaValueConverter.convertGrpcOffsetDateTime(grpcTrafficRecord.created!),
             Duration.fromMillis(grpcTrafficRecord.durationInMilliseconds),
             grpcTrafficRecord.ioFetchedSizeBytes,
-            grpcTrafficRecord.ioFetchedSizeBytes,
+            grpcTrafficRecord.ioFetchCount,
             grpcTrafficRecord.finishedWithError
         )
     }
