@@ -11,7 +11,7 @@ export function parseHumanDurationToMs(humanDuration: string): bigint {
         throw new Error('Empty duration.')
     }
     let durationInMs: bigint = 0n
-    for (let humanDurationPart of humanDuration.split(/\s+/)) {
+    for (const humanDurationPart of humanDuration.split(/\s+/)) {
         const match: RegExpMatchArray | null = humanDurationPart.match(humanDurationPartPattern)
         if (match == undefined) {
             throw new Error('Invalid duration format')

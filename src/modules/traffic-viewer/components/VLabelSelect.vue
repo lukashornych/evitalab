@@ -41,16 +41,16 @@ watch(showMenu, (value: boolean) => {
 })
 
 const availableLabelNames = ref<string[]>([])
-async function loadLabelNames(searchedLabelName: string): Promise<void> {
-    availableLabelNames.value = (await props.labelNamesProvider(searchedLabelName)).toArray()
+async function loadLabelNames(searchedLabelName?: string): Promise<void> {
+    availableLabelNames.value = (await props.labelNamesProvider(searchedLabelName || '')).toArray()
 }
 loadLabelNames('').then()
 
-const newLabelName = ref<string>('')
+const newLabelName = ref<string | undefined>(undefined)
 
 const availableLabelValues = ref<string[]>([])
 async function loadLabelValues(searchedLabelValue: string): Promise<void> {
-    availableLabelValues.value = (await props.labelValuesProvider(newLabelName.value, searchedLabelValue)).toArray()
+    availableLabelValues.value = (await props.labelValuesProvider(newLabelName.value!, searchedLabelValue)).toArray()
 }
 watch(newLabelName, async () => {
     if (newLabelName.value == undefined || newLabelName.value.trim().length === 0) {
@@ -75,7 +75,7 @@ function addLabel(): void {
         'update:modelValue',
         [
             ...(props.modelValue.filter(label => label.name !== newLabelName.value)),
-            new Label(newLabelName.value, newLabelValue.value)
+            new Label(newLabelName.value!, newLabelValue.value)
         ]
     )
     newLabelName.value = ''
@@ -134,12 +134,17 @@ function clear(): void {
                 >
                     {{ t('trafficViewer.recordHistory.filter.form.labels.button.addLabel') }}
                 </VBtn>
-                <VForm v-if="showNewLabelForm" class="label-menu__add-label">
+                <VForm
+                    v-if="showNewLabelForm"
+                    @submit="addLabel"
+                    class="label-menu__add-label"
+                >
                     <VAutocomplete
                         v-model="newLabelName"
                         :items="availableLabelNames"
                         :label="t('trafficViewer.recordHistory.filter.form.labels.form.newLabelName')"
                         clearable
+                        @update:focused="loadLabelNames()"
                         @update:search="loadLabelNames($event)"
                     />
                     <VAutocomplete
@@ -151,6 +156,7 @@ function clear(): void {
                         @update:search="loadLabelValues($event)"
                     />
                     <VBtn
+                        type="submit"
                         :disabled="newLabelValue == undefined || newLabelValue.trim().length === 0"
                         @click="addLabel"
                     >

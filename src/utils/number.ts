@@ -15,31 +15,7 @@ export const humanCountPattern: RegExp = /^(\d+(?:[,.]\d+)?)\s*([kMGT]?)$/
  * Parses count with optional unit prefix, e.g. 123, 123k, 123G and so on.
  */
 export function parseHumanCountToNumber(humanCount: string): number {
-    if (!humanCountPattern.test(humanCount)) {
-        throw new Error('Invalid count format.')
-    }
-    const exec: RegExpExecArray | null = humanCountPattern.exec(humanCount)
-    if (exec == undefined) {
-        throw new Error('Invalid count format.')
-    }
-
-    const parsedFormattedNumber: string = exec[1]
-    const parsedUnitPrefix: string = exec[2]
-
-    const formattedNumber: number = Number(parsedFormattedNumber)
-    if (Number.isNaN(formattedNumber)) {
-        throw new Error('Invalid number.')
-    }
-
-    switch (parsedUnitPrefix) {
-        case 'T': return formattedNumber * 1_000_000_000_000
-        case 'G': return formattedNumber * 1_000_000_000
-        case 'M': return formattedNumber * 1_000_000
-        case 'k': return formattedNumber * 1_000
-        case undefined:
-        case '': return formattedNumber
-        default: throw new Error('Invalid unit prefix')
-    }
+    return Number(parseHumanCountToBigInt(humanCount))
 }
 
 /**
@@ -69,6 +45,14 @@ export function parseHumanCountToBigInt(formattedCount: string): [bigint, boolea
 }
 
 export const humanByteSizePattern: RegExp = /^(\d+(?:[,.]\d+)?)\s*([kMG]|(Ki)|(Mi)|(Gi))?$/
+
+/**
+ * Parses byte size with optional unit prefix, e.g. 123, 123k, 123G, 123Gi and so on.
+ */
+export function parseHumanByteSizeToNumber(formattedByteSize: string): [number, boolean] {
+    const parsed: [bigint, boolean] = parseHumanByteSizeToBigInt(formattedByteSize)
+    return [Number(parsed[0]), parsed[1]]
+}
 
 /**
  * Parses byte size with optional unit prefix, e.g. 123, 123k, 123G, 123Gi and so on.

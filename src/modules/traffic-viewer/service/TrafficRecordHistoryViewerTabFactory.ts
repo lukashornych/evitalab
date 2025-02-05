@@ -90,8 +90,8 @@ export class TrafficRecordHistoryViewerTabFactory {
                 : undefined,
             dto.types,
             dto.sessionId != undefined ? Uuid.fromCode(dto.sessionId) : undefined,
-            dto.longerThanMilliseconds != undefined ? Duration.fromMillis(dto.longerThanMilliseconds) : undefined,
-            dto.fetchingMoreBytesThan,
+            dto.longerThanMillisecondsInHumanFormat,
+            dto.fetchingMoreBytesThanInHumanFormat,
             dto.labels
         )
     }

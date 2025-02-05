@@ -1491,20 +1491,19 @@
           },
           "longerThan": {
             "label": "Longer than",
-            "unit": "ms",
-            "hint": "Specifies the minimum duration in milliseconds of the traffic recording to be returned.",
+            "hint": "Specifies the minimum duration in milliseconds of the traffic recording to be returned. Use combination of h, m, s, or ms units.",
             "validations": {
-              "notNumber": "Threshold must be integer number.",
-              "outOfRange": "Threshold must be positive number."
+              "notNumber": "Threshold must be a duration.",
+              "outOfRange": "Threshold must be positive number and less than 2^53-1."
             }
           },
           "fetchingMoreBytesThan": {
             "label": "Fetching more bytes than",
-            "hint": "Specifies the minimum number of bytes that record should have fetched from the disk.",
+            "hint": "Specifies the minimum number of bytes that record should have fetched from the disk. You can use k, M, G, Ki, Mi, or Gi unit prefix.",
             "unit": "bytes",
             "validations": {
-              "notNumber": "Threshold must be integer number.",
-              "outOfRange": "Threshold must be positive number."
+              "notByteSize": "Threshold must be byte size.",
+              "outOfRange": "Threshold must be positive number and less than 2^53-1."
             }
           },
           "labels": {
@@ -1522,6 +1521,9 @@
         },
         "button": {
           "apply": "Apply filter"
+        },
+        "notification": {
+          "invalidFilter": "Filter criteria are not valid."
         }
       },
       "list": {

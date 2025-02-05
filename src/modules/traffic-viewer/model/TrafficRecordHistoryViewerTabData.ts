@@ -4,7 +4,6 @@ import {
 } from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabDataDto'
 import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateTime'
 import { Uuid } from '@/modules/connection/model/data-type/Uuid'
-import { Duration } from 'luxon'
 import { Label } from '@/modules/connection/model/traffic/Label'
 import { UserTrafficRecordType } from '@/modules/traffic-viewer/model/UserTrafficRecordType'
 
@@ -13,21 +12,21 @@ export class TrafficRecordHistoryViewerTabData implements TabData<TrafficRecordH
     readonly since?: OffsetDateTime
     readonly types?: UserTrafficRecordType[]
     readonly sessionId?: Uuid
-    readonly longerThan?: Duration
-    readonly fetchingMoreBytesThan?: number
+    readonly longerThanInHumanFormat?: string
+    readonly fetchingMoreBytesThanInHumanFormat?: string
     readonly labels?: Label[]
 
     constructor(since?: OffsetDateTime,
                 types?: UserTrafficRecordType[],
                 sessionId?: Uuid,
-                longerThan?: Duration,
-                fetchingMoreBytesThan?: number,
+                longerThanInHumanFormat?: string,
+                fetchingMoreBytesThanInHumanFormat?: string,
                 labels?: Label[]) {
         this.since = since
         this.types = types
         this.sessionId = sessionId
-        this.longerThan = longerThan
-        this.fetchingMoreBytesThan = fetchingMoreBytesThan
+        this.longerThanInHumanFormat = longerThanInHumanFormat
+        this.fetchingMoreBytesThanInHumanFormat = fetchingMoreBytesThanInHumanFormat
         this.labels = labels
     }
 
@@ -42,8 +41,8 @@ export class TrafficRecordHistoryViewerTabData implements TabData<TrafficRecordH
                 : undefined,
             types: this.types,
             sessionId: this.sessionId?.toString(),
-            longerThanMilliseconds: this.longerThan?.toMillis(),
-            fetchingMoreBytesThan: this.fetchingMoreBytesThan,
+            longerThanMillisecondsInHumanFormat: this.longerThanInHumanFormat,
+            fetchingMoreBytesThanInHumanFormat: this.fetchingMoreBytesThanInHumanFormat,
             labels: this.labels
         }
     }

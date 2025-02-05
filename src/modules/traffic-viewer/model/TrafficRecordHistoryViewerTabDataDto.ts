@@ -7,7 +7,7 @@ export interface TrafficRecordHistoryViewerTabDataDto extends TabDataDto {
     readonly since?: { seconds: string, nanos: number, offset: string }
     readonly types?: UserTrafficRecordType[]
     readonly sessionId?: string
-    readonly longerThanMilliseconds?: number
-    readonly fetchingMoreBytesThan?: number
+    readonly longerThanMillisecondsInHumanFormat?: string
+    readonly fetchingMoreBytesThanInHumanFormat?: string
     readonly labels?: Label[]
 }

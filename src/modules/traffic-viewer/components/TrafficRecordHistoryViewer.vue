@@ -59,8 +59,8 @@ const criteria = ref<TrafficRecordHistoryCriteria>(new TrafficRecordHistoryCrite
     props.data.since,
     props.data.types,
     props.data.sessionId,
-    props.data.longerThan,
-    props.data.fetchingMoreBytesThan,
+    props.data.longerThanInHumanFormat,
+    props.data.fetchingMoreBytesThanInHumanFormat,
     props.data.labels
 ))
 provideHistoryCriteria(criteria)
@@ -75,8 +75,8 @@ const currentData = computed<TrafficRecordHistoryViewerTabData>(() => {
         criteria.value.since,
         criteria.value.types,
         criteria.value.sessionId,
-        criteria.value.longerThan,
-        criteria.value.fetchingMoreBytesThan,
+        criteria.value.longerThanInHumanFormat,
+        criteria.value.fetchingMoreBytesThanInHumanFormat,
         criteria.value.labels
     )
 })

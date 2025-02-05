@@ -20,8 +20,12 @@ import {
     UserTrafficRecordType
 } from '@/modules/traffic-viewer/model/UserTrafficRecordType'
 import VLabelSelect from '@/modules/traffic-viewer/components/VLabelSelect.vue'
+import { parseHumanDurationToMs } from '@/utils/duration'
+import { parseHumanByteSizeToNumber } from '@/utils/number'
+import { Toaster, useToaster } from '@/modules/notification/service/Toaster'
 
 const trafficViewerService: TrafficViewerService = useTrafficViewerService()
+const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
 const userTrafficRecordTypeItems: any[] = Object.values(UserTrafficRecordType).map(type => {
@@ -44,8 +48,8 @@ const criteria = ref<TrafficRecordHistoryCriteria>(new TrafficRecordHistoryCrite
     props.modelValue.since,
     props.modelValue.types,
     props.modelValue.sessionId,
-    props.modelValue.longerThan,
-    props.modelValue.fetchingMoreBytesThan,
+    props.modelValue.longerThanInHumanFormat,
+    props.modelValue.fetchingMoreBytesThanInHumanFormat,
     props.modelValue.labels
 ))
 const criteriaChanged = ref<boolean>(false)
@@ -60,9 +64,11 @@ const formValidationState = ref<boolean | null>(null)
 const since = ref<DateTime | undefined>(criteria.value.since?.toDateTime())
 watch(since, async (newValue) => {
     if (await assertFormValidated()) {
-        criteria.value.since = newValue != undefined
-            ? OffsetDateTime.fromDateTime(newValue)
-            : undefined
+        if (newValue == undefined) {
+            criteria.value.since = undefined
+        } else {
+            criteria.value.since = OffsetDateTime.fromDateTime(newValue)
+        }
     }
 })
 
@@ -80,11 +86,11 @@ watch(types, async (newValue) => {
 const sessionId = ref<string>(criteria.value.sessionId?.toString() || '')
 watch(sessionId, async (newValue) => {
     if (await assertFormValidated()) {
-        criteria.value.sessionId = newValue != undefined
-            ? newValue.trim().length > 0
-                ? Uuid.fromCode(newValue)
-                : undefined
-            : undefined
+        if (newValue == undefined || newValue.trim().length === 0) {
+            criteria.value.sessionId = undefined
+        } else {
+            criteria.value.sessionId = Uuid.fromCode(newValue)
+        }
     }
 })
 const sessionIdRules = [
@@ -100,23 +106,19 @@ const sessionIdRules = [
     }
 ]
 
-const longerThan = ref<string>(
-    criteria.value.longerThan != undefined
-        ? String(criteria.value.longerThan.toMillis())
-        : ''
-)
+const longerThan = ref<string | undefined>(criteria.value.longerThanInHumanFormat || '')
 const longerThanRules = [
     (value: string): any => {
         if (value == undefined || value === '') {
             return true
         }
-        let number: bigint
+        let duration: bigint
         try {
-            number = BigInt(value)
+            duration = parseHumanDurationToMs(value.trim())
         } catch (e) {
             return t('trafficViewer.recordHistory.filter.form.longerThan.validations.notNumber')
         }
-        if (number < 0) {
+        if (duration < 0 || duration > Number.MAX_SAFE_INTEGER) {
             return t('trafficViewer.recordHistory.filter.form.longerThan.validations.outOfRange')
         }
         return true
@@ -124,29 +126,27 @@ const longerThanRules = [
 ]
 watch(longerThan, async (newValue) => {
     if (await assertFormValidated()) {
-        criteria.value.longerThan = newValue == undefined
-            ? undefined
-            : newValue.trim().length > 0
-                ? Duration.fromMillis(Number(newValue.trim()))
-                : undefined
+        if (newValue == undefined || newValue.trim().length === 0) {
+            criteria.value.longerThanInHumanFormat = undefined
+        } else {
+            criteria.value.longerThanInHumanFormat = newValue.trim()
+        }
     }
 })
 
-const fetchingMoreBytesThan = ref<string>(
-    criteria.value.fetchingMoreBytesThan != undefined
-        ? String(criteria.value.fetchingMoreBytesThan)
-        : ''
-)
+const fetchingMoreBytesThan = ref<string>(criteria.value.fetchingMoreBytesThanInHumanFormat || '')
 const fetchingMoreBytesThanRules = [
     (value: string): any => {
         if (value == undefined || value === '') {
             return true
         }
-        const number: number = Number(value)
-        if (Number.isNaN(number) || !Number.isInteger(number)) {
-            return t('trafficViewer.recordHistory.filter.form.fetchingMoreBytesThan.validations.notNumber')
+        let number: number
+        try {
+            number = parseHumanByteSizeToNumber(value.trim())[0]
+        } catch (e) {
+            return t('trafficViewer.recordHistory.filter.form.fetchingMoreBytesThan.validations.notByteSize')
         }
-        if (number < 0) {
+        if (number < 0 || number > Number.MAX_SAFE_INTEGER) {
             return t('trafficViewer.recordHistory.filter.form.fetchingMoreBytesThan.validations.outOfRange')
         }
         return true
@@ -154,11 +154,11 @@ const fetchingMoreBytesThanRules = [
 ]
 watch(fetchingMoreBytesThan, async (newValue) => {
     if (await assertFormValidated()) {
-        criteria.value.fetchingMoreBytesThan = newValue == undefined
-            ? undefined
-            : newValue.trim().length > 0
-                ? Number(newValue.trim())
-                : undefined
+        if (newValue == undefined || newValue.trim().length === 0) {
+            criteria.value.fetchingMoreBytesThanInHumanFormat = undefined
+        } else {
+            criteria.value.fetchingMoreBytesThanInHumanFormat = newValue.trim()
+        }
     }
 })
 
@@ -198,7 +198,14 @@ async function assertFormValidated(): Promise<boolean> {
     return valid
 }
 
-function applyChangedCriteria(): void {
+async function applyChangedCriteria(): Promise<void> {
+    //@ts-ignore
+    const { valid }: any = await form.value.validate()
+    if (!valid) {
+        toaster.error(t('trafficViewer.recordHistory.filter.notification.invalidFilter'))
+        return
+    }
+
     emit('apply')
     criteriaChanged.value = false
 }
@@ -209,6 +216,7 @@ function applyChangedCriteria(): void {
         v-model="formValidationState"
         ref="form"
         validate-on="blur"
+        @submit="applyChangedCriteria"
         class="record-history-filter-form"
     >
         <div class="record-history-filter">
@@ -275,7 +283,6 @@ function applyChangedCriteria(): void {
                     <VTextField
                         v-model="longerThan"
                         :label="t('trafficViewer.recordHistory.filter.form.longerThan.label')"
-                        :suffix="t('trafficViewer.recordHistory.filter.form.longerThan.unit')"
                         :rules="longerThanRules"
                         clearable
                         hide-details
@@ -325,7 +332,12 @@ function applyChangedCriteria(): void {
 
         <VTooltip v-if="criteriaChanged">
             <template #activator="{ props }">
-                <VBtn icon @click="applyChangedCriteria" v-bind="props">
+                <VBtn
+                    type="submit"
+                    icon
+                    @click="applyChangedCriteria"
+                    v-bind="props"
+                >
                     <VIcon>mdi-send</VIcon>
                 </VBtn>
             </template>

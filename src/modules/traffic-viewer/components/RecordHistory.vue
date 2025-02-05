@@ -23,6 +23,9 @@ import RecordHistoryItem from '@/modules/traffic-viewer/components/RecordHistory
 import { convertUserToSystemRecordType } from '@/modules/traffic-viewer/model/UserTrafficRecordType'
 import { Code, ConnectError } from '@connectrpc/connect'
 import { TrafficRecordType } from '@/modules/connection/model/traffic/TrafficRecordType'
+import { Duration } from 'luxon'
+import { parseHumanDurationToMs } from '@/utils/duration'
+import { parseHumanByteSizeToNumber } from '@/utils/number'
 
 // note: this is enum from vuetify, but vuetify doesn't export it
 type InfiniteScrollStatus = 'ok' | 'empty' | 'loading' | 'error';
@@ -106,8 +109,12 @@ const nextPageRequest = computed<TrafficRecordingCaptureRequest>(() => {
         nextPagePointer.value.sinceRecordSessionOffset,
         selectedSystemRecordTypes.value,
         props.criteria.sessionId,
-        props.criteria.longerThan,
-        props.criteria.fetchingMoreBytesThan,
+        props.criteria.longerThanInHumanFormat != undefined
+            ? Duration.fromMillis(Number(parseHumanDurationToMs(props.criteria.longerThanInHumanFormat)))
+            : undefined,
+        props.criteria.fetchingMoreBytesThanInHumanFormat != undefined
+            ? parseHumanByteSizeToNumber(props.criteria.fetchingMoreBytesThanInHumanFormat)[0]
+            : undefined,
         Immutable.List(props.criteria.labels)
     )
 })
@@ -119,8 +126,12 @@ const lastRecordRequest = computed<TrafficRecordingCaptureRequest>(() => {
         undefined,
         selectedSystemRecordTypes.value,
         props.criteria.sessionId,
-        props.criteria.longerThan,
-        props.criteria.fetchingMoreBytesThan,
+        props.criteria.longerThanInHumanFormat != undefined
+            ? Duration.fromMillis(Number(parseHumanDurationToMs(props.criteria.longerThanInHumanFormat)))
+            : undefined,
+        props.criteria.fetchingMoreBytesThanInHumanFormat != undefined
+            ? parseHumanByteSizeToNumber(props.criteria.fetchingMoreBytesThanInHumanFormat)[0]
+            : undefined,
         Immutable.List(props.criteria.labels)
     )
 })
@@ -138,7 +149,7 @@ async function loadNextHistory({ done }: { done: (status: InfiniteScrollStatus) 
 
         moveNextPagePointer(fetchedRecords)
         pushNewRecords(fetchedRecords)
-        processRecords()
+        await processRecords()
         done('ok')
     } catch (e: any) {
         handleRecordFetchError(e)
@@ -160,7 +171,7 @@ async function reloadHistory(): Promise<void> {
 
         moveNextPagePointer(fetchedRecords)
         pushNewRecords(fetchedRecords)
-        processRecords()
+        await processRecords()
     } catch (e: any) {
         handleRecordFetchError(e)
     }
