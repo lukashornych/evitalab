@@ -20,6 +20,9 @@ import { Label, labelSourceQuery } from '@/modules/connection/model/traffic/Labe
 import { ConnectionService } from '@/modules/connection/service/ConnectionService'
 import { EvitaDBDriver } from '@/modules/connection/driver/EvitaDBDriver'
 import { SourceQueryContainer } from '@/modules/connection/model/traffic/SourceQueryContainer'
+import { SourceQueryStatisticsContainer } from '@/modules/connection/model/traffic/SourceQueryStatisticsContainer'
+
+const additionSourceQueryFetchRequestTypes: any = Immutable.List([TrafficRecordType.SourceQuery, TrafficRecordType.SourceQueryStatistics])
 
 /**
  * Takes raw flat traffic records from server and processes them into visualisable tree structure.
@@ -74,13 +77,12 @@ export class TrafficRecordHistoryVisualisationProcessor {
     }
 
     private createAdditionalSourceQueryFetchRequest(requestedSourceQueryRecords: Immutable.Map<string, RequestedSourceQueryRecord>): TrafficRecordingCaptureRequest {
-        const types: TrafficRecordType[] = [TrafficRecordType.SourceQuery] // this is workaround because Immutable.List for some reason thinks enum is string
         return new TrafficRecordingCaptureRequest(
             TrafficRecordContent.Body,
             undefined,
             undefined,
             undefined,
-            Immutable.List(types),
+            additionSourceQueryFetchRequestTypes,
             undefined,
             undefined,
             undefined,
@@ -101,31 +103,28 @@ export class TrafficRecordHistoryVisualisationProcessor {
             dataPointer.connection,
             dataPointer.catalogName,
             sourceQueryFetchRequest,
-            records.length // this is not ideal, but don't have better solution right now
+            records.length * 2 // there are two record types we want to fetch... this is not ideal, but don't have better solution right now
         )
     }
 
     private insertFetchedSourceQueryRecords(additionalSourceQueryRecords: Immutable.List<TrafficRecord>,
                                             requests: Immutable.Map<string, RequestedSourceQueryRecord>,
                                             records: TrafficRecord[]): void {
-        let startVisitingRecordsAt: number = 0
         for (const sourceQueryRecord of additionalSourceQueryRecords) {
-            if (!(sourceQueryRecord instanceof SourceQueryContainer)) {
+            if (!(sourceQueryRecord instanceof SourceQueryContainer) && !(sourceQueryRecord instanceof SourceQueryStatisticsContainer)) {
                 throw new UnexpectedError(`Traffic record should be source query record.`)
             }
             const request: RequestedSourceQueryRecord | undefined = requests.get(sourceQueryRecord.sourceQueryId.toString())
             if (request == undefined) {
                 throw new UnexpectedError(`There is unexpected source query record for ID '${sourceQueryRecord.sourceQueryId.toString()}'`)
             }
-            if (startVisitingRecordsAt > records.length - 1) {
-                throw new UnexpectedError('There are unmatched source query records. This is weird.')
-            }
 
-            for (let i = startVisitingRecordsAt; i < records.length; i++) {
+            // we need to iterate of records again everytime because there may be statistics container somewhere in the back
+            // that need to be matched to records next to the opening source query containers
+            for (let i = 0; i < records.length; i++) {
                 const record: TrafficRecord = records[i]
                 if (record == request.beforeRecord) {
                     records.splice(i, 0, sourceQueryRecord)
-                    startVisitingRecordsAt = i + 2 // we need to get pass the newly inserted record as well as the "beforeRecord"
                     break
                 }
             }
