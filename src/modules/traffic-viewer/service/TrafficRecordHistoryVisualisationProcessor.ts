@@ -87,7 +87,7 @@ export class TrafficRecordHistoryVisualisationProcessor {
             requestedSourceQueryRecords
                 .map(it => new Label(
                     labelSourceQuery,
-                    it.sourceQueryId.toString()
+                    `'${it.sourceQueryId.toString()}'`
                 ))
                 .toList()
         )
