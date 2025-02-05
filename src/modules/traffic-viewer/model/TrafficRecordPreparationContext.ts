@@ -1,29 +1,29 @@
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import Immutable from 'immutable'
 import { TrafficRecord } from '@/modules/connection/model/traffic/TrafficRecord'
+import { Uuid } from '@/modules/connection/model/data-type/Uuid'
 
 /**
  * Generic context for record preparation before visualisation
  */
 export class TrafficRecordPreparationContext {
 
-    private visitedSourceQueryRecordsIndex: Map<string, TrafficRecord> = new Map()
+    private visitedSourceQueryRecordsIndex: string[] = []
     private requestedAdditionalSourceQueryRecords: Map<string, RequestedSourceQueryRecord> = new Map()
 
-    isSourceQueryRecordVisitedOrRequested(sourceQueryId: string): boolean {
-        return this.visitedSourceQueryRecordsIndex.has(sourceQueryId) ||
-            this.requestedAdditionalSourceQueryRecords.has(sourceQueryId)
-    }
+    private visitedSessionStartRecordsIndex: string[] = []
+    private requestedAdditionalSessionStartRecords: Map<string, RequestedSessionStartRecord> = new Map()
 
-    sourceQueryRecordVisited(sourceQueryId: string, record: TrafficRecord): void {
-        if (this.visitedSourceQueryRecordsIndex.has(sourceQueryId)) {
+    sourceQueryRecordVisited(sourceQueryId: string): void {
+        if (this.visitedSourceQueryRecordsIndex.includes(sourceQueryId)) {
             throw new UnexpectedError(`Source query record with ID '${sourceQueryId}' already visited. This is weird.`)
         }
-        this.visitedSourceQueryRecordsIndex.set(sourceQueryId, record)
+        this.visitedSourceQueryRecordsIndex.push(sourceQueryId)
     }
 
     requestAdditionalSourceQueryRecord(sourceQueryId: string, before: TrafficRecord): void {
-        if (!this.requestedAdditionalSourceQueryRecords.has(sourceQueryId)) {
+        if (!this.visitedSourceQueryRecordsIndex.includes(sourceQueryId) &&
+            !this.requestedAdditionalSourceQueryRecords.has(sourceQueryId)) {
             this.requestedAdditionalSourceQueryRecords.set(
                 sourceQueryId,
                 new RequestedSourceQueryRecord(sourceQueryId, before)
@@ -34,6 +34,29 @@ export class TrafficRecordPreparationContext {
     getRequestedAdditionalSourceQueryRecords(): Immutable.Map<string, RequestedSourceQueryRecord> {
         return Immutable.Map(this.requestedAdditionalSourceQueryRecords)
     }
+
+    sessionStartRecordVisited(sessionId: Uuid): void {
+        const serializedSessionId: string = sessionId.toString()
+        if (this.visitedSessionStartRecordsIndex.includes(serializedSessionId)) {
+            throw new UnexpectedError(`Session start record with ID '${sessionId}' already visited. This is weird.`)
+        }
+        this.visitedSessionStartRecordsIndex.push(serializedSessionId)
+    }
+
+    requestAdditionalSessionStartRecord(sessionId: Uuid, before: TrafficRecord): void {
+        const serializedSessionId: string = sessionId.toString()
+        if (!this.visitedSessionStartRecordsIndex.includes(serializedSessionId) &&
+            !this.requestedAdditionalSessionStartRecords.has(serializedSessionId)) {
+            this.requestedAdditionalSessionStartRecords.set(
+                serializedSessionId,
+                new RequestedSessionStartRecord(sessionId, before)
+            )
+        }
+    }
+
+    getRequestedAdditionalSessionStartRecords(): Immutable.Map<string, RequestedSessionStartRecord> {
+        return Immutable.Map(this.requestedAdditionalSessionStartRecords)
+    }
 }
 
 export class RequestedSourceQueryRecord {
@@ -42,6 +65,16 @@ export class RequestedSourceQueryRecord {
 
     constructor(sourceQueryId: string, beforeRecord: TrafficRecord) {
         this.sourceQueryId = sourceQueryId
+        this.beforeRecord = beforeRecord
+    }
+}
+
+export class RequestedSessionStartRecord {
+    readonly sessionId: Uuid
+    readonly beforeRecord: TrafficRecord
+
+    constructor(sessionId: Uuid, beforeRecord: TrafficRecord) {
+        this.sessionId = sessionId
         this.beforeRecord = beforeRecord
     }
 }

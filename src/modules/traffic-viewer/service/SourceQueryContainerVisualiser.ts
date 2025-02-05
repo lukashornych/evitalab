@@ -44,7 +44,7 @@ export class SourceQueryContainerVisualiser extends TrafficRecordVisualiser<Sour
     }
 
     prepare(ctx: TrafficRecordPreparationContext, trafficRecord: SourceQueryContainer): void {
-        ctx.sourceQueryRecordVisited(trafficRecord.sourceQueryId.toString(), trafficRecord)
+        ctx.sourceQueryRecordVisited(trafficRecord.sourceQueryId.toString())
     }
 
     visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: SourceQueryContainer): void {

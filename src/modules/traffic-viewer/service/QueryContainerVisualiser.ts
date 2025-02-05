@@ -40,9 +40,7 @@ export class QueryContainerVisualiser extends TrafficRecordVisualiser<QueryConta
     prepare(ctx: TrafficRecordPreparationContext, trafficRecord: QueryContainer): void {
         const sourceQueryId: string | undefined = this.resolveSourceQueryId(trafficRecord)
         if (sourceQueryId != undefined) {
-            if (!ctx.isSourceQueryRecordVisitedOrRequested(sourceQueryId)) {
-                ctx.requestAdditionalSourceQueryRecord(sourceQueryId, trafficRecord)
-            }
+            ctx.requestAdditionalSourceQueryRecord(sourceQueryId, trafficRecord)
         }
     }
 

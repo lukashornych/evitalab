@@ -10,6 +10,7 @@ import {
 import { SessionCloseContainer } from '@/modules/connection/model/traffic/SessionCloseContainer'
 import { i18n } from '@/vue-plugins/i18n'
 import { formatCount } from '@/utils/string'
+import { TrafficRecordPreparationContext } from '@/modules/traffic-viewer/model/TrafficRecordPreparationContext'
 
 /**
  * Session close container isn't visualised but controls the flow of rendered UI.
@@ -19,6 +20,10 @@ export class SessionCloseContainerVisualiser extends TrafficRecordVisualiser<Ses
 
     canVisualise(trafficRecord: TrafficRecord): boolean {
         return trafficRecord instanceof SessionCloseContainer
+    }
+
+    prepare(ctx: TrafficRecordPreparationContext, trafficRecord: SessionCloseContainer): void {
+        ctx.requestAdditionalSessionStartRecord(trafficRecord.sessionId, trafficRecord)
     }
 
     visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: SessionCloseContainer): void {

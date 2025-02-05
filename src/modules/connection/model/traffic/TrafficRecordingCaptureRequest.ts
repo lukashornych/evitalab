@@ -16,7 +16,7 @@ export class TrafficRecordingCaptureRequest {
     readonly sinceSessionSequenceId?: bigint
     readonly sinceRecordSessionOffset?: number
     readonly types?: Immutable.List<TrafficRecordType>
-    readonly sessionId?: Uuid
+    readonly sessionIds?: Immutable.List<Uuid>
     readonly longerThan?: Duration
     readonly fetchingMoreBytesThan?: number
     readonly labels?: Immutable.List<Label>
@@ -26,7 +26,7 @@ export class TrafficRecordingCaptureRequest {
                 sinceSessionSequenceId: bigint | undefined,
                 sinceRecordSessionOffset: number | undefined,
                 types: Immutable.List<TrafficRecordType> | undefined,
-                sessionId: Uuid | undefined,
+                sessionIds: Immutable.List<Uuid> | undefined,
                 longerThan: Duration | undefined,
                 fetchingMoreBytesThan: number | undefined,
                 labels: Immutable.List<Label> | undefined) {
@@ -35,7 +35,7 @@ export class TrafficRecordingCaptureRequest {
         this.sinceSessionSequenceId = sinceSessionSequenceId
         this.sinceRecordSessionOffset = sinceRecordSessionOffset
         this.types = types
-        this.sessionId = sessionId
+        this.sessionIds = sessionIds
         this.longerThan = longerThan
         this.fetchingMoreBytesThan = fetchingMoreBytesThan
         this.labels = labels

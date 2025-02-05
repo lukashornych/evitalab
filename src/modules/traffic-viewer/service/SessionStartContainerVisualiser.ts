@@ -16,6 +16,7 @@ import {
     TrafficRecordHistoryViewerTabFactory
 } from '@/modules/traffic-viewer/service/TrafficRecordHistoryViewerTabFactory'
 import { TrafficRecordHistoryViewerTabData } from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabData'
+import { TrafficRecordPreparationContext } from '@/modules/traffic-viewer/model/TrafficRecordPreparationContext'
 
 /**
  * Visualises start of session/transaction. It uses `SessionCloseContainer` record for more statistics.
@@ -34,6 +35,10 @@ export class SessionStartContainerVisualiser extends TrafficRecordVisualiser<Ses
 
     canVisualise(trafficRecord: TrafficRecord): boolean {
         return trafficRecord instanceof SessionStartContainer
+    }
+
+    prepare(ctx: TrafficRecordPreparationContext, trafficRecord: SessionStartContainer): void {
+        ctx.sessionStartRecordVisited(trafficRecord.sessionId)
     }
 
     visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: SessionStartContainer): void {

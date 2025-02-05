@@ -124,9 +124,9 @@ export class TrafficRecordingConverter {
             type: captureRequest.types != undefined
                 ? this.convertTrafficRecordTypes(captureRequest.types)
                 : undefined,
-            sessionId: captureRequest.sessionId != undefined
-                ? this.evitaValueConverter.convertUuid(captureRequest.sessionId)
-                : undefined,
+            sessionId: captureRequest.sessionIds != undefined
+                ? captureRequest.sessionIds.toArray().map(uuid => this.evitaValueConverter.convertUuid(uuid))
+                : [],
             longerThanMilliseconds: captureRequest.longerThan != undefined
                 ? captureRequest.longerThan.toMillis()
                 : undefined,

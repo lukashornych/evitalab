@@ -108,7 +108,9 @@ const nextPageRequest = computed<TrafficRecordingCaptureRequest>(() => {
         nextPagePointer.value.sinceSessionSequenceId,
         nextPagePointer.value.sinceRecordSessionOffset,
         selectedSystemRecordTypes.value,
-        props.criteria.sessionId,
+        props.criteria.sessionId != undefined
+            ? Immutable.List([])
+            : undefined,
         props.criteria.longerThanInHumanFormat != undefined
             ? Duration.fromMillis(Number(parseHumanDurationToMs(props.criteria.longerThanInHumanFormat)))
             : undefined,
@@ -125,7 +127,9 @@ const lastRecordRequest = computed<TrafficRecordingCaptureRequest>(() => {
         undefined,
         undefined,
         selectedSystemRecordTypes.value,
-        props.criteria.sessionId,
+        props.criteria.sessionId != undefined
+            ? Immutable.List([])
+            : undefined,
         props.criteria.longerThanInHumanFormat != undefined
             ? Duration.fromMillis(Number(parseHumanDurationToMs(props.criteria.longerThanInHumanFormat)))
             : undefined,

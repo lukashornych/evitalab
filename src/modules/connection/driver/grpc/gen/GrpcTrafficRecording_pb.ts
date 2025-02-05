@@ -160,9 +160,9 @@ export class GrpcTrafficRecordingCaptureCriteria extends Message<GrpcTrafficReco
   /**
    * sessionId specifies the session ID from which the traffic recording should be returned
    *
-   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcUuid sessionId = 6;
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcUuid sessionId = 6;
    */
-  sessionId?: GrpcUuid;
+  sessionId: GrpcUuid[] = [];
 
   /**
    * longerThan specifies the minimum duration in milliseconds of the traffic recording to be returned
@@ -198,7 +198,7 @@ export class GrpcTrafficRecordingCaptureCriteria extends Message<GrpcTrafficReco
     { no: 3, name: "sinceSessionSequenceId", kind: "message", T: Int64Value },
     { no: 4, name: "sinceRecordSessionOffset", kind: "message", T: Int32Value },
     { no: 5, name: "type", kind: "enum", T: proto3.getEnumType(GrpcTrafficRecordingType), repeated: true },
-    { no: 6, name: "sessionId", kind: "message", T: GrpcUuid },
+    { no: 6, name: "sessionId", kind: "message", T: GrpcUuid, repeated: true },
     { no: 7, name: "longerThanMilliseconds", kind: "message", T: Int32Value },
     { no: 8, name: "fetchingMoreBytesThan", kind: "message", T: Int32Value },
     { no: 9, name: "labels", kind: "message", T: GrpcQueryLabel, repeated: true },

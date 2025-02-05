@@ -6,6 +6,7 @@ import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { TrafficRecordHistoryDataPointer } from '@/modules/traffic-viewer/model/TrafficRecordHistoryDataPointer'
 import { TrafficRecordHistoryCriteria } from '@/modules/traffic-viewer/model/TrafficRecordHistoryCriteria'
 import {
+    RequestedSessionStartRecord,
     RequestedSourceQueryRecord,
     TrafficRecordPreparationContext
 } from '@/modules/traffic-viewer/model/TrafficRecordPreparationContext'
@@ -21,7 +22,9 @@ import { ConnectionService } from '@/modules/connection/service/ConnectionServic
 import { EvitaDBDriver } from '@/modules/connection/driver/EvitaDBDriver'
 import { SourceQueryContainer } from '@/modules/connection/model/traffic/SourceQueryContainer'
 import { SourceQueryStatisticsContainer } from '@/modules/connection/model/traffic/SourceQueryStatisticsContainer'
+import { SessionStartContainer } from '@/modules/connection/model/traffic/SessionStartContainer'
 
+const additionSessionStartFetchRequestTypes: any = Immutable.List([TrafficRecordType.SessionStart])
 const additionSourceQueryFetchRequestTypes: any = Immutable.List([TrafficRecordType.SourceQuery, TrafficRecordType.SourceQueryStatistics])
 
 /**
@@ -65,15 +68,49 @@ export class TrafficRecordHistoryVisualisationProcessor {
                                       records: TrafficRecord[]): Promise<TrafficRecord[]> {
         const recordsToVisualise: TrafficRecord[] = [...records]
 
+        const requestedAdditionalSessionStartRecords: Immutable.Map<string, RequestedSessionStartRecord> =
+            preparationContext.getRequestedAdditionalSessionStartRecords()
+        if (!requestedAdditionalSessionStartRecords.isEmpty() && historyCriteria.types?.includes(UserTrafficRecordType.Session)) {
+            const sessionStartFetchRequest: TrafficRecordingCaptureRequest = this.createAdditionalSessionStartFetchRequest(requestedAdditionalSessionStartRecords)
+            const sessionStartRecords: Immutable.List<TrafficRecord> = await this.fetchAdditionalRecords(
+                dataPointer,
+                sessionStartFetchRequest,
+                recordsToVisualise,
+                recordsToVisualise.length  // this is not ideal, but don't have better solution right now
+            )
+            this.insertFetchedSessionStartRecords(sessionStartRecords, requestedAdditionalSessionStartRecords, recordsToVisualise)
+        }
+
         const requestedAdditionalSourceQueryRecords: Immutable.Map<string, RequestedSourceQueryRecord> =
             preparationContext.getRequestedAdditionalSourceQueryRecords()
         if (!requestedAdditionalSourceQueryRecords.isEmpty() && historyCriteria.types?.includes(UserTrafficRecordType.SourceQuery)) {
             const sourceQueryFetchRequest: TrafficRecordingCaptureRequest = this.createAdditionalSourceQueryFetchRequest(requestedAdditionalSourceQueryRecords)
-            const sourceQueryRecords: Immutable.List<TrafficRecord> = await this.fetchAdditionalSourceQueryRecords(dataPointer, sourceQueryFetchRequest, recordsToVisualise)
+            const sourceQueryRecords: Immutable.List<TrafficRecord> = await this.fetchAdditionalRecords(
+                dataPointer,
+                sourceQueryFetchRequest,
+                recordsToVisualise,
+                recordsToVisualise.length * 2  // there are two record types we want to fetch... this is not ideal, but don't have better solution right now
+            )
             this.insertFetchedSourceQueryRecords(sourceQueryRecords, requestedAdditionalSourceQueryRecords, recordsToVisualise)
         }
 
         return recordsToVisualise
+    }
+
+    private createAdditionalSessionStartFetchRequest(requestedSessionStartRecords: Immutable.Map<string, RequestedSessionStartRecord>): TrafficRecordingCaptureRequest {
+        return new TrafficRecordingCaptureRequest(
+            TrafficRecordContent.Body,
+            undefined,
+            undefined,
+            undefined,
+            additionSessionStartFetchRequestTypes,
+            requestedSessionStartRecords
+                .map(it => it.sessionId)
+                .toList(),
+            undefined,
+            undefined,
+            undefined
+        )
     }
 
     private createAdditionalSourceQueryFetchRequest(requestedSourceQueryRecords: Immutable.Map<string, RequestedSourceQueryRecord>): TrafficRecordingCaptureRequest {
@@ -95,16 +132,41 @@ export class TrafficRecordHistoryVisualisationProcessor {
         )
     }
 
-    private async fetchAdditionalSourceQueryRecords(dataPointer: TrafficRecordHistoryDataPointer,
+    private async fetchAdditionalRecords(dataPointer: TrafficRecordHistoryDataPointer,
                                                     sourceQueryFetchRequest: TrafficRecordingCaptureRequest,
-                                                    records: TrafficRecord[]): Promise<Immutable.List<TrafficRecord>> {
+                                                    records: TrafficRecord[],
+                                                    limit: number): Promise<Immutable.List<TrafficRecord>> {
         const driver: EvitaDBDriver = await this.connectionService.getDriver(dataPointer.connection)
         return await driver.getTrafficRecordHistoryList(
             dataPointer.connection,
             dataPointer.catalogName,
             sourceQueryFetchRequest,
-            records.length * 2 // there are two record types we want to fetch... this is not ideal, but don't have better solution right now
+            records.length * 2
         )
+    }
+
+    private insertFetchedSessionStartRecords(additionalSessionStartRecords: Immutable.List<TrafficRecord>,
+                                             requests: Immutable.Map<string, RequestedSessionStartRecord>,
+                                             records: TrafficRecord[]): void {
+        let startInsertingAt: number = 0
+        for (const sessionStartRecord of additionalSessionStartRecords) {
+            if (!(sessionStartRecord instanceof SessionStartContainer)) {
+                throw new UnexpectedError(`Traffic record should be session start record.`)
+            }
+            const request: RequestedSessionStartRecord | undefined = requests.get(sessionStartRecord.sessionId.toString())
+            if (request == undefined) {
+                throw new UnexpectedError(`There is unexpected session start record for ID '${sessionStartRecord.sessionId.toString()}'`)
+            }
+
+            for (let i = startInsertingAt; i < records.length; i++) {
+                const record: TrafficRecord = records[i]
+                if (record == request.beforeRecord) {
+                    records.splice(i, 0, sessionStartRecord)
+                    startInsertingAt += 2 // we want to get pass the inserted and the "before" record as these are already processed
+                    break
+                }
+            }
+        }
     }
 
     private insertFetchedSourceQueryRecords(additionalSourceQueryRecords: Immutable.List<TrafficRecord>,
