@@ -14,11 +14,11 @@ import { TrafficRecord } from '@/modules/connection/model/traffic/TrafficRecord'
 import {
     TrafficRecordHistoryVisualisationProcessor
 } from '@/modules/traffic-viewer/service/TrafficRecordHistoryVisualisationProcessor'
-import { TrafficRecordVisualisationContext } from '@/modules/traffic-viewer/model/TrafficRecordVisualisationContext'
 import { TrafficRecordHistoryDataPointer } from '@/modules/traffic-viewer/model/TrafficRecordHistoryDataPointer'
 import {
     TrafficRecordVisualisationDefinition
 } from '@/modules/traffic-viewer/model/TrafficRecordVisualisationDefinition'
+import { TrafficRecordHistoryCriteria } from '@/modules/traffic-viewer/model/TrafficRecordHistoryCriteria'
 
 export const trafficViewerServiceInjectionKey: InjectionKey<TrafficViewerService> = Symbol('trafficViewerService')
 
@@ -87,10 +87,10 @@ export class TrafficViewerService {
         return await driver.getTrafficRecordHistoryList(dataPointer.connection, dataPointer.catalogName, captureRequest, limit, reverse)
     }
 
-    processRecords(dataPointer: TrafficRecordHistoryDataPointer, records: TrafficRecord[]): Immutable.List<TrafficRecordVisualisationDefinition> {
-        const context: TrafficRecordVisualisationContext = new TrafficRecordVisualisationContext(dataPointer)
-        this.visualisationProcessor.process(context, records)
-        return context.getVisualisedRecords()
+    async processRecords(dataPointer: TrafficRecordHistoryDataPointer,
+                         historyCriteria: TrafficRecordHistoryCriteria,
+                         records: TrafficRecord[]): Promise<Immutable.List<TrafficRecordVisualisationDefinition>> {
+        return await this.visualisationProcessor.process(dataPointer, historyCriteria, records)
     }
 
     async getLabelNames(connection: Connection,

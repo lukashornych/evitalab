@@ -19,6 +19,7 @@ import { Label, labelSourceType } from '@/modules/connection/model/traffic/Label
 import { TrafficRecordMetadataItemContext } from '@/modules/traffic-viewer/model/TrafficRecordMetadataItemContext'
 import { EvitaQLConsoleTabFactory } from '@/modules/evitaql-console/console/workspace/service/EvitaQLConsoleTabFactory'
 import { EvitaQLConsoleTabData } from '@/modules/evitaql-console/console/workspace/model/EvitaQLConsoleTabData'
+import { TrafficRecordPreparationContext } from '@/modules/traffic-viewer/model/TrafficRecordPreparationContext'
 
 /**
  * Visualises the source query container record. Uses statistics from the `SourceQueryStatisticsContainer`.
@@ -40,6 +41,10 @@ export class SourceQueryContainerVisualiser extends TrafficRecordVisualiser<Sour
 
     canVisualise(trafficRecord: TrafficRecord): boolean {
         return trafficRecord instanceof SourceQueryContainer
+    }
+
+    prepare(ctx: TrafficRecordPreparationContext, trafficRecord: SourceQueryContainer): void {
+        ctx.sourceQueryRecordVisited(trafficRecord.sourceQueryId.toString(), trafficRecord)
     }
 
     visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: SourceQueryContainer): void {

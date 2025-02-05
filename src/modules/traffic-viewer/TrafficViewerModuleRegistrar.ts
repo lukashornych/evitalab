@@ -44,32 +44,35 @@ export class TrafficViewerModuleRegistrar implements ModuleRegistrar {
 
         const trafficViewerService: TrafficViewerService = new TrafficViewerService(
             connectionService,
-            new TrafficRecordHistoryVisualisationProcessor(Immutable.List([
-                new EntityEnrichmentContainerVisualiser(
-                    workspaceService,
-                    evitaQLConsoleTabFactory
-                ),
-                new EntityFetchContainerVisualiser(
-                    workspaceService,
-                    evitaQLConsoleTabFactory
-                ),
-                new MutationContainerVisualiser(),
-                new QueryContainerVisualiser(
-                    workspaceService,
-                    evitaQLConsoleTabFactory
-                ),
-                new SessionCloseContainerVisualiser(),
-                new SessionStartContainerVisualiser(
-                    workspaceService,
-                    trafficRecordHistoryViewerTabFactory
-                ),
-                new SourceQueryContainerVisualiser(
-                    workspaceService,
-                    graphQLConsoleTabFactory,
-                    evitaQLConsoleTabFactory
-                ),
-                new SourceQueryStatisticsContainerVisualiser()
-            ]))
+            new TrafficRecordHistoryVisualisationProcessor(
+                connectionService,
+                Immutable.List([
+                    new EntityEnrichmentContainerVisualiser(
+                        workspaceService,
+                        evitaQLConsoleTabFactory
+                    ),
+                    new EntityFetchContainerVisualiser(
+                        workspaceService,
+                        evitaQLConsoleTabFactory
+                    ),
+                    new MutationContainerVisualiser(),
+                    new QueryContainerVisualiser(
+                        workspaceService,
+                        evitaQLConsoleTabFactory
+                    ),
+                    new SessionCloseContainerVisualiser(),
+                    new SessionStartContainerVisualiser(
+                        workspaceService,
+                        trafficRecordHistoryViewerTabFactory
+                    ),
+                    new SourceQueryContainerVisualiser(
+                        workspaceService,
+                        graphQLConsoleTabFactory,
+                        evitaQLConsoleTabFactory
+                    ),
+                    new SourceQueryStatisticsContainerVisualiser()
+                ])
+            )
         )
         builder.provide(trafficViewerServiceInjectionKey, trafficViewerService)
     }

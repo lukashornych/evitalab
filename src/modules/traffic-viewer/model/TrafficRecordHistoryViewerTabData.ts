@@ -1,5 +1,7 @@
 import { TabData } from '@/modules/workspace/tab/model/TabData'
-import { TrafficRecordHistoryViewerTabDataDto } from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabDataDto'
+import {
+    TrafficRecordHistoryViewerTabDataDto
+} from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabDataDto'
 import { OffsetDateTime } from '@/modules/connection/model/data-type/OffsetDateTime'
 import { Uuid } from '@/modules/connection/model/data-type/Uuid'
 import { Duration } from 'luxon'

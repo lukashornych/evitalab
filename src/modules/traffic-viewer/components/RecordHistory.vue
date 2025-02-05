@@ -199,9 +199,9 @@ function pushNewRecords(newRecords: Immutable.List<TrafficRecord>): void {
     }
 }
 
-function processRecords(): void {
+async function processRecords(): Promise<void> {
     // note: we compute the history manually here because for some reason, computed ref wasn't working
-    history.value = trafficViewerService.processRecords(props.dataPointer, records).toArray()
+    history.value = (await trafficViewerService.processRecords(props.dataPointer, props.criteria, records)).toArray()
 }
 
 function handleRecordFetchError(e: any): void {

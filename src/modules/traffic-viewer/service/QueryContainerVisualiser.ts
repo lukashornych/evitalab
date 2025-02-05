@@ -17,6 +17,7 @@ import { EvitaQLConsoleTabData } from '@/modules/evitaql-console/console/workspa
 import { TrafficRecordMetadataItemContext } from '@/modules/traffic-viewer/model/TrafficRecordMetadataItemContext'
 import { Label, labelSourceQuery } from '@/modules/connection/model/traffic/Label'
 import { formatCount } from '@/utils/string'
+import { TrafficRecordPreparationContext } from '@/modules/traffic-viewer/model/TrafficRecordPreparationContext'
 
 /**
  * Visualises query record.
@@ -36,16 +37,22 @@ export class QueryContainerVisualiser extends TrafficRecordVisualiser<QueryConta
         return trafficRecord instanceof QueryContainer
     }
 
+    prepare(ctx: TrafficRecordPreparationContext, trafficRecord: QueryContainer): void {
+        const sourceQueryId: string | undefined = this.resolveSourceQueryId(trafficRecord)
+        if (sourceQueryId != undefined) {
+            if (!ctx.isSourceQueryRecordVisitedOrRequested(sourceQueryId)) {
+                ctx.requestAdditionalSourceQueryRecord(sourceQueryId, trafficRecord)
+            }
+        }
+    }
+
     visualise(ctx: TrafficRecordVisualisationContext, trafficRecord: QueryContainer): void {
         const visualisedSessionRecord: TrafficRecordVisualisationDefinition | undefined = ctx.getVisualisedSessionRecord(trafficRecord.sessionId)
 
-        const sourceQueryId: string | undefined = trafficRecord.labels
-            .find(label => label.name === labelSourceQuery)
-            ?.value
+        const sourceQueryId: string | undefined = this.resolveSourceQueryId(trafficRecord)
         let visualisedSourceQueryRecord: TrafficRecordVisualisationDefinition | undefined = undefined
         if (sourceQueryId != undefined) {
-            const normalizedSourceQueryId: string = sourceQueryId.substring(1, sourceQueryId.length - 1)
-            visualisedSourceQueryRecord = ctx.getVisualisedSourceQueryRecord(normalizedSourceQueryId)
+            visualisedSourceQueryRecord = ctx.getVisualisedSourceQueryRecord(sourceQueryId)
         }
 
         const visualisedRecord: TrafficRecordVisualisationDefinition = new TrafficRecordVisualisationDefinition(
@@ -153,5 +160,15 @@ export class QueryContainerVisualiser extends TrafficRecordVisualiser<QueryConta
         ))
 
         return Immutable.List(actions)
+    }
+
+    private resolveSourceQueryId(trafficRecord: QueryContainer): string | undefined {
+        const sourceQueryId: string | undefined = trafficRecord.labels
+            .find(label => label.name === labelSourceQuery)
+            ?.value
+        if (sourceQueryId != undefined) {
+            return sourceQueryId.substring(1, sourceQueryId.length - 1)
+        }
+        return undefined
     }
 }

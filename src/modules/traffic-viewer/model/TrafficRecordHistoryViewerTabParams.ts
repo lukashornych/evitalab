@@ -1,5 +1,7 @@
 import { TabParams } from '@/modules/workspace/tab/model/TabParams'
-import { TrafficRecordHistoryViewerTabParamsDto } from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabParamsDto'
+import {
+    TrafficRecordHistoryViewerTabParamsDto
+} from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabParamsDto'
 import { TrafficRecordHistoryDataPointer } from '@/modules/traffic-viewer/model/TrafficRecordHistoryDataPointer'
 
 export class TrafficRecordHistoryViewerTabParams implements TabParams<TrafficRecordHistoryViewerTabParamsDto> {

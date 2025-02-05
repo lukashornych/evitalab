@@ -3,7 +3,8 @@ import { TrafficRecordVisualiser } from '@/modules/traffic-viewer/service/Traffi
 import { TrafficRecordVisualisationContext } from '../model/TrafficRecordVisualisationContext'
 import {
     MetadataGroup,
-    MetadataItem, metadataItemFinishedStatusIdentifier,
+    MetadataItem,
+    metadataItemFinishedStatusIdentifier,
     TrafficRecordVisualisationDefinition
 } from '../model/TrafficRecordVisualisationDefinition'
 import { SessionCloseContainer } from '@/modules/connection/model/traffic/SessionCloseContainer'

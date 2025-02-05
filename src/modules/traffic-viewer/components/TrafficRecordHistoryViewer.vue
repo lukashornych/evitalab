@@ -21,7 +21,7 @@ import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue
 import { List } from 'immutable'
 import { Command } from '@/modules/keymap/model/Command'
 import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
-import RecordHistoryList from '@/modules/traffic-viewer/components/RecordHistory.vue'
+import RecordHistory from '@/modules/traffic-viewer/components/RecordHistory.vue'
 import { TrafficRecordHistoryCriteria } from '@/modules/traffic-viewer/model/TrafficRecordHistoryCriteria'
 import RecordHistoryFilter from '@/modules/traffic-viewer/components/RecordHistoryFilter.vue'
 import { provideHistoryCriteria } from '@/modules/traffic-viewer/components/dependencies'
@@ -54,7 +54,7 @@ const title: List<string> = List.of(
 )
 
 const shareTabButtonRef = ref<InstanceType<typeof ShareTabButton> | undefined>()
-const historyListRef = ref<InstanceType<typeof RecordHistoryList> | undefined>()
+const historyListRef = ref<InstanceType<typeof RecordHistory> | undefined>()
 const criteria = ref<TrafficRecordHistoryCriteria>(new TrafficRecordHistoryCriteria(
     props.data.since,
     props.data.types,
@@ -172,7 +172,7 @@ async function reloadHistoryList(): Promise<void> {
         </VTabToolbar>
 
         <VSheet class="traffic-recording-viewer__body">
-            <RecordHistoryList
+            <RecordHistory
                 ref="historyListRef"
                 :data-pointer="params.dataPointer"
                 :criteria="criteria"
