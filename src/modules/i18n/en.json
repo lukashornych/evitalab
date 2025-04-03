@@ -83,6 +83,9 @@
     }
   },
   "panel": {
+    "button": {
+      "manage": "Manage evitaLab"
+    },
     "manage": {
       "manage": {
         "title": "Manage",
@@ -294,7 +297,7 @@
     }
   },
   "explorer": {
-    "title": "Connections Explorer",
+    "title": "Connection Explorer",
     "button": {
       "connect": "Connect"
     },

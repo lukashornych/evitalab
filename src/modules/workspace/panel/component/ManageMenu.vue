@@ -143,7 +143,7 @@ onUnmounted(() => {
                 <slot />
 
                 <VTooltip activator="parent">
-                    Manage evitaLab
+                    {{ t('panel.button.manage') }}
                 </VTooltip>
             </VBtn>
         </template>
