@@ -8,7 +8,7 @@ import { ModuleContextBuilder } from '@/ModuleContextBuilder'
 // todo docs
 export class ErrorViewerModuleRegistrar implements ModuleRegistrar {
 
-    register(builder: ModuleContextBuilder): void {
+    async register(builder: ModuleContextBuilder): Promise<void> {
         builder.provide(errorViewerTabFactoryInjectionKey, new ErrorViewerTabFactory())
     }
 }

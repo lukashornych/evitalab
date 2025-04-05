@@ -12,7 +12,7 @@ import { ModuleContextBuilder } from '@/ModuleContextBuilder'
 // todo lho docs
 export class NotificationModuleRegistrar implements ModuleRegistrar {
 
-    register(builder: ModuleContextBuilder): void {
+    async register(builder: ModuleContextBuilder): Promise<void> {
         const baseToast: ToastInterface = baseUseToast()
         const workspaceService: WorkspaceService = builder.inject(workspaceServiceInjectionKey)
         const errorViewerTabFactory: ErrorViewerTabFactory = builder.inject(errorViewerTabFactoryInjectionKey)

@@ -42,12 +42,14 @@ import {
     TrafficRecordHistoryViewerTabFactory,
     trafficRecordHistoryViewerTabFactoryInjectionKey
 } from '@/modules/traffic-viewer/service/TrafficRecordHistoryViewerTabFactory'
+import { EvitaLabConfig, evitaLabConfigInjectionKey } from '@/modules/config/EvitaLabConfig'
 
 export class WorkspaceModuleRegistrar implements ModuleRegistrar {
 
-    register(builder: ModuleContextBuilder): void {
+    async register(builder: ModuleContextBuilder): Promise<void> {
         const workspaceStore: WorkspaceStore = useWorkspaceStore()
 
+        const evitaLabConfig: EvitaLabConfig = builder.inject(evitaLabConfigInjectionKey)
         const labStorage: LabStorage = builder.inject(labStorageInjectionKey)
         const connectionService: ConnectionService = builder.inject(connectionServiceInjectionKey)
 
@@ -84,6 +86,7 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
         builder.provide(
             workspaceServiceInjectionKey,
             new WorkspaceService(
+                evitaLabConfig,
                 workspaceStore,
                 labStorage,
                 entityViewerTabFactory,

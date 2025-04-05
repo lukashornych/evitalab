@@ -130,30 +130,36 @@
     }
   },
   "welcomeScreen": {
-    "changelog": "changelog",
-    "description": "evitaDB web client",
-    "blog": {
-      "thumbnail": {
-        "alt": "Image - {title}"
+    "standalone": {
+      "changelog": "changelog",
+      "description": "evitaDB web client",
+      "blog": {
+        "thumbnail": {
+          "alt": "Image - {title}"
+        },
+        "button": {
+          "read": "Read"
+        }
       },
-      "button": {
-        "read": "Read"
+      "link": {
+        "evitaDBDocumentation": {
+          "text": "Check out the {link}",
+          "link": "evitaDB documentation"
+        },
+        "evitaLabGitHub": {
+          "text": "Give us a ⭐ on {link}",
+          "link": "GitHub"
+        },
+        "discord": {
+          "text": "Reach out to us on {link}",
+          "link": "Discord"
+        },
+        "submitIssue": "Submit an issue"
       }
     },
-    "link": {
-      "evitaDBDocumentation": {
-        "text": "Check out the {link}",
-        "link": "evitaDB documentation"
-      },
-      "evitaLabGitHub": {
-        "text": "Give us a ⭐ on {link}",
-        "link": "GitHub"
-      },
-      "discord": {
-        "text": "Reach out to us on {link}",
-        "link": "Discord"
-      },
-      "submitIssue": "Submit an issue"
+    "driver": {
+      "changelog": "changelog",
+      "description": "driver"
     }
   },
   "tab": {
