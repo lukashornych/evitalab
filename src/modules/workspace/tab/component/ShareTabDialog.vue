@@ -65,9 +65,9 @@ function cancel(): void {
 
 function copyLink(): void {
     navigator.clipboard.writeText(link.value).then(() => {
-        toaster.info(t('tabShare.shareDialog.notification.linkCopied'))
+        toaster.info(t('tabShare.shareDialog.notification.linkCopied')).then()
     }).catch(() => {
-        toaster.error(new UnexpectedError(t('common.notification.failedToCopyToClipboard')))
+        toaster.error(t('common.notification.failedToCopyToClipboard')).then()
     })
 
     emit('update:modelValue', false)

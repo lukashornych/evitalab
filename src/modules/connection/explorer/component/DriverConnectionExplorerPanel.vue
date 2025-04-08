@@ -116,7 +116,7 @@ async function loadServerStatus(): Promise<boolean> {
         serverStatus.value = await connectionService.getServerStatus(connection)
         return true
     } catch (e: any) {
-        toaster.error(t(
+        await toaster.error(t(
             'explorer.connection.notification.couldNotLoadServerStatus',
             {
                 connectionName: connection.name,
@@ -135,7 +135,7 @@ async function loadCatalogs(): Promise<boolean> {
             })
         return true
     } catch (e: any) {
-        toaster.error(t(
+        await toaster.error(t(
             'explorer.connection.notification.couldNotLoadCatalogs',
             {
                 connectionName: connection.name,
@@ -149,12 +149,12 @@ async function loadCatalogs(): Promise<boolean> {
 async function closeAllSessions(): Promise<void> {
     try {
         await connectionService.closeAllSessions(connection)
-        toaster.success(t(
+        await toaster.success(t(
             'explorer.connection.notification.closedAllSessions',
             { connectionName: connection.name }
         ))
     } catch (e: any) {
-        toaster.error(t(
+        await toaster.error(t(
             'explorer.connection.notification.couldNotCloseSessions',
             {
                 connectionName: connection.name,

@@ -9,6 +9,7 @@ import { ModuleContextBuilder } from '@/ModuleContextBuilder'
 export class ErrorViewerModuleRegistrar implements ModuleRegistrar {
 
     async register(builder: ModuleContextBuilder): Promise<void> {
-        builder.provide(errorViewerTabFactoryInjectionKey, new ErrorViewerTabFactory())
+        // todo lho fix circular dep
+        // builder.provide(errorViewerTabFactoryInjectionKey, new ErrorViewerTabFactory())
     }
 }
