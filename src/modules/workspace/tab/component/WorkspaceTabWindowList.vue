@@ -93,7 +93,7 @@ async function resolveDemoCodeSnippet(urlSearchParams: URLSearchParams): Promise
     try {
         return await demoCodeSnippetResolver.resolve(demoSnippetRequestSerialized)
     } catch (e: any) {
-        toaster.error(e)
+        await toaster.error('Could not resolve demo code snippet', e) // todo lho i18n
     }
 }
 
@@ -109,7 +109,7 @@ async function resolveSharedTab(urlSearchParams: URLSearchParams): Promise<TabDe
     try {
         return await sharedTabResolver.resolve(sharedTabSerialized)
     } catch (e: any) {
-        toaster.error(e)
+        await toaster.error('Could not resolve shared tab', e) // todo lho i18n
     }
 }
 
@@ -128,11 +128,11 @@ function restorePreviousSession(): void {
         }
 
         if (sessionRestored) {
-            toaster.info('Your last session has been restored.')
+            toaster.info('Your last session has been restored.').then()
         }
     } catch (e) {
         console.error(e)
-        toaster.warning('Failed to fully restore your last session.')
+        toaster.warning('Failed to fully restore your last session.').then()
     }
 }
 

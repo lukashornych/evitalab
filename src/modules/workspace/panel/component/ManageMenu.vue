@@ -121,7 +121,7 @@ function handleOptionClick(selected: any): void {
                 window.open('https://github.com/FgForrest/evitaDB/issues', '_blank');
                 break
             default:
-                toaster.error(new UnexpectedError(`Unknown manage option ${selected[0]}`))
+                toaster.error(`Unknown manage option ${selected[0]}`).then()
         }
     }
 }

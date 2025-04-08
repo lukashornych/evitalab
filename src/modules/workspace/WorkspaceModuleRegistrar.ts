@@ -43,6 +43,10 @@ import {
     trafficRecordHistoryViewerTabFactoryInjectionKey
 } from '@/modules/traffic-viewer/service/TrafficRecordHistoryViewerTabFactory'
 import { EvitaLabConfig, evitaLabConfigInjectionKey } from '@/modules/config/EvitaLabConfig'
+import {
+    ErrorViewerTabFactory,
+    errorViewerTabFactoryInjectionKey
+} from '@/modules/error-viewer/viewer/workspace/service/ErrorViewerTabFactory'
 
 export class WorkspaceModuleRegistrar implements ModuleRegistrar {
 
@@ -76,6 +80,8 @@ export class WorkspaceModuleRegistrar implements ModuleRegistrar {
         builder.provide(trafficRecordHistoryViewerTabFactoryInjectionKey, trafficRecordHistoryViewerTabFactory)
         const backupViewerTabFactory: BackupViewerTabFactory = new BackupViewerTabFactory(connectionService)
         builder.provide(backupsTabFactoryInjectionKey, backupViewerTabFactory)
+        const errorViewerTabFactory: ErrorViewerTabFactory = new ErrorViewerTabFactory()
+        builder.provide(errorViewerTabFactoryInjectionKey, errorViewerTabFactory)
         // todo lho fix circular dep
         // const entityViewerTabFactory: EntityViewerTabFactory = builder.inject(entityViewerTabFactoryInjectionKey)
         // const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory = builder.inject(evitaQLConsoleTabFactoryInjectionKey)

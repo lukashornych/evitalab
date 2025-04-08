@@ -364,8 +364,6 @@
           }
         },
         "notification": {
-          "connectionSuccess": "Successfully connected.",
-          "connectionError": "Connection test failed.",
           "connectionAdded": "The {connectionName} connection has been successfully added.",
           "couldNotAddConnection": "Could not add the connection: {reason}"
         }
@@ -553,6 +551,9 @@
   },
   "entityViewer": {
     "loadedDataWarning": "Loaded query data must be manually executed.",
+    "notification": {
+      "couldNotExecuteQuery": "Could not execute query"
+    },
     "dataLocaleSelector": {
       "item": {
         "none": "None"
