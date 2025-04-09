@@ -69,7 +69,7 @@ address. For more configuration, see [evitaDB documentation](https://evitadb.io/
 
 ### From dist
 
-If you want to run evitaLab manually, you can download the latest release from [releases page](https://github.com/FgForrest/evitalab/releases/tag/latest)
+If you want to run evitaLab manually, you can download the latest release from [releases page](https://github.com/FgForrest/evitalab/releases)
 and use any static web server to serve the files from `dist-standalone` directory. 
 For example, you can use [nginx](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/)
 
