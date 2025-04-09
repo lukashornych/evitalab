@@ -194,7 +194,7 @@ jobs:
     steps:
       - name: Clone evitaLab metadata database repository
         env:
-          REPO: "https://x-access-token:${{ secrets.REPO_ACCESS_TOKEN }}@github.com/lukashornych/evitalab-metadata-database.git"
+          REPO: "https://x-access-token:${{ secrets.REPO_ACCESS_TOKEN }}@github.com/FgForrest/evitalab-metadata-database.git"
         run: |
           git clone $REPO database
           cd database
