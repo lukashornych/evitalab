@@ -1,6 +1,6 @@
 import ky from 'ky'
 import type { InjectionKey } from 'vue'
-import { TabDefinition } from '@/modules/workspace/tab/model/TabDefinition'
+import type { AnyTabDefinition } from '@/modules/workspace/tab/model/TabDefinition'
 import type { DemoSnippetRequest } from '@/modules/workspace/tab/model/DemoSnippetRequest'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { GraphQLInstanceType } from '@/modules/graphql-console/console/model/GraphQLInstanceType'
@@ -9,6 +9,7 @@ import { EvitaQLConsoleTabFactory } from '@/modules/evitaql-console/console/work
 import { EvitaQLConsoleTabData } from '@/modules/evitaql-console/console/workspace/model/EvitaQLConsoleTabData'
 import { GraphQLConsoleTabData } from '@/modules/graphql-console/console/workspace/model/GraphQLConsoleTabData'
 import { mandatoryInject } from '@/utils/reactivity'
+import { decodeBase64ToUtf8 } from '@/utils/base64'
 
 const demoCatalog: string = 'evita'
 const baseCodeSnippetUrl: string = 'https://raw.githubusercontent.com/FgForrest/evitaDB'
@@ -31,14 +32,14 @@ export class DemoSnippetResolver {
     /**
      * Resolves input request into tab request.
      */
-    async resolve(requestSerialized: string): Promise<TabDefinition<any, any>> {
-        const request: DemoSnippetRequest = JSON.parse(atob(requestSerialized)) as DemoSnippetRequest
+    async resolve(requestSerialized: string): Promise<AnyTabDefinition> {
+        const request: DemoSnippetRequest = JSON.parse(decodeBase64ToUtf8(requestSerialized)) as DemoSnippetRequest
 
         const codeSnippetUrl: string = `${baseCodeSnippetUrl}/${request.branch}/${request.path}`
         let codeSnippetContent: string
         try {
             codeSnippetContent = await ky.get(codeSnippetUrl).text()
-        } catch (e) {
+        } catch {
             throw new UnexpectedError(`Cannot fetch demo code snippet '${request.path}' from GitHub from branch '${request.branch}'.`)
         }
 

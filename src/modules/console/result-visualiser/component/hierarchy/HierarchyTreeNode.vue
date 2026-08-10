@@ -1,8 +1,7 @@
 <script setup lang="ts">
 /**
- * Visualises hierarchy tree node from raw JSON.
+ * Recursively renders a single hierarchy tree node with expandable children.
  */
-
 import { ref } from 'vue'
 import {
     VisualisedHierarchyTreeNode
@@ -12,9 +11,8 @@ import VListItemLazyIterator from '@/modules/base/component/VListItemLazyIterato
 
 const nodeChildrenPageSize: number = 10
 
-const props = defineProps<{
-    node: VisualisedHierarchyTreeNode,
-    entityRepresentativeAttributes: string[]
+defineProps<{
+    node: VisualisedHierarchyTreeNode
 }>()
 
 const nodeChildrenPage = ref<number>(1)
@@ -36,7 +34,6 @@ const nodeChildrenPage = ref<number>(1)
             <template #item="{ item: childNode }">
                 <HierarchyTreeNode
                     :node="childNode"
-                    :entity-representative-attributes="entityRepresentativeAttributes"
                 />
             </template>
         </VListItemLazyIterator>

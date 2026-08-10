@@ -15,17 +15,29 @@ import { Scalar } from '@/modules/database-driver/data-type/Scalar'
 import { NativeValue } from '@/modules/entity-viewer/viewer/model/entity-property-value/NativeValue.ts'
 import type { Predecessor } from '@/modules/database-driver/data-type/Predecessor.ts'
 import { ReferenceSchema } from '@/modules/database-driver/request-response/schema/ReferenceSchema.ts'
-import { MutationHistoryViewerTabData } from '@/modules/history-viewer/model/MutationHistoryViewerTabData.ts'
-import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService.ts'
-import { GrpcChangeCaptureContainerType } from '@/modules/database-driver/connector/grpc/gen/GrpcChangeCapture_pb.ts'
+import { EntityReferences } from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityReferences.ts'
+import {
+    EntityReferenceAttributes
+} from '@/modules/entity-viewer/viewer/model/entity-property-value/EntityReferenceAttributes.ts'
+import { copyToClipboard } from '@/utils/clipboard'
+import {
+    EntityGridCellMenuFactory,
+    useEntityGridCellMenuFactory
+} from '@/modules/entity-viewer/viewer/service/EntityGridCellMenuFactory'
+import {
+    EntityGridCellMenuItemType
+} from '@/modules/entity-viewer/viewer/model/entity-grid/EntityGridCellMenuItemType'
+import { MenuAction } from '@/modules/base/model/menu/MenuAction'
+import type { MenuItem } from '@/modules/base/model/menu/MenuItem'
+import { errorMessage } from '@/utils/error'
 
 const tabProps = useTabProps()
-const workspaceService: WorkspaceService = useWorkspaceService()
+const entityGridCellMenuFactory: EntityGridCellMenuFactory = useEntityGridCellMenuFactory()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
 const props = defineProps<{
-    propertyKey: number,
+    entityPrimaryKey: number,
     propertyDescriptor: EntityPropertyDescriptor | undefined,
     propertyValue: EntityPropertyValue | EntityPropertyValue[] | undefined
 }>()
@@ -35,38 +47,6 @@ const emit = defineEmits<{
 const dataLocale = useDataLocale()
 const priceType = usePriceType()
 const parent = ref()
-
-function useKeyPress(targetKey: string) {
-    const isPressed = ref(false)
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key.toLowerCase() === targetKey.toLowerCase()) {
-            isPressed.value = true
-        }
-    }
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-        if (e.key.toLowerCase() === targetKey.toLowerCase()) {
-            isPressed.value = false
-        }
-    }
-
-    onMounted(() => {
-        window.addEventListener('keydown', handleKeyDown)
-        window.addEventListener('keyup', handleKeyUp)
-    })
-
-    onBeforeUnmount(() => {
-        window.removeEventListener('keydown', handleKeyDown)
-        window.removeEventListener('keyup', handleKeyUp)
-    })
-
-    return isPressed
-}
-
-const isLPressed = useKeyPress('l')
-const isEPressed = useKeyPress('e')
-
 
 const printablePropertyValue = computed<string>(() => toPrintablePropertyValue(props.propertyValue))
 const prependIcon = computed<string | undefined>(() => {
@@ -83,7 +63,7 @@ const prependIcon = computed<string | undefined>(() => {
             return 'mdi-ray-end-arrow'
         }
     } else if (props.propertyDescriptor?.type === EntityPropertyType.References && props.propertyDescriptor.schema instanceof ReferenceSchema) {
-        return 'mdi-open-in-new'
+        return 'mdi-link-variant'
     } else
         return undefined
 })
@@ -96,6 +76,10 @@ const noLocaleSelected = computed<boolean>(() => {
 })
 const emptyArray = computed<boolean>(() => {
     return props.propertyValue instanceof Array && props.propertyValue.length === 0
+})
+const emptyReferences = computed<boolean>(() => {
+    return (props.propertyValue instanceof EntityReferences || props.propertyValue instanceof EntityReferenceAttributes) &&
+        props.propertyValue.count() === 0
 })
 const nullValue = computed<boolean>(() => {
     return props.propertyValue == undefined
@@ -136,7 +120,7 @@ function copyValue(raw: boolean): void {
                 value = entityValue.toRawString()
             }
 
-            navigator.clipboard.writeText(value).then(() => {
+            copyToClipboard(value).then(() => {
                 toaster.info(t('common.notification.copiedToClipboard')).then()
             }).catch(() => {
                 toaster.error(t('common.notification.failedToCopyToClipboard')).then()
@@ -144,7 +128,7 @@ function copyValue(raw: boolean): void {
         }
     } else {
         if (printablePropertyValue.value) {
-            navigator.clipboard.writeText(printablePropertyValue.value).then(() => {
+            copyToClipboard(printablePropertyValue.value).then(() => {
                 toaster.info(t('common.notification.copiedToClipboard')).then()
             }).catch(() => {
                 toaster.error(t('common.notification.failedToCopyToClipboard')).then()
@@ -174,96 +158,65 @@ const tooltip = computed<string>(() => {
 })
 
 function handleClick(e: MouseEvent): void {
-    e.preventDefault()
-
-    if (e.shiftKey && e.button === 1) {
-        copyValue(true)
-    } else if (isLPressed.value && e.button === 1) {
-        openMutationHistoryByAttribute()
-    } else if (isEPressed.value && e.button === 1) {
-        openMutationHistoryByEntity()
-    } else if (e.button === 1) {
-        copyValue(false)
+    // preventDefault must stay inside the branches: a default-prevented button 2 mousedown suppresses the
+    // subsequent contextmenu event in some browsers, which would kill the cell menu
+    if (e.button === 1) {
+        e.preventDefault()
+        copyValue(e.shiftKey)
     } else if (e.button === 0) {
+        e.preventDefault()
         emit('click')
     }
 }
 
-
-const openMutationHistoryByEntity = () => {
-    const entityPrimaryKey = props.propertyKey
-    workspaceService.createTab(
-        workspaceService.mutationHistoryViewerTabFactory.createNew(
-            tabProps.params.dataPointer.catalogName,
-            new MutationHistoryViewerTabData(
-                undefined,
-                undefined,
-                entityPrimaryKey,
-                undefined,
-                undefined,
-                [GrpcChangeCaptureContainerType.CONTAINER_ENTITY],
-                tabProps.params.dataPointer.entityType,
-                'dataSite',
-                false
-            )
-        )
-    )
-}
-
-function resolveContainerTypeList(schema: EntityPropertyType) {
-    if (schema === EntityPropertyType.References || schema === EntityPropertyType.ReferenceAttributes) { // todo - zde si nejsem jistý
-        return GrpcChangeCaptureContainerType.CONTAINER_REFERENCE
-    } else if (schema === EntityPropertyType.Attributes) {
-        return GrpcChangeCaptureContainerType.CONTAINER_ATTRIBUTE
-    } else if (schema === EntityPropertyType.Entity) {
-        return GrpcChangeCaptureContainerType.CONTAINER_ENTITY
-    } else if (schema === EntityPropertyType.Prices) {
-        return GrpcChangeCaptureContainerType.CONTAINER_PRICE
-    } else if (schema === EntityPropertyType.AssociatedData) {
-        return GrpcChangeCaptureContainerType.CONTAINER_ASSOCIATED_DATA
-    } else {
-        return undefined
+const menuOpened = ref<boolean>(false)
+const menuTarget = ref<[number, number]>([0, 0])
+const menuItems = ref<Map<EntityGridCellMenuItemType, MenuItem<EntityGridCellMenuItemType>>>()
+const menuItemList = computed<MenuAction<EntityGridCellMenuItemType>[]>(() => {
+    if (menuItems.value == undefined) {
+        return []
     }
-}
+    return Array.from(menuItems.value.values())
+        .filter((item): item is MenuAction<EntityGridCellMenuItemType> => item instanceof MenuAction)
+})
 
-const openMutationHistoryByAttribute = () => {
-    const entityPrimaryKey = props.propertyKey
-
-
-    if (props.propertyDescriptor?.type === undefined || props.propertyDescriptor?.type === EntityPropertyType.Entity) {
-        return;
+async function openMenu(e: MouseEvent): Promise<void> {
+    try {
+        menuItems.value = await entityGridCellMenuFactory.createItems(
+            tabProps.params.dataPointer.catalogName,
+            tabProps.params.dataPointer.entityType,
+            props.entityPrimaryKey,
+            props.propertyDescriptor,
+            () => copyValue(false),
+            () => copyValue(true)
+        )
+    } catch (e) {
+        await toaster.error(errorMessage(e))
+        return
     }
 
-
-    workspaceService.createTab(
-        workspaceService.mutationHistoryViewerTabFactory.createNew(
-            tabProps.params.dataPointer.catalogName,
-            new MutationHistoryViewerTabData(
-                undefined,
-                undefined,
-                entityPrimaryKey,
-                undefined,
-                [props.propertyDescriptor?.schema?.name],
-                [resolveContainerTypeList(props.propertyDescriptor?.type)],
-                tabProps.params.dataPointer.entityType,
-                'dataSite',
-                false
-            )
-        )
-    )
+    menuTarget.value = [e.clientX, e.clientY]
+    menuOpened.value = true
 }
 
-
-
-
+function handleMenuAction(actionType: EntityGridCellMenuItemType): void {
+    const action: MenuItem<EntityGridCellMenuItemType> | undefined = menuItems.value?.get(actionType)
+    if (action instanceof MenuAction) {
+        action.execute()
+    }
+}
 </script>
 
 <template>
-    <td ref="parent" class="data-grid-cell" :class="{ 'data-grid-cell--clickable': printablePropertyValue }"
-        @mousedown="(e) => handleClick(e)">
+    <td ref="parent" class="data-grid-cell" :class="{ 'data-grid-cell--clickable': printablePropertyValue && !emptyReferences }"
+        @mousedown="(e) => handleClick(e)"
+        @contextmenu.prevent="openMenu">
         <span class="data-grid-cell__body">
             <template v-if="noLocaleSelected">
                 <span class="text-disabled">{{ t('entityViewer.grid.cell.placeholder.noLocaleSelected') }}</span>
+            </template>
+            <template v-else-if="emptyReferences">
+                <span class="text-disabled">{{ printablePropertyValue }}</span>
             </template>
             <template v-else-if="emptyArray">
                 <span class="text-disabled">{{ t('common.placeholder.emptyArray') }}</span>
@@ -281,20 +234,6 @@ const openMutationHistoryByAttribute = () => {
                         location="bottom"
                         :interactive="true">
                         <div>
-                            <VChip class="chip" size="small">
-                                <span>{{ t('command.entityViewer.entityGrid.entityGridCell.entityHistory') }}</span>
-                                <span class="text-disabled ml-1">
-                                    ({{ t('command.entityViewer.entityGrid.entityGridCell.entityHistoryDescription')
-                                    }})
-                                </span>
-                            </VChip>
-                            <VChip  class="chip" size="small">
-                                <span>{{ t('command.entityViewer.entityGrid.entityGridCell.attributeHistory') }}</span>
-                                 <span class="text-disabled ml-1">
-                                    ({{ t('command.entityViewer.entityGrid.entityGridCell.attributeHistoryDescription')
-                                     }})
-                                </span>
-                            </VChip>
                             <VChip class="chip" size="small">
                                 <span>{{ t('command.entityViewer.entityGrid.entityGridCell.copyValueToolTip') }}</span>
                                 <span class="text-disabled ml-1">
@@ -316,6 +255,28 @@ const openMutationHistoryByAttribute = () => {
                 </span>
             </template>
         </span>
+
+        <VMenu
+            v-if="menuItemList.length > 0"
+            v-model="menuOpened"
+            :target="menuTarget"
+        >
+            <VList
+                density="compact"
+                :items="menuItemList"
+                @click:select="handleMenuAction($event.id as EntityGridCellMenuItemType)"
+            >
+                <template #item="{ props }">
+                    <VListItem
+                        :prepend-icon="props.prependIcon"
+                        :value="props.value"
+                        :disabled="props.disabled"
+                    >
+                        {{ props.title }}
+                    </VListItem>
+                </template>
+            </VList>
+        </VMenu>
     </td>
 </template>
 

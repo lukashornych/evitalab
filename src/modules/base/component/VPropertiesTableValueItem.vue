@@ -16,8 +16,7 @@ import { PlaceholderValue } from '@/modules/base/model/properties-table/Placehol
 
 const { t } = useI18n()
 
-const props =
-    defineProps<{
+defineProps<{
     property: Property,
     propertyValue: PropertyValue
 }>()
@@ -49,10 +48,16 @@ const props =
     />
 
     <!-- actual value is keyword -->
+    <!--
+        the color is passed twice on purpose: inside a VChipGroup (the List<PropertyValue> variant) Vuetify
+        applies `color` only to selected chips and falls back to `base-color`, while outside a group
+        `color` wins - and the global VChip default would otherwise override the base color there
+    -->
     <VChip
         v-else-if="propertyValue.value instanceof KeywordValue"
         :variant="propertyValue.action ? 'outlined' : 'plain'"
         :color="propertyValue.value?.color"
+        :base-color="propertyValue.value?.color"
         dense
         @click="propertyValue.action?.(propertyValue.value!.value)"
     >
@@ -72,8 +77,13 @@ const props =
     >
         {{ propertyValue.value.valueSpecification }}
 
-        <VTooltip v-if="propertyValue.value.description" activator="parent">
-            {{ propertyValue.value.description }}
+        <VTooltip v-if="propertyValue.value.description || propertyValue.value.descriptionMarkup" activator="parent">
+            <template v-if="propertyValue.value.descriptionMarkup">
+                <VMarkdown :source="propertyValue.value.descriptionMarkup" />
+            </template>
+            <template v-else>
+                {{ propertyValue.value.description }}
+            </template>
         </VTooltip>
     </VChip>
 
@@ -130,13 +140,11 @@ const props =
     </span>
 
     <!-- side note for the value -->
-    <div v-if="propertyValue.note">
-        <span class="ml-2">
-            <VIcon icon="mdi-alert-outline" color="warning" />
-            <VTooltip activator="parent">
-                <span>{{ propertyValue.note }}</span>
-            </VTooltip>
-        </span>
+    <div v-if="propertyValue.note" class="value-note">
+        <VIcon icon="mdi-alert-outline" color="warning" />
+        <VTooltip activator="parent">
+            <span>{{ propertyValue.note }}</span>
+        </VTooltip>
     </div>
 </template>
 
@@ -150,8 +158,24 @@ const props =
 .progress-bar-value {
     text-wrap: nowrap;
 }
+// the note sits next to the value it annotates - as a flex item among chips it has to center itself on
+// their line, otherwise the icon (24px) rides above the chips (32px). Spacing on the left already comes
+// from the annotated chip's own margin, so only the trailing gap has to be added to keep the note evenly
+// spaced between its value and whatever follows.
+.value-note {
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    margin-right: 0.5rem;
+}
+
 .text-item {
     // seems like hack to keep markdown text from overflowing outside of the table
     overflow-wrap: anywhere;
+
+    // markdown blocks carry trailing margins that would make text rows sit lower than chip rows
+    :deep(.md-content) > :last-child {
+        margin-bottom: 0;
+    }
 }
 </style>

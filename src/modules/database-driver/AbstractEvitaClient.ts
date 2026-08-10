@@ -17,6 +17,9 @@ import {
 import { ErrorTransformer } from '@/modules/database-driver/exception/ErrorTransformer'
 import { ServerStatusConverter } from '@/modules/database-driver/connector/grpc/service/converter/ServerStatusConverter'
 import {
+    EngineSettingsConverter
+} from '@/modules/database-driver/connector/grpc/service/converter/EngineSettingsConverter'
+import {
     ReservedKeywordsConverter
 } from '@/modules/database-driver/connector/grpc/service/converter/ReservedKeywordsConverter'
 import { TaskStatusConverter } from '@/modules/database-driver/connector/grpc/service/converter/TaskStatusConverter'
@@ -32,7 +35,7 @@ import { EvitaService } from './connector/grpc/gen/GrpcEvitaAPI_pb'
 import { EvitaSessionService } from './connector/grpc/gen/GrpcEvitaSessionAPI_pb'
 import { EvitaManagementService } from './connector/grpc/gen/GrpcEvitaManagementAPI_pb'
 import { GrpcEvitaTrafficRecordingService } from './connector/grpc/gen/GrpcEvitaTrafficRecordingAPI_pb'
-import type { KyInstance } from 'ky/distribution/types/ky'
+import type { KyInstance } from 'ky'
 import {
     MutationProgressConverter
 } from '@/modules/database-driver/connector/grpc/service/converter/MutationProgressConverter.ts'
@@ -40,6 +43,16 @@ import { ScopesConverter } from '@/modules/database-driver/connector/grpc/servic
 import {
     MutationHistoryConverter
 } from '@/modules/database-driver/connector/grpc/service/converter/MutationHistoryConverter.ts'
+import {
+    ChangeSystemCaptureConverter
+} from '@/modules/database-driver/connector/grpc/service/converter/ChangeSystemCaptureConverter.ts'
+import {
+    RegisterSystemChangeCaptureResponseConverter
+} from '@/modules/database-driver/connector/grpc/service/converter/RegisterSystemChangeCaptureResponseConverter.ts'
+import {
+    clientVersionHeader,
+    resolveClientVersion
+} from '@/modules/database-driver/connector/grpc/utils/ClientVersion.ts'
 
 
 export type EvitaServiceClient = Client<typeof EvitaService>
@@ -76,12 +89,15 @@ export abstract class AbstractEvitaClient {
     private _mutationProgressConverter?: MutationProgressConverter
 
     private _serverStatusConverter?: ServerStatusConverter
+    private _engineSettingsConverter?: EngineSettingsConverter
     private _reservedKeywordsConverter?: ReservedKeywordsConverter
     private _serverFileConverter?: ServerFileConverter
     private _taskStateConverter?: TaskStateConverter
     private _taskStatusConverter?: TaskStatusConverter
     private _trafficRecordingConverter?: TrafficRecordingConverter
     private _mutationHistoryConverter?: MutationHistoryConverter
+    private _changeSystemCaptureConverter?: ChangeSystemCaptureConverter
+    private _registerSystemChangeCaptureResponseConverter?: RegisterSystemChangeCaptureResponseConverter
 
     protected constructor(evitaLabConfig: EvitaLabConfig,
                           connectionService: ConnectionService) {
@@ -95,8 +111,19 @@ export abstract class AbstractEvitaClient {
 
     private get transport(): Transport {
         if (this._transport == undefined) {
+            const clientVersion: string | undefined = resolveClientVersion(__EVITADB_API_VERSION__)
             this._transport = createGrpcWebTransport({
-                baseUrl: this.connection.grpcUrl
+                baseUrl: this.connection.grpcUrl,
+                interceptors: [
+                    // declares the supported evitaDB API version to the server, so that it can pick response forms
+                    // this client understands
+                    next => async req => {
+                        if (clientVersion != undefined) {
+                            req.header.set(clientVersionHeader, clientVersion)
+                        }
+                        return await next(req)
+                    }
+                ]
             })
         }
         return this._transport
@@ -198,6 +225,13 @@ export abstract class AbstractEvitaClient {
         return this._serverStatusConverter
     }
 
+    protected get engineSettingsConverter(): EngineSettingsConverter {
+        if (this._engineSettingsConverter == undefined) {
+            this._engineSettingsConverter = new EngineSettingsConverter()
+        }
+        return this._engineSettingsConverter
+    }
+
     protected get reservedKeywordsConverter(): ReservedKeywordsConverter {
         if (this._reservedKeywordsConverter == undefined) {
             this._reservedKeywordsConverter = new ReservedKeywordsConverter()
@@ -246,5 +280,20 @@ export abstract class AbstractEvitaClient {
         }
 
         return this._mutationProgressConverter
+    }
+
+    protected get changeSystemCaptureConverter(): ChangeSystemCaptureConverter {
+        if (this._changeSystemCaptureConverter == undefined) {
+            this._changeSystemCaptureConverter = new ChangeSystemCaptureConverter()
+        }
+        return this._changeSystemCaptureConverter
+    }
+
+    protected get registerSystemChangeCaptureResponseConverter(): RegisterSystemChangeCaptureResponseConverter {
+        if (this._registerSystemChangeCaptureResponseConverter == undefined) {
+            this._registerSystemChangeCaptureResponseConverter =
+                new RegisterSystemChangeCaptureResponseConverter(this.changeSystemCaptureConverter)
+        }
+        return this._registerSystemChangeCaptureResponseConverter
     }
 }

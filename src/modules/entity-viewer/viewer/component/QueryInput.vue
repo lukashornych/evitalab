@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { asError } from '@/utils/error'
 /**
  * Query input for the LabEditorDataGrid component.
  */
@@ -46,6 +47,11 @@ const props = defineProps<{
     selectedQueryLanguage: QueryLanguage,
     filterBy: string,
     orderBy: string,
+    /**
+     * Which of the two mutually exclusive writers currently owns the order by: the grid column sort
+     * (`grid`), the user's own text (`manual`), or neither because no ordering is defined.
+     */
+    orderByOwnership: 'grid' | 'manual' | undefined,
     dataLocales: List<string>,
     selectedScope: SelectedScope[],
     selectedDataLocale: string | undefined,
@@ -81,6 +87,20 @@ const orderByInputExtensions: Extension[] = [orderByInputLangSupportCompartment.
 const orderByHistoryKey = computed<OrderByHistoryKey>(() => createOrderByByHistoryKey(tabProps.params.dataPointer))
 const orderByHistoryRecords = computed<OrderByHistoryRecord[]>(() => {
     return [...workspaceService.getTabHistoryRecords(orderByHistoryKey.value)].reverse()
+})
+
+/**
+ * Glyph telling the user who owns the order by, because the two writers overwrite each other:
+ * typing replaces a grid-driven ordering, clicking a column header replaces a hand-written one.
+ */
+const orderByOwnershipIcon = computed<string | undefined>(() => {
+    if (props.orderByOwnership === 'grid') return 'mdi-pencil-off-outline'
+    if (props.orderByOwnership === 'manual') return 'mdi-pencil-outline'
+    return undefined
+})
+const orderByOwnershipTooltip = computed<string | undefined>(() => {
+    if (props.orderByOwnership == undefined) return undefined
+    return t(`entityViewer.queryInput.orderByOwnership.${props.orderByOwnership}`)
 })
 
 watch(() => props.selectedQueryLanguage, (newValue) => {
@@ -127,8 +147,8 @@ async function executeQuery(): Promise<void> {
     try {
         workspaceService.addTabHistoryRecord(filterByHistoryKey.value, props.filterBy)
         workspaceService.addTabHistoryRecord(orderByHistoryKey.value, props.orderBy)
-    } catch (e: any) {
-        await toaster.error(t('entityViewer.queryInput.notification.failedToSaveQueryToHistory', e))
+    } catch (e) {
+        await toaster.error(t('entityViewer.queryInput.notification.failedToSaveQueryToHistory'), asError(e))
     }
     emit('executeQuery')
 }
@@ -181,6 +201,8 @@ onUnmounted(() => {
             <VInlineQueryEditor
                 :model-value="orderBy"
                 prepend-inner-icon="mdi-sort"
+                :append-inner-icon="orderByOwnershipIcon"
+                :append-inner-icon-tooltip="orderByOwnershipTooltip"
                 :placeholder="`Order by (${keymap.prettyPrint(Command.EntityViewer_OrderBy)})`"
                 @update:model-value="emit('update:orderBy', $event)"
                 @update:history-clear="workspaceService.clearTabHistory(orderByHistoryKey)"

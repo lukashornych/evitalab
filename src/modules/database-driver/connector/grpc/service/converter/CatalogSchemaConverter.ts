@@ -14,6 +14,9 @@ import {
 } from '@/modules/database-driver/connector/grpc/gen/GrpcEnums_pb'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { EntityAttributeSchema } from '@/modules/database-driver/request-response/schema/EntityAttributeSchema'
+import {
+    ReferenceAttributeSchema
+} from '@/modules/database-driver/request-response/schema/ReferenceAttributeSchema'
 import { EvolutionMode } from '@/modules/database-driver/request-response/schema/EvolutionMode'
 import type {
     GrpcAssociatedDataSchema,
@@ -25,6 +28,9 @@ import type {
 import type {
     GrpcCurrency,
     GrpcLocale,
+    GrpcScopedBucketedPartially,
+    GrpcScopedFacetedPartially,
+    GrpcScopedHistogramIndexDefinition,
     GrpcScopedReferenceIndexType
 } from '@/modules/database-driver/connector/grpc/gen/GrpcEvitaDataTypes_pb'
 import { ReferenceSchema } from '@/modules/database-driver/request-response/schema/ReferenceSchema'
@@ -64,6 +70,16 @@ import {
     ScopedReferenceIndexType
 } from '@/modules/database-driver/request-response/schema/mutation/reference/ScopedReferenceIndexType.ts'
 import { ContainerType } from '@/modules/database-driver/data-type/ContainerType.ts'
+import { ScopedExpression } from '@/modules/database-driver/request-response/schema/ScopedExpression.ts'
+import {
+    ScopedHistogramIndexDefinition
+} from '@/modules/database-driver/request-response/schema/ScopedHistogramIndexDefinition.ts'
+import {
+    HistogramIndexDefinition
+} from '@/modules/database-driver/request-response/schema/HistogramIndexDefinition.ts'
+import {
+    ConflictResolutionConverter
+} from '@/modules/database-driver/connector/grpc/service/converter/ConflictResolutionConverter.ts'
 
 
 export class CatalogSchemaConverter {
@@ -81,7 +97,8 @@ export class CatalogSchemaConverter {
             MapUtil.getNamingMap(catalogSchema.nameVariant),
             catalogSchema.description,
             this.convertGlobalAttributeSchemas(catalogSchema.attributes),
-            entitySchemaAccessor
+            entitySchemaAccessor,
+            ConflictResolutionConverter.convertConflictResolution(catalogSchema.conflictResolution)
         )
     }
 
@@ -90,9 +107,7 @@ export class CatalogSchemaConverter {
     }): GlobalAttributeSchema[] {
         const globalAttributeSchemas: GlobalAttributeSchema[] = []
 
-        for (const attributeSchema in attributeSchemas) {
-            const schema: GrpcGlobalAttributeSchema =
-                attributeSchemas[attributeSchema]
+        for (const schema of Object.values(attributeSchemas)) {
             globalAttributeSchemas.push(
                 this.convertGlobalAttributeSchema(
                     schema
@@ -108,7 +123,7 @@ export class CatalogSchemaConverter {
         const scalar = ScalarConverter.convertScalar(attribute.type)
         const nameVariants = MapUtil.getNamingMap(attribute.nameVariant)
         if (attribute.schemaType === GrpcAttributeSchemaType.ENTITY_SCHEMA) {
-            return new AttributeSchema(
+            return new EntityAttributeSchema(
                 attribute.name,
                 nameVariants,
                 attribute.description ?? undefined,
@@ -121,16 +136,18 @@ export class CatalogSchemaConverter {
                 ),
                 attribute.localized,
                 attribute.indexedDecimalPlaces,
+                attribute.representative,
                 ScopesConverter.convertEntityScopes(attribute.sortableInScopes),
                 ScopesConverter.convertEntityScopes(attribute.filterableInScopes),
-                ScopesConverter.convertUniqueInScopes(attribute.uniqueInScopes)
+                ScopesConverter.convertUniqueInScopes(attribute.uniqueInScopes),
+                ConflictResolutionConverter.convertConflictResolutionOverride(attribute.conflictResolutionOverride)
             )
         } else if (attribute.schemaType === GrpcAttributeSchemaType.REFERENCE_SCHEMA) {
-            return new EntityAttributeSchema(
+            return new ReferenceAttributeSchema(
                 attribute.name,
                 nameVariants,
-                attribute.description,
-                attribute.deprecationNotice,
+                attribute.description ?? undefined,
+                attribute.deprecationNotice ?? undefined,
                 scalar,
                 attribute.nullable,
                 EvitaValueConverter.convertGrpcValue(
@@ -142,14 +159,15 @@ export class CatalogSchemaConverter {
                 attribute.representative,
                 ScopesConverter.convertEntityScopes(attribute.sortableInScopes),
                 ScopesConverter.convertEntityScopes(attribute.filterableInScopes),
-                ScopesConverter.convertUniqueInScopes(attribute.uniqueInScopes)
+                ScopesConverter.convertUniqueInScopes(attribute.uniqueInScopes),
+                ConflictResolutionConverter.convertConflictResolutionOverride(attribute.conflictResolutionOverride)
             )
         } else if (attribute.schemaType === GrpcAttributeSchemaType.GLOBAL_SCHEMA) {
             return new GlobalAttributeSchema(
                 attribute.name,
                 MapUtil.getNamingMap(attribute.nameVariant),
-                attribute.description,
-                attribute.deprecationNotice,
+                attribute.description ?? undefined,
+                attribute.deprecationNotice ?? undefined,
                 ScalarConverter.convertScalar(attribute.type),
                 attribute.nullable,
                 EvitaValueConverter.convertGrpcValue(
@@ -162,7 +180,8 @@ export class CatalogSchemaConverter {
                 ScopesConverter.convertEntityScopes(attribute.sortableInScopes),
                 ScopesConverter.convertEntityScopes(attribute.filterableInScopes),
                 ScopesConverter.convertUniqueGloballyInScopes(attribute.uniqueGloballyInScopes),
-                ScopesConverter.convertUniqueInScopes(attribute.uniqueInScopes)
+                ScopesConverter.convertUniqueInScopes(attribute.uniqueInScopes),
+                ConflictResolutionConverter.convertConflictResolutionOverride(attribute.conflictResolutionOverride)
             )
         } else {
             throw new UnexpectedError('Unaccepted type')
@@ -190,7 +209,8 @@ export class CatalogSchemaConverter {
             ScopesConverter.convertEntityScopes(globalAttributeSchema.sortableInScopes),
             ScopesConverter.convertEntityScopes(globalAttributeSchema.filterableInScopes),
             ScopesConverter.convertUniqueGloballyInScopes(globalAttributeSchema.uniqueGloballyInScopes),
-            ScopesConverter.convertUniqueInScopes(globalAttributeSchema.uniqueInScopes)
+            ScopesConverter.convertUniqueInScopes(globalAttributeSchema.uniqueInScopes),
+            ConflictResolutionConverter.convertConflictResolutionOverride(globalAttributeSchema.conflictResolutionOverride)
         )
     }
 
@@ -213,7 +233,8 @@ export class CatalogSchemaConverter {
                 entitySchema.sortableAttributeCompounds
             ),
             this.convertAssociatedDataSchemas(entitySchema.associatedData),
-            this.convertReferenceSchemas(entitySchema.references)
+            this.convertReferenceSchemas(entitySchema.references),
+            ConflictResolutionConverter.convertConflictResolution(entitySchema.conflictResolution)
         )
     }
 
@@ -236,9 +257,7 @@ export class CatalogSchemaConverter {
         [key: string]: GrpcReferenceSchema
     }): ReferenceSchema[] {
         const newReferenceSchemas: ReferenceSchema[] = []
-        for (const referenceName in referenceSchemas) {
-            const driverReferenceSchema: GrpcReferenceSchema =
-                referenceSchemas[referenceName]
+        for (const driverReferenceSchema of Object.values(referenceSchemas)) {
             newReferenceSchemas.push(
                 this.convertReferenceSchema(driverReferenceSchema)
             )
@@ -250,9 +269,7 @@ export class CatalogSchemaConverter {
         [key: string]: GrpcAttributeSchema
     }): EntityAttributeSchema[] {
         const entityAttributesSchemas: EntityAttributeSchema[] = []
-        for (const attributeName in entityAttributeSchemas) {
-            const driverEntityAttributeSchema: GrpcAttributeSchema =
-                entityAttributeSchemas[attributeName]
+        for (const driverEntityAttributeSchema of Object.values(entityAttributeSchemas)) {
             entityAttributesSchemas.push(
                 this.convertAttributeSchema(
                     driverEntityAttributeSchema
@@ -293,6 +310,9 @@ export class CatalogSchemaConverter {
                 ),
                 this.convertScopedIndexTypes(referenceSchema.scopedIndexTypes),
                 ScopesConverter.convertEntityScopes(referenceSchema.facetedInScopes),
+                this.convertScopedExpressions(referenceSchema.facetedPartially),
+                this.convertScopedHistogramIndexDefinitions(referenceSchema.bucketed),
+                this.convertScopedExpressions(referenceSchema.bucketedPartially),
                 referenceSchema.reflectedReferenceName,
                 referenceSchema.descriptionInherited,
                 referenceSchema.deprecationNoticeInherited,
@@ -300,7 +320,8 @@ export class CatalogSchemaConverter {
                 referenceSchema.facetedInherited,
                 referenceSchema.indexedInherited,
                 CatalogSchemaConverter.convertAttributeInheritanceBehavior(referenceSchema.attributeInheritanceBehavior),
-                referenceSchema.attributeInheritanceFilter
+                referenceSchema.attributeInheritanceFilter,
+                ConflictResolutionConverter.convertConflictResolutionOverride(referenceSchema.conflictResolutionOverride)
             )
         } else {
             return new ReferenceSchema(
@@ -320,9 +341,39 @@ export class CatalogSchemaConverter {
                     referenceSchema.sortableAttributeCompounds
                 ),
                 this.convertScopedIndexTypes(referenceSchema.scopedIndexTypes),
-                ScopesConverter.convertEntityScopes(referenceSchema.facetedInScopes)
+                ScopesConverter.convertEntityScopes(referenceSchema.facetedInScopes),
+                this.convertScopedExpressions(referenceSchema.facetedPartially),
+                this.convertScopedHistogramIndexDefinitions(referenceSchema.bucketed),
+                this.convertScopedExpressions(referenceSchema.bucketedPartially),
+                ConflictResolutionConverter.convertConflictResolutionOverride(referenceSchema.conflictResolutionOverride)
             )
         }
+    }
+
+    private convertScopedExpressions(
+        scoped: GrpcScopedFacetedPartially[] | GrpcScopedBucketedPartially[]
+    ): ImmutableList<ScopedExpression> {
+        return ImmutableList(scoped.map(x =>
+            new ScopedExpression(
+                ScopesConverter.convertEntityScope(x.scope),
+                x.expression
+            )
+        ))
+    }
+
+    private convertScopedHistogramIndexDefinitions(
+        defs: GrpcScopedHistogramIndexDefinition[]
+    ): ImmutableList<ScopedHistogramIndexDefinition> {
+        return ImmutableList(defs.map(x =>
+            new ScopedHistogramIndexDefinition(
+                ScopesConverter.convertEntityScope(x.scope),
+                new HistogramIndexDefinition(
+                    x.nameOfTheIndex,
+                    MapUtil.getNamingMap(x.nameVariants),
+                    x.valueExpression
+                )
+            )
+        ))
     }
 
     private convertScopedIndexTypes(scopeType: GrpcScopedReferenceIndexType[]): ImmutableList<ScopedReferenceIndexType> {
@@ -345,9 +396,7 @@ export class CatalogSchemaConverter {
         [key: string]: GrpcAttributeSchema
     }): AttributeSchema[] {
         const attributesSchemas: AttributeSchema[] = []
-        for (const attributeName in attributeSchemas) {
-            const driverAttributeSchema: GrpcAttributeSchema =
-                attributeSchemas[attributeName]
+        for (const driverAttributeSchema of Object.values(attributeSchemas)) {
             attributesSchemas.push(
                 this.convertAttributeSchema(driverAttributeSchema)
             )
@@ -359,9 +408,7 @@ export class CatalogSchemaConverter {
         [key: string]: GrpcAssociatedDataSchema
     }): AssociatedDataSchema[] {
         const newAssociatedDataSchemas: AssociatedDataSchema[] = []
-        for (const associatedDataName in associatedDataSchemas) {
-            const driverAssociatedDataSchema: GrpcAssociatedDataSchema =
-                associatedDataSchemas[associatedDataName]
+        for (const driverAssociatedDataSchema of Object.values(associatedDataSchemas)) {
             newAssociatedDataSchemas.push(
                 this.convertAssociatedDataSchema(driverAssociatedDataSchema)
             )
@@ -381,7 +428,8 @@ export class CatalogSchemaConverter {
                 associatedDataSchema.type
             ),
             associatedDataSchema.nullable,
-            associatedDataSchema.localized
+            associatedDataSchema.localized,
+            ConflictResolutionConverter.convertConflictResolutionOverride(associatedDataSchema.conflictResolutionOverride)
         )
     }
 
@@ -401,9 +449,7 @@ export class CatalogSchemaConverter {
         [key: string]: GrpcSortableAttributeCompoundSchema
     }): SortableAttributeCompoundSchema[] {
         const sortableAttributeSchemas: SortableAttributeCompoundSchema[] = []
-        for (const compoundName in sortableAttributeCompoundSchemas) {
-            const driverSortableAttributeCompoundSchema: GrpcSortableAttributeCompoundSchema =
-                sortableAttributeCompoundSchemas[compoundName]
+        for (const driverSortableAttributeCompoundSchema of Object.values(sortableAttributeCompoundSchemas)) {
             sortableAttributeSchemas.push(
                 this.convertSortableAttributeCompoundSchema(
                     driverSortableAttributeCompoundSchema
@@ -533,8 +579,8 @@ export class CatalogSchemaConverter {
         }
     }
 
-    static toContainerType2(input: GrpcChangeCaptureContainerType[]): GrpcChangeCaptureContainerType[] {
-        return input.map(it => typeof it === 'string' ? GrpcChangeCaptureContainerType[it as any] : it)
+    static toContainerType2(input: (GrpcChangeCaptureContainerType | string)[]): GrpcChangeCaptureContainerType[] {
+        return input.map(it => typeof it === 'string' ? GrpcChangeCaptureContainerType[it as keyof typeof GrpcChangeCaptureContainerType] : it)
     }
 
 

@@ -1,7 +1,6 @@
 // Plugins
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import Fonts from 'unplugin-fonts/vite'
 import Layouts from 'vite-plugin-vue-layouts-next'
 import Vue from '@vitejs/plugin-vue'
 import VueRouter from 'unplugin-vue-router/vite'
@@ -11,6 +10,8 @@ import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 // Utilities
 import { defineConfig, loadEnv } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
+import { readFileSync } from 'node:fs'
+import { NodePackageImporter } from 'sass'
 import XXH, { HashObject } from 'xxhashjs'
 import { OutputOptions } from 'rollup'
 
@@ -23,16 +24,21 @@ export default defineConfig(({ mode }) => {
     const evitaLabVersionSuffix: string = resolveEvitaLabVersionSuffix(env)
 
     let outputOptions: OutputOptions
-    if (labRunMode === 'STANDALONE') {
-        outputOptions = {
-            chunkFileNames: `assets/[name]-[hash]-${evitaLabVersionSuffix}.js`,
-            entryFileNames: `assets/[name]-${evitaLabVersionSuffix}.js`,
-            assetFileNames: `assets/[name]-[hash]-${evitaLabVersionSuffix}[extname]`
-        }
-    } else if (labRunMode === 'DRIVER') {
-        outputOptions = {
-            inlineDynamicImports: true
-        }
+    switch (labRunMode) {
+        case 'STANDALONE':
+            outputOptions = {
+                chunkFileNames: `assets/[name]-[hash]-${evitaLabVersionSuffix}.js`,
+                entryFileNames: `assets/[name]-${evitaLabVersionSuffix}.js`,
+                assetFileNames: `assets/[name]-[hash]-${evitaLabVersionSuffix}[extname]`
+            }
+            break
+        case 'DRIVER':
+            outputOptions = {
+                inlineDynamicImports: true
+            }
+            break
+        default:
+            throw new Error(`Unsupported lab run mode ${labRunMode}`)
     }
 
     return {
@@ -65,18 +71,15 @@ export default defineConfig(({ mode }) => {
                     configFile: 'src/styles/settings.scss',
                 },
             }),
-            Fonts({
-                fontsource: {
-                    families: [
-                        {
-                            name: 'Roboto',
-                            weights: [100, 300, 400, 500, 700, 900],
-                            styles: ['normal', 'italic'],
-                        },
-                    ],
-                },
-            }),
         ],
+        css: {
+            preprocessorOptions: {
+                scss: {
+                    // enables `pkg:` URLs used by src/styles/fonts.scss
+                    importers: [new NodePackageImporter()],
+                },
+            },
+        },
         optimizeDeps: {
             exclude: [
                 'vuetify',
@@ -91,7 +94,11 @@ export default defineConfig(({ mode }) => {
                 output: outputOptions,
             },
         },
-        define: { 'process.env': {} },
+        define: {
+            'process.env': {},
+            // the oldest supported evitaDB API version, declared to the server on every gRPC call
+            __EVITADB_API_VERSION__: JSON.stringify(resolveSupportedEvitaDbApiVersion()),
+        },
         resolve: {
             alias: {
                 '@': fileURLToPath(new URL('src', import.meta.url)),
@@ -104,16 +111,6 @@ export default defineConfig(({ mode }) => {
             host: true,
         },
         base: baseUrl,
-        css: {
-            preprocessorOptions: {
-                sass: {
-                    api: 'modern-compiler',
-                },
-                scss: {
-                    api: 'modern-compiler',
-                },
-            },
-        },
     }
 })
 
@@ -131,6 +128,10 @@ function resolveBaseUrl(labRunMode: string): string {
         case 'DRIVER': return './'
         default: throw new Error(`Unsupported lab run mode ${labRunMode}`)
     }
+}
+
+function resolveSupportedEvitaDbApiVersion(): string {
+    return readFileSync(fileURLToPath(new URL('.evitadbrc', import.meta.url)), 'utf-8').trim()
 }
 
 function resolveEvitaLabVersionSuffix(env: Record<string, string>): string {

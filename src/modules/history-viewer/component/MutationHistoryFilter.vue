@@ -5,15 +5,12 @@
  */
 
 import VDateTimeInput from '@/modules/base/component/VDateTimeInput.vue'
+import type { VForm } from 'vuetify/components'
 import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import type { Toaster } from '@/modules/notification/service/Toaster'
 import { useToaster } from '@/modules/notification/service/Toaster'
-import {
-    MutationHistoryViewerService,
-    useMutationHistoryViewerService
-} from '@/modules/history-viewer/service/MutationHistoryViewerService.ts'
 import { MutationHistoryCriteria } from '@/modules/history-viewer/model/MutationHistoryCriteria.ts'
 import type { MutationHistoryDataPointer } from '@/modules/history-viewer/model/MutationHistoryDataPointer.ts'
 import type { DateTime } from 'luxon'
@@ -24,20 +21,21 @@ import {
     GrpcChangeCaptureContainerType
 } from '@/modules/database-driver/connector/grpc/gen/GrpcChangeCapture_pb.ts'
 import { useEvitaClient } from '@/modules/database-driver/EvitaClient'
+import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
+import { Command } from '@/modules/keymap/model/Command.ts'
 
-const mutationHistoryViewerService: MutationHistoryViewerService = useMutationHistoryViewerService()
 const evitaClient = useEvitaClient()
 const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
-const userMutationHistoryMutationOperation: any[] = ['UPSERT', 'REMOVE'].map(type => {
+const userMutationHistoryMutationOperation: { value: string; title: string }[] = ['UPSERT', 'REMOVE'].map(type => {
     return {
         value: type,
         title: t(`mutationHistoryViewer.filter.form.mutationOperation.items.${type}`)
     }
 })
 
-const userMutationHistoryContainerType: any[] = [
+const userMutationHistoryContainerType: { value: string; title: string }[] = [
     'CONTAINER_CATALOG',
     'CONTAINER_ATTRIBUTE',
     'CONTAINER_ASSOCIATED_DATA',
@@ -71,13 +69,11 @@ const criteria = ref<MutationHistoryCriteria>(new MutationHistoryCriteria(
     props.modelValue.areaType ?? 'both',
     props.modelValue.mutableFilters
 ))
-const criteriaChanged = ref<boolean>(false)
 watch(criteria.value, (newValue) => {
     emit('update:modelValue', newValue)
-    criteriaChanged.value = true
 })
 
-const form = ref<HTMLFormElement | null>(null)
+const form = ref<InstanceType<typeof VForm> | null>(null)
 const formValidationState = ref<boolean | null>(null)
 
 const from = ref<DateTime | undefined>(criteria.value.from?.toDateTime())
@@ -125,7 +121,7 @@ watch(entityPrimaryKey, async (newValue) => {
 })
 
 const entityPrimaryKeyRules = [
-    (value: string): any => {
+    (value: string): boolean | string => {
         if (value == undefined || value === '') {
             return true
         }
@@ -196,24 +192,24 @@ async function assertFormValidated(): Promise<boolean> {
         throw new UnexpectedError('Missing form reference.')
     }
 
-    //@ts-ignore
-    const { valid }: any = await form.value.validate()
+    const { valid } = await form.value.validate()
     return valid
 }
 
 async function applyChangedCriteria(): Promise<void> {
-    //@ts-ignore
-    const { valid }: any = await form.value.validate()
+    if (form.value == undefined) {
+        throw new UnexpectedError('Missing form reference.')
+    }
+    const { valid } = await form.value.validate()
     if (!valid) {
-        await toaster.error(t('mutationHistoryViewer.recordHistory.filter.notification.invalidFilter'))
+        await toaster.error(t('mutationHistoryViewer.filter.notification.invalidFilter'))
         return
     }
 
     emit('apply')
-    criteriaChanged.value = false
 }
 
-
+defineExpose({ apply: applyChangedCriteria })
 </script>
 
 <template>
@@ -221,7 +217,7 @@ async function applyChangedCriteria(): Promise<void> {
         v-model="formValidationState"
         ref="form"
         validate-on="blur"
-        @submit="applyChangedCriteria"
+        @submit.prevent="applyChangedCriteria"
         class="record-history-filter-form"
     >
         <div class="record-history-filter">
@@ -384,21 +380,15 @@ async function applyChangedCriteria(): Promise<void> {
 
         </div>
 
-        <VTooltip v-if="criteriaChanged">
-            <template #activator="{ props }">
-                <VBtn
-                    type="submit"
-                    icon
-                    @click="applyChangedCriteria"
-                    v-bind="props"
-                >
-                    <VIcon>mdi-send</VIcon>
-                </VBtn>
-            </template>
-            <template #default>
+        <VBtn
+            type="submit"
+            icon
+        >
+            <VIcon>mdi-send</VIcon>
+            <VActionTooltip :command="Command.MutationHistoryViewer_ApplyFilter">
                 {{ t('mutationHistoryViewer.filter.button.apply') }}
-            </template>
-        </VTooltip>
+            </VActionTooltip>
+        </VBtn>
     </VForm>
 </template>
 

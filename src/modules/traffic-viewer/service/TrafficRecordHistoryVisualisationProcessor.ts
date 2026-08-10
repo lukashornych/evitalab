@@ -28,8 +28,8 @@ import {
     SourceQueryStatisticsContainer
 } from '@/modules/database-driver/request-response/traffic-recording/SourceQueryStatisticsContainer'
 
-const additionSessionStartFetchRequestTypes: any = ImmutableList([TrafficRecordType.SessionStart])
-const additionSourceQueryFetchRequestTypes: any = ImmutableList([TrafficRecordType.SourceQuery, TrafficRecordType.SourceQueryStatistics])
+const additionSessionStartFetchRequestTypes: ImmutableList<TrafficRecordType> = ImmutableList([TrafficRecordType.SessionStart])
+const additionSourceQueryFetchRequestTypes: ImmutableList<TrafficRecordType> = ImmutableList([TrafficRecordType.SourceQuery, TrafficRecordType.SourceQueryStatistics])
 
 /**
  * Takes raw flat traffic records from server and processes them into visualisable tree structure.
@@ -37,9 +37,9 @@ const additionSourceQueryFetchRequestTypes: any = ImmutableList([TrafficRecordTy
 export class TrafficRecordHistoryVisualisationProcessor {
 
     private readonly evitaClient: EvitaClient
-    private readonly visualisers: ImmutableList<TrafficRecordVisualiser<any>>
+    private readonly visualisers: ImmutableList<TrafficRecordVisualiser<TrafficRecord>>
 
-    constructor(evitaClient: EvitaClient, visualisers: ImmutableList<TrafficRecordVisualiser<any>>) {
+    constructor(evitaClient: EvitaClient, visualisers: ImmutableList<TrafficRecordVisualiser<TrafficRecord>>) {
         this.evitaClient = evitaClient
         this.visualisers = visualisers
     }
@@ -149,21 +149,21 @@ export class TrafficRecordHistoryVisualisationProcessor {
     private insertFetchedSessionStartRecords(additionalSessionStartRecords: ImmutableList<TrafficRecord>,
                                              requests: ImmutableMap<string, RequestedSessionStartRecord>,
                                              records: TrafficRecord[]): void {
-        let startInsertingAt: number = 0
         for (const sessionStartRecord of additionalSessionStartRecords) {
             if (!(sessionStartRecord instanceof SessionStartContainer)) {
                 throw new UnexpectedError(`Traffic record should be session start record.`)
             }
-            const request: RequestedSessionStartRecord | undefined = requests.get(sessionStartRecord.sessionId.toString())
-            if (request == undefined) {
-                throw new UnexpectedError(`There is unexpected session start record for ID '${sessionStartRecord.sessionId.toString()}'`)
+            const sessionId: string = sessionStartRecord.sessionId.toString()
+            if (!requests.has(sessionId)) {
+                throw new UnexpectedError(`There is unexpected session start record for ID '${sessionId}'`)
             }
 
-            for (let i = startInsertingAt; i < records.length; i++) {
-                const record: TrafficRecord = records[i]
-                if (record == request.beforeRecord) {
+            // the session start has to precede every record of its session, not only the one that
+            // requested it - a page starting in the middle of a session holds records of it that would
+            // otherwise be visualised as their own roots instead of children of the session
+            for (let i = 0; i < records.length; i++) {
+                if (records[i]!.sessionId.toString() === sessionId) {
                     records.splice(i, 0, sessionStartRecord)
-                    startInsertingAt += 2 // we want to get pass the inserted and the "before" record as these are already processed
                     break
                 }
             }
@@ -185,7 +185,7 @@ export class TrafficRecordHistoryVisualisationProcessor {
             // we need to iterate of records again everytime because there may be statistics container somewhere in the back
             // that need to be matched to records next to the opening source query containers
             for (let i = 0; i < records.length; i++) {
-                const record: TrafficRecord = records[i]
+                const record: TrafficRecord | undefined = records[i]
                 if (record == request.beforeRecord) {
                     records.splice(i, 0, sourceQueryRecord)
                     break

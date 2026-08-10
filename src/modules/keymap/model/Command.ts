@@ -56,9 +56,13 @@ export enum Command {
     EvitaQLConsole_Query_QueryEditor = 'evitaQLConsole.query.queryEditor',
     EvitaQLConsole_Query_VariablesEditor = 'evitaQLConsole.query.variablesEditor',
     EvitaQLConsole_Query_History = 'evitaQLConsole.query.history',
+    EvitaQLConsole_Query_Prettify = 'evitaQLConsole.query.prettify',
+    EvitaQLConsole_Query_Minify = 'evitaQLConsole.query.minify',
+    EvitaQLConsole_Query_TogglePanel = 'evitaQLConsole.query.togglePanel',
 
     EvitaQLConsole_Result_RawResultViewer = 'evitaQLConsole.result.rawResultViewer',
     EvitaQLConsole_Result_ResultVisualizer = 'evitaQLConsole.result.resultVisualizer',
+    EvitaQLConsole_Result_TogglePanel = 'evitaQLConsole.result.togglePanel',
 
     // GraphQL console
 
@@ -69,9 +73,13 @@ export enum Command {
     GraphQLConsole_Query_VariablesEditor = 'graphQLConsole.query.variablesEditor',
     GraphQLConsole_Query_History = 'graphQLConsole.query.history',
     GraphQLConsole_Query_SchemaViewer = 'graphQLConsole.query.schemaViewer',
+    GraphQLConsole_Query_Prettify = 'graphQLConsole.query.prettify',
+    GraphQLConsole_Query_Minify = 'graphQLConsole.query.minify',
+    GraphQLConsole_Query_TogglePanel = 'graphQLConsole.query.togglePanel',
 
     GraphQLConsole_Result_RawResultViewer = 'graphQLConsole.result.rawResultViewer',
     GraphQLConsole_Result_ResultVisualizer = 'graphQLConsole.result.resultVisualizer',
+    GraphQLConsole_Result_TogglePanel = 'graphQLConsole.result.togglePanel',
 
     // Schema viewer
 
@@ -82,10 +90,12 @@ export enum Command {
     TrafficRecordHistoryViewer_ShareTab = 'trafficRecordHistoryViewer.shareTab',
     TrafficRecordHistoryViewer_ReloadRecordHistory = 'trafficRecordHistoryViewer.reloadRecordHistory',
     TrafficRecordHistoryViewer_MoveStartPointer = 'trafficRecordHistoryViewer.moveStartPointer',
+    TrafficRecordHistoryViewer_ApplyFilter = 'trafficRecordHistoryViewer.applyFilter',
 
     // Mutation history viewer
 
     MutationHistoryViewer_ShareTab = 'mutationHistoryViewer.shareTab',
     MutationHistoryViewer_ReloadRecordHistory = 'mutationHistoryViewer.reloadRecordHistory',
-    MutationHistoryViewer_MoveStartPointer = 'mutationHistoryViewer.moveStartPointer'
+    MutationHistoryViewer_MoveStartPointer = 'mutationHistoryViewer.moveStartPointer',
+    MutationHistoryViewer_ApplyFilter = 'mutationHistoryViewer.applyFilter'
 }

@@ -1,6 +1,6 @@
 import type { InjectionKey } from 'vue'
 import { ShareTabObject } from '@/modules/workspace/tab/model/ShareTabObject'
-import { TabDefinition } from '@/modules/workspace/tab/model/TabDefinition'
+import type { AnyTabDefinition } from '@/modules/workspace/tab/model/TabDefinition'
 import { TabType } from '@/modules/workspace/tab/model/TabType'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { EntityViewerTabFactory } from '@/modules/entity-viewer/viewer/workspace/service/EntityViewerTabFactory'
@@ -10,12 +10,13 @@ import { SchemaViewerTabFactory } from '@/modules/schema-viewer/viewer/workspace
 import { mandatoryInject } from '@/utils/reactivity'
 import { TrafficRecordHistoryViewerTabFactory } from '@/modules/traffic-viewer/service/TrafficRecordHistoryViewerTabFactory'
 import type { ConnectionId } from '@/modules/connection/model/ConnectionId'
-import {
-    isTabParamsDtoWithConnection,
-} from '@/modules/workspace/tab/model/TabParamsDtoWithConnection'
+import { isTabParamsDtoWithConnection } from '@/modules/workspace/tab/model/TabParamsDtoWithConnection'
 import type { TabParamsDtoWithConnection } from '@/modules/workspace/tab/model/TabParamsDtoWithConnection'
 import { InvalidConnectionInSharedTabError } from '@/modules/workspace/tab/error/InvalidConnectionInSharedTabError'
 import { ConnectionNotFoundError } from '@/modules/connection/exception/ConnectionNotFoundError'
+import {
+    MutationHistoryViewerTabFactory
+} from '@/modules/history-viewer/service/MutationHistoryViewerTabFactory'
 
 export const sharedTabResolverInjectionKey: InjectionKey<SharedTabResolver> = Symbol('sharedTabResolver')
 
@@ -28,20 +29,23 @@ export class SharedTabResolver {
     private readonly graphQLConsoleTabFactory: GraphQLConsoleTabFactory
     private readonly schemaViewerTabFactory: SchemaViewerTabFactory
     private readonly trafficRecordHistoryViewerTabFactory: TrafficRecordHistoryViewerTabFactory
+    private readonly mutationHistoryViewerTabFactory: MutationHistoryViewerTabFactory
 
     constructor(entityViewerTabFactory: EntityViewerTabFactory,
                 evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory,
                 graphQLConsoleTabFactory: GraphQLConsoleTabFactory,
                 schemaViewerTabFactory: SchemaViewerTabFactory,
-                trafficRecordHistoryViewerTabFactory: TrafficRecordHistoryViewerTabFactory) {
+                trafficRecordHistoryViewerTabFactory: TrafficRecordHistoryViewerTabFactory,
+                mutationHistoryViewerTabFactory: MutationHistoryViewerTabFactory) {
         this.entityViewerTabFactory = entityViewerTabFactory
         this.evitaQLConsoleTabFactory = evitaQLConsoleTabFactory
         this.graphQLConsoleTabFactory = graphQLConsoleTabFactory
         this.schemaViewerTabFactory = schemaViewerTabFactory
         this.trafficRecordHistoryViewerTabFactory = trafficRecordHistoryViewerTabFactory
+        this.mutationHistoryViewerTabFactory = mutationHistoryViewerTabFactory
     }
 
-    async resolve(shareTabObject: ShareTabObject): Promise<TabDefinition<any, any>> {
+    async resolve(shareTabObject: ShareTabObject): Promise<AnyTabDefinition> {
         try {
             switch (shareTabObject.tabType as string) {
                 case 'data-grid':
@@ -59,17 +63,19 @@ export class SharedTabResolver {
                     return this.schemaViewerTabFactory.restoreFromJson(shareTabObject.tabParams)
                 case TabType.TrafficRecordHistoryViewer:
                     return this.trafficRecordHistoryViewerTabFactory.restoreFromJson(shareTabObject.tabParams, shareTabObject.tabData)
+                case TabType.MutationHistoryViewer:
+                    return this.mutationHistoryViewerTabFactory.restoreFromJson(shareTabObject.tabParams, shareTabObject.tabData)
                 default:
                     throw new UnexpectedError(`Unsupported shared tab type '${shareTabObject.tabType}'.`)
             }
         } catch (e) {
             if (e instanceof ConnectionNotFoundError && isTabParamsDtoWithConnection(shareTabObject.tabParams)) {
-                const tabParams: any = shareTabObject.tabParams as TabParamsDtoWithConnection
+                const tabParams: TabParamsDtoWithConnection = shareTabObject.tabParams as TabParamsDtoWithConnection
                 const connectionName: string | undefined = tabParams.connectionName
 
                 throw new InvalidConnectionInSharedTabError(
                     connectionName,
-                    async (newConnectionId: ConnectionId): Promise<TabDefinition<any, any>> => {
+                    async (newConnectionId: ConnectionId): Promise<AnyTabDefinition> => {
                         const newTabParams: TabParamsDtoWithConnection = JSON.parse(JSON.stringify(tabParams))
                         newTabParams.connectionId = newConnectionId
 

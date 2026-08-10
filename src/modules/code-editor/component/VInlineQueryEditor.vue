@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import type { ComponentPublicInstance } from 'vue'
 /**
  * Inline CodeMirror editor with content history support (e.g., for previously executed queries).
  */
 
 import { Codemirror } from 'vue-codemirror'
-import { EditorState } from '@codemirror/state'
 import type { Extension } from 'node_modules/@codemirror/state/dist/index.d.cts'
 import {
     crosshairCursor,
@@ -20,13 +20,13 @@ import { bracketMatching, defaultHighlightStyle, indentOnInput, syntaxHighlighti
 import { autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete'
 import { lintKeymap } from '@codemirror/lint'
 import { dracula } from '@ddietr/codemirror-themes/dracula'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { EditorView } from 'codemirror'
 import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
 import { Command } from '@/modules/keymap/model/Command'
 import { workspaceStatusBarIntegration } from '@/modules/code-editor/extension/workspaceStatusBarIntegration'
+import { singleLineDocument } from '@/modules/code-editor/extension/singleLineDocument'
 import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
-import { v4 as uuidv4 } from 'uuid'
 
 const keymap: Keymap = useKeymap()
 const workspaceService: WorkspaceService = useWorkspaceService()
@@ -37,6 +37,12 @@ const props = withDefaults(
         additionalExtensions?: Extension[],
         historyRecords?: string[],
         prependInnerIcon?: string
+        /**
+         * Non-interactive glyph rendered after the editor, explaining the state of its content.
+         * Requires {@link appendInnerIconTooltip} to describe what it means.
+         */
+        appendInnerIcon?: string
+        appendInnerIconTooltip?: string
         placeholder?: string
     }>(),
     {
@@ -75,18 +81,10 @@ const extensions = computed<Extension[]>(() => [
         ...lintKeymap
     ]),
     dracula,
-    EditorState.transactionFilter.of(tr => tr.newDoc.lines > 1 ? [] : tr),
+    singleLineDocument(),
     workspaceStatusBarIntegration(workspaceService),
     ...props.additionalExtensions
 ])
-
-// used to forcefully reload codemirror component as it doesn't reload
-// automatically when props change
-const codemirrorInstanceKey = ref<string>()
-watch(
-    () => props.additionalExtensions,
-    () => codemirrorInstanceKey.value = uuidv4()
-)
 
 const editorView = ref<EditorView>()
 
@@ -102,9 +100,9 @@ function focus(): void {
     editorView.value?.focus()
 }
 
-const historyListButton = ref<any>()
+const historyListButton = ref<ComponentPublicInstance | undefined>()
 const hasHistoryItems = computed<boolean>(() => props.historyRecords != undefined && props.historyRecords?.length > 0)
-const historyListItems = computed<any[]>(() => {
+const historyListItems = computed<{ title: string, value: string }[]>(() => {
     if (props.historyRecords?.length === 0) {
         return [{
             title: 'Empty history',
@@ -132,7 +130,10 @@ function clearHistory(): void {
 </script>
 
 <template>
-    <div :class="['inline-query-editor', { 'inline-query-editor--with-prepend-icon': prependInnerIcon }]">
+    <div :class="['inline-query-editor', {
+        'inline-query-editor--with-prepend-icon': prependInnerIcon,
+        'inline-query-editor--with-append-icon': appendInnerIcon
+    }]">
         <template v-if="prependInnerIcon">
             <template v-if="historyRecords != undefined">
                 <VBtn
@@ -184,7 +185,6 @@ function clearHistory(): void {
         </template>
 
         <Codemirror
-            :key="codemirrorInstanceKey"
             ref="input"
             :model-value="modelValue"
             :extensions="extensions"
@@ -193,6 +193,19 @@ function clearHistory(): void {
             @update:model-value="$emit('update:modelValue', $event)"
             style="cursor: text; min-width: 0;"
         />
+
+        <span
+            v-if="appendInnerIcon"
+            class="inline-query-editor__append-inner-icon"
+        >
+            <VIcon size="small">{{ appendInnerIcon }}</VIcon>
+            <VTooltip
+                v-if="appendInnerIconTooltip"
+                activator="parent"
+            >
+                {{ appendInnerIconTooltip }}
+            </VTooltip>
+        </span>
     </div>
 
 </template>
@@ -212,7 +225,22 @@ function clearHistory(): void {
         padding-left: 0.25rem;
     }
 
+    // the icon column is deliberately tight: it eats width from an already narrow single-line editor
+    &--with-append-icon {
+        grid-template-columns: 1fr 1.25rem;
+        gap: 0 0.25rem;
+    }
+
+    &--with-prepend-icon#{&}--with-append-icon {
+        grid-template-columns: 1.5rem 1fr 1.25rem;
+    }
+
     &__prepend-inner-icon {
+        opacity: var(--v-medium-emphasis-opacity);
+    }
+
+    &__append-inner-icon {
+        display: inline-flex;
         opacity: var(--v-medium-emphasis-opacity);
     }
 

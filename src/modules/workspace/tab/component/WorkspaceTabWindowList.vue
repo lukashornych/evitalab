@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { asError } from '@/utils/error'
 
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useWorkspaceService, WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
-import { TabDefinition } from '@/modules/workspace/tab/model/TabDefinition'
+import type { AnyTabDefinition } from '@/modules/workspace/tab/model/TabDefinition'
 import { Keymap, useKeymap } from '@/modules/keymap/service/Keymap'
 import { useToaster } from '@/modules/notification/service/Toaster'
 import { DemoSnippetResolver, useDemoSnippetResolver } from '@/modules/workspace/service/DemoSnippetResolver'
@@ -12,6 +13,7 @@ import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
 import TabWindow from '@/modules/workspace/tab/component/TabWindow.vue'
 import WelcomeScreen from '@/modules/welcome-screen/component/WelcomeScreen.vue'
 import TabSharedDialog from '@/modules/workspace/tab/component/TabSharedDialog.vue'
+import OpenSharedTabDialog from '@/modules/workspace/tab/component/OpenSharedTabDialog.vue'
 import { useI18n } from 'vue-i18n'
 import { EvitaLabConfig, useEvitaLabConfig } from '@/modules/config/EvitaLabConfig'
 
@@ -23,11 +25,33 @@ const workspaceService: WorkspaceService = useWorkspaceService()
 const demoCodeSnippetResolver: DemoSnippetResolver = useDemoSnippetResolver()
 
 const showSharedTabDialog = ref<boolean>(false)
+const showOpenSharedTabDialog = ref<boolean>(false)
 
-const tabDefinitions = ref<TabDefinition<any, any>[]>(workspaceService.getTabDefinitions())
+const tabActions = [
+    {
+        title: t('tabShare.button.openSharedTab'),
+        value: 'openSharedTab',
+        props: {
+            prependIcon: 'mdi-share-variant'
+        }
+    }
+]
+
+function handleTabActionClick(selected: unknown): void {
+    if (!Array.isArray(selected) || selected.length === 0) {
+        return
+    }
+    switch (selected[0]) {
+        case 'openSharedTab':
+            showOpenSharedTabDialog.value = true
+            break
+    }
+}
+
+const tabDefinitions = ref<AnyTabDefinition[]>(workspaceService.getTabDefinitions())
 watch(tabDefinitions, () => {
     // switch to newly opened tab
-    const newTab: TabDefinition<any, any> | undefined = workspaceService.getTheNewTab()
+    const newTab: AnyTabDefinition | undefined = workspaceService.getTheNewTab()
     if (newTab) {
         currentTabId.value = newTab.id
         workspaceService.markTabAsVisited(newTab.id)
@@ -35,6 +59,7 @@ watch(tabDefinitions, () => {
 }, { deep: true })
 const currentTabId = ref<string | null>()
 watch(currentTabId, (newTabId, oldTabId) => {
+    workspaceService.markTabAsSelected(newTabId ?? undefined)
     if (newTabId != undefined) {
         keymap.setContext(newTabId)
         workspaceService.subjectPathStatus.activatePath(newTabId)
@@ -57,7 +82,10 @@ function moveTabCursor(diff: number) {
     } else if (newTabIndex >= tabDefinitions.value.length) {
         newTabIndex = 0
     }
-    currentTabId.value = tabDefinitions.value[newTabIndex].id
+    const nextTab = tabDefinitions.value[newTabIndex]
+    if (nextTab != undefined) {
+        currentTabId.value = nextTab.id
+    }
 }
 
 function closeTab(tabId: string): void {
@@ -72,16 +100,22 @@ function closeTab(tabId: string): void {
     if (tabDefinitions.value.length === 0) {
         currentTabId.value = null
     } else if (closedTabIndex === prevTabIndex && closedTabIndex === prevTabsLength - 1) {
-        currentTabId.value = tabDefinitions.value[closedTabIndex - 1].id
+        const prevTab = tabDefinitions.value[closedTabIndex - 1]
+        if (prevTab != undefined) {
+            currentTabId.value = prevTab.id
+        }
     } else if (closedTabIndex === prevTabIndex && closedTabIndex < prevTabsLength - 1) {
-        currentTabId.value = tabDefinitions.value[closedTabIndex].id
+        const nextTab = tabDefinitions.value[closedTabIndex]
+        if (nextTab != undefined) {
+            currentTabId.value = nextTab.id
+        }
     }
 }
 
 /**
  * open demo code snippet if requested
  */
-async function resolveDemoCodeSnippet(urlSearchParams: URLSearchParams): Promise<TabDefinition<any, any> | undefined> {
+async function resolveDemoCodeSnippet(urlSearchParams: URLSearchParams): Promise<AnyTabDefinition | undefined> {
     const demoSnippetRequestSerialized: string | null = urlSearchParams.get('demoSnippetRequest')
     if (demoSnippetRequestSerialized == undefined) {
         return undefined
@@ -89,8 +123,8 @@ async function resolveDemoCodeSnippet(urlSearchParams: URLSearchParams): Promise
 
     try {
         return await demoCodeSnippetResolver.resolve(demoSnippetRequestSerialized)
-    } catch (e: any) {
-        await toaster.error('Could not resolve demo code snippet', e) // todo lho i18n
+    } catch (e) {
+        await toaster.error('Could not resolve demo code snippet', asError(e)) // todo lho i18n
     }
 }
 
@@ -138,6 +172,15 @@ if (evitaLabConfig.playgroundMode) {
         })
 } else {
     restorePreviousSession()
+    // select the tab the user worked with in the last session; must happen before the tabs are rendered, otherwise
+    // the tab bar selects the first tab on its own
+    const restoredTabId: string | undefined = workspaceService.getSelectedTabId()
+    if (restoredTabId != undefined) {
+        currentTabId.value = restoredTabId
+    } else if (tabDefinitions.value.length > 0) {
+        // sessions stored before the selection was tracked don't know which tab was selected
+        currentTabId.value = tabDefinitions.value[0]!.id
+    }
 }
 
 onMounted(() => {
@@ -160,7 +203,6 @@ onUnmounted(() => {
 
 <template>
     <VAppBar
-        v-if="tabDefinitions.length > 0"
         density="compact"
         elevation="0"
     >
@@ -198,6 +240,24 @@ onUnmounted(() => {
                 </VBtn>
             </VTab>
         </VTabs>
+
+        <VMenu>
+            <template #activator="{ props }">
+                <VBtn
+                    v-bind="props"
+                    icon
+                    density="compact"
+                    class="ml-1 mr-2"
+                >
+                    <VIcon>mdi-plus</VIcon>
+                    <VTooltip activator="parent">
+                        {{ t('tab.button.tabActions') }}
+                    </VTooltip>
+                </VBtn>
+            </template>
+
+            <VList :items="tabActions" @update:selected="handleTabActionClick" />
+        </VMenu>
     </VAppBar>
 
     <VMain
@@ -229,6 +289,7 @@ onUnmounted(() => {
     </VMain>
 
     <TabSharedDialog v-model="showSharedTabDialog" />
+    <OpenSharedTabDialog v-model="showOpenSharedTabDialog" />
 </template>
 
 <style scoped>

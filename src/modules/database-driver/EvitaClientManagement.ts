@@ -12,8 +12,9 @@ import type {
     GrpcDeleteFileToFetchResponse,
     GrpcEvitaCatalogStatisticsResponse,
     GrpcEvitaConfigurationResponse,
+    GrpcEvitaEngineSettingsResponse,
     GrpcEvitaServerStatusResponse, GrpcReservedKeywordsResponse, GrpcRestoreCatalogUnaryRequest,
-    GrpcRestoreCatalogUnaryResponse
+    GrpcRestoreCatalogUnaryResponse, GrpcTaskStatusResponse
 } from '@/modules/database-driver/connector/grpc/gen/GrpcEvitaManagementAPI_pb'
 import { ErrorTransformer } from '@/modules/database-driver/exception/ErrorTransformer'
 import { ServerStatus } from '@/modules/database-driver/request-response/status/ServerStatus'
@@ -37,6 +38,10 @@ import { EventType } from '@/modules/database-driver/request-response/jfr/EventT
 import { EvitaCatalogStatisticsCache } from '@/modules/database-driver/EvitaCatalogStatisticsCache'
 import { EntityCollectionStatistics } from '@/modules/database-driver/request-response/EntityCollectionStatistics'
 import { EvitaServerMetadataCache } from '@/modules/database-driver/EvitaServerMetadataCache'
+import { EngineSettings } from '@/modules/database-driver/request-response/status/EngineSettings'
+import {
+    EngineSettingsConverter
+} from '@/modules/database-driver/connector/grpc/service/converter/EngineSettingsConverter'
 import type { StringValue } from '@bufbuild/protobuf/wkt'
 
 /**
@@ -47,6 +52,41 @@ const chunkSize: number = 500 * 1024; // 500 KB chunks
  * Timeout in milliseconds in which a file chunks needs to be uploaded to server
  */
 const fileChunkUploadTimeout: number = 60000 // 1 minute
+
+/**
+ * One chunk of a downloaded server file together with the transfer counters the server reports
+ * alongside it.
+ */
+export interface ServerFileChunk {
+    readonly contents: Uint8Array
+    /**
+     * Cumulative number of bytes received so far, including this chunk.
+     */
+    readonly bytesRead: bigint
+    /**
+     * Total size of the fetched file in bytes as reported by the server with every chunk. May be `0n`
+     * when the server does not know the size.
+     */
+    readonly totalSizeInBytes: bigint
+}
+
+/**
+ * Options for fetching a server file, allowing the caller to observe transfer progress and to cancel
+ * the transfer.
+ */
+export interface FetchFileOptions {
+    /**
+     * Aborts the underlying gRPC stream. An aborted transfer surfaces as a `ConnectError` with
+     * `Code.Canceled`.
+     */
+    readonly signal?: AbortSignal
+    /**
+     * Called for every received chunk with the cumulative number of received bytes and the total file
+     * size reported by the server. Callers are expected to throttle any reactive state updates
+     * themselves — a multi-gigabyte file yields tens of thousands of calls.
+     */
+    readonly onProgress?: (bytesRead: bigint, totalSizeInBytes: bigint) => void
+}
 
 /**
  * Global management service that allows to execute various management tasks on the Evita instance and retrieve
@@ -68,9 +108,9 @@ export class EvitaClientManagement {
     private readonly evitaClientProvider: () => EvitaClient
     private readonly evitaManagementClientProvider: () => EvitaManagementServiceClient
 
-    private readonly evitaValueConverterProvider: () => EvitaValueConverter
     private readonly catalogStatisticsConverterProvider: () => CatalogStatisticsConverter
     private readonly serverStatusConverterProvider: () => ServerStatusConverter
+    private readonly engineSettingsConverterProvider: () => EngineSettingsConverter
     private readonly reservedKeywordsConverterProvider: () => ReservedKeywordsConverter
     private readonly serverFileConverterProvider: () => ServerFileConverter
     private readonly taskStateConverterProvider: () => TaskStateConverter
@@ -79,16 +119,17 @@ export class EvitaClientManagement {
     constructor(errorTransformer: ErrorTransformer,
                 evitaClient: EvitaClient,
                 evitaManagementClientProvider: () => EvitaManagementServiceClient,
-                evitaValueConverterProvider: () => EvitaValueConverter,
                 catalogStatisticsConverterProvider: () => CatalogStatisticsConverter,
                 serverStatusConverterProvider: () => ServerStatusConverter,
+                engineSettingsConverterProvider: () => EngineSettingsConverter,
                 reservedKeywordsConverterProvider: () => ReservedKeywordsConverter,
                 serverFileConverterProvider: () => ServerFileConverter,
                 taskStateConverterProvider: () => TaskStateConverter,
                 taskStatusConverterProvider: () => TaskStatusConverter) {
         this.serverMetadataCache = new EvitaServerMetadataCache(
             async () => await this.fetchServerStatus.bind(this)(),
-            async () => await this.fetchConfiguration.bind(this)()
+            async () => await this.fetchConfiguration.bind(this)(),
+            async () => await this.fetchEngineSettings.bind(this)()
         )
         this.catalogStatisticsCache = new EvitaCatalogStatisticsCache(
             async () => await this.fetchCatalogStatistics.bind(this)()
@@ -96,9 +137,9 @@ export class EvitaClientManagement {
         this.errorTransformer = errorTransformer
         this.evitaClientProvider = () => evitaClient
         this.evitaManagementClientProvider = evitaManagementClientProvider
-        this.evitaValueConverterProvider = evitaValueConverterProvider
         this.catalogStatisticsConverterProvider = catalogStatisticsConverterProvider
         this.serverStatusConverterProvider = serverStatusConverterProvider
+        this.engineSettingsConverterProvider = engineSettingsConverterProvider
         this.reservedKeywordsConverterProvider = reservedKeywordsConverterProvider
         this.serverFileConverterProvider = serverFileConverterProvider
         this.taskStateConverterProvider = taskStateConverterProvider
@@ -110,6 +151,24 @@ export class EvitaClientManagement {
      */
     async clearServerMetadataCache(): Promise<void> {
         await this.serverMetadataCache.clear()
+    }
+
+    /**
+     * Fetches fresh server status from the server, updates the server metadata cache and notifies
+     * registered server-status change callbacks. On fetch failure the exception propagates and the
+     * previously cached value is kept.
+     */
+    async refreshServerStatus(): Promise<ServerStatus> {
+        return await this.serverMetadataCache.refreshServerStatus()
+    }
+
+    /**
+     * Fetches fresh configuration from the server, updates the server metadata cache and notifies
+     * registered configuration change callbacks. On fetch failure the exception propagates and the
+     * previously cached value is kept.
+     */
+    async refreshConfiguration(): Promise<string> {
+        return await this.serverMetadataCache.refreshConfiguration()
     }
 
     /**
@@ -359,6 +418,27 @@ export class EvitaClientManagement {
     }
 
     /**
+     * Returns status of a single job with the specified jobId, or undefined if the server doesn't know such job
+     * (anymore). Useful for tracking progress of a single known task without listing all of them.
+     */
+    async getTaskStatus(taskId: Uuid): Promise<TaskStatus | undefined> {
+        try {
+            const result: GrpcTaskStatusResponse = await this.evitaManagementClientProvider().getTaskStatus({
+                taskId: {
+                    leastSignificantBits: taskId.leastSignificantBits.toString(),
+                    mostSignificantBits: taskId.mostSignificantBits.toString()
+                }
+            })
+            if (result.taskStatus == undefined) {
+                return undefined
+            }
+            return this.taskStatusConverterProvider().convert(result.taskStatus)
+        } catch (e) {
+            throw this.errorTransformer.transformError(e)
+        }
+    }
+
+    /**
      * Cancels the job with the specified jobId. If the job is waiting in the queue, it will be removed from the queue.
      * If the job is already running, it must support cancelling to be interrupted and canceled.
      */
@@ -406,25 +486,52 @@ export class EvitaClientManagement {
     }
 
     /**
-     * Fetches contents of the file with the specified fileId to the output blob.
+     * Streams contents of the file with the specified fileId chunk by chunk, so that a caller can
+     * write the data out incrementally instead of buffering the whole file in memory.
+     *
+     * Cancellation contract: aborting `options.signal` cancels the underlying gRPC stream and the
+     * iteration rejects with a `ConnectError` carrying `Code.Canceled` (the {@link ErrorTransformer}
+     * passes `ConnectError`s through unchanged), so callers can distinguish a user-requested
+     * cancellation from a genuine transfer failure.
      */
-    async fetchFile(fileId: Uuid): Promise<Blob> {
+    async *fetchFileStream(fileId: Uuid, options?: FetchFileOptions): AsyncIterable<ServerFileChunk> {
         try {
-            const res = this.evitaManagementClientProvider().fetchFile({
-                fileId: {
-                    leastSignificantBits: fileId.leastSignificantBits.toString(),
-                    mostSignificantBits: fileId.mostSignificantBits.toString()
-                }
-            })
-            const data: Uint8Array[] = []
+            const responses = this.evitaManagementClientProvider().fetchFile(
+                {
+                    fileId: {
+                        leastSignificantBits: fileId.leastSignificantBits.toString(),
+                        mostSignificantBits: fileId.mostSignificantBits.toString()
+                    }
+                },
+                { signal: options?.signal }
+            )
 
-            for await (const job of res) {
-                data.push(job.fileContents)
+            let bytesRead: bigint = 0n
+            for await (const response of responses) {
+                const totalSizeInBytes: bigint = BigInt(response.totalSizeInBytes ?? 0)
+                bytesRead += BigInt(response.fileContents.length)
+                options?.onProgress?.(bytesRead, totalSizeInBytes)
+                yield {
+                    contents: response.fileContents,
+                    bytesRead,
+                    totalSizeInBytes
+                }
             }
-            return new Blob(data)
         } catch (e) {
             throw this.errorTransformer.transformError(e)
         }
+    }
+
+    /**
+     * Fetches contents of the file with the specified fileId to the output blob. Buffers the entire
+     * file in memory — prefer {@link fetchFileStream} for potentially large files.
+     */
+    async fetchFile(fileId: Uuid, options?: FetchFileOptions): Promise<Blob> {
+        const data: Uint8Array[] = []
+        for await (const chunk of this.fetchFileStream(fileId, options)) {
+            data.push(chunk.contents)
+        }
+        return new Blob(data)
     }
 
     /**
@@ -490,6 +597,24 @@ export class EvitaClientManagement {
     }
 
     /**
+     * Fetches the curated subset of the engine configuration that is safe to expose to any client. The values
+     * are constant for the lifetime of the server process, so they are cached until the connection is reset.
+     */
+    async getEngineSettings(): Promise<EngineSettings> {
+        return await this.serverMetadataCache.getLatestEngineSettings()
+    }
+
+    private async fetchEngineSettings(): Promise<EngineSettings> {
+        try {
+            const response: GrpcEvitaEngineSettingsResponse = await this.evitaManagementClientProvider()
+                .getEngineSettings({})
+            return this.engineSettingsConverterProvider().convert(response)
+        } catch (e) {
+            throw this.errorTransformer.transformError(e)
+        }
+    }
+
+    /**
      * Retrieves the current configuration of the EvitaDB server in String format with evaluated value expressions.
      */
     async getConfiguration(): Promise<string> {
@@ -544,7 +669,7 @@ export class EvitaClientManagement {
                 response.catalogStatistics
                     .map((x) => this.catalogStatisticsConverterProvider().convert(x))
             )
-        } catch (e: any) {
+        } catch (e) {
             throw this.errorTransformer.transformError(e)
         }
     }

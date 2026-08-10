@@ -26,9 +26,16 @@ import { TrafficRecordHistoryCriteria } from '@/modules/traffic-viewer/model/Tra
 import RecordHistoryFilter from '@/modules/traffic-viewer/components/RecordHistoryFilter.vue'
 import { provideHistoryCriteria } from '@/modules/traffic-viewer/components/dependencies'
 import StartPointerButton from '@/modules/traffic-viewer/components/StartPointerButton.vue'
+import ExportTrafficBufferButton from '@/modules/traffic-viewer/components/ExportTrafficBufferButton.vue'
 import VActionTooltip from '@/modules/base/component/VActionTooltip.vue'
+import type { Toaster } from '@/modules/notification/service/Toaster'
+import { useToaster } from '@/modules/notification/service/Toaster'
+import { errorMessage } from '@/utils/error'
+import { TrafficViewerService, useTrafficViewerService } from '@/modules/traffic-viewer/service/TrafficViewerService'
 
 const keymap: Keymap = useKeymap()
+const trafficViewerService: TrafficViewerService = useTrafficViewerService()
+const toaster: Toaster = useToaster()
 const { t } = useI18n()
 
 const props = defineProps<TabComponentProps<TrafficRecordHistoryViewerTabParams, TrafficRecordHistoryViewerTabData>>()
@@ -55,6 +62,7 @@ const title: List<string> = List.of(
 
 const shareTabButtonRef = ref<InstanceType<typeof ShareTabButton> | undefined>()
 const historyListRef = ref<InstanceType<typeof RecordHistory> | undefined>()
+const filterRef = ref<InstanceType<typeof RecordHistoryFilter> | undefined>()
 const criteria = ref<TrafficRecordHistoryCriteria>(new TrafficRecordHistoryCriteria(
     props.data.since,
     props.data.types,
@@ -69,6 +77,8 @@ const initialized = ref<boolean>(false)
 const historyListLoading = ref<boolean>(false)
 const historyStartPointerLoading = ref<boolean>(false)
 const historyStartPointerActive = ref<boolean>(false)
+// assume the recorder is present until the first history fetch tells us otherwise
+const recorderAvailable = ref<boolean>(true)
 
 const currentData = computed<TrafficRecordHistoryViewerTabData>(() => {
     return new TrafficRecordHistoryViewerTabData(
@@ -102,13 +112,23 @@ onMounted(() => {
     keymap.bind(Command.TrafficRecordHistoryViewer_ShareTab, props.id, () => shareTabButtonRef.value?.share())
     keymap.bind(Command.TrafficRecordHistoryViewer_ReloadRecordHistory, props.id, async () => await reloadHistoryList())
     keymap.bind(Command.TrafficRecordHistoryViewer_MoveStartPointer, props.id, async () => await moveStartPointerToNewest())
+    keymap.bind(Command.TrafficRecordHistoryViewer_ApplyFilter, props.id, () => applyFilter())
 })
 onUnmounted(() => {
     // unregister console specific keyboard shortcuts
     keymap.unbind(Command.TrafficRecordHistoryViewer_ShareTab, props.id)
     keymap.unbind(Command.TrafficRecordHistoryViewer_ReloadRecordHistory, props.id)
     keymap.unbind(Command.TrafficRecordHistoryViewer_MoveStartPointer, props.id)
+    keymap.unbind(Command.TrafficRecordHistoryViewer_ApplyFilter, props.id)
 })
+
+function applyFilter(): void {
+    filterRef.value?.apply()
+        .catch((e: unknown) => toaster.error(t(
+            'trafficViewer.recordHistory.filter.notification.couldNotApplyFilter',
+            { reason: errorMessage(e) }
+        )).then())
+}
 
 async function moveStartPointerToNewest(): Promise<void> {
     historyStartPointerLoading.value = true
@@ -120,6 +140,25 @@ function removeStartPointer(): void {
     historyStartPointerLoading.value = true
     historyListRef.value?.removeStartPointer()
     historyStartPointerLoading.value = false
+}
+
+/**
+ * Requests a close of the shared session evitaLab uses for this catalog, so that traffic generated from
+ * evitaLab itself can reach the record history at all.
+ */
+async function closeSharedSession(): Promise<void> {
+    try {
+        await trafficViewerService.closeSharedSession(props.params.dataPointer.catalogName)
+        await toaster.info(t(
+            'trafficViewer.recordHistory.notification.sharedSessionCloseRequested',
+            { catalogName: props.params.dataPointer.catalogName }
+        ))
+    } catch (e) {
+        await toaster.error(t(
+            'trafficViewer.recordHistory.notification.couldNotCloseSharedSession',
+            { reason: errorMessage(e) }
+        ))
+    }
 }
 
 async function reloadHistoryList(): Promise<void> {
@@ -137,12 +176,38 @@ async function reloadHistoryList(): Promise<void> {
             :extension-height="64"
         >
             <template #append>
+                <VBtn icon density="compact" color="warning">
+                    <VIcon>mdi-alert-outline</VIcon>
+                    <VTooltip activator="parent">
+                        <div>{{ t('trafficViewer.recordHistory.button.recordVisibility') }}</div>
+                        <div class="text-disabled">
+                            {{ t('trafficViewer.recordHistory.button.recordVisibilityHelp') }}
+                        </div>
+                    </VTooltip>
+                </VBtn>
+
                 <ShareTabButton
                     ref="shareTabButtonRef"
                     :tab-type="TabType.TrafficRecordHistoryViewer"
                     :tab-params="params"
                     :tab-data="currentData"
                     :command="Command.TrafficRecordHistoryViewer_ShareTab"
+                />
+
+                <VBtn icon density="compact" @click="closeSharedSession">
+                    <VIcon>mdi-lan-disconnect</VIcon>
+                    <VTooltip activator="parent">
+                        <div>{{ t('trafficViewer.recordHistory.button.closeSharedSession') }}</div>
+                        <div class="text-disabled">
+                            {{ t('trafficViewer.recordHistory.button.closeSharedSessionHelp') }}
+                        </div>
+                    </VTooltip>
+                </VBtn>
+
+                <ExportTrafficBufferButton
+                    :catalog-name="params.dataPointer.catalogName"
+                    :available="recorderAvailable"
+                    @unavailable="recorderAvailable = false"
                 />
 
                 <StartPointerButton
@@ -153,7 +218,6 @@ async function reloadHistoryList(): Promise<void> {
                 />
 
                 <VBtn icon density="compact" :loading="historyListLoading" @click="reloadHistoryList">
-                    <!--            todo lho new data indicator-->
                     <VIcon>mdi-refresh</VIcon>
                     <VActionTooltip activator="parent" :command="Command.TrafficRecordHistoryViewer_ReloadRecordHistory">
                         {{ t('trafficViewer.recordHistory.button.reloadRecordHistory') }}
@@ -163,6 +227,7 @@ async function reloadHistoryList(): Promise<void> {
 
             <template #extension>
                 <RecordHistoryFilter
+                    ref="filterRef"
                     v-model="criteria"
                     :data-pointer="params.dataPointer"
                     @apply="reloadHistoryList"
@@ -176,6 +241,7 @@ async function reloadHistoryList(): Promise<void> {
                 :data-pointer="params.dataPointer"
                 :criteria="criteria"
                 @update:start-pointer-active="historyStartPointerActive = $event"
+                @update:recorder-available="recorderAvailable = $event"
             />
         </VSheet>
     </div>

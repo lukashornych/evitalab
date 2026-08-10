@@ -2,6 +2,7 @@ import type {
     GrpcExtraResults,
     GrpcFacetGroupStatistics,
     GrpcFacetStatistics,
+    GrpcReferenceGroupStatistics,
     GrpcHierarchy,
     GrpcHistogram,
     GrpcHistogram_GrpcBucket,
@@ -14,6 +15,7 @@ import { Histogram } from '@/modules/database-driver/request-response/data/Histo
 import { BigDecimal } from '@/modules/database-driver/data-type/BigDecimal'
 import { HistogramBucket } from '@/modules/database-driver/request-response/data/HistogramBucket'
 import { FacetGroupStatistics } from '@/modules/database-driver/request-response/data/FacetGroupStatistics'
+import { ReferenceGroupStatistics } from '@/modules/database-driver/request-response/data/ReferenceGroupStatistics'
 import { FacetStatistics } from '@/modules/database-driver/request-response/data/FacetStatistics'
 import type { GrpcEntityReference } from '@/modules/database-driver/connector/grpc/gen/GrpcEntity_pb'
 import { EntityReference } from '@/modules/database-driver/request-response/data/EntityReference'
@@ -34,6 +36,7 @@ export class ExtraResultConverter {
         return new ExtraResults(
             this.convertAttributeHistogram(entity.attributeHistogram),
             this.convertFacetGroupStatistics(entity.facetGroupStatistics),
+            this.convertReferenceGroupStatistics(entity.referenceGroupStatistics),
             this.convertHierarchy(entity.hierarchy),
             this.convertHistogram(entity.priceHistogram),
             this.convertSelfHierarchy(entity.selfHierarchy)
@@ -44,15 +47,14 @@ export class ExtraResultConverter {
         [key: string]: GrpcHistogram
     }): ImmutableMap<string, Histogram> | undefined {
         const newHistograms = new Map<string, Histogram>()
-        for (const histogramName in histograms) {
-            const histogram = histograms[histogramName]
+        for (const [histogramName, histogram] of Object.entries(histograms)) {
             newHistograms.set(
                 histogramName,
                 new Histogram(
                     histogram.overallCount,
                     this.convertHistogramBuckets(histogram.buckets),
-                    new BigDecimal(histogram.min?.valueString!),
-                    new BigDecimal(histogram.max?.valueString!)
+                    new BigDecimal(histogram.min!.valueString),
+                    new BigDecimal(histogram.max!.valueString)
                 )
             )
         }
@@ -68,7 +70,7 @@ export class ExtraResultConverter {
                 new HistogramBucket(
                     bucket.occurrences,
                     bucket.requested,
-                    new BigDecimal(bucket.threshold?.valueString!)
+                    new BigDecimal(bucket.threshold!.valueString)
                 )
             )
         }
@@ -99,6 +101,45 @@ export class ExtraResultConverter {
             )
         }
         return newFacetGroupStatistics.length === 0 ? undefined : ImmutableList(newFacetGroupStatistics)
+    }
+
+    convertReferenceGroupStatistics(
+        referenceGroupStatistics: GrpcReferenceGroupStatistics[]
+    ): ImmutableList<ReferenceGroupStatistics> | undefined {
+        const newReferenceGroupStatistics: ReferenceGroupStatistics[] = []
+        for (const refGroupStatistic of referenceGroupStatistics) {
+            const histogramStatistics = new Map<string, Histogram>()
+            for (const [histogramName, grpcHistogram] of Object.entries(refGroupStatistic.histogramStatistics)) {
+                histogramStatistics.set(
+                    histogramName,
+                    new Histogram(
+                        grpcHistogram.overallCount,
+                        this.convertHistogramBuckets(grpcHistogram.buckets),
+                        new BigDecimal(grpcHistogram.min!.valueString),
+                        new BigDecimal(grpcHistogram.max!.valueString)
+                    )
+                )
+            }
+            newReferenceGroupStatistics.push(
+                new ReferenceGroupStatistics(
+                    refGroupStatistic.referenceName,
+                    refGroupStatistic.count,
+                    this.convertFacetStatistics(
+                        refGroupStatistic.facetStatistics
+                    ),
+                    this.convertEntityReference(
+                        refGroupStatistic.groupEntityReference
+                    ),
+                    refGroupStatistic.groupEntity
+                        ? this.entityConverter.convert(
+                              refGroupStatistic.groupEntity
+                          )
+                        : undefined,
+                    ImmutableMap(histogramStatistics)
+                )
+            )
+        }
+        return newReferenceGroupStatistics.length === 0 ? undefined : ImmutableList(newReferenceGroupStatistics)
     }
 
     convertFacetStatistics(
@@ -169,10 +210,8 @@ export class ExtraResultConverter {
             string,
             Hierarchy
         >()
-        for (const hierarchyName in hierarchy) {
-            const newHierarchyData = this.convertHierarchyAttribute(
-                hierarchy[hierarchyName]
-            )
+        for (const [hierarchyName, grpcHierarchy] of Object.entries(hierarchy)) {
+            const newHierarchyData = this.convertHierarchyAttribute(grpcHierarchy)
             newHierarchy.set(hierarchyName, newHierarchyData)
         }
         return newHierarchy.size === 0 ? undefined : ImmutableMap(newHierarchy)
@@ -181,10 +220,10 @@ export class ExtraResultConverter {
     convertHierarchyAttribute(hierarchy: GrpcHierarchy): Hierarchy {
         const levelInfos: Map<string, ImmutableList<LevelInfo>> = new Map()
         const hierarchyData = hierarchy.hierarchy
-        for (const levelInfoName in hierarchyData) {
+        for (const [levelInfoName, grpcLevelInfos] of Object.entries(hierarchyData)) {
             levelInfos.set(
                 levelInfoName,
-                this.convertLevelInfos(hierarchyData[levelInfoName])
+                this.convertLevelInfos(grpcLevelInfos)
             )
         }
         return new Hierarchy(ImmutableMap(levelInfos))
@@ -234,8 +273,8 @@ export class ExtraResultConverter {
         return new Histogram(
             histogram.overallCount,
             this.convertHistogramBuckets(histogram.buckets),
-            new BigDecimal(histogram.min?.valueString!),
-            new BigDecimal(histogram.max?.valueString!)
+            new BigDecimal(histogram.min!.valueString),
+            new BigDecimal(histogram.max!.valueString)
         )
     }
 }

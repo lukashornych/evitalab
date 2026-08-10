@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { asError } from '@/utils/error'
 /**
  * Entities console. Allows to view entities of specified collection.
  */
@@ -15,6 +16,7 @@ import type { TabComponentEvents } from '@/modules/workspace/tab/model/TabCompon
 import { EntityViewerTabParams } from '@/modules/entity-viewer/viewer/workspace/model/EntityViewerTabParams'
 import { EntityViewerTabData } from '@/modules/entity-viewer/viewer/workspace/model/EntityViewerTabData'
 import { EntityPropertyDescriptor } from '@/modules/entity-viewer/viewer/model/EntityPropertyDescriptor'
+import type { GridHeader } from '@/modules/entity-viewer/viewer/model/GridHeader'
 import { QueryLanguage } from '@/modules/entity-viewer/viewer/model/QueryLanguage'
 import { QueryPriceMode } from '@/modules/entity-viewer/viewer/model/QueryPriceMode'
 import { EntityPropertyKey } from '@/modules/entity-viewer/viewer/model/EntityPropertyKey'
@@ -47,6 +49,7 @@ import { EntityViewerDataPointer } from '@/modules/entity-viewer/viewer/model/En
 import { EntityViewerTabDefinition } from '@/modules/entity-viewer/viewer/workspace/model/EntityViewerTabDefinition'
 import { SelectedScope } from '@/modules/entity-viewer/viewer/model/SelectedScope.ts'
 import { EntityScope } from '@/modules/database-driver/request-response/schema/EntityScope.ts'
+import { flattenToSingleLine } from '@/modules/code-editor/service/flattenToSingleLine'
 
 const entityViewerService: EntityViewerService = useEntityViewerService()
 const toaster: Toaster = useToaster()
@@ -71,7 +74,7 @@ defineExpose<TabComponentExpose>({
 // static data
 const title = ImmutableList.of(props.params.dataPointer.entityType)
 
-let sortedEntityPropertyKeys: string[] = []
+const sortedEntityPropertyKeys: string[] = []
 let entityPropertyDescriptors: EntityPropertyDescriptor[] = []
 const entityPropertyDescriptorIndex = ref<ImmutableMap<string, EntityPropertyDescriptor>>(ImmutableMap<string, EntityPropertyDescriptor>())
 provideEntityPropertyDescriptorIndex(entityPropertyDescriptorIndex)
@@ -80,34 +83,69 @@ const entitySchemaChangedCallbackId: string = entityViewerService.registerEntity
     async () => await reloadEntityPropertyDescriptors()
 )
 
-let gridHeaders: Map<string, any> = new Map<string, any>()
+let gridHeaders: Map<string, GridHeader> = new Map<string, GridHeader>()
 let dataLocales: ImmutableList<string> = ImmutableList()
 
 // dynamic user data
 const selectedQueryLanguage = ref<QueryLanguage>(props.data.queryLanguage ? props.data.queryLanguage : QueryLanguage.EvitaQL)
 provideQueryLanguage(selectedQueryLanguage)
-watch(selectedQueryLanguage, (newValue, oldValue) => {
+watch(selectedQueryLanguage, async (newValue, oldValue) => {
     if (newValue[0] === oldValue[0]) {
         return
     }
 
+    // both codes hold language-specific source text and cannot be translated, unlike the grid sort state which is
+    // language-agnostic and is therefore only regenerated into the new language
     filterByCode.value = ''
     orderByCode.value = ''
+    orderByDefinedManually.value = false
+    if (sortBy.value.length > 0) {
+        await rebuildOrderByFromSortBy(sortBy.value)
+    }
 
-    executeQueryAutomatically()
+    await executeQueryAutomatically()
 })
 
 const loading = ref<boolean>(false)
 const pageNumber = ref<number>(props.data.pageNumber ? props.data.pageNumber : 1)
 const pageSize = ref<number>(props.data.pageSize ? props.data.pageSize : 25)
 
-const filterByCode = ref<string>(props.data.filterBy ? props.data.filterBy : '')
+const filterByCode = ref<string>(props.data.filterBy ? flattenToSingleLine(props.data.filterBy) : '')
 const lastAppliedFilterByCode = ref<string>('')
 provideQueryFilter(lastAppliedFilterByCode)
-const orderByCode = ref<string>(props.data.orderBy ? props.data.orderBy : '')
+const orderByCode = ref<string>(props.data.orderBy ? flattenToSingleLine(props.data.orderBy) : '')
+/**
+ * Grid sort state. Authoritative source of {@link orderByCode} unless {@link orderByDefinedManually} is `true`.
+ */
+const sortBy = ref<{ key: string, order?: 'asc' | 'desc' }[]>(props.data.sortBy ? props.data.sortBy : [])
+/**
+ * Whether {@link orderByCode} is text authored by the user. Grid-driven and hand-written ordering are mutually
+ * exclusive: while this is `true`, {@link sortBy} is empty and the grid never overwrites the user's text.
+ */
+const orderByDefinedManually = ref<boolean>(props.data.orderByDefinedManually === true)
+/**
+ * Which writer currently owns {@link orderByCode}, surfaced to the user in the order by input.
+ * `undefined` while no ordering is defined at all, when there is nothing to attribute.
+ */
+const orderByOwnership = computed<'grid' | 'manual' | undefined>(() => {
+    if (orderByDefinedManually.value) {
+        return orderByCode.value.length > 0 ? 'manual' : undefined
+    }
+    return sortBy.value.length > 0 ? 'grid' : undefined
+})
 const selectedScopes = ref<SelectedScope[]>(props.data.selectedScopes ? props.data.selectedScopes : [new SelectedScope(EntityScope.Live, true), new SelectedScope(EntityScope.Archive, false)])
 provideScopes(selectedScopes)
-watch(selectedScopes, () => executeQueryManually())
+/**
+ * Scopes the query is actually executed in. Sortability of grid columns is resolved against these.
+ */
+const activeScopes = computed<EntityScope[]>(() => selectedScopes.value.filter(it => it.value).map(it => it.scope))
+watch(selectedScopes, async () => {
+    gridHeaders = await initializeGridHeaders(entityPropertyDescriptors, activeScopes.value)
+    await updateDisplayedGridHeaders()
+    await pruneSortsInvalidInSelectedScopes()
+
+    await executeQueryManually()
+})
 
 const selectedDataLocale = ref<string | undefined>(props.data.dataLocale ? props.data.dataLocale : undefined)
 provideDataLocale(selectedDataLocale)
@@ -128,7 +166,7 @@ watch(displayedEntityProperties, (newValue, oldValue) => {
     }
 })
 
-const displayedGridHeaders = ref<any[]>([])
+const displayedGridHeaders = ref<GridHeader[]>([])
 const resultEntities = ref<FlatEntity[]>([])
 const totalResultCount = ref<number>(0)
 
@@ -145,7 +183,9 @@ const currentData = computed<EntityViewerTabData>(() => {
         displayedEntityProperties.value,
         pageSize.value,
         pageNumber.value,
-        selectedScopes.value
+        selectedScopes.value,
+        sortBy.value,
+        orderByDefinedManually.value
     )
 })
 watch(currentData, (data) => {
@@ -164,10 +204,14 @@ onBeforeMount(() => {
         .then(ep => {
             entityPropertyDescriptors = ep
             entityPropertyDescriptorIndex.value = constructEntityPropertyDescriptorIndex(entityPropertyDescriptors)
-            return initializeGridHeaders(entityPropertyDescriptors)
+            return initializeGridHeaders(entityPropertyDescriptors, activeScopes.value)
         })
         .then(gh => {
             gridHeaders = gh
+            // a restored tab may carry a sort that its own restored scopes no longer allow
+            return pruneSortsInvalidInSelectedScopes()
+        })
+        .then(() => {
             preselectEntityProperties()
             initialized.value = true
             emit('ready')
@@ -184,7 +228,9 @@ onBeforeMount(() => {
 async function reloadEntityPropertyDescriptors(): Promise<void> {
     entityPropertyDescriptors = await entityViewerService.getEntityPropertyDescriptors(props.params.dataPointer)
     entityPropertyDescriptorIndex.value = constructEntityPropertyDescriptorIndex(entityPropertyDescriptors)
-    gridHeaders = await initializeGridHeaders(entityPropertyDescriptors)
+    gridHeaders = await initializeGridHeaders(entityPropertyDescriptors, activeScopes.value)
+    // the schema change may have removed a property or its sortability while the grid is sorted by it
+    await pruneSortsInvalidInSelectedScopes()
 
     // remove selected properties which are not available anymore
     const removeDisplayProperties: string[] = []
@@ -213,15 +259,16 @@ function constructEntityPropertyDescriptorIndex(entityPropertyDescriptors: Entit
     return ImmutableMap(entityPropertyDescriptorIndexBuilder)
 }
 
-async function initializeGridHeaders(entityPropertyDescriptors: EntityPropertyDescriptor[]): Promise<Map<string, any>> {
-    const gridHeaders: Map<string, any> = new Map<string, any>()
+async function initializeGridHeaders(entityPropertyDescriptors: EntityPropertyDescriptor[],
+                                     scopes: EntityScope[]): Promise<Map<string, GridHeader>> {
+    const gridHeaders: Map<string, GridHeader> = new Map<string, GridHeader>()
     for (const propertyDescriptor of entityPropertyDescriptors) {
         gridHeaders.set(
             propertyDescriptor.key.toString(),
             {
                 key: propertyDescriptor.key.toString(),
                 title: propertyDescriptor.flattenedTitle,
-                sortable: propertyDescriptor.isSortable(),
+                sortable: propertyDescriptor.isSortable(scopes),
                 descriptor: propertyDescriptor
             }
         )
@@ -231,7 +278,7 @@ async function initializeGridHeaders(entityPropertyDescriptors: EntityPropertyDe
                 {
                     key: childPropertyDescriptor.key.toString(),
                     title: childPropertyDescriptor.flattenedTitle,
-                    sortable: childPropertyDescriptor.isSortable(),
+                    sortable: childPropertyDescriptor.isSortable(scopes),
                     descriptor: childPropertyDescriptor
                 }
             )
@@ -241,7 +288,9 @@ async function initializeGridHeaders(entityPropertyDescriptors: EntityPropertyDe
 }
 
 async function updateDisplayedGridHeaders(): Promise<void> {
-    displayedGridHeaders.value = displayedEntityProperties.value.map(propertyKey => gridHeaders.get(propertyKey.toString()))
+    displayedGridHeaders.value = displayedEntityProperties.value
+        .map(propertyKey => gridHeaders.get(propertyKey.toString()))
+        .filter((header): header is GridHeader => header != undefined)
 
     // sort grid headers by entity properties order
     displayedGridHeaders.value.sort((a, b) => {
@@ -289,20 +338,79 @@ function preselectEntityProperties(): void {
 
 }
 
-async function gridUpdated({ page, itemsPerPage, sortBy }: {
+/**
+ * Regenerates {@link orderByCode} from the given grid sort state in the currently selected query language. Must be
+ * called at every site that changes {@link sortBy} programmatically, because {@link gridUpdated} only rebuilds the
+ * code for sorts initiated by the user.
+ */
+async function rebuildOrderByFromSortBy(columns: { key: string, order?: 'asc' | 'desc' }[]): Promise<void> {
+    try {
+        orderByCode.value = await entityViewerService.buildOrderByFromGridColumns(props.params.dataPointer, selectedQueryLanguage.value, columns)
+    } catch (error) {
+        await toaster.error('Could not build orderBy', asError(error)) // todo lho i18n
+    }
+}
+
+/**
+ * Drops sorts by properties that are not sortable within the currently selected scopes and regenerates the order by
+ * code accordingly. Sorts that remain valid are kept. Does nothing while the order by is owned by the user.
+ */
+async function pruneSortsInvalidInSelectedScopes(): Promise<void> {
+    if (orderByDefinedManually.value || sortBy.value.length === 0) {
+        return
+    }
+    const prunedSortBy = sortBy.value.filter(it =>
+        entityPropertyDescriptorIndex.value.get(it.key)?.isSortable(activeScopes.value) === true)
+    if (prunedSortBy.length === sortBy.value.length) {
+        return
+    }
+    await rebuildOrderByFromSortBy(prunedSortBy)
+    sortBy.value = prunedSortBy
+}
+
+function isSameSortBy(left: { key: string, order?: 'asc' | 'desc' }[],
+                      right: { key: string, order?: 'asc' | 'desc' }[]): boolean {
+    return left.length === right.length &&
+        left.every((it, index) => it.key === right[index]?.key && it.order === right[index]?.order)
+}
+
+async function gridUpdated({ page, itemsPerPage, sortBy: updatedSortBy }: {
     page: number,
     itemsPerPage: number,
-    sortBy: any[]
+    sortBy: { key: string, order?: 'asc' | 'desc' }[]
 }): Promise<void> {
+    const pageChanged: boolean = pageNumber.value !== page
+    const pageSizeChanged: boolean = pageSize.value !== itemsPerPage
+    // a differing sort can only come from the user clicking a column header; programmatic changes to `sortBy` already
+    // rebuilt the order by code themselves and echo back here unchanged
+    const sortChanged: boolean = !isSameSortBy(sortBy.value, updatedSortBy)
+
     pageNumber.value = page
     pageSize.value = itemsPerPage
-    try {
-        orderByCode.value = await entityViewerService.buildOrderByFromGridColumns(props.params.dataPointer, selectedQueryLanguage.value, sortBy)
-    } catch (error: any) {
-        await toaster.error('Could not build orderBy', error) // todo lho i18n
+
+    if (sortChanged) {
+        // the user handed ownership of the ordering back to the grid
+        orderByDefinedManually.value = false
+        sortBy.value = updatedSortBy
+        await rebuildOrderByFromSortBy(updatedSortBy)
+    } else if (!pageChanged && !pageSizeChanged) {
+        // nothing the query depends on has changed, do not re-execute it
+        return
     }
 
     await executeQueryAutomatically()
+}
+
+/**
+ * Handles the user editing the order by input (or picking a history record), which makes them the owner of the
+ * ordering and discards the grid sort state.
+ */
+function orderByEdited(newOrderByCode: string): void {
+    orderByCode.value = newOrderByCode
+    orderByDefinedManually.value = true
+    if (sortBy.value.length > 0) {
+        sortBy.value = []
+    }
 }
 
 /**
@@ -352,8 +460,8 @@ async function executeQuery(): Promise<void> {
         totalResultCount.value = result.totalEntitiesCount
 
         lastAppliedFilterByCode.value = filterByCode.value
-    } catch (error: any) {
-        await toaster.error(t('entityViewer.notification.couldNotExecuteQuery'), error)
+    } catch (error) {
+        await toaster.error(t('entityViewer.notification.couldNotExecuteQuery'), asError(error))
     }
 
     loading.value = false
@@ -384,7 +492,9 @@ onUnmounted(() => {
                 <QueryInput
                     v-model:selected-query-language="selectedQueryLanguage"
                     v-model:filter-by="filterByCode"
-                    v-model:order-by="orderByCode"
+                    :order-by="orderByCode"
+                    :order-by-ownership="orderByOwnership"
+                    @update:order-by="orderByEdited"
                     v-model:selected-scope="selectedScopes"
                     :data-locales="dataLocales"
                     v-model:selected-data-locale="selectedDataLocale"
@@ -404,6 +514,7 @@ onUnmounted(() => {
             :total-result-count="totalResultCount"
             :page-number="pageNumber"
             :page-size="pageSize"
+            :sort-by="sortBy"
             @grid-updated="gridUpdated"
         />
         <div v-else class="data-grid__init-screen">

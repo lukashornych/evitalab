@@ -4,9 +4,9 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { GrpcAttributeInheritanceBehavior, GrpcCardinality, GrpcEntityScope } from "./GrpcEnums_pb";
+import type { GrpcAttributeInheritanceBehavior, GrpcCardinality, GrpcConflictResolutionOverride, GrpcEntityScope } from "./GrpcEnums_pb";
 import { file_GrpcEnums } from "./GrpcEnums_pb";
-import type { GrpcScopedReferenceIndexType } from "./GrpcEvitaDataTypes_pb";
+import type { GrpcScopedBucketedPartially, GrpcScopedFacetedPartially, GrpcScopedHistogramIndexDefinition, GrpcScopedReferenceIndexedComponents, GrpcScopedReferenceIndexType } from "./GrpcEvitaDataTypes_pb";
 import { file_GrpcEvitaDataTypes } from "./GrpcEvitaDataTypes_pb";
 import type { GrpcAttributeSchemaMutation } from "./GrpcAttributeSchemaMutations_pb";
 import { file_GrpcAttributeSchemaMutations } from "./GrpcAttributeSchemaMutations_pb";
@@ -19,7 +19,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file GrpcReferenceSchemaMutations.proto.
  */
 export const file_GrpcReferenceSchemaMutations: GenFile = /*@__PURE__*/
-  fileDesc("CiJHcnBjUmVmZXJlbmNlU2NoZW1hTXV0YXRpb25zLnByb3RvEiVpby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkIr4FCiFHcnBjQ3JlYXRlUmVmZXJlbmNlU2NoZW1hTXV0YXRpb24SDAoEbmFtZRgBIAEoCRIxCgtkZXNjcmlwdGlvbhgCIAEoCzIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRI3ChFkZXByZWNhdGlvbk5vdGljZRgDIAEoCzIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRJLCgtjYXJkaW5hbGl0eRgEIAEoDjI2LmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY0NhcmRpbmFsaXR5EhwKFHJlZmVyZW5jZWRFbnRpdHlUeXBlGAUgASgJEiMKG3JlZmVyZW5jZWRFbnRpdHlUeXBlTWFuYWdlZBgGIAEoCBI5ChNyZWZlcmVuY2VkR3JvdXBUeXBlGAcgASgLMhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlEiIKGnJlZmVyZW5jZWRHcm91cFR5cGVNYW5hZ2VkGAggASgIEhYKCmZpbHRlcmFibGUYCSABKAhCAhgBEhMKB2ZhY2V0ZWQYCiABKAhCAhgBElMKD2luZGV4ZWRJblNjb3BlcxgLIAMoDjI2LmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY0VudGl0eVNjb3BlQgIYARJPCg9mYWNldGVkSW5TY29wZXMYDCADKA4yNi5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNFbnRpdHlTY29wZRJdChBzY29wZWRJbmRleFR5cGVzGA0gAygLMkMuaW8uZXZpdGFkYi5leHRlcm5hbEFwaS5ncnBjLmdlbmVyYXRlZC5HcnBjU2NvcGVkUmVmZXJlbmNlSW5kZXhUeXBlIq4GCipHcnBjQ3JlYXRlUmVmbGVjdGVkUmVmZXJlbmNlU2NoZW1hTXV0YXRpb24SDAoEbmFtZRgBIAEoCRIxCgtkZXNjcmlwdGlvbhgCIAEoCzIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRI3ChFkZXByZWNhdGlvbk5vdGljZRgDIAEoCzIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRJLCgtjYXJkaW5hbGl0eRgEIAEoDjI2LmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY0NhcmRpbmFsaXR5EhwKFHJlZmVyZW5jZWRFbnRpdHlUeXBlGAUgASgJEh4KFnJlZmxlY3RlZFJlZmVyZW5jZU5hbWUYBiABKAkSLwoHZmFjZXRlZBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5Cb29sVmFsdWVCAhgBEm0KHGF0dHJpYnV0ZUluaGVyaXRhbmNlQmVoYXZpb3IYCCABKA4yRy5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNBdHRyaWJ1dGVJbmhlcml0YW5jZUJlaGF2aW9yEiIKGmF0dHJpYnV0ZUluaGVyaXRhbmNlRmlsdGVyGAkgAygJEhgKEGluZGV4ZWRJbmhlcml0ZWQYCiABKAgSUwoPaW5kZXhlZEluU2NvcGVzGAsgAygOMjYuaW8uZXZpdGFkYi5leHRlcm5hbEFwaS5ncnBjLmdlbmVyYXRlZC5HcnBjRW50aXR5U2NvcGVCAhgBEhgKEGZhY2V0ZWRJbmhlcml0ZWQYDCABKAgSTwoPZmFjZXRlZEluU2NvcGVzGA0gAygOMjYuaW8uZXZpdGFkYi5leHRlcm5hbEFwaS5ncnBjLmdlbmVyYXRlZC5HcnBjRW50aXR5U2NvcGUSXQoQc2NvcGVkSW5kZXhUeXBlcxgOIAMoCzJDLmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY1Njb3BlZFJlZmVyZW5jZUluZGV4VHlwZSKfAQoqR3JwY01vZGlmeVJlZmVyZW5jZUF0dHJpYnV0ZVNjaGVtYU11dGF0aW9uEgwKBG5hbWUYASABKAkSYwoXYXR0cmlidXRlU2NoZW1hTXV0YXRpb24YAiABKAsyQi5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNBdHRyaWJ1dGVTY2hlbWFNdXRhdGlvbiLQAQo6R3JwY01vZGlmeVJlZmVyZW5jZVNvcnRhYmxlQXR0cmlidXRlQ29tcG91bmRTY2hlbWFNdXRhdGlvbhIMCgRuYW1lGAEgASgJEoMBCidzb3J0YWJsZUF0dHJpYnV0ZUNvbXBvdW5kU2NoZW1hTXV0YXRpb24YAiABKAsyUi5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNTb3J0YWJsZUF0dHJpYnV0ZUNvbXBvdW5kU2NoZW1hTXV0YXRpb24iiQEKLEdycGNNb2RpZnlSZWZlcmVuY2VTY2hlbWFDYXJkaW5hbGl0eU11dGF0aW9uEgwKBG5hbWUYASABKAkSSwoLY2FyZGluYWxpdHkYAiABKA4yNi5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNDYXJkaW5hbGl0eSJ7CjJHcnBjTW9kaWZ5UmVmZXJlbmNlU2NoZW1hRGVwcmVjYXRpb25Ob3RpY2VNdXRhdGlvbhIMCgRuYW1lGAEgASgJEjcKEWRlcHJlY2F0aW9uTm90aWNlGAIgASgLMhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlIm8KLEdycGNNb2RpZnlSZWZlcmVuY2VTY2hlbWFEZXNjcmlwdGlvbk11dGF0aW9uEgwKBG5hbWUYASABKAkSMQoLZGVzY3JpcHRpb24YAiABKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUiRgolR3JwY01vZGlmeVJlZmVyZW5jZVNjaGVtYU5hbWVNdXRhdGlvbhIMCgRuYW1lGAEgASgJEg8KB25ld05hbWUYAiABKAkiogEKM0dycGNNb2RpZnlSZWZlcmVuY2VTY2hlbWFSZWxhdGVkRW50aXR5R3JvdXBNdXRhdGlvbhIMCgRuYW1lGAEgASgJEjkKE3JlZmVyZW5jZWRHcm91cFR5cGUYAiABKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUSIgoacmVmZXJlbmNlZEdyb3VwVHlwZU1hbmFnZWQYAyABKAgigQEKLkdycGNNb2RpZnlSZWZlcmVuY2VTY2hlbWFSZWxhdGVkRW50aXR5TXV0YXRpb24SDAoEbmFtZRgBIAEoCRIcChRyZWZlcmVuY2VkRW50aXR5VHlwZRgCIAEoCRIjChtyZWZlcmVuY2VkRW50aXR5VHlwZU1hbmFnZWQYAyABKAgi4QEKPkdycGNNb2RpZnlSZWZsZWN0ZWRSZWZlcmVuY2VBdHRyaWJ1dGVJbmhlcml0YW5jZVNjaGVtYU11dGF0aW9uEgwKBG5hbWUYASABKAkSbQocYXR0cmlidXRlSW5oZXJpdGFuY2VCZWhhdmlvchgCIAEoDjJHLmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY0F0dHJpYnV0ZUluaGVyaXRhbmNlQmVoYXZpb3ISIgoaYXR0cmlidXRlSW5oZXJpdGFuY2VGaWx0ZXIYAyADKAkiMQohR3JwY1JlbW92ZVJlZmVyZW5jZVNjaGVtYU11dGF0aW9uEgwKBG5hbWUYASABKAkirgEKJUdycGNTZXRSZWZlcmVuY2VTY2hlbWFGYWNldGVkTXV0YXRpb24SDAoEbmFtZRgBIAEoCRITCgdmYWNldGVkGAIgASgIQgIYARIRCglpbmhlcml0ZWQYAyABKAgSTwoPZmFjZXRlZEluU2NvcGVzGAQgAygOMjYuaW8uZXZpdGFkYi5leHRlcm5hbEFwaS5ncnBjLmdlbmVyYXRlZC5HcnBjRW50aXR5U2NvcGUi/AEKJUdycGNTZXRSZWZlcmVuY2VTY2hlbWFJbmRleGVkTXV0YXRpb24SDAoEbmFtZRgBIAEoCRIRCglpbmhlcml0ZWQYAiABKAgSUwoPaW5kZXhlZEluU2NvcGVzGAMgAygOMjYuaW8uZXZpdGFkYi5leHRlcm5hbEFwaS5ncnBjLmdlbmVyYXRlZC5HcnBjRW50aXR5U2NvcGVCAhgBEl0KEHNjb3BlZEluZGV4VHlwZXMYBCADKAsyQy5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNTY29wZWRSZWZlcmVuY2VJbmRleFR5cGVCiAIKKWNvbS5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkQiFHcnBjUmVmZXJlbmNlU2NoZW1hTXV0YXRpb25zUHJvdG9QAaICBUlFRUdHqgIlSW8uRXZpdGFkYi5FeHRlcm5hbEFwaS5HcnBjLkdlbmVyYXRlZMoCJUlvXEV2aXRhZGJcRXh0ZXJuYWxBcGlcR3JwY1xHZW5lcmF0ZWTiAjFJb1xFdml0YWRiXEV4dGVybmFsQXBpXEdycGNcR2VuZXJhdGVkXEdQQk1ldGFkYXRh6gIpSW86OkV2aXRhZGI6OkV4dGVybmFsQXBpOjpHcnBjOjpHZW5lcmF0ZWRiBnByb3RvMw", [file_GrpcEnums, file_GrpcEvitaDataTypes, file_GrpcAttributeSchemaMutations, file_GrpcSortableAttributeCompoundSchemaMutations, file_google_protobuf_wrappers]);
+  fileDesc("CiJHcnBjUmVmZXJlbmNlU2NoZW1hTXV0YXRpb25zLnByb3RvEiVpby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkIsAJCiFHcnBjQ3JlYXRlUmVmZXJlbmNlU2NoZW1hTXV0YXRpb24SDAoEbmFtZRgBIAEoCRIxCgtkZXNjcmlwdGlvbhgCIAEoCzIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRI3ChFkZXByZWNhdGlvbk5vdGljZRgDIAEoCzIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRJLCgtjYXJkaW5hbGl0eRgEIAEoDjI2LmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY0NhcmRpbmFsaXR5EhwKFHJlZmVyZW5jZWRFbnRpdHlUeXBlGAUgASgJEiMKG3JlZmVyZW5jZWRFbnRpdHlUeXBlTWFuYWdlZBgGIAEoCBI5ChNyZWZlcmVuY2VkR3JvdXBUeXBlGAcgASgLMhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlEiIKGnJlZmVyZW5jZWRHcm91cFR5cGVNYW5hZ2VkGAggASgIEhYKCmZpbHRlcmFibGUYCSABKAhCAhgBEhMKB2ZhY2V0ZWQYCiABKAhCAhgBElMKD2luZGV4ZWRJblNjb3BlcxgLIAMoDjI2LmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY0VudGl0eVNjb3BlQgIYARJPCg9mYWNldGVkSW5TY29wZXMYDCADKA4yNi5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNFbnRpdHlTY29wZRJdChBzY29wZWRJbmRleFR5cGVzGA0gAygLMkMuaW8uZXZpdGFkYi5leHRlcm5hbEFwaS5ncnBjLmdlbmVyYXRlZC5HcnBjU2NvcGVkUmVmZXJlbmNlSW5kZXhUeXBlEmwKF3Njb3BlZEluZGV4ZWRDb21wb25lbnRzGA4gAygLMksuaW8uZXZpdGFkYi5leHRlcm5hbEFwaS5ncnBjLmdlbmVyYXRlZC5HcnBjU2NvcGVkUmVmZXJlbmNlSW5kZXhlZENvbXBvbmVudHMSWwoQZmFjZXRlZFBhcnRpYWxseRgPIAMoCzJBLmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY1Njb3BlZEZhY2V0ZWRQYXJ0aWFsbHkSYwoQYnVja2V0ZWRJblNjb3BlcxgQIAMoCzJJLmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY1Njb3BlZEhpc3RvZ3JhbUluZGV4RGVmaW5pdGlvbhJlChlidWNrZXRlZFBhcnRpYWxseUluU2NvcGVzGBEgAygLMkIuaW8uZXZpdGFkYi5leHRlcm5hbEFwaS5ncnBjLmdlbmVyYXRlZC5HcnBjU2NvcGVkQnVja2V0ZWRQYXJ0aWFsbHkSaQoaY29uZmxpY3RSZXNvbHV0aW9uT3ZlcnJpZGUYEiABKA4yRS5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNDb25mbGljdFJlc29sdXRpb25PdmVycmlkZSLFCQoqR3JwY0NyZWF0ZVJlZmxlY3RlZFJlZmVyZW5jZVNjaGVtYU11dGF0aW9uEgwKBG5hbWUYASABKAkSMQoLZGVzY3JpcHRpb24YAiABKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUSNwoRZGVwcmVjYXRpb25Ob3RpY2UYAyABKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUSSwoLY2FyZGluYWxpdHkYBCABKA4yNi5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNDYXJkaW5hbGl0eRIcChRyZWZlcmVuY2VkRW50aXR5VHlwZRgFIAEoCRIeChZyZWZsZWN0ZWRSZWZlcmVuY2VOYW1lGAYgASgJEi8KB2ZhY2V0ZWQYByABKAsyGi5nb29nbGUucHJvdG9idWYuQm9vbFZhbHVlQgIYARJtChxhdHRyaWJ1dGVJbmhlcml0YW5jZUJlaGF2aW9yGAggASgOMkcuaW8uZXZpdGFkYi5leHRlcm5hbEFwaS5ncnBjLmdlbmVyYXRlZC5HcnBjQXR0cmlidXRlSW5oZXJpdGFuY2VCZWhhdmlvchIiChphdHRyaWJ1dGVJbmhlcml0YW5jZUZpbHRlchgJIAMoCRIYChBpbmRleGVkSW5oZXJpdGVkGAogASgIElMKD2luZGV4ZWRJblNjb3BlcxgLIAMoDjI2LmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY0VudGl0eVNjb3BlQgIYARIYChBmYWNldGVkSW5oZXJpdGVkGAwgASgIEk8KD2ZhY2V0ZWRJblNjb3BlcxgNIAMoDjI2LmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY0VudGl0eVNjb3BlEl0KEHNjb3BlZEluZGV4VHlwZXMYDiADKAsyQy5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNTY29wZWRSZWZlcmVuY2VJbmRleFR5cGUSbAoXc2NvcGVkSW5kZXhlZENvbXBvbmVudHMYDyADKAsySy5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNTY29wZWRSZWZlcmVuY2VJbmRleGVkQ29tcG9uZW50cxJbChBmYWNldGVkUGFydGlhbGx5GBAgAygLMkEuaW8uZXZpdGFkYi5leHRlcm5hbEFwaS5ncnBjLmdlbmVyYXRlZC5HcnBjU2NvcGVkRmFjZXRlZFBhcnRpYWxseRJjChBidWNrZXRlZEluU2NvcGVzGBEgAygLMkkuaW8uZXZpdGFkYi5leHRlcm5hbEFwaS5ncnBjLmdlbmVyYXRlZC5HcnBjU2NvcGVkSGlzdG9ncmFtSW5kZXhEZWZpbml0aW9uEmUKGWJ1Y2tldGVkUGFydGlhbGx5SW5TY29wZXMYEiADKAsyQi5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNTY29wZWRCdWNrZXRlZFBhcnRpYWxseSKfAQoqR3JwY01vZGlmeVJlZmVyZW5jZUF0dHJpYnV0ZVNjaGVtYU11dGF0aW9uEgwKBG5hbWUYASABKAkSYwoXYXR0cmlidXRlU2NoZW1hTXV0YXRpb24YAiABKAsyQi5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNBdHRyaWJ1dGVTY2hlbWFNdXRhdGlvbiLQAQo6R3JwY01vZGlmeVJlZmVyZW5jZVNvcnRhYmxlQXR0cmlidXRlQ29tcG91bmRTY2hlbWFNdXRhdGlvbhIMCgRuYW1lGAEgASgJEoMBCidzb3J0YWJsZUF0dHJpYnV0ZUNvbXBvdW5kU2NoZW1hTXV0YXRpb24YAiABKAsyUi5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNTb3J0YWJsZUF0dHJpYnV0ZUNvbXBvdW5kU2NoZW1hTXV0YXRpb24iiQEKLEdycGNNb2RpZnlSZWZlcmVuY2VTY2hlbWFDYXJkaW5hbGl0eU11dGF0aW9uEgwKBG5hbWUYASABKAkSSwoLY2FyZGluYWxpdHkYAiABKA4yNi5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNDYXJkaW5hbGl0eSJ7CjJHcnBjTW9kaWZ5UmVmZXJlbmNlU2NoZW1hRGVwcmVjYXRpb25Ob3RpY2VNdXRhdGlvbhIMCgRuYW1lGAEgASgJEjcKEWRlcHJlY2F0aW9uTm90aWNlGAIgASgLMhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlIm8KLEdycGNNb2RpZnlSZWZlcmVuY2VTY2hlbWFEZXNjcmlwdGlvbk11dGF0aW9uEgwKBG5hbWUYASABKAkSMQoLZGVzY3JpcHRpb24YAiABKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUiRgolR3JwY01vZGlmeVJlZmVyZW5jZVNjaGVtYU5hbWVNdXRhdGlvbhIMCgRuYW1lGAEgASgJEg8KB25ld05hbWUYAiABKAkiogEKM0dycGNNb2RpZnlSZWZlcmVuY2VTY2hlbWFSZWxhdGVkRW50aXR5R3JvdXBNdXRhdGlvbhIMCgRuYW1lGAEgASgJEjkKE3JlZmVyZW5jZWRHcm91cFR5cGUYAiABKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUSIgoacmVmZXJlbmNlZEdyb3VwVHlwZU1hbmFnZWQYAyABKAgigQEKLkdycGNNb2RpZnlSZWZlcmVuY2VTY2hlbWFSZWxhdGVkRW50aXR5TXV0YXRpb24SDAoEbmFtZRgBIAEoCRIcChRyZWZlcmVuY2VkRW50aXR5VHlwZRgCIAEoCRIjChtyZWZlcmVuY2VkRW50aXR5VHlwZU1hbmFnZWQYAyABKAgi4QEKPkdycGNNb2RpZnlSZWZsZWN0ZWRSZWZlcmVuY2VBdHRyaWJ1dGVJbmhlcml0YW5jZVNjaGVtYU11dGF0aW9uEgwKBG5hbWUYASABKAkSbQocYXR0cmlidXRlSW5oZXJpdGFuY2VCZWhhdmlvchgCIAEoDjJHLmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY0F0dHJpYnV0ZUluaGVyaXRhbmNlQmVoYXZpb3ISIgoaYXR0cmlidXRlSW5oZXJpdGFuY2VGaWx0ZXIYAyADKAkiMQohR3JwY1JlbW92ZVJlZmVyZW5jZVNjaGVtYU11dGF0aW9uEgwKBG5hbWUYASABKAkiiwIKJUdycGNTZXRSZWZlcmVuY2VTY2hlbWFGYWNldGVkTXV0YXRpb24SDAoEbmFtZRgBIAEoCRITCgdmYWNldGVkGAIgASgIQgIYARIRCglpbmhlcml0ZWQYAyABKAgSTwoPZmFjZXRlZEluU2NvcGVzGAQgAygOMjYuaW8uZXZpdGFkYi5leHRlcm5hbEFwaS5ncnBjLmdlbmVyYXRlZC5HcnBjRW50aXR5U2NvcGUSWwoQZmFjZXRlZFBhcnRpYWxseRgFIAMoCzJBLmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY1Njb3BlZEZhY2V0ZWRQYXJ0aWFsbHki+gEKJkdycGNTZXRSZWZlcmVuY2VTY2hlbWFCdWNrZXRlZE11dGF0aW9uEgwKBG5hbWUYASABKAkSYwoQYnVja2V0ZWRJblNjb3BlcxgCIAMoCzJJLmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY1Njb3BlZEhpc3RvZ3JhbUluZGV4RGVmaW5pdGlvbhJdChFidWNrZXRlZFBhcnRpYWxseRgDIAMoCzJCLmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY1Njb3BlZEJ1Y2tldGVkUGFydGlhbGx5IuoCCiVHcnBjU2V0UmVmZXJlbmNlU2NoZW1hSW5kZXhlZE11dGF0aW9uEgwKBG5hbWUYASABKAkSEQoJaW5oZXJpdGVkGAIgASgIElMKD2luZGV4ZWRJblNjb3BlcxgDIAMoDjI2LmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWQuR3JwY0VudGl0eVNjb3BlQgIYARJdChBzY29wZWRJbmRleFR5cGVzGAQgAygLMkMuaW8uZXZpdGFkYi5leHRlcm5hbEFwaS5ncnBjLmdlbmVyYXRlZC5HcnBjU2NvcGVkUmVmZXJlbmNlSW5kZXhUeXBlEmwKF3Njb3BlZEluZGV4ZWRDb21wb25lbnRzGAUgAygLMksuaW8uZXZpdGFkYi5leHRlcm5hbEFwaS5ncnBjLmdlbmVyYXRlZC5HcnBjU2NvcGVkUmVmZXJlbmNlSW5kZXhlZENvbXBvbmVudHMiswEKOEdycGNTZXRSZWZlcmVuY2VTY2hlbWFDb25mbGljdFJlc29sdXRpb25PdmVycmlkZU11dGF0aW9uEgwKBG5hbWUYASABKAkSaQoaY29uZmxpY3RSZXNvbHV0aW9uT3ZlcnJpZGUYAiABKA4yRS5pby5ldml0YWRiLmV4dGVybmFsQXBpLmdycGMuZ2VuZXJhdGVkLkdycGNDb25mbGljdFJlc29sdXRpb25PdmVycmlkZUKIAgopY29tLmlvLmV2aXRhZGIuZXh0ZXJuYWxBcGkuZ3JwYy5nZW5lcmF0ZWRCIUdycGNSZWZlcmVuY2VTY2hlbWFNdXRhdGlvbnNQcm90b1ABogIFSUVFR0eqAiVJby5Fdml0YWRiLkV4dGVybmFsQXBpLkdycGMuR2VuZXJhdGVkygIlSW9cRXZpdGFkYlxFeHRlcm5hbEFwaVxHcnBjXEdlbmVyYXRlZOICMUlvXEV2aXRhZGJcRXh0ZXJuYWxBcGlcR3JwY1xHZW5lcmF0ZWRcR1BCTWV0YWRhdGHqAilJbzo6RXZpdGFkYjo6RXh0ZXJuYWxBcGk6OkdycGM6OkdlbmVyYXRlZGIGcHJvdG8z", [file_GrpcEnums, file_GrpcEvitaDataTypes, file_GrpcAttributeSchemaMutations, file_GrpcSortableAttributeCompoundSchemaMutations, file_google_protobuf_wrappers]);
 
 /**
  * Mutation is responsible for setting up a new `ReferenceSchema` in the `EntitySchema`.
@@ -112,7 +112,7 @@ export type GrpcCreateReferenceSchemaMutation = Message<"io.evitadb.externalApi.
 
   /**
    * Whether the statistics data for this reference should be maintained and this allowing to get
-   * `facetSummary` for this reference or use `facetInSet`
+   * `referenceSummary` for this reference or use `facetInSet`
    * filtering query.
    *
    * Do not mark reference as faceted unless you want it among `FacetStatistics`. Each faceted reference
@@ -143,7 +143,7 @@ export type GrpcCreateReferenceSchemaMutation = Message<"io.evitadb.externalApi.
 
   /**
    * Whether the statistics data for this reference should be maintained and this allowing to get
-   * `facetSummary` for this reference or use `facetInSet`
+   * `referenceSummary` for this reference or use `facetInSet`
    * filtering query.
    *
    * Do not mark reference as faceted unless you want it among `FacetStatistics`. Each faceted reference
@@ -161,6 +161,43 @@ export type GrpcCreateReferenceSchemaMutation = Message<"io.evitadb.externalApi.
    * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcScopedReferenceIndexType scopedIndexTypes = 13;
    */
   scopedIndexTypes: GrpcScopedReferenceIndexType[];
+
+  /**
+   * Scoped reference indexed components that specify which parts of a reference relationship
+   * (referenced entity, referenced group entity) are indexed per scope.
+   * When not specified, the default indexed components are determined automatically.
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcScopedReferenceIndexedComponents scopedIndexedComponents = 14;
+   */
+  scopedIndexedComponents: GrpcScopedReferenceIndexedComponents[];
+
+  /**
+   * Per-scope expressions that narrow which entities participate in faceting.
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcScopedFacetedPartially facetedPartially = 15;
+   */
+  facetedPartially: GrpcScopedFacetedPartially[];
+
+  /**
+   * Per-scope bucketed histogram configurations defining index name and value expression.
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcScopedHistogramIndexDefinition bucketedInScopes = 16;
+   */
+  bucketedInScopes: GrpcScopedHistogramIndexDefinition[];
+
+  /**
+   * Per-scope expressions that narrow which entities participate in bucketed histogram computation.
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcScopedBucketedPartially bucketedPartiallyInScopes = 17;
+   */
+  bucketedPartiallyInScopes: GrpcScopedBucketedPartially[];
+
+  /**
+   * The per-reference override of the conflict resolution granularity.
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcConflictResolutionOverride conflictResolutionOverride = 18;
+   */
+  conflictResolutionOverride: GrpcConflictResolutionOverride;
 };
 
 /**
@@ -230,7 +267,7 @@ export type GrpcCreateReflectedReferenceSchemaMutation = Message<"io.evitadb.ext
 
   /**
    * Whether the statistics data for this reference should be maintained and this allowing to get
-   * `facetSummary` for this reference or use `facetInSet`
+   * `referenceSummary` for this reference or use `facetInSet`
    * filtering query.
    *
    * Do not mark reference as faceted unless you want it among `FacetStatistics`. Each faceted reference
@@ -291,7 +328,7 @@ export type GrpcCreateReflectedReferenceSchemaMutation = Message<"io.evitadb.ext
 
   /**
    * Whether the statistics data for this reference should be maintained and this allowing to get
-   * `facetSummary` for this reference or use `facetInSet`
+   * `referenceSummary` for this reference or use `facetInSet`
    * filtering query.
    *
    * Do not mark reference as faceted unless you want it among `FacetStatistics`. Each faceted reference
@@ -310,6 +347,36 @@ export type GrpcCreateReflectedReferenceSchemaMutation = Message<"io.evitadb.ext
    * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcScopedReferenceIndexType scopedIndexTypes = 14;
    */
   scopedIndexTypes: GrpcScopedReferenceIndexType[];
+
+  /**
+   * Scoped reference indexed components that specify which parts of a reference relationship
+   * (referenced entity, referenced group entity) are indexed per scope.
+   * When `indexedInherited` is true, this field is ignored.
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcScopedReferenceIndexedComponents scopedIndexedComponents = 15;
+   */
+  scopedIndexedComponents: GrpcScopedReferenceIndexedComponents[];
+
+  /**
+   * Per-scope expressions that narrow which entities participate in faceting.
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcScopedFacetedPartially facetedPartially = 16;
+   */
+  facetedPartially: GrpcScopedFacetedPartially[];
+
+  /**
+   * Per-scope bucketed histogram configurations defining index name and value expression.
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcScopedHistogramIndexDefinition bucketedInScopes = 17;
+   */
+  bucketedInScopes: GrpcScopedHistogramIndexDefinition[];
+
+  /**
+   * Per-scope expressions that narrow which entities participate in bucketed histogram computation.
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcScopedBucketedPartially bucketedPartiallyInScopes = 18;
+   */
+  bucketedPartiallyInScopes: GrpcScopedBucketedPartially[];
 };
 
 /**
@@ -645,7 +712,7 @@ export type GrpcSetReferenceSchemaFacetedMutation = Message<"io.evitadb.external
 
   /**
    * Whether the statistics data for this reference should be maintained and this allowing to get
-   * `facetSummary` for this reference or use `facet_{reference name}_inSet`
+   * `referenceSummary` for this reference or use `facet_{reference name}_inSet`
    * filtering query.
    *
    * Do not mark reference as faceted unless you want it among `FacetStatistics`. Each faceted reference
@@ -669,7 +736,7 @@ export type GrpcSetReferenceSchemaFacetedMutation = Message<"io.evitadb.external
 
   /**
    * Whether the statistics data for this reference should be maintained and this allowing to get
-   * `facetSummary` for this reference or use `facet_{reference name}_inSet`
+   * `referenceSummary` for this reference or use `facet_{reference name}_inSet`
    * filtering query.
    *
    * Do not mark reference as faceted unless you want it among `FacetStatistics`. Each faceted reference
@@ -679,6 +746,14 @@ export type GrpcSetReferenceSchemaFacetedMutation = Message<"io.evitadb.external
    * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcEntityScope facetedInScopes = 4;
    */
   facetedInScopes: GrpcEntityScope[];
+
+  /**
+   * Per-scope expressions that narrow which entities participate in faceting.
+   * When absent (not set), expressions are inherited for reflected references.
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcScopedFacetedPartially facetedPartially = 5;
+   */
+  facetedPartially: GrpcScopedFacetedPartially[];
 };
 
 /**
@@ -687,6 +762,42 @@ export type GrpcSetReferenceSchemaFacetedMutation = Message<"io.evitadb.external
  */
 export const GrpcSetReferenceSchemaFacetedMutationSchema: GenMessage<GrpcSetReferenceSchemaFacetedMutation> = /*@__PURE__*/
   messageDesc(file_GrpcReferenceSchemaMutations, 12);
+
+/**
+ * Mutation is responsible for setting bucketed histogram configuration on a `ReferenceSchema` in `EntitySchema`.
+ * Mutation can be used for altering also the existing `ReferenceSchema` alone.
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GrpcSetReferenceSchemaBucketedMutation
+ */
+export type GrpcSetReferenceSchemaBucketedMutation = Message<"io.evitadb.externalApi.grpc.generated.GrpcSetReferenceSchemaBucketedMutation"> & {
+  /**
+   * Name of the reference the mutation is targeting.
+   *
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * Per-scope bucketed histogram configurations defining index name and value expression.
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcScopedHistogramIndexDefinition bucketedInScopes = 2;
+   */
+  bucketedInScopes: GrpcScopedHistogramIndexDefinition[];
+
+  /**
+   * Per-scope expressions that narrow which entities participate in bucketed histogram computation.
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcScopedBucketedPartially bucketedPartially = 3;
+   */
+  bucketedPartially: GrpcScopedBucketedPartially[];
+};
+
+/**
+ * Describes the message io.evitadb.externalApi.grpc.generated.GrpcSetReferenceSchemaBucketedMutation.
+ * Use `create(GrpcSetReferenceSchemaBucketedMutationSchema)` to create a new message.
+ */
+export const GrpcSetReferenceSchemaBucketedMutationSchema: GenMessage<GrpcSetReferenceSchemaBucketedMutation> = /*@__PURE__*/
+  messageDesc(file_GrpcReferenceSchemaMutations, 13);
 
 /**
  * Mutation is responsible for setting value to a `ReferenceSchema.indexed` in `EntitySchema`.
@@ -734,6 +845,15 @@ export type GrpcSetReferenceSchemaIndexedMutation = Message<"io.evitadb.external
    * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcScopedReferenceIndexType scopedIndexTypes = 4;
    */
   scopedIndexTypes: GrpcScopedReferenceIndexType[];
+
+  /**
+   * Scoped reference indexed components that specify which parts of a reference relationship
+   * (referenced entity, referenced group entity) are indexed per scope.
+   * When `inherited` is true, this field is ignored.
+   *
+   * @generated from field: repeated io.evitadb.externalApi.grpc.generated.GrpcScopedReferenceIndexedComponents scopedIndexedComponents = 5;
+   */
+  scopedIndexedComponents: GrpcScopedReferenceIndexedComponents[];
 };
 
 /**
@@ -741,5 +861,34 @@ export type GrpcSetReferenceSchemaIndexedMutation = Message<"io.evitadb.external
  * Use `create(GrpcSetReferenceSchemaIndexedMutationSchema)` to create a new message.
  */
 export const GrpcSetReferenceSchemaIndexedMutationSchema: GenMessage<GrpcSetReferenceSchemaIndexedMutation> = /*@__PURE__*/
-  messageDesc(file_GrpcReferenceSchemaMutations, 13);
+  messageDesc(file_GrpcReferenceSchemaMutations, 14);
+
+/**
+ * Mutation is responsible for setting value to a `ReferenceSchema.conflictResolutionOverride` in `EntitySchema`.
+ * Mutation can be used for altering also the existing `ReferenceSchema` alone.
+ *
+ * @generated from message io.evitadb.externalApi.grpc.generated.GrpcSetReferenceSchemaConflictResolutionOverrideMutation
+ */
+export type GrpcSetReferenceSchemaConflictResolutionOverrideMutation = Message<"io.evitadb.externalApi.grpc.generated.GrpcSetReferenceSchemaConflictResolutionOverrideMutation"> & {
+  /**
+   * Name of the reference the mutation is targeting.
+   *
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * The per-reference override of the conflict resolution granularity.
+   *
+   * @generated from field: io.evitadb.externalApi.grpc.generated.GrpcConflictResolutionOverride conflictResolutionOverride = 2;
+   */
+  conflictResolutionOverride: GrpcConflictResolutionOverride;
+};
+
+/**
+ * Describes the message io.evitadb.externalApi.grpc.generated.GrpcSetReferenceSchemaConflictResolutionOverrideMutation.
+ * Use `create(GrpcSetReferenceSchemaConflictResolutionOverrideMutationSchema)` to create a new message.
+ */
+export const GrpcSetReferenceSchemaConflictResolutionOverrideMutationSchema: GenMessage<GrpcSetReferenceSchemaConflictResolutionOverrideMutation> = /*@__PURE__*/
+  messageDesc(file_GrpcReferenceSchemaMutations, 15);
 

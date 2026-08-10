@@ -1,6 +1,8 @@
 import { DateTime } from 'luxon'
 import type { PrettyPrintable } from './PrettyPrintable'
-import { timeOffsetFrom } from '@/utils/dateTime'
+import { timeOffsetFrom, toLuxonZone } from '@/utils/dateTime'
+
+export { toLuxonZone }
 
 const offsetDateTimeFormatter = new Intl.DateTimeFormat([], {
     dateStyle: 'short',
@@ -38,11 +40,11 @@ export class OffsetDateTime implements PrettyPrintable {
 
     toDateTime(): DateTime {
         const dateTime: DateTime = DateTime.fromSeconds(Number(this.timestamp.seconds))
-        return dateTime.setZone(this.offset)
+        return dateTime.setZone(toLuxonZone(this.offset))
     }
 
     toString(): string {
-        return DateTime.fromSeconds(Number(this.timestamp?.seconds), {zone: this.offset }).toISO({includeOffset: true})
+        return DateTime.fromSeconds(Number(this.timestamp?.seconds), { zone: toLuxonZone(this.offset) }).toISO({ includeOffset: true })!
     }
 }
 

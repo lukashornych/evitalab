@@ -1,25 +1,21 @@
 import type { InjectionKey } from 'vue'
 import LZString from 'lz-string'
 import type { WorkspaceStore } from '@/modules/workspace/store/workspaceStore'
-import { TabDefinition } from '@/modules/workspace/tab/model/TabDefinition'
-import type { TabData } from '@/modules/workspace/tab/model/TabData'
+import type { AnyTabDefinition } from '@/modules/workspace/tab/model/TabDefinition'
+import type { AnyTabData } from '@/modules/workspace/tab/model/TabData'
 import { LabStorage } from '@/modules/storage/LabStorage'
 import { TabType } from '@/modules/workspace/tab/model/TabType'
 import { UnexpectedError } from '@/modules/base/exception/UnexpectedError'
 import { StoredTabObject } from '@/modules/workspace/tab/model/StoredTabObject'
 import { TabHistoryKey } from '@/modules/workspace/tab/model/TabHistoryKey'
 import { GraphQLConsoleTabFactory } from '@/modules/graphql-console/console/workspace/service/GraphQLConsoleTabFactory'
-import {
-    GraphQLConsoleTabDefinition
-} from '@/modules/graphql-console/console/workspace/model/GraphQLConsoleTabDefinition'
+import { GraphQLConsoleTabDefinition } from '@/modules/graphql-console/console/workspace/model/GraphQLConsoleTabDefinition'
 import { EntityViewerTabFactory } from '@/modules/entity-viewer/viewer/workspace/service/EntityViewerTabFactory'
 import { EvitaQLConsoleTabFactory } from '@/modules/evitaql-console/console/workspace/service/EvitaQLConsoleTabFactory'
 import { SchemaViewerTabFactory } from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
 import { KeymapViewerTabFactory } from '@/modules/keymap/viewer/workspace/service/KeymapViewerTabFactory'
 import { EntityViewerTabDefinition } from '@/modules/entity-viewer/viewer/workspace/model/EntityViewerTabDefinition'
-import {
-    EvitaQLConsoleTabDefinition
-} from '@/modules/evitaql-console/console/workspace/model/EvitaQLConsoleTabDefinition'
+import { EvitaQLConsoleTabDefinition } from '@/modules/evitaql-console/console/workspace/model/EvitaQLConsoleTabDefinition'
 import { SchemaViewerTabDefinition } from '@/modules/schema-viewer/viewer/workspace/model/SchemaViewerTabDefinition'
 import { KeymapViewerTabDefinition } from '@/modules/keymap/viewer/workspace/model/KeymapViewerTabDefinition'
 import { mandatoryInject } from '@/utils/reactivity'
@@ -33,21 +29,16 @@ import { BackupViewerTabFactory } from '@/modules/backup-viewer/service/BackupVi
 import { JfrViewerTabFactory } from '@/modules/jfr-viewer/service/JfrViewerTabFactory'
 import { SubjectPathStatus } from '@/modules/workspace/status-bar/model/subject-path-status/SubjectPathStatus'
 import { EditorStatus } from '@/modules/workspace/status-bar/model/editor-status/EditorStatus'
-import {
-    TrafficRecordingsViewerTabDefinition
-} from '@/modules/traffic-viewer/model/TrafficRecordingsViewerTabDefinition'
+import { TrafficRecordingsViewerTabDefinition } from '@/modules/traffic-viewer/model/TrafficRecordingsViewerTabDefinition'
 import { TrafficRecordingsViewerTabFactory } from '@/modules/traffic-viewer/service/TrafficRecordingsViewerTabFactory'
-import {
-    TrafficRecordHistoryViewerTabDefinition
-} from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabDefinition'
-import {
-    TrafficRecordHistoryViewerTabFactory
-} from '@/modules/traffic-viewer/service/TrafficRecordHistoryViewerTabFactory'
+import { TrafficRecordHistoryViewerTabDefinition } from '@/modules/traffic-viewer/model/TrafficRecordHistoryViewerTabDefinition'
+import { TrafficRecordHistoryViewerTabFactory } from '@/modules/traffic-viewer/service/TrafficRecordHistoryViewerTabFactory'
 import { EvitaLabConfig } from '@/modules/config/EvitaLabConfig'
 import type { MutationHistoryViewerTabFactory } from '@/modules/history-viewer/service/MutationHistoryViewerTabFactory.ts'
 import { MutationHistoryViewerTabDefinition } from '@/modules/history-viewer/model/MutationHistoryViewerTabDefinition.ts'
 
 const openedTabsStorageKey: string = 'openedTabs'
+const selectedTabStorageKey: string = 'selectedTab'
 const tabHistoryStorageKey: string = 'tabHistory'
 
 export const workspaceServiceInjectionKey: InjectionKey<WorkspaceService> = Symbol('workspaceService')
@@ -106,11 +97,11 @@ export class WorkspaceService {
         this.mutationHistoryViewerTabFactory = historyViewerTabFactory
     }
 
-    getTabDefinitions(): TabDefinition<any, any>[] {
+    getTabDefinitions(): AnyTabDefinition[] {
         return this.store.tabDefinitions
     }
 
-    getTabDefinition(id: string): TabDefinition<any, any> | undefined {
+    getTabDefinition(id: string): AnyTabDefinition | undefined {
         return this.getTabDefinitions().find(it => it.id === id)
     }
 
@@ -121,16 +112,16 @@ export class WorkspaceService {
     /**
      * Finds newly created tab that hasn't been marked as visited yet.
      */
-    getTheNewTab(): TabDefinition<any, any> | undefined {
+    getTheNewTab(): AnyTabDefinition | undefined {
         return this.getTabDefinitions().find(it => it.new)
     }
 
     /**
      * Create new tab from definition
      */
-    createTab(tabDefinition: TabDefinition<any, any>): void {
+    createTab(tabDefinition: AnyTabDefinition): void {
         // tab definitions may share static ID to indicate only one such tab can be opened at a time
-        const tabRequestWithSameId: TabDefinition<any, any> | undefined = this.getTabDefinition(tabDefinition.id)
+        const tabRequestWithSameId: AnyTabDefinition | undefined = this.getTabDefinition(tabDefinition.id)
         if (tabRequestWithSameId == undefined) {
             this.store.tabDefinitions.push(tabDefinition)
             this.store.tabData.set(tabDefinition.id, tabDefinition.initialData)
@@ -139,10 +130,26 @@ export class WorkspaceService {
     }
 
     markTabAsVisited(tabId: string): void {
-        const tabDefinition: TabDefinition<any, any> | undefined = this.getTabDefinition(tabId)
+        const tabDefinition: AnyTabDefinition | undefined = this.getTabDefinition(tabId)
         if (tabDefinition) {
             tabDefinition.new = false
         }
+    }
+
+    /**
+     * Returns id of the tab the user currently works with, if there is any.
+     */
+    getSelectedTabId(): string | undefined {
+        return this.store.selectedTabId
+    }
+
+    /**
+     * Marks the tab as the one the user currently works with, so that it can be selected again in the next session.
+     * @param tabId id of the selected tab, or undefined if no tab is selected anymore
+     */
+    markTabAsSelected(tabId: string | undefined): void {
+        this.store.selectedTabId = tabId
+        this.storeOpenedTabs()
     }
 
     /**
@@ -150,7 +157,7 @@ export class WorkspaceService {
      *@param tabId
      * @param updatedData
      */
-    replaceTabData(tabId: string, updatedData: TabData<any>): void {
+    replaceTabData(tabId: string, updatedData: AnyTabData): void {
         this.store.tabData.set(tabId, updatedData)
         this.storeOpenedTabs()
     }
@@ -167,23 +174,27 @@ export class WorkspaceService {
     destroyAllTabs(): void {
         this.store.tabDefinitions.splice(0)
         this.store.tabData.clear()
+        this.store.selectedTabId = undefined
         this.storeOpenedTabs()
     }
 
     /**
-     * Restores last stored tab from lab storage
+     * Restores last stored tab from lab storage. The tab selected in the last session, if it is still among
+     * the restored ones, is marked as selected again.
      * @return whether any tab data were restored
      */
     restoreTabsFromLastSession(): boolean {
         const lastOpenedTabs: StoredTabObject[] = this.labStorage.get(openedTabsStorageKey, [])
             .map((it: string) => StoredTabObject.restoreFromSerializable(it))
+        const lastSelectedTabIndex: number = this.labStorage.get(selectedTabStorageKey, -1)
         this.labStorage.remove(openedTabsStorageKey)
+        this.labStorage.remove(selectedTabStorageKey)
         if (lastOpenedTabs.length === 0) {
             return false
         }
 
         let restoredTabsDataCount: number = 0
-        lastOpenedTabs
+        const restoredTabDefinitions: AnyTabDefinition[] = lastOpenedTabs
             .map(storedTabObject => {
                 switch (storedTabObject.tabType as string) {
                     case 'data-grid':
@@ -220,68 +231,99 @@ export class WorkspaceService {
                         throw new UnexpectedError(`Unsupported stored tab type '${storedTabObject.tabType}'.`)
                 }
             })
-            .forEach(tabDefinition => {
-                if (tabDefinition.initialData != undefined) {
-                    this.store.tabData.set(tabDefinition.id, tabDefinition.initialData)
-                    restoredTabsDataCount++
-                }
-                this.createTab(tabDefinition)
-            })
+
+        restoredTabDefinitions.forEach(tabDefinition => {
+            // restored tabs were already visited by the user in the last session, only the previously selected
+            // one is activated below
+            tabDefinition.new = false
+            if (tabDefinition.initialData != undefined) {
+                this.store.tabData.set(tabDefinition.id, tabDefinition.initialData)
+                restoredTabsDataCount++
+            }
+            this.createTab(tabDefinition)
+        })
+
+        const lastSelectedTab: AnyTabDefinition | undefined = restoredTabDefinitions[lastSelectedTabIndex]
+        if (lastSelectedTab != undefined && this.getTabDefinition(lastSelectedTab.id) != undefined) {
+            this.markTabAsSelected(lastSelectedTab.id)
+        }
 
         return restoredTabsDataCount > 0
     }
 
     /**
-     * Stores current tabs into lab storage
+     * Stores current tabs and index of the currently selected tab into lab storage
      */
     storeOpenedTabs(): void {
         if (this.evitaLabConfig.playgroundMode) {
             return
         }
-        const tabsToStore: string[] = this.getTabDefinitions()
-            .map(tabRequest => {
-                let tabType: TabType
-                if (tabRequest instanceof EntityViewerTabDefinition) {
-                    tabType = TabType.EntityViewer
-                } else if (tabRequest instanceof EvitaQLConsoleTabDefinition) {
-                    tabType = TabType.EvitaQLConsole
-                } else if (tabRequest instanceof GraphQLConsoleTabDefinition) {
-                    tabType = TabType.GraphQLConsole
-                } else if (tabRequest instanceof SchemaViewerTabDefinition) {
-                    tabType = TabType.SchemaViewer
-                } else if (tabRequest instanceof KeymapViewerTabDefinition) {
-                    tabType = TabType.KeymapViewer
-                } else if (tabRequest instanceof ServerViewerTabDefinition) {
-                    tabType = TabType.ServerViewer
-                } else if (tabRequest instanceof TaskViewerTabDefinition) {
-                    tabType = TabType.TaskViewer
-                } else if (tabRequest instanceof BackupViewerTabDefinition) {
-                    tabType = TabType.BackupViewer
-                } else if (tabRequest instanceof JfrViewerTabDefinition) {
-                    tabType = TabType.JfrViewer
-                } else if (tabRequest instanceof TrafficRecordingsViewerTabDefinition) {
-                    tabType = TabType.TrafficRecordingsViewer
-                } else if (tabRequest instanceof TrafficRecordHistoryViewerTabDefinition) {
-                    tabType = TabType.TrafficRecordHistoryViewer
-                } else if (tabRequest instanceof MutationHistoryViewerTabDefinition) {
-                    tabType = TabType.MutationHistoryViewer
-                } else {
-                    console.info(undefined, `Unsupported tab type '${tabRequest.constructor.name}'. Not storing for next session.`)
-                    return undefined
-                }
 
-                const tabData: TabData<any> | undefined = this.store.tabData.get(tabRequest.id)
-                return new StoredTabObject(
+        const selectedTabId: string | undefined = this.store.selectedTabId
+        let selectedTabIndex: number = -1
+        const tabsToStore: string[] = []
+        for (const tabRequest of this.getTabDefinitions()) {
+            const tabType: TabType | undefined = WorkspaceService.resolveStorableTabType(tabRequest)
+            if (tabType == undefined) {
+                console.info(undefined, `Unsupported tab type '${tabRequest.constructor.name}'. Not storing for next session.`)
+                continue
+            }
+
+            // the index must point into the stored tabs, not into all opened ones, because unsupported tabs are skipped
+            if (tabRequest.id === selectedTabId) {
+                selectedTabIndex = tabsToStore.length
+            }
+
+            const tabData: AnyTabData | undefined = this.store.tabData.get(tabRequest.id)
+            tabsToStore.push(
+                new StoredTabObject(
                     tabType,
                     tabRequest.params.toSerializable(),
                     tabData != undefined ? tabData.toSerializable() : undefined
-                )
-            })
-            .filter(it => it != undefined)
-            .map(it => it as StoredTabObject)
-            .map(it => it.toSerializable())
+                ).toSerializable()
+            )
+        }
 
         this.labStorage.set(openedTabsStorageKey, tabsToStore)
+        if (selectedTabIndex < 0) {
+            this.labStorage.remove(selectedTabStorageKey)
+        } else {
+            this.labStorage.set(selectedTabStorageKey, selectedTabIndex)
+        }
+    }
+
+    /**
+     * Resolves type under which the tab definition is persisted between sessions. Returns undefined for tabs
+     * that cannot be persisted.
+     */
+    private static resolveStorableTabType(tabDefinition: AnyTabDefinition): TabType | undefined {
+        if (tabDefinition instanceof EntityViewerTabDefinition) {
+            return TabType.EntityViewer
+        } else if (tabDefinition instanceof EvitaQLConsoleTabDefinition) {
+            return TabType.EvitaQLConsole
+        } else if (tabDefinition instanceof GraphQLConsoleTabDefinition) {
+            return TabType.GraphQLConsole
+        } else if (tabDefinition instanceof SchemaViewerTabDefinition) {
+            return TabType.SchemaViewer
+        } else if (tabDefinition instanceof KeymapViewerTabDefinition) {
+            return TabType.KeymapViewer
+        } else if (tabDefinition instanceof ServerViewerTabDefinition) {
+            return TabType.ServerViewer
+        } else if (tabDefinition instanceof TaskViewerTabDefinition) {
+            return TabType.TaskViewer
+        } else if (tabDefinition instanceof BackupViewerTabDefinition) {
+            return TabType.BackupViewer
+        } else if (tabDefinition instanceof JfrViewerTabDefinition) {
+            return TabType.JfrViewer
+        } else if (tabDefinition instanceof TrafficRecordingsViewerTabDefinition) {
+            return TabType.TrafficRecordingsViewer
+        } else if (tabDefinition instanceof TrafficRecordHistoryViewerTabDefinition) {
+            return TabType.TrafficRecordHistoryViewer
+        } else if (tabDefinition instanceof MutationHistoryViewerTabDefinition) {
+            return TabType.MutationHistoryViewer
+        } else {
+            return undefined
+        }
     }
 
     /**
@@ -289,7 +331,7 @@ export class WorkspaceService {
      * @param historyKey
      */
     getTabHistoryRecords<R>(historyKey: TabHistoryKey<R>): R[] {
-        return this.store.tabHistory.get(historyKey.toString()) ?? []
+        return (this.store.tabHistory.get(historyKey.toString()) ?? []) as R[]
     }
 
     /**
@@ -300,7 +342,7 @@ export class WorkspaceService {
     addTabHistoryRecord<R>(historyKey: TabHistoryKey<R>, record: R): void {
         const serializedHistoryKey: string = historyKey.toString()
 
-        let records: any[] | undefined = this.store.tabHistory.get(serializedHistoryKey)
+        let records: unknown[] | undefined = this.store.tabHistory.get(serializedHistoryKey)
         if (records == undefined) {
             records = []
             this.store.tabHistory.set(serializedHistoryKey, records)
@@ -310,7 +352,7 @@ export class WorkspaceService {
         if (record instanceof Array) {
             let emptyParts: number = 0
             for (let i = 1; i < record.length; i++) {
-                const part: any | undefined = record[i]
+                const part: unknown = record[i]
                 if (part == undefined || part === '') {
                     emptyParts += 1
                 }
@@ -325,13 +367,13 @@ export class WorkspaceService {
         }
 
         // ignore duplicate records
-        const lastRecord: any | undefined = records.at(-1)
+        const lastRecord: unknown = records.at(-1)
         if (lastRecord != undefined) {
             if (record instanceof Array) {
                 let equalParts: number = 0
                 for (let i = 1; i < record.length; i++) {
-                    const recordPart: any | undefined = record[i]
-                    const lastRecordPart: any | undefined = lastRecord[i]
+                    const recordPart: unknown = record[i]
+                    const lastRecordPart: unknown = (lastRecord as unknown[])[i]
                     if (recordPart === lastRecordPart) {
                         equalParts += 1
                     }
@@ -358,7 +400,7 @@ export class WorkspaceService {
      * Clears all tab history for this key
      * @param historyKey
      */
-    clearTabHistory(historyKey: TabHistoryKey<any>): void {
+    clearTabHistory(historyKey: TabHistoryKey<unknown>): void {
         this.store.tabHistory.delete(historyKey.toString())
     }
 
@@ -372,7 +414,7 @@ export class WorkspaceService {
         if (serializedTabHistory == undefined) {
             return false
         }
-        const tabHistory: Map<string, any[]> = new Map(JSON.parse(LZString.decompressFromEncodedURIComponent(serializedTabHistory)))
+        const tabHistory: Map<string, unknown[]> = new Map(JSON.parse(LZString.decompressFromEncodedURIComponent(serializedTabHistory)))
         if (tabHistory.size === 0) {
             return false
         }
