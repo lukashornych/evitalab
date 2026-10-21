@@ -64,6 +64,9 @@ import {
 import { EvitaResponse } from '@/modules/database-driver/request-response/data/EvitaResponse'
 import { minifyEvitaQL, prettifyEvitaQL } from '@/modules/code-editor/service/formatEvitaQL'
 import { DocumentFormattingMode } from '@/modules/code-editor/model/DocumentFormattingMode'
+import { injectQueryTelemetry } from '@/modules/evitaql-console/console/service/injectQueryTelemetry'
+import { QueryTelemetryInjectionError } from '@/modules/console/exception/QueryTelemetryInjectionError'
+import type { ExecuteQueryVariant } from '@/modules/base/model/ExecuteQueryVariant'
 
 enum EditorTabType {
     Query = 'query',
@@ -168,6 +171,10 @@ const resultVisualiserRef = ref<
 >()
 
 const loading = ref<boolean>(false)
+const executeQueryVariants: ExecuteQueryVariant[] = [{
+    command: Command.EvitaQLConsole_ExecuteQueryWithTelemetry,
+    title: t('common.button.runWithTelemetry')
+}]
 
 const currentData = computed<EvitaQLConsoleTabData>(() => {
     return new EvitaQLConsoleTabData(queryCode.value)
@@ -204,7 +211,8 @@ async function formatFocusedEditor(mode: DocumentFormattingMode): Promise<void> 
 
 onMounted(() => {
     // register console specific keyboard shortcuts
-    keymap.bind(Command.EvitaQLConsole_ExecuteQuery, props.id, executeQuery)
+    keymap.bind(Command.EvitaQLConsole_ExecuteQuery, props.id, () => executeQuery())
+    keymap.bind(Command.EvitaQLConsole_ExecuteQueryWithTelemetry, props.id, () => executeQuery(true))
     keymap.bind(Command.EvitaQLConsole_ShareTab, props.id, () =>
         shareTabButtonRef.value?.share()
     )
@@ -250,6 +258,7 @@ onMounted(() => {
 onUnmounted(() => {
     // unregister console specific keyboard shortcuts
     keymap.unbind(Command.EvitaQLConsole_ExecuteQuery, props.id)
+    keymap.unbind(Command.EvitaQLConsole_ExecuteQueryWithTelemetry, props.id)
     keymap.unbind(Command.EvitaQLConsole_ShareTab, props.id)
     keymap.unbind(Command.EvitaQLConsole_Query_QueryEditor, props.id)
     keymap.unbind(Command.EvitaQLConsole_Query_History, props.id)
@@ -261,11 +270,29 @@ onUnmounted(() => {
     keymap.unbind(Command.EvitaQLConsole_Result_TogglePanel, props.id)
 })
 
-async function executeQuery(): Promise<void> {
+/**
+ * Executes the query from the editor. With `withTelemetry`, a copy of the query extended with the query telemetry
+ * requirement is sent instead, while the editor content and the history record keep the query as written.
+ */
+async function executeQuery(withTelemetry: boolean = false): Promise<void> {
+    const executedQueryCode: string = queryCode.value
+    let sentQueryCode: string = executedQueryCode
+    if (withTelemetry) {
+        try {
+            sentQueryCode = injectQueryTelemetry(executedQueryCode)
+        } catch (e) {
+            if (!(e instanceof QueryTelemetryInjectionError)) {
+                await toaster.error(t('evitaQLConsole.notification.couldNotExecuteQuery'), asError(e))
+                return
+            }
+            await toaster.warning(t('evitaQLConsole.notification.queryTelemetryNotInjected'))
+        }
+    }
+
     try {
         workspaceService.addTabHistoryRecord(
             historyKey.value,
-            createEvitaQLConsoleHistoryRecord(queryCode.value)
+            createEvitaQLConsoleHistoryRecord(executedQueryCode)
         )
     } catch (e) {
         await toaster.error(
@@ -278,10 +305,10 @@ async function executeQuery(): Promise<void> {
     try {
         result.value = await evitaQLConsoleService.executeEvitaQLQuery(
             props.params.dataPointer,
-            queryCode.value
+            sentQueryCode
         )
         loading.value = false
-        enteredQueryCode.value = queryCode.value
+        enteredQueryCode.value = executedQueryCode
 
         if (firstResultPending) {
             firstResultPending = false
@@ -364,7 +391,9 @@ if (props.params.executeOnOpen) {
                     :command="Command.EvitaQLConsole_ExecuteQuery"
                     :loading="loading"
                     :title="t('common.button.run')"
-                    @click="executeQuery"
+                    :variants="executeQueryVariants"
+                    @click="executeQuery()"
+                    @variant="executeQuery(true)"
                     >
                 </VExecuteQueryButton>
             </template>
