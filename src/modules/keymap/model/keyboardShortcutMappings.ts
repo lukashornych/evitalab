@@ -56,7 +56,6 @@ createKeyboardShortcutMapping(Command.EntityViewer_PropertySelector_FindProperty
 // evitaQL console
 
 createKeyboardShortcutMapping(Command.EvitaQLConsole_ExecuteQuery, 'Ctrl+Enter', 'Cmd+Enter')
-createKeyboardShortcutMapping(Command.EvitaQLConsole_ExecuteQueryWithTelemetry, 'Ctrl+Shift+Enter', 'Cmd+Shift+Enter')
 createKeyboardShortcutMapping(Command.EvitaQLConsole_ShareTab, 'Ctrl+L', 'Cmd+L')
 
 createKeyboardShortcutMapping(Command.EvitaQLConsole_Query_QueryEditor, 'Ctrl+1', 'Ctrl+1')
@@ -72,7 +71,6 @@ createKeyboardShortcutMapping(Command.EvitaQLConsole_Result_TogglePanel, 'Alt+3'
 // GraphQL console
 
 createKeyboardShortcutMapping(Command.GraphQLConsole_ExecuteQuery, 'Ctrl+Enter', 'Cmd+Enter')
-createKeyboardShortcutMapping(Command.GraphQLConsole_ExecuteQueryWithTelemetry, 'Ctrl+Shift+Enter', 'Cmd+Shift+Enter')
 createKeyboardShortcutMapping(Command.GraphQLConsole_ShareTab, 'Ctrl+L', 'Cmd+L')
 
 createKeyboardShortcutMapping(Command.GraphQLConsole_Query_QueryEditor, 'Ctrl+1', 'Ctrl+1')

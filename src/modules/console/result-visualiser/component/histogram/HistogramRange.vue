@@ -9,7 +9,7 @@ import { VisualisedHistogram } from '@/modules/console/result-visualiser/model/h
 import {
     VisualisedHistogramBucket
 } from '@/modules/console/result-visualiser/model/histogram/VisualisedHistogramBucket'
-import VisualiserNote from '@/modules/console/result-visualiser/component/VisualiserNote.vue'
+import HistogramNote from '@/modules/console/result-visualiser/component/histogram/HistogramNote.vue'
 import { BigDecimal } from '@/modules/database-driver/data-type/BigDecimal'
 
 const { t } = useI18n()
@@ -148,7 +148,7 @@ function formatProperties(properties: string[]): string {
         hide-details
         :class="{ 'histogram-range__real-values': rangeInfo.simulatedReason == undefined }"
     />
-    <VisualiserNote v-if="rangeInfo.simulatedReason != undefined" :note="rangeInfo.simulatedReason" />
+    <HistogramNote v-if="rangeInfo.simulatedReason != undefined" :note="rangeInfo.simulatedReason" />
 </template>
 
 <style lang="scss" scoped>

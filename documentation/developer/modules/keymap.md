@@ -59,17 +59,6 @@ exists only to populate the keymap viewer**; CodeMirror's own keymap handles tho
 When changing this rule, note that the predicate is a pure exported function precisely so it can be
 pinned by a unit test without a DOM (`test/modules/keymap/keyboardShortcutEventFilter.test.ts`).
 
-## Console run shortcuts
-
-`Ctrl+Enter` / `Cmd+Enter` runs the query in every console-like tab (`*_ExecuteQuery`, `*_ApplyFilter`).
-`Ctrl+Shift+Enter` / `Cmd+Shift+Enter` is **Run with telemetry** in both consoles
-(`EvitaQLConsole_ExecuteQueryWithTelemetry`, `GraphQLConsole_ExecuteQueryWithTelemetry`; labels under
-`command.<console>.executeQueryWithTelemetry` in `en.json`). keymaster matches modifiers exactly, so the two never
-shadow each other. CodeMirror has no binding for `Shift-Mod-Enter`, so the keydown reaches keymaster from inside the
-editor and the handler's `preventDefault()` keeps the editor from inserting a line break (verified in the browser;
-`Ctrl+Enter` additionally needs the no-op binding in `VQueryEditor` because CodeMirror's default keymap maps
-`Mod-Enter` to `insertBlankLine`).
-
 ## Every action needs a `Command`
 
 Two conventions depend on it: icon-only buttons carry a `VActionTooltip` bound to their `command` so

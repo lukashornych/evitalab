@@ -186,10 +186,6 @@ await evitaClient.updateCatalog(
 Details, caching and change callbacks: [database driver](database-driver.md). Component-level
 calls must be wrapped in try-catch with `toaster.error` feedback.
 
-If the call depends on an evitaDB API that only a newer server has (new constraint, argument, field,
-endpoint, regenerated gRPC types), raise the supported-server floor in `.evitadbrc` in the same change —
-see [evitaDB server — versioning](evitadb-server.md#versioning).
-
 ## Add execution history to a tab
 
 ```ts
@@ -316,5 +312,4 @@ The payload can also be pasted without a URL into a running instance via the tab
 - [ ] `yarn lint` — run it and don't add new violations (the gate is not yet at zero, so it is not part of CI yet).
 - [ ] New classes/components have JSDoc; user-facing strings are localized.
 - [ ] `documentation/developer/` updated (module catalog, UI components, recipes as applicable).
-- [ ] `.evitadbrc` raised if the change depends on a newer evitaDB API ([versioning](evitadb-server.md#versioning)).
 - [ ] Conventional-commit messages; feature branch off `dev`.
