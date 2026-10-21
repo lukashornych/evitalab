@@ -70,7 +70,7 @@ behavior.
 ## Document formatters
 
 Three pairs of pure functions (`prettify*` / `minify*`) back the prettify & minify toolbar buttons of
-both consoles. They take a document, return a document, and know nothing about Vue, CodeMirror or DI —
+the consoles (the REST console formats its JSON body with `formatJson`). They take a document, return a document, and know nothing about Vue, CodeMirror or DI —
 the consoles assign the result to the editor's bound `ref`. Every one of them throws
 `DocumentFormattingError` instead of returning a broken or empty document; callers wrap them in
 try/catch and report through `useToaster().error(...)`.
@@ -134,4 +134,4 @@ this extension rather than wiring the status bar by hand.
 
 - [UI components](../ui-components.md) — where these components sit in the catalog
 - [`workspace`](workspace.md) — the status bar that consumes the editor state
-- [`evitaql-console`](evitaql-console.md), [`graphql-console`](graphql-console.md) — the main consumers
+- [`evitaql-console`](evitaql-console.md), [`graphql-console`](graphql-console.md), [`rest-console`](rest-console.md) — the main consumers

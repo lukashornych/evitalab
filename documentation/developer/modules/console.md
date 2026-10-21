@@ -1,6 +1,6 @@
 # `console` — shared infrastructure for query consoles
 
-Abstract module. Everything the evitaQL and GraphQL consoles share for turning a raw query response
+Abstract module. Everything the evitaQL, GraphQL and REST consoles share for turning a raw query response
 into a visual representation. The console modules supply the concrete, language-specific parsers; this
 module owns the abstractions, the visual model and the components.
 
@@ -14,6 +14,7 @@ whichever language the surrounding tab speaks.
 ```
 console/
 ├── exception/         # QueryTelemetryInjectionError (run with telemetry)
+├── result-status/     # ResultStatusBar — status, duration and size of the last result
 └── result-visualiser/
     ├── component/     # ResultVisualiser.vue, shared VisualiserNote.vue + per-visualiser-type components
     ├── model/         # Visualised* view models
@@ -24,7 +25,7 @@ console/
 
 | File | Purpose |
 |------|---------|
-| `service/ResultVisualiserService.ts` | The abstraction each console implements (`EvitaQLResultVisualiserService`, `GraphQLResultVisualiserService`) |
+| `service/ResultVisualiserService.ts` | The abstraction each console implements (`EvitaQLResultVisualiserService`, `GraphQLResultVisualiserService`, `RestResultVisualiserService`) |
 | `service/ResultAnalyzer.ts` | Decides which visualiser types a given result supports |
 | `service/FacetSummaryResultParser.ts`, `HierarchyResultParser.ts`, `AttributeHistogramsResultParser.ts`, `PriceHistogramResultParser.ts`, `ReferenceSummaryResultParser.ts`, `QueryTelemetryResultParser.ts` | Abstract per-type parsers; each console subclasses them |
 | `service/utils/` | Shared helpers — `representativeAttributes.ts`, `representativeTitle.ts`, `schemaMatching.ts`, `impactFormatting.ts` |
@@ -90,7 +91,8 @@ the `clientVersion` header.
 
 `VisualiserTypeType.QueryTelemetry` is offered when the result carries telemetry: the evitaQL analyzer checks
 `extraResults.queryTelemetry` of the internal `EvitaResponse`, the GraphQL analyzer checks that
-`extraResults.queryTelemetry` of the query field is a non-empty array. The analyzers only check presence; the
+`extraResults.queryTelemetry` of the query field is a non-empty array, the REST analyzer that it is an object (REST
+sends the nested root step). The analyzers only check presence; the
 **parser** decides whether the selection is usable.
 
 `QueryTelemetryResultParser.parse(queryResult)` is synchronous, needs no entity schema and returns the
@@ -100,7 +102,7 @@ in `model/query-telemetry/QueryTelemetryParseResult.ts`, or `undefined` when the
 - `ParsedQueryTelemetry` — `telemetry: QueryTelemetry` plus `missingSelections: List<string>`, the optional
   GraphQL fields the user did not select (dotted paths: `start`, `selfTime`, `metrics.ioFetchCount`,
   `plan.hash`, …). Their values are `undefined` in the tree, except `start`, which is reconstructed by laying
-  each step's children out back to back from the parent's start. Empty for evitaQL.
+  each step's children out back to back from the parent's start. Empty for evitaQL and REST (fixed shapes).
 - `PartialQueryTelemetrySelection` — `missingRequiredSelections: List<string>` (`level`, `operation`,
   `spentTime`); the tree cannot be built. The UI renders it as a note listing the fields to add, never as a
   toaster error.
@@ -194,12 +196,37 @@ Its mixin `telemetry-custom-properties`, included on the `QueryTelemetryVisualis
 `--telemetry-{root|planning|execution|fetching}`, the matching `-rgb` triplets (used for alpha fills set from script)
 and `--telemetry-ink-on-phase`. Nothing is added to `src/styles/colors.scss`.
 
+## Result status bar
+
+`result-status/component/ResultStatusBar.vue` sits at the top of the result pane of all three consoles and shows a
+`ConsoleResultStatus` (`result-status/model/`): a status chip (success / error colour), the client-measured
+duration, an optional size and an optional request label. It is hidden until the first result. Strings live in the
+shared `resultStatus` i18n namespace; `service/resultStatusFormatting.ts` holds the pure formatting
+(`formatResultSize` — B below 1 KiB, kB with one decimal below 1 MiB, MB above; `formatResultDuration`;
+`utf8ByteLength`). Duration and size are measured by the console services, never by the driver:
+
+| Console | Chip | Duration | Size | Request |
+|---|---|---|---|---|
+| evitaQL | `OK` / `Error` (a refused query — the `QueryError` path of `EvitaQLConsoleService`) | around `queryCatalog` in the service | — (the gRPC payload size is not available) | — |
+| GraphQL | `OK` / `N error(s)` from the response's `errors` array (a GraphQL server answers them with 200) | around the HTTP call in the service | UTF-8 bytes of the compact response JSON | — |
+| REST | `200 OK`, `400 Bad Request`, … | from the `RestResponse` | from the `RestResponse` | `METHOD path` |
+
+The derivation is one pure function per console (`createEvitaQLResultStatus`, `createGraphQLResultStatus`,
+`createRestResultStatus`). Metrics never shrink or wrap (`result-status-bar__metric`); only the request label is
+ellipsised. A transport failure (the toaster path) clears the status, so the bar of an earlier result never sits
+next to the error. The GraphQL size costs one compact `JSON.stringify` on top of the pretty-printed one the raw view
+needs — the driver hands over the parsed response only, and measuring belongs to the console service, not the
+driver. The REST label falls back to the standard reason phrase when the response carries none (HTTP/2 has no
+reason phrase, the browser reports an empty `statusText`). The bar is the first flex child of the result pane, the absolutely positioned `VWindow` of the views is
+anchored to the wrapper below it (`<prefix>-result__views`).
+
 ## Run with telemetry
 
-Both consoles offer **Run with telemetry** (split Run button + `Ctrl+Shift+Enter` / `Cmd+Shift+Enter`), which
-sends a copy of the query extended with the telemetry request and leaves the editor untouched. The two
+All three consoles offer **Run with telemetry** (split Run button + `Ctrl+Shift+Enter` / `Cmd+Shift+Enter`), which
+sends a copy of the query extended with the telemetry request and leaves the editor untouched. The
 language-specific injectors live in the console modules (`injectQueryTelemetry` in
-[`evitaql-console`](evitaql-console.md#run-with-telemetry) and [`graphql-console`](graphql-console.md#run-with-telemetry));
+[`evitaql-console`](evitaql-console.md#run-with-telemetry), [`graphql-console`](graphql-console.md#run-with-telemetry)
+and [`rest-console`](rest-console.md#run-with-telemetry));
 this module only owns their shared failure type, `exception/QueryTelemetryInjectionError.ts`:
 `QueryTelemetryInjectionError extends LabError` with `reason: QueryTelemetryInjectionFailureReason`
 (`Unparseable` — syntax errors or no query; `NoTarget` — valid, but nothing that can collect telemetry, e.g. a
@@ -216,5 +243,5 @@ new component to `ResultVisualiser.vue`.
 
 ## Related
 
-- [`evitaql-console`](evitaql-console.md), [`graphql-console`](graphql-console.md) — the concrete implementations
+- [`evitaql-console`](evitaql-console.md), [`graphql-console`](graphql-console.md), [`rest-console`](rest-console.md) — the concrete implementations
 - [UI components](../ui-components.md)

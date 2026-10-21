@@ -242,6 +242,7 @@ send one.
 | `entityViewer` | `catalogName`, `entityType` | `queryLanguage` (`evitaql`/`graphql`), `filterBy`, `orderBy`, `dataLocale`, `displayedProperties[]`, `pageSize`, `pageNumber`, `selectedLayers[]` |
 | `evitaQLConsole` | `catalogName` | `query`, `variables` |
 | `graphQLConsole` | `catalogName`, `instanceType` (`system`/`data`/`schema`) | `query`, `variables` |
+| `restConsole` | `catalogName`, `instanceType` (`catalog`/`system`) | `operationId` (of the variant, e.g. `queryProductLocalized`), `locale`, `parameters` (`{ name: value \| [values] }`), `body` |
 | `schemaViewer` | `schemaPointer: { type, params }` | — |
 | `mutationHistoryViewer` | `catalogName` | (complex; omit for external links) |
 | `trafficRecordHistoryViewer` | `catalogName` | (complex; omit for external links) |
