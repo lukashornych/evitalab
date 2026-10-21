@@ -41,7 +41,7 @@ import {
     formatDateTime,
     formatNumber,
     notApplicable
-} from '@/utils/statisticsFormatting'
+} from '@/modules/catalog-viewer/service/statisticsFormatting'
 
 const workspaceService: WorkspaceService = useWorkspaceService()
 const entityViewerTabFactory: EntityViewerTabFactory = useEntityViewerTabFactory()

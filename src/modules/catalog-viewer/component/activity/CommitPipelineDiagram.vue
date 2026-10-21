@@ -19,7 +19,7 @@ import { useI18n } from 'vue-i18n'
 import {
     CommitPipelineStatistics
 } from '@/modules/database-driver/request-response/statistics/CommitPipelineStatistics'
-import { formatNumber } from '@/utils/statisticsFormatting'
+import { formatNumber } from '@/modules/catalog-viewer/service/statisticsFormatting'
 
 const { t } = useI18n()
 

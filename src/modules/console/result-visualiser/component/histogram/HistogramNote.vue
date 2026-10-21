@@ -1,6 +1,5 @@
 <script setup lang="ts">/**
- * Warning note shown by a visualiser about its input data (e.g. properties the query did not fetch). Shared by the
- * visualiser families.
+ * Histogram note component for displaying warning notes about input data.
  */
 import VMarkdown from '@/modules/base/component/VMarkdown.vue'
 
@@ -10,7 +9,7 @@ const props = defineProps<{
 </script>
 
 <template>
-    <div class="visualiser-note">
+    <div class="histogram-note">
         <VIcon>mdi-alert-outline</VIcon>
         <VMarkdown :source="props.note" />
     </div>
@@ -19,7 +18,7 @@ const props = defineProps<{
 <style lang="scss" scoped>
 @use "@/styles/colors.scss" as *;
 
-.visualiser-note {
+.histogram-note {
     display: inline-grid;
     grid-template-columns: 1.5rem 1fr;
     align-items: center;

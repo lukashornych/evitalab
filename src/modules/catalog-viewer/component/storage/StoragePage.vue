@@ -34,7 +34,7 @@ import {
     formatDuration,
     formatNumber,
     notApplicable
-} from '@/utils/statisticsFormatting'
+} from '@/modules/catalog-viewer/service/statisticsFormatting'
 
 const { t } = useI18n()
 

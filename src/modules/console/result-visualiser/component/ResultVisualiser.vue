@@ -18,7 +18,6 @@ import type { VisualisedReferenceSummary } from '@/modules/console/result-visual
 import type { VisualisedHierarchyResult } from '@/modules/console/result-visualiser/model/hierarchy/VisualisedHierarchyResult'
 import type { VisualisedAttributeHistograms } from '@/modules/console/result-visualiser/model/histogram/VisualisedAttributeHistograms'
 import type { VisualisedHistogram } from '@/modules/console/result-visualiser/model/histogram/VisualisedHistogram'
-import type { QueryTelemetryParseResult } from '@/modules/console/result-visualiser/model/query-telemetry/QueryTelemetryParseResult'
 import FacetSummaryVisualiser
     from '@/modules/console/result-visualiser/component/facet-summary/FacetSummaryVisualiser.vue'
 import ReferenceSummaryVisualiser
@@ -28,8 +27,6 @@ import AttributeHistogramsVisualiser
     from '@/modules/console/result-visualiser/component/histogram/AttributeHistogramsVisualiser.vue'
 import PriceHistogramVisualiser
     from '@/modules/console/result-visualiser/component/histogram/PriceHistogramVisualiser.vue'
-import QueryTelemetryVisualiser
-    from '@/modules/console/result-visualiser/component/query-telemetry/QueryTelemetryVisualiser.vue'
 import VLoadingCircular from '@/modules/base/component/VLoadingCircular.vue'
 import VMissingDataIndicator from '@/modules/base/component/VMissingDataIndicator.vue'
 import { CatalogPointer } from '@/modules/viewer-support/model/CatalogPointer'
@@ -129,7 +126,6 @@ const parsedReferenceSummary = ref<VisualisedReferenceSummary | undefined>()
 const parsedHierarchy = ref<VisualisedHierarchyResult | undefined>()
 const parsedAttributeHistograms = ref<VisualisedAttributeHistograms | undefined>()
 const parsedPriceHistogram = ref<VisualisedHistogram | undefined>()
-const parsedQueryTelemetry = ref<QueryTelemetryParseResult | undefined>()
 const parsingResult = ref<boolean>(false)
 
 watch([selectedVisualiserType, selectedQuery], async () => {
@@ -138,7 +134,6 @@ watch([selectedVisualiserType, selectedQuery], async () => {
     parsedHierarchy.value = undefined
     parsedAttributeHistograms.value = undefined
     parsedPriceHistogram.value = undefined
-    parsedQueryTelemetry.value = undefined
 
     if (!selectedQuery.value || !selectedVisualiserType.value) return
 
@@ -166,10 +161,6 @@ watch([selectedVisualiserType, selectedQuery], async () => {
                 break
             case VisualiserTypeType.PriceHistogram:
                 parsedPriceHistogram.value = props.visualiserService.priceHistogramParser
-                    .parse(queryResult)
-                break
-            case VisualiserTypeType.QueryTelemetry:
-                parsedQueryTelemetry.value = props.visualiserService.queryTelemetryParser
                     .parse(queryResult)
                 break
         }
@@ -241,10 +232,6 @@ defineExpose<{
         <AttributeHistogramsVisualiser
             v-if="selectedVisualiserType == VisualiserTypeType.AttributeHistograms && parsedAttributeHistograms != undefined"
             :attribute-histograms="parsedAttributeHistograms"
-        />
-        <QueryTelemetryVisualiser
-            v-if="selectedVisualiserType == VisualiserTypeType.QueryTelemetry && parsedQueryTelemetry != undefined"
-            :parse-result="parsedQueryTelemetry"
         />
         <PriceHistogramVisualiser
             v-if="selectedVisualiserType == VisualiserTypeType.PriceHistogram && parsedPriceHistogram != undefined"

@@ -66,12 +66,6 @@ import {
 import { minifyGraphQL, prettifyGraphQL } from '@/modules/code-editor/service/formatGraphQL'
 import { minifyJson, prettifyJson } from '@/modules/code-editor/service/formatJson'
 import { DocumentFormattingMode } from '@/modules/code-editor/model/DocumentFormattingMode'
-import { injectQueryTelemetry } from '@/modules/graphql-console/console/service/injectQueryTelemetry'
-import {
-    QueryTelemetryInjectionError,
-    QueryTelemetryInjectionFailureReason
-} from '@/modules/console/exception/QueryTelemetryInjectionError'
-import type { ExecuteQueryVariant } from '@/modules/base/model/ExecuteQueryVariant'
 
 enum EditorTabType {
     Query = 'query',
@@ -198,16 +192,6 @@ const supportsVisualisation = computed<boolean>(() => {
 })
 
 const loading = ref<boolean>(false)
-// only the catalog data API has the query* fields that can return query telemetry
-const executeQueryVariants = computed<ExecuteQueryVariant[] | undefined>(() => {
-    if (!supportsVisualisation.value) {
-        return undefined
-    }
-    return [{
-        command: Command.GraphQLConsole_ExecuteQueryWithTelemetry,
-        title: t('common.button.runWithTelemetry')
-    }]
-})
 const initialized = ref<boolean>(false)
 
 const currentData = computed<GraphQLConsoleTabData>(() => {
@@ -308,8 +292,7 @@ onBeforeMount(() => {
 })
 onMounted(() => {
     // register console specific keyboard shortcuts
-    keymap.bind(Command.GraphQLConsole_ExecuteQuery, props.id, () => executeQuery())
-    keymap.bind(Command.GraphQLConsole_ExecuteQueryWithTelemetry, props.id, () => executeQuery(true))
+    keymap.bind(Command.GraphQLConsole_ExecuteQuery, props.id, executeQuery)
     keymap.bind(Command.GraphQLConsole_ShareTab, props.id, () => shareTabButtonRef.value?.share())
     keymap.bind(Command.GraphQLConsole_Query_QueryEditor, props.id, () => {
         editorTab.value = EditorTabType.Query
@@ -364,7 +347,6 @@ onUnmounted(() => {
 
     // unregister console specific keyboard shortcuts
     keymap.unbind(Command.GraphQLConsole_ExecuteQuery, props.id)
-    keymap.unbind(Command.GraphQLConsole_ExecuteQueryWithTelemetry, props.id)
     keymap.unbind(Command.GraphQLConsole_ShareTab, props.id)
     keymap.unbind(Command.GraphQLConsole_Query_QueryEditor, props.id)
     keymap.unbind(Command.GraphQLConsole_Query_VariablesEditor, props.id)
@@ -378,40 +360,18 @@ onUnmounted(() => {
     keymap.unbind(Command.GraphQLConsole_Result_TogglePanel, props.id)
 })
 
-/**
- * Executes the query from the editor. With `withTelemetry`, a copy of the query extended with the query telemetry
- * selection is sent instead, while the editor content and the history record keep the query as written.
- */
-async function executeQuery(withTelemetry: boolean = false): Promise<void> {
-    const executedQueryCode: string = queryCode.value
-    let sentQueryCode: string = executedQueryCode
-    if (withTelemetry) {
-        try {
-            sentQueryCode = injectQueryTelemetry(executedQueryCode)
-        } catch (e) {
-            if (!(e instanceof QueryTelemetryInjectionError)) {
-                await toaster.error(t('graphQLConsole.notification.couldNotExecuteQuery'), asError(e))
-                return
-            }
-            await toaster.warning(
-                e.reason === QueryTelemetryInjectionFailureReason.NoTarget
-                    ? t('graphQLConsole.notification.queryTelemetryNoQueryField')
-                    : t('graphQLConsole.notification.queryTelemetryNotInjected')
-            )
-        }
-    }
-
+async function executeQuery(): Promise<void> {
     try {
-        workspaceService.addTabHistoryRecord(historyKey.value, createGraphQLConsoleHistoryRecord(executedQueryCode, variablesCode.value))
+        workspaceService.addTabHistoryRecord(historyKey.value, createGraphQLConsoleHistoryRecord(queryCode.value, variablesCode.value))
     } catch (e) {
         await toaster.error(t('graphQLConsole.notification.failedToSaveQueryToHistory'), asError(e))
     }
 
     loading.value = true
     try {
-        resultCode.value = await graphQLConsoleService.executeGraphQLQuery(props.params.dataPointer, sentQueryCode, JSON.parse(variablesCode.value))
+        resultCode.value = await graphQLConsoleService.executeGraphQLQuery(props.params.dataPointer, queryCode.value, JSON.parse(variablesCode.value))
         loading.value = false
-        lastAppliedQueryCode.value = executedQueryCode
+        lastAppliedQueryCode.value = queryCode.value
 
         if (firstResultPending) {
             firstResultPending = false
@@ -512,11 +472,9 @@ function focusResultVisualiser(): void {
 
                 <VExecuteQueryButton
                     :loading="loading"
-                    @click="executeQuery()"
-                    @variant="executeQuery(true)"
+                    @click="executeQuery"
                     :title="t('common.button.run')"
-                    :command="Command.GraphQLConsole_ExecuteQuery"
-                    :variants="executeQueryVariants">
+                    :command="Command.GraphQLConsole_ExecuteQuery">
                 </VExecuteQueryButton>
             </template>
         </VTabToolbar>

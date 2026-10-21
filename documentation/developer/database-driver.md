@@ -284,37 +284,6 @@ exactly one of them, depending on whether the query asked for the entity body. C
 `instanceof` (`EntityReferenceWithParent` for the parent, `Entity` for attributes) instead of choosing
 between two fields.
 
-### Query telemetry
-
-`ExtraResults.queryTelemetry` holds the root step of the telemetry tree when the evitaQL query asked for
-`queryTelemetry` — by hand or through the console's
-[Run with telemetry](modules/evitaql-console.md#run-with-telemetry) (`ExtraResultConverter.convertQueryTelemetry()`). The model lives in
-`request-response/data/`:
-
-| Class | Content |
-|-------|---------|
-| `QueryTelemetry` | `operation: QueryPhase`, `start`, `spentTime`, `selfTime?` (nanoseconds, `bigint`), `arguments: List<string>`, `startedAt?: OffsetDateTime` (root only), `metrics?: QueryTelemetryMetrics` (root only), `plan?: FormulaPlan`, `steps: List<QueryTelemetry>` |
-| `QueryTelemetryMetrics` | 8 optional members — `estimatedCardinality`, `actualCardinality`, `estimatedCost`, `actualCost`, `recordsReturned`, `ioFetchCount`, `ioFetchedSizeBytes` (`bigint`) and `prefetched` (`boolean`) |
-| `FormulaPlan` | `id`, `refTo?`, `hash?` (signed int64 as `bigint`), `description?`, `estimatedCost?`, `actualCost?`, `resultCount?`, `children: List<FormulaPlan>` |
-| `QueryPhase` | the 22 evitaDB phases; the string values are the evitaDB names (`'PLANNING_FILTER'`), `queryPhaseFromName()` resolves them |
-
-Rules the model encodes:
-
-- **Every int64 stays `bigint`.** gRPC sends them as strings (`jstype = JS_STRING`). Converting durations and
-  costs to `number` for ratios and layout is the view model's job; `hash` must never become a `number` — it is
-  how the winning candidate plan is recognised and loses precision as a double.
-- **Absent ≠ 0.** A missing metric means "not measured", a missing `actualCost` / `resultCount` on a plan node
-  means "not computed". Both are `undefined`, never `0`.
-- **The plan is a DAG sent as a tree.** A later occurrence of an already described formula instance is a
-  childless node with `refTo` = the `id` of the full one.
-- `selfTime`, `FormulaPlan.hash` and `FormulaPlan.estimatedCost` are typed `bigint | undefined` because the
-  GraphQL console builds the same model from a user-written selection that may omit them; gRPC always fills
-  them.
-- A phase unknown to this evitaLab (a newer server) makes the converter drop the whole telemetry with a console
-  warning instead of failing the query response.
-
-How the consoles turn this into a visualisation is described in [`console`](modules/console.md#query-telemetry).
-
 ### Date-time values
 
 `OffsetDateTime` carries the instant (`Timestamp` — epoch seconds + nanoseconds, exactly as gRPC

@@ -10,7 +10,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { List as ImmutableList } from 'immutable'
 import { CollectionInfo } from '@/modules/database-driver/request-response/statistics/CollectionInfo'
-import { formatNumber } from '@/utils/statisticsFormatting'
+import { formatNumber } from '@/modules/catalog-viewer/service/statisticsFormatting'
 
 const { t } = useI18n()
 

@@ -4,7 +4,6 @@ import type { ReferenceSummaryResultParser } from './ReferenceSummaryResultParse
 import type { HierarchyResultParser } from './HierarchyResultParser'
 import type { AttributeHistogramsResultParser } from './AttributeHistogramsResultParser'
 import type { PriceHistogramResultParser } from './PriceHistogramResultParser'
-import type { QueryTelemetryResultParser } from './QueryTelemetryResultParser'
 
 /**
  * Bundles a {@link ResultAnalyzer} with per-type result parsers.
@@ -18,5 +17,4 @@ export interface ResultVisualiserService {
     readonly hierarchyParser: HierarchyResultParser<unknown>
     readonly attributeHistogramsParser: AttributeHistogramsResultParser<unknown>
     readonly priceHistogramParser: PriceHistogramResultParser<unknown>
-    readonly queryTelemetryParser: QueryTelemetryResultParser<unknown>
 }

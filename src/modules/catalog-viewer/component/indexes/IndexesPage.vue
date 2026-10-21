@@ -45,7 +45,7 @@ import CollectionSelector from '@/modules/catalog-viewer/component/indexes/Colle
 import IndexSummaryTable from '@/modules/catalog-viewer/component/indexes/IndexSummaryTable.vue'
 import IndexCardinalityTable from '@/modules/catalog-viewer/component/indexes/IndexCardinalityTable.vue'
 import CatalogIndexesCard from '@/modules/catalog-viewer/component/indexes/CatalogIndexesCard.vue'
-import { formatNumber } from '@/utils/statisticsFormatting'
+import { formatNumber } from '@/modules/catalog-viewer/service/statisticsFormatting'
 
 const catalogViewerService: CatalogViewerService = useCatalogViewerService()
 const toaster: Toaster = useToaster()
