@@ -102,7 +102,7 @@ User-facing features. Each one typically contributes one or more tab types and/o
   `history-viewer`'s `MutationHistoryRequest`; `connection-explorer` injects `catalog-viewer`'s tab
   factory to open the catalog preview, which is why `catalog-viewer` is registered before it in
   `modules.ts`; `symbol-search` opens tabs through the `catalog-viewer`, `schema-viewer`, `evitaql-console`,
-  `graphql-console` and `entity-viewer` factories (plus `schema-viewer`'s schema pointers) and its components
+  `graphql-console`, `rest-console` and `entity-viewer` factories (plus `schema-viewer`'s schema pointers) and its components
   are placed by `workspace` (main views, status bar) and `connection-explorer` (panel header).
 - Generic modules must not import feature modules. Where the framework needs feature-provided
   behaviour (building a tab of any type, opening a demo snippet), the feature module contributes it

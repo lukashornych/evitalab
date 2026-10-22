@@ -2830,6 +2830,7 @@
       "evitaQLConsole": "evitaQL console",
       "graphQLDataConsole": "GraphQL data API console",
       "graphQLSchemaConsole": "GraphQL schema API console",
+      "restConsole": "REST API console",
       "entityViewer": "Entity viewer"
     },
     "enterAction": {
@@ -2838,13 +2839,15 @@
       "evitaQLConsole": "open evitaQL console",
       "graphQLDataConsole": "open GraphQL data API console",
       "graphQLSchemaConsole": "open GraphQL schema API console",
+      "restConsole": "open REST API console",
       "entityViewer": "open entity viewer"
     },
     "disabledReason": {
       "catalogInactive": "The catalog is deactivated.",
       "catalogUnusable": "The catalog cannot be read.",
       "catalogNotAlive": "The catalog is not alive.",
-      "graphQLDisabled": "The GraphQL API is not enabled on the server."
+      "graphQLDisabled": "The GraphQL API is not enabled on the server.",
+      "restDisabled": "The REST API is not enabled on the server."
     },
     "button": {
       "retry": "Retry"

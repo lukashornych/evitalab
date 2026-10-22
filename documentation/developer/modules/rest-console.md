@@ -10,9 +10,10 @@ response with status, duration and size, and the shared result visualisers. Cont
 - **Injects:** `evitaClientInjectionKey`, `connectionServiceInjectionKey`, `tabFactoryRegistryInjectionKey`
 
 Registered right after [`graphql-console`](graphql-console.md) and before
-[`connection-explorer`](connection-explorer.md), whose menus inject its tab factory. Opened from a catalog's menu
-(*REST API console*) and from the connection menu (*REST System API console*), both enabled only when the server
-reports `ApiType.Rest` as enabled.
+[`symbol-search`](symbol-search.md) and [`connection-explorer`](connection-explorer.md), which inject its tab
+factory. Opened from a catalog's menu (*REST API console*), from a catalog result of the symbol search (the same
+action) and from the connection menu (*REST System API console*), all enabled only when the server reports
+`ApiType.Rest` as enabled.
 
 Structurally a sibling of the [`graphql-console`](graphql-console.md): the panel logic (collapsible panels, focus
 tracking, first-result behaviour, prettify/minify rules) is a copy of it and follows the same rules described there.
