@@ -58,6 +58,8 @@
       "drop": "Drop",
       "delete": "Delete",
       "executeQuery": "Execute query",
+      "runWithTelemetry": "Run with telemetry",
+      "moreRunOptions": "More run options",
       "showMore": "Show more",
       "copy": "Copy",
       "confirm": "Confirm",
@@ -370,6 +372,7 @@
     "evitaQLConsole": {
       "_title": "evitaQL console",
       "executeQuery": "Execute query",
+      "executeQueryWithTelemetry": "Execute query with telemetry",
       "shareTab": "Share tab",
       "query": {
         "_title": "Query",
@@ -389,6 +392,7 @@
     "graphQLConsole": {
       "_title": "GraphQL console",
       "executeQuery": "Execute query",
+      "executeQueryWithTelemetry": "Execute query with telemetry",
       "shareTab": "Share tab",
       "query": {
         "_title": "Query",
@@ -980,7 +984,8 @@
     "notification": {
       "couldNotExecuteQuery": "Could not execute query.",
       "failedToSaveQueryToHistory": "Failed to save query to history.",
-      "failedToFormatDocument": "Failed to format the document."
+      "failedToFormatDocument": "Failed to format the document.",
+      "queryTelemetryNotInjected": "The query could not be parsed, running it without telemetry."
     }
   },
   "graphQLConsole": {
@@ -1012,7 +1017,9 @@
       "couldNotExecuteQuery": "Could not execute query.",
       "failedToSaveQueryToHistory": "Failed to save query to history.",
       "failedToReloadSchema": "Failed to reload GraphQL schema.",
-      "failedToFormatDocument": "Failed to format the document."
+      "failedToFormatDocument": "Failed to format the document.",
+      "queryTelemetryNotInjected": "The query could not be parsed, running it without telemetry.",
+      "queryTelemetryNoQueryField": "The query selects no query* field that could collect telemetry, running it without telemetry."
     }
   },
   "historyComponent": {
@@ -1136,6 +1143,112 @@
     "priceHistogram": {
       "placeholder": {
         "noPriceHistograms": "No price histogram found."
+      }
+    },
+    "queryTelemetryVisualiser": {
+      "tab": {
+        "overview": "Overview",
+        "steps": "Steps · {title}",
+        "plan": "Plan · {title}",
+        "nestedTitle": "{parent} › {title}"
+      },
+      "button": {
+        "closeTab": "Close",
+        "showExecutedPlan": "Show executed plan",
+        "showCandidatePlan": "Show candidate plan",
+        "showWinnerPlan": "Show plan (the winner opens the executed plan of OVERALL)",
+        "planNotRecorded": "Plan not recorded: evitaDB does not record plans of nested queries",
+        "zoomIn": "Zoom in",
+        "zoomOut": "Zoom out",
+        "fit": "Fit to view (not below 50 %; pan to see the rest)"
+      },
+      "phase": {
+        "root": "Unattributed",
+        "planning": "Planning",
+        "execution": "Execution",
+        "fetching": "Fetching"
+      },
+      "label": {
+        "planChip": "PLAN",
+        "alternative": "ALTERNATIVE #{ordinal}",
+        "selfTimeLegend": "Self time of a parent",
+        "spent": "Spent",
+        "self": "Self",
+        "share": "Share",
+        "ofTotal": "Of total",
+        "ofRoot": "Of {title}",
+        "startOffset": "Start offset",
+        "carriesPlan": "Carries a formula plan",
+        "selfShort": "self {duration}",
+        "cost": "cost {cost}",
+        "stepCount": "{count} step · {duration} | {count} steps · {duration}",
+        "fillLegend": "Fill intensity = share of {title}; stripe = phase group",
+        "cardsReadOnly": "Cards are read-only; the plan icon opens the Plan tab.",
+        "notSelected": "Not selected: {fields}",
+        "resultSummary": "{matched} rows matched · {returned} returned",
+        "resultSummaryPrefetched": "{matched} rows matched · {returned} returned · prefetched"
+      },
+      "chip": {
+        "winner": "Winner",
+        "notEligible": "Not eligible",
+        "notEligibleWithReason": "Not eligible · {reason}",
+        "hashMissing": "Hash missing",
+        "prefetched": "Prefetched",
+        "offBy": "Off by {ratio}×",
+        "offByAtLeast": "Off by ≥ {ratio}×"
+      },
+      "metrics": {
+        "title": "Query metrics",
+        "cardinality": "Cardinality est. / actual",
+        "cost": "Cost est. / actual",
+        "recordsReturned": "Records returned",
+        "ioFetchCount": "I/O fetch count",
+        "ioFetchedSize": "I/O fetched size",
+        "prefetched": "Prefetched"
+      },
+      "plan": {
+        "executedCaption": "{title} — executed plan, real costs and row counts",
+        "candidateCaption": "{title} — candidate plan, estimates only, never executed",
+        "counts": "{formulas} formulas · {shared} shared",
+        "estimated": "est {value}",
+        "actual": "act {value}",
+        "rows": "rows {value}",
+        "instance": "Instance",
+        "structuralHash": "Structural hash",
+        "estimatedCost": "Estimated cost",
+        "actualCost": "Actual cost",
+        "resultCount": "Rows",
+        "collapsed": "{count} identical leaves collapsed into one node",
+        "reference": "(reference)",
+        "legendTreeEdge": "Tree edge",
+        "legendRefEdge": "refTo: shared formula, computed once",
+        "legendCollapsed": "Dashed card = collapsed run of identical leaves",
+        "refEdge": "Reused: computed once, referenced again here",
+        "state": {
+          "computed": "Computed",
+          "ranNotPriced": "Ran, not priced",
+          "notComputed": "Not computed"
+        }
+      },
+      "help": {
+        "total": "Total time of the query. Expect a run-to-run spread of tens of percent; compare profiles taken under the same conditions only.",
+        "planChip": "The profile was taken with `PLAN`, so its timings are not comparable with a run without the plan.",
+        "notSelected": "These optional fields were not selected in the query, so the affected values are shown as unknown.",
+        "metrics": "Measurements recorded on the root step only.",
+        "cardinality": "Number of records the planner expected to match versus the number that actually matched. A verdict appears when they differ tenfold or more.",
+        "offBy": "The planner's cardinality estimate is off by an order of magnitude or more; the chosen index may not be the best one.",
+        "cost": "Unitless cost the planner estimated for the executed plan versus the cost measured while executing it. Prefetching usually explains a large difference.",
+        "recordsReturned": "Number of records returned to the client.",
+        "ioFetchCount": "Number of record reads from the storage.",
+        "ioFetchedSize": "Bytes read from the storage.",
+        "prefetched": "The filter ran over prefetched entities; the index branch of the executed plan was skipped.",
+        "notEligible": "The engine did not plan this index separately: {argument}",
+        "hashMissing": "The plan carries no hash (not selected in the query), so whether this alternative won cannot be decided.",
+        "ranNotPriced": "The result was counted, but the cost was never priced.",
+        "skippedPrefetched": "Skipped: the filter ran over prefetched entities.",
+        "skippedShortCircuited": "Short-circuited branch, never evaluated.",
+        "candidateNotComputed": "Candidate plan: nothing was computed.",
+        "partialSelection": "The query telemetry cannot be visualised because the query does not select {fields} in `extraResults.queryTelemetry`. Add them to the selection and run the query again."
       }
     }
   },

@@ -53,6 +53,7 @@ export enum Command {
     // evitaQL console
 
     EvitaQLConsole_ExecuteQuery = 'evitaQLConsole.executeQuery',
+    EvitaQLConsole_ExecuteQueryWithTelemetry = 'evitaQLConsole.executeQueryWithTelemetry',
     EvitaQLConsole_ShareTab = 'evitaQLConsole.shareTab',
 
     EvitaQLConsole_Query_QueryEditor = 'evitaQLConsole.query.queryEditor',
@@ -68,6 +69,7 @@ export enum Command {
     // GraphQL console
 
     GraphQLConsole_ExecuteQuery = 'graphQLConsole.executeQuery',
+    GraphQLConsole_ExecuteQueryWithTelemetry = 'graphQLConsole.executeQueryWithTelemetry',
     GraphQLConsole_ShareTab = 'graphQLConsole.shareTab',
 
     GraphQLConsole_Query_QueryEditor = 'graphQLConsole.query.queryEditor',

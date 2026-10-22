@@ -119,6 +119,9 @@ The non-negotiable rules:
   by `ModuleRegistrar`s registered in `src/modules/modules.ts` (order matters) and consumed via
   `useX()` helpers built on `mandatoryInject`.
 - All evitaDB server communication goes through `EvitaClient` (`useEvitaClient()`), usually from services.
+- A change that depends on a newer evitaDB API (new constraint/argument, field, endpoint, regenerated gRPC
+  types — typically anything that needs the `canary` server) raises the supported-server floor in
+  `.evitadbrc` in the same change ([versioning](documentation/developer/evitadb-server.md#versioning)).
 - Wrap all service/`EvitaClient` calls in components in try-catch and report via `useToaster().error(...)`.
 - New tabs: implement `TabDefinition` + factory, open via `workspaceService.createTab(...)` —
   follow the [recipe](documentation/developer/recipes.md#add-a-new-tab-type).
