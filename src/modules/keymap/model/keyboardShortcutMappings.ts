@@ -88,6 +88,23 @@ createKeyboardShortcutMapping(Command.GraphQLConsole_Result_RawResultViewer, 'Ct
 createKeyboardShortcutMapping(Command.GraphQLConsole_Result_ResultVisualizer, 'Ctrl+9', 'Ctrl+9')
 createKeyboardShortcutMapping(Command.GraphQLConsole_Result_TogglePanel, 'Alt+3', 'Ctrl+Shift+3')
 
+// REST console
+
+createKeyboardShortcutMapping(Command.RestConsole_ExecuteQuery, 'Ctrl+Enter', 'Cmd+Enter')
+createKeyboardShortcutMapping(Command.RestConsole_ExecuteQueryWithTelemetry, 'Ctrl+Shift+Enter', 'Cmd+Shift+Enter')
+createKeyboardShortcutMapping(Command.RestConsole_ShareTab, 'Ctrl+L', 'Cmd+L')
+
+createKeyboardShortcutMapping(Command.RestConsole_Query_RequestEditor, 'Ctrl+1', 'Ctrl+1')
+createKeyboardShortcutMapping(Command.RestConsole_Query_History, 'Ctrl+3', 'Ctrl+3')
+createKeyboardShortcutMapping(Command.RestConsole_Query_OpenApiViewer, 'Ctrl+4', 'Ctrl+4')
+createKeyboardShortcutMapping(Command.RestConsole_Query_Prettify, 'Shift+Alt+F', 'Shift+Option+F')
+createKeyboardShortcutMapping(Command.RestConsole_Query_Minify, 'Shift+Alt+M', 'Shift+Option+M')
+createKeyboardShortcutMapping(Command.RestConsole_Query_TogglePanel, 'Alt+2', 'Ctrl+Shift+2')
+
+createKeyboardShortcutMapping(Command.RestConsole_Result_RawResultViewer, 'Ctrl+0', 'Ctrl+0')
+createKeyboardShortcutMapping(Command.RestConsole_Result_ResultVisualizer, 'Ctrl+9', 'Ctrl+9')
+createKeyboardShortcutMapping(Command.RestConsole_Result_TogglePanel, 'Alt+3', 'Ctrl+Shift+3')
+
 // Schema viewer
 
 createKeyboardShortcutMapping(Command.SchemaViewer_ShareTab, 'Ctrl+L', 'Cmd+L')

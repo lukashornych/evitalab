@@ -43,6 +43,7 @@ import {
 import type { EvitaQLConsoleHistoryRecord } from '@/modules/evitaql-console/console/history/model/EvitaQLConsoleHistoryRecord'
 import VPreviewEditor from '@/modules/code-editor/component/VPreviewEditor.vue'
 import ResultVisualiser from '@/modules/console/result-visualiser/component/ResultVisualiser.vue'
+import { ResultVisualiserState } from '@/modules/console/result-visualiser/model/ResultVisualiserState'
 import { Command } from '@/modules/keymap/model/Command'
 import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
 import VTabToolbarActionGroup from '@/modules/base/component/VTabToolbarActionGroup.vue'
@@ -67,6 +68,9 @@ import { DocumentFormattingMode } from '@/modules/code-editor/model/DocumentForm
 import { injectQueryTelemetry } from '@/modules/evitaql-console/console/service/injectQueryTelemetry'
 import { QueryTelemetryInjectionError } from '@/modules/console/exception/QueryTelemetryInjectionError'
 import type { ExecuteQueryVariant } from '@/modules/base/model/ExecuteQueryVariant'
+import ResultStatusBar from '@/modules/console/result-status/component/ResultStatusBar.vue'
+import type { ConsoleResultStatus } from '@/modules/console/result-status/model/ConsoleResultStatus'
+import type { EvitaQLQueryResult } from '@/modules/evitaql-console/console/model/EvitaQLQueryResult'
 
 enum EditorTabType {
     Query = 'query',
@@ -164,11 +168,14 @@ const rawResultEditorRef = ref<
     InstanceType<typeof VPreviewEditor> | undefined
 >()
 const result = ref<EvitaResponse>()
+const resultStatus = ref<ConsoleResultStatus>()
 const resultExtensions: Extension[] = [json()]
 
 const resultVisualiserRef = ref<
     InstanceType<typeof ResultVisualiser> | undefined
 >()
+// lives as long as the console tab, so that the visualiser keeps its view when it is remounted
+const resultVisualiserState: ResultVisualiserState = new ResultVisualiserState()
 
 const loading = ref<boolean>(false)
 const executeQueryVariants: ExecuteQueryVariant[] = [{
@@ -303,10 +310,12 @@ async function executeQuery(withTelemetry: boolean = false): Promise<void> {
 
     loading.value = true
     try {
-        result.value = await evitaQLConsoleService.executeEvitaQLQuery(
+        const queryResult: EvitaQLQueryResult = await evitaQLConsoleService.executeEvitaQLQuery(
             props.params.dataPointer,
             sentQueryCode
         )
+        result.value = queryResult.response
+        resultStatus.value = queryResult.status
         loading.value = false
         enteredQueryCode.value = executedQueryCode
 
@@ -319,6 +328,8 @@ async function executeQuery(withTelemetry: boolean = false): Promise<void> {
             focusRawResultEditor()
         }
     } catch (error) {
+        // a status of an earlier result must not sit next to the error
+        resultStatus.value = undefined
         await toaster.error(t('evitaQLConsole.notification.couldNotExecuteQuery'), asError(error))
         loading.value = false
     }
@@ -471,31 +482,37 @@ if (props.params.executeOnOpen) {
                         ]"
                         @focusin="focusedPanel = 'result'"
                     >
-                        <VWindow v-model="resultTab" direction="vertical">
-                            <VWindowItem :value="ResultTabType.Raw">
-                                <VPreviewEditor
-                                    v-if="resultTab === ResultTabType.Raw"
-                                    ref="rawResultEditorRef"
-                                    :model-value="rawResult"
-                                    :placeholder="
-                                        t('evitaQLConsole.placeholder.results')
-                                    "
-                                    read-only
-                                    :additional-extensions="resultExtensions"
-                                />
-                            </VWindowItem>
+                        <div class="evitaql-editor-result">
+                            <ResultStatusBar v-if="resultStatus != undefined" :status="resultStatus" />
+                            <div class="evitaql-editor-result__views">
+                                <VWindow v-model="resultTab" direction="vertical">
+                                    <VWindowItem :value="ResultTabType.Raw">
+                                        <VPreviewEditor
+                                            v-if="resultTab === ResultTabType.Raw"
+                                            ref="rawResultEditorRef"
+                                            :model-value="rawResult"
+                                            :placeholder="
+                                                t('evitaQLConsole.placeholder.results')
+                                            "
+                                            read-only
+                                            :additional-extensions="resultExtensions"
+                                        />
+                                    </VWindowItem>
 
-                            <VWindowItem :value="ResultTabType.Visualiser">
-                                <ResultVisualiser
-                                    v-if="resultTab === ResultTabType.Visualiser"
-                                    ref="resultVisualiserRef"
-                                    :catalog-pointer="params.dataPointer"
-                                    :visualiser-service="visualiserService"
-                                    :input-query="enteredQueryCode || ''"
-                                    :result="result"
-                                />
-                            </VWindowItem>
-                        </VWindow>
+                                    <VWindowItem :value="ResultTabType.Visualiser">
+                                        <ResultVisualiser
+                                            v-if="resultTab === ResultTabType.Visualiser"
+                                            ref="resultVisualiserRef"
+                                            :catalog-pointer="params.dataPointer"
+                                            :visualiser-service="visualiserService"
+                                            :input-query="enteredQueryCode || ''"
+                                            :result="result"
+                                            :state="resultVisualiserState"
+                                        />
+                                    </VWindowItem>
+                                </VWindow>
+                            </div>
+                        </div>
                     </Pane>
                 </Splitpanes>
 
@@ -630,5 +647,17 @@ if (props.params.executeOnOpen) {
 .evitaql-editor-result-sections {
     display: flex;
     width: 3rem;
+}
+.evitaql-editor-result {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    // the result views fill what the status bar leaves; the absolutely positioned window is anchored here
+    &__views {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+    }
 }
 </style>

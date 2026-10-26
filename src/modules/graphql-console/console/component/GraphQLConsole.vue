@@ -45,6 +45,7 @@ import {
 import type { GraphQLConsoleHistoryRecord } from '@/modules/graphql-console/console/history/model/GraphQLConsoleHistoryRecord'
 import VPreviewEditor from '@/modules/code-editor/component/VPreviewEditor.vue'
 import ResultVisualiser from '@/modules/console/result-visualiser/component/ResultVisualiser.vue'
+import { ResultVisualiserState } from '@/modules/console/result-visualiser/model/ResultVisualiserState'
 import { Command } from '@/modules/keymap/model/Command'
 import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
 import VTabToolbarActionGroup from '@/modules/base/component/VTabToolbarActionGroup.vue'
@@ -72,6 +73,9 @@ import {
     QueryTelemetryInjectionFailureReason
 } from '@/modules/console/exception/QueryTelemetryInjectionError'
 import type { ExecuteQueryVariant } from '@/modules/base/model/ExecuteQueryVariant'
+import ResultStatusBar from '@/modules/console/result-status/component/ResultStatusBar.vue'
+import type { ConsoleResultStatus } from '@/modules/console/result-status/model/ConsoleResultStatus'
+import type { GraphQLQueryResult } from '@/modules/graphql-console/console/model/GraphQLQueryResult'
 
 enum EditorTabType {
     Query = 'query',
@@ -190,9 +194,24 @@ const schemaExtensions: Extension[] = [graphql()]
 const lastAppliedQueryCode = ref<string>('')
 const rawResultEditorRef = ref<InstanceType<typeof VPreviewEditor> | undefined>()
 const resultCode = ref<string>('')
+const resultStatus = ref<ConsoleResultStatus>()
 const resultExtensions: Extension[] = [json()]
 
 const resultVisualiserRef = ref<InstanceType<typeof ResultVisualiser> | undefined>()
+// parsed once per result, so that re-rendering the console does not hand the visualiser a new result
+const visualisedResult = computed<unknown>(() => {
+    if (!resultCode.value) {
+        return undefined
+    }
+    try {
+        return JSON.parse(resultCode.value)
+    } catch (e) {
+        console.error('GraphQL result is not JSON, it cannot be visualised', e)
+        return undefined
+    }
+})
+// lives as long as the console tab, so that the visualiser keeps its view when it is remounted
+const resultVisualiserState: ResultVisualiserState = new ResultVisualiserState()
 const supportsVisualisation = computed<boolean>(() => {
     return props.params.dataPointer.instanceType === GraphQLInstanceType.Data
 })
@@ -409,7 +428,9 @@ async function executeQuery(withTelemetry: boolean = false): Promise<void> {
 
     loading.value = true
     try {
-        resultCode.value = await graphQLConsoleService.executeGraphQLQuery(props.params.dataPointer, sentQueryCode, JSON.parse(variablesCode.value))
+        const queryResult: GraphQLQueryResult = await graphQLConsoleService.executeGraphQLQuery(props.params.dataPointer, sentQueryCode, JSON.parse(variablesCode.value))
+        resultCode.value = queryResult.resultJson
+        resultStatus.value = queryResult.status
         loading.value = false
         lastAppliedQueryCode.value = executedQueryCode
 
@@ -423,6 +444,8 @@ async function executeQuery(withTelemetry: boolean = false): Promise<void> {
         }
     } catch (error) {
         loading.value = false
+        // a status of an earlier result must not sit next to the error
+        resultStatus.value = undefined
         await toaster.error(t('graphQLConsole.notification.couldNotExecuteQuery'), asError(error))
     }
 }
@@ -622,32 +645,38 @@ function focusResultVisualiser(): void {
                         ]"
                         @focusin="focusedPanel = 'result'"
                     >
-                        <VWindow
-                            v-model="resultTab"
-                            direction="vertical"
-                        >
-                            <VWindowItem :value="ResultTabType.Raw">
-                                <VPreviewEditor
-                                    v-if="resultTab === ResultTabType.Raw"
-                                    ref="rawResultEditorRef"
-                                    v-model="resultCode"
-                                    :placeholder="t('graphQLConsole.placeholder.results')"
-                                    read-only
-                                    :additional-extensions="resultExtensions"
-                                />
-                            </VWindowItem>
+                        <div class="graphql-editor-result">
+                            <ResultStatusBar v-if="resultStatus != undefined" :status="resultStatus" />
+                            <div class="graphql-editor-result__views">
+                                <VWindow
+                                    v-model="resultTab"
+                                    direction="vertical"
+                                >
+                                    <VWindowItem :value="ResultTabType.Raw">
+                                        <VPreviewEditor
+                                            v-if="resultTab === ResultTabType.Raw"
+                                            ref="rawResultEditorRef"
+                                            v-model="resultCode"
+                                            :placeholder="t('graphQLConsole.placeholder.results')"
+                                            read-only
+                                            :additional-extensions="resultExtensions"
+                                        />
+                                    </VWindowItem>
 
-                            <VWindowItem v-if="supportsVisualisation" :value="ResultTabType.Visualiser">
-                                <ResultVisualiser
-                                    v-if="resultTab === ResultTabType.Visualiser"
-                                    ref="resultVisualiserRef"
-                                    :catalog-pointer="params.dataPointer"
-                                    :visualiser-service="visualiserService"
-                                    :input-query="lastAppliedQueryCode || ''"
-                                    :result="resultCode == undefined || !resultCode ? undefined : JSON.parse(resultCode)"
-                                />
-                            </VWindowItem>
-                        </VWindow>
+                                    <VWindowItem v-if="supportsVisualisation" :value="ResultTabType.Visualiser">
+                                        <ResultVisualiser
+                                            v-if="resultTab === ResultTabType.Visualiser"
+                                            ref="resultVisualiserRef"
+                                            :catalog-pointer="params.dataPointer"
+                                            :visualiser-service="visualiserService"
+                                            :input-query="lastAppliedQueryCode || ''"
+                                            :result="visualisedResult"
+                                            :state="resultVisualiserState"
+                                        />
+                                    </VWindowItem>
+                                </VWindow>
+                            </div>
+                        </div>
                     </Pane>
                 </Splitpanes>
 
@@ -773,5 +802,17 @@ function focusResultVisualiser(): void {
 .graphql-editor-query-sections, .graphql-editor-result-sections {
     display: flex;
     width: 3rem;
+}
+.graphql-editor-result {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    // the result views fill what the status bar leaves; the absolutely positioned window is anchored here
+    &__views {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+    }
 }
 </style>

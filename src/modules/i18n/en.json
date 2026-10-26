@@ -411,6 +411,27 @@
         "togglePanel": "Hide/show panel"
       }
     },
+    "restConsole": {
+      "_title": "REST console",
+      "executeQuery": "Execute request",
+      "executeQueryWithTelemetry": "Execute request with telemetry",
+      "shareTab": "Share tab",
+      "query": {
+        "_title": "Request",
+        "requestEditor": "Request editor",
+        "history": "History",
+        "prettify": "Prettify body",
+        "minify": "Minify body",
+        "togglePanel": "Hide/show panel",
+        "openApiViewer": "OpenAPI specification viewer"
+      },
+      "result": {
+        "_title": "Result",
+        "rawResultViewer": "Raw result viewer",
+        "resultVisualizer": "Result visualizer",
+        "togglePanel": "Hide/show panel"
+      }
+    },
     "schemaViewer": {
       "_title": "Schema viewer",
       "shareTab": "Share tab"
@@ -460,6 +481,7 @@
           "modifySubheader": "Modify",
           "catalogsSubheader": "Catalogs",
           "graphQLSystemApiConsole": "GraphQL System API console",
+          "restSystemApiConsole": "REST System API console",
           "create": "Create catalog",
           "edit": "Edit connection",
           "remove": "Remove connection",
@@ -514,6 +536,7 @@
           "evitaQLConsole": "evitaQL console",
           "graphQLDataApiConsole": "GraphQL Data API console",
           "graphQLSchemaApiConsole": "GraphQL Schema API console",
+          "restApiConsole": "REST API console",
           "viewSchema": "Schema",
           "backup": "Backup",
           "closeSharedSession": "Close shared session",
@@ -1022,6 +1045,102 @@
       "queryTelemetryNoQueryField": "The query selects no query* field that could collect telemetry, running it without telemetry."
     }
   },
+  "restConsole": {
+    "instanceType": {
+      "catalog": "REST API",
+      "system": "System REST API"
+    },
+    "group": {
+      "catalog": "Catalog",
+      "system": "System"
+    },
+    "operationName": {
+      "query": "Query entities",
+      "list": "List entities",
+      "get": "Get entity",
+      "getById": "Get entity by primary key",
+      "upsert": "Upsert entity",
+      "delete": "Delete entity",
+      "deleteByQuery": "Delete entities by query",
+      "getSchema": "Get collection schema",
+      "updateSchema": "Update collection schema",
+      "getEntity": "Get entity of any collection",
+      "listEntity": "List entities of any collection",
+      "collections": "List collections",
+      "getCatalogSchema": "Get catalog schema",
+      "updateCatalogSchema": "Update catalog schema",
+      "listCatalogs": "List catalogs",
+      "getCatalog": "Get catalog",
+      "createCatalog": "Create catalog",
+      "updateCatalog": "Update catalog",
+      "deleteCatalog": "Delete catalog",
+      "liveness": "Liveness"
+    },
+    "picker": {
+      "search": "Search endpoints",
+      "searchHint": "Collection, operation, operation id or path",
+      "withBody": "with body",
+      "localized": "localized",
+      "body": "body",
+      "noMatch": "No endpoint matches. Try a collection name, an operation or a path."
+    },
+    "locale": {
+      "label": "Locale",
+      "notLocalized": "Not localized",
+      "localized": "Localized variant",
+      "setByLocale": "set by Locale above"
+    },
+    "section": {
+      "parameters": "Parameters",
+      "parameterCount": "{set} set · {defined} defined",
+      "body": "Body · application/json"
+    },
+    "parameter": {
+      "noParameters": "This endpoint has no parameters.",
+      "unset": "unset",
+      "arrayPlaceholder": "Type and press Enter"
+    },
+    "validation": {
+      "missing": "The parameter is required.",
+      "notBoolean": "Must be true or false.",
+      "notInteger": "Must be an integer.",
+      "notNumber": "Must be a number.",
+      "notDateTime": "Must be an ISO 8601 date-time with an offset.",
+      "notAllowedValue": "Not an allowed value."
+    },
+    "placeholder": {
+      "noBody": "{method} {path} takes no request body.",
+      "noBodyHint": "Everything is sent through the parameters above.",
+      "results": "Results will be displayed here...",
+      "noPanelsVisible": "Both panels are hidden. Pick a view in the side bars to show a panel again.",
+      "noEndpoints": "The OpenAPI specification contains no endpoints.",
+      "visualisationUnavailable": "Visualisation is available only for a successful response of an entity query."
+    },
+    "button": {
+      "reloadOpenApi": "Reload OpenAPI",
+      "showQueryPanel": "Show request panel",
+      "showResultPanel": "Show result panel"
+    },
+    "tooltip": {
+      "requestView": "Request — click again to hide the panel",
+      "historyView": "History — click again to hide the panel",
+      "rawResultViewerView": "Raw result viewer — click again to hide the panel",
+      "resultVisualizerView": "Result visualizer — click again to hide the panel",
+      "openApiView": "OpenAPI specification — click again to hide the panel"
+    },
+    "notification": {
+      "couldNotExecuteRequest": "Could not execute the request.",
+      "failedToSaveRequestToHistory": "Failed to save the request to history.",
+      "failedToReloadOpenApi": "Failed to reload the OpenAPI specification.",
+      "failedToFormatDocument": "Failed to format the body.",
+      "couldNotLoadLocales": "Could not load the locales of the catalog.",
+      "couldNotLoadBodyCompletion": "Could not load the body completion.",
+      "invalidParameters": "The request cannot be sent, these parameters are missing or invalid: {parameters}.",
+      "queryTelemetryNotInjected": "The body is not a JSON object, running the request without telemetry.",
+      "queryTelemetryNotSupported": "Only entity queries can collect telemetry, running the request without it.",
+      "unknownOperation": "The operation '{operationId}' no longer exists, the first endpoint was selected instead."
+    }
+  },
   "historyComponent": {
     "button": {
       "clearHistory": "Clear history"
@@ -1150,6 +1269,7 @@
         "overview": "Overview",
         "steps": "Steps · {title}",
         "plan": "Plan · {title}",
+        "group": "Similar ×{count} · {title}",
         "nestedTitle": "{parent} › {title}"
       },
       "button": {
@@ -1218,11 +1338,15 @@
         "estimatedCost": "Estimated cost",
         "actualCost": "Actual cost",
         "resultCount": "Rows",
-        "collapsed": "{count} identical leaves collapsed into one node",
+        "collapsed": "{count} similar formulas (same description, own numbers) grouped into one node. Click to list them one by one.",
         "reference": "(reference)",
         "legendTreeEdge": "Tree edge",
         "legendRefEdge": "refTo: shared formula, computed once",
-        "legendCollapsed": "Dashed card = collapsed run of identical leaves",
+        "legendCollapsed": "Dashed card = group of similar formulas, click to list them",
+        "showNotComputed": "Not computed",
+        "hiddenCount": "· {count} not computed hidden",
+        "groupCaption": "{title} — {count} similar formulas of {step}",
+        "groupNote": "Same description, but each formula has its own instance, structural hash and numbers.",
         "refEdge": "Reused: computed once, referenced again here",
         "state": {
           "computed": "Computed",
@@ -1248,8 +1372,20 @@
         "skippedPrefetched": "Skipped: the filter ran over prefetched entities.",
         "skippedShortCircuited": "Short-circuited branch, never evaluated.",
         "candidateNotComputed": "Candidate plan: nothing was computed.",
+        "showNotComputed": "Show formulas that were not computed (short-circuited or prefetched branches).",
         "partialSelection": "The query telemetry cannot be visualised because the query does not select {fields} in `extraResults.queryTelemetry`. Add them to the selection and run the query again."
       }
+    }
+  },
+  "resultStatus": {
+    "ok": "OK",
+    "error": "Error",
+    "errors": "{count} error | {count} errors",
+    "duration": "{duration} ms",
+    "size": {
+      "bytes": "{size} B",
+      "kilobytes": "{size} kB",
+      "megabytes": "{size} MB"
     }
   },
   "schemaViewer": {
@@ -2699,6 +2835,7 @@
       "evitaQLConsole": "evitaQL console",
       "graphQLDataConsole": "GraphQL data API console",
       "graphQLSchemaConsole": "GraphQL schema API console",
+      "restConsole": "REST API console",
       "entityViewer": "Entity viewer"
     },
     "enterAction": {
@@ -2707,13 +2844,15 @@
       "evitaQLConsole": "open evitaQL console",
       "graphQLDataConsole": "open GraphQL data API console",
       "graphQLSchemaConsole": "open GraphQL schema API console",
+      "restConsole": "open REST API console",
       "entityViewer": "open entity viewer"
     },
     "disabledReason": {
       "catalogInactive": "The catalog is deactivated.",
       "catalogUnusable": "The catalog cannot be read.",
       "catalogNotAlive": "The catalog is not alive.",
-      "graphQLDisabled": "The GraphQL API is not enabled on the server."
+      "graphQLDisabled": "The GraphQL API is not enabled on the server.",
+      "restDisabled": "The REST API is not enabled on the server."
     },
     "button": {
       "retry": "Retry"

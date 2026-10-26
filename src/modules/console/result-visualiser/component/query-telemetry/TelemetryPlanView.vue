@@ -1,8 +1,9 @@
 <script setup lang="ts">
 /**
  * Plan tab: the formula plan of one step (the executed plan of `OVERALL` or the candidate plan of an alternative)
- * drawn left-to-right on the graph canvas as {@link FormulaPlanCard}s, with runs of identical leaves collapsed and
- * back-references (`refTo`) as dashed edges to the shared formula.
+ * drawn left-to-right on the graph canvas as {@link FormulaPlanCard}s, with runs of similar leaves grouped (a click on
+ * a group opens its members in a Group tab) and back-references (`refTo`) as dashed edges to the shared formula. The
+ * executed plan can leave out the formulas that were not computed.
  */
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -33,12 +34,37 @@ const props = defineProps<{
      */
     step: VisualisedTelemetryStep
 }>()
+const emit = defineEmits<{
+    (e: 'openGroup', group: VisualisedFormulaPlanNode): void
+}>()
+/**
+ * Whether formulas that were not computed are left out; applies to the executed plan only.
+ */
+const hideNotComputed = defineModel<boolean>('hideNotComputed', { default: false })
+
+const executed = computed<boolean>(() => props.step.id === props.telemetry.root.id)
+
+/**
+ * A candidate plan is never computed as a whole, so the filter is offered only for an executed plan that has a formula
+ * to hide.
+ */
+const notComputedFilterAvailable = computed<boolean>(() => {
+    if (!executed.value || props.step.plan == undefined) {
+        return false
+    }
+    return visualiseFormulaPlan(props.step.id, true, props.step.plan, true).hiddenCount > 0
+})
 
 const plan = computed<VisualisedFormulaPlan | undefined>(() => {
     if (props.step.plan == undefined) {
         return undefined
     }
-    return visualiseFormulaPlan(props.step.id, props.step.id === props.telemetry.root.id, props.step.plan)
+    return visualiseFormulaPlan(
+        props.step.id,
+        executed.value,
+        props.step.plan,
+        notComputedFilterAvailable.value && hideNotComputed.value
+    )
 })
 
 const layout = computed<TreeLayout<VisualisedFormulaPlanNode> | undefined>(() => {
@@ -79,6 +105,9 @@ const caption = computed<string>(() => plan.value?.executed === true
                         formulas: formatNumber(plan.formulaCount),
                         shared: formatNumber(plan.sharedCount)
                     }) }}
+                    <template v-if="plan.hiddenCount > 0">
+                        {{ t('resultVisualizer.queryTelemetryVisualiser.plan.hiddenCount', { count: formatNumber(plan.hiddenCount) }) }}
+                    </template>
                 </span>
             </div>
             <div class="telemetry-plan__legend text-disabled">
@@ -96,11 +125,27 @@ const caption = computed<string>(() => plan.value?.executed === true
                 </span>
             </div>
         </template>
+        <template v-if="notComputedFilterAvailable" #actions>
+            <VChipGroup
+                :model-value="hideNotComputed ? undefined : true"
+                variant="outlined"
+                class="telemetry-plan__filter"
+                @update:model-value="hideNotComputed = $event !== true"
+            >
+                <VChip :value="true" filter size="x-small">
+                    {{ t('resultVisualizer.queryTelemetryVisualiser.plan.showNotComputed') }}
+                    <VTooltip activator="parent">
+                        {{ t('resultVisualizer.queryTelemetryVisualiser.help.showNotComputed') }}
+                    </VTooltip>
+                </VChip>
+            </VChipGroup>
+        </template>
         <template #card="{ node }">
             <FormulaPlanCard
                 :node="node"
                 :executed="plan.executed"
                 :prefetched="telemetry.metrics?.prefetched"
+                @open-group="emit('openGroup', node)"
             />
         </template>
     </TelemetryGraphCanvas>
@@ -114,8 +159,14 @@ const caption = computed<string>(() => plan.value?.executed === true
     &__caption {
         display: flex;
         flex-wrap: wrap;
+        align-items: center;
         gap: 0.25rem 1rem;
         font-size: 0.75rem;
+    }
+
+    &__filter {
+        flex: 0 0 auto;
+        padding: 0;
     }
 
     &__title {

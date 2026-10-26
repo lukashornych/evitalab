@@ -103,6 +103,13 @@ disappear until the user clicks (or `Ctrl+1`s) back into the query panel. The ke
 shortcuts apply the same guard, so a shortcut pressed while the result viewer has focus is a visible
 no-op rather than a hidden action.
 
+## Result status
+
+The result pane starts with the shared [`ResultStatusBar`](console.md#result-status-bar): `OK` / `Error` and the
+duration measured by `EvitaQLConsoleService.executeEvitaQLQuery`, which returns an `EvitaQLQueryResult`
+(`response` + `status`). A query the server refuses (`QueryError`) is a result with an error status, other failures
+still go to the toaster. No size — the gRPC payload is not available.
+
 ## Result visualisation
 
 `EvitaQLResultVisualiserService` implements [`console`](console.md)'s `ResultVisualiserService`, and each

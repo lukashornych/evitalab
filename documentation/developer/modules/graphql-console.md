@@ -118,6 +118,13 @@ history and change the shape of already shared links. The request path is built 
 alone (`EvitaClient.queryCatalogUsingGraphQL`), so the name never reaches the server, and everything
 user-facing — tab title, subject path, query placeholder — suppresses it.
 
+## Result status
+
+The result pane starts with the shared [`ResultStatusBar`](console.md#result-status-bar): `OK` or `N error(s)` from
+the response's `errors` array, the duration of the call and the UTF-8 size of the compact response JSON, all
+derived in `GraphQLConsoleService.executeGraphQLQuery`, which returns a `GraphQLQueryResult` (`resultJson` +
+`status`).
+
 ## Result visualisation
 
 `GraphQLResultVisualiserService` implements [`console`](console.md)'s `ResultVisualiserService`, with a

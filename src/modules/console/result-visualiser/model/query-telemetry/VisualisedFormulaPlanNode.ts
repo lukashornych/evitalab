@@ -4,8 +4,8 @@ import { FormulaPlanNodeState } from './FormulaPlanNodeState'
 
 /**
  * One node of a visualised formula plan: either a formula of the plan, a childless back-reference to a formula
- * reachable by another path (`refTo`), or a synthetic group standing for a run of identical childless siblings
- * (`445 × 1 primary keys`).
+ * reachable by another path (`refTo`), or a synthetic group standing for a run of similar childless siblings - equal
+ * description, but each with its own instance, hash and numbers (`445 × 1 primary keys`).
  *
  * Costs are `number` (they only feed labels); `hash` stays `bigint`.
  */
@@ -41,7 +41,7 @@ export class VisualisedFormulaPlanNode {
      */
     readonly resultCount: number | undefined
     /**
-     * Collapsed members of a group, empty for a formula.
+     * Members of a group, empty for a formula.
      */
     readonly members: List<FormulaPlan>
     readonly children: List<VisualisedFormulaPlanNode>

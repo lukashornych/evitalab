@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
  * Query telemetry visualiser: a tab strip inside the result visualiser with a pinned Overview (header, phase share
- * bar, flamegraph, query metrics) and closable Steps / Plan tabs opened from it. A tab is identified by
- * `(kind, stepId)`; opening an already open identity activates it. The tab list belongs to one telemetry and resets
- * when a new result arrives.
+ * bar, flamegraph, query metrics) and closable Steps / Plan / Group tabs opened from it. A tab is identified by
+ * `(kind, stepId)` (plus the group key of a Group tab); opening an already open identity activates it. The tab list
+ * lives in the {@link QueryTelemetryVisualiserState} of the query result, so it survives remounting.
  */
-import { computed, ref, watch } from 'vue'
+import { computed, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
     ParsedQueryTelemetry,
@@ -19,6 +19,12 @@ import type {
     VisualisedTelemetryStep
 } from '@/modules/console/result-visualiser/model/query-telemetry/VisualisedTelemetryStep'
 import { TelemetryTab, TelemetryTabKind } from '@/modules/console/result-visualiser/model/query-telemetry/TelemetryTab'
+import type {
+    QueryTelemetryVisualiserState
+} from '@/modules/console/result-visualiser/model/query-telemetry/QueryTelemetryVisualiserState'
+import type {
+    VisualisedFormulaPlanNode
+} from '@/modules/console/result-visualiser/model/query-telemetry/VisualisedFormulaPlanNode'
 import { telemetryStepLabel } from '@/modules/console/result-visualiser/service/query-telemetry/telemetryStepLabel'
 import {
     visualiseQueryTelemetry
@@ -28,11 +34,16 @@ import VisualiserNote from '@/modules/console/result-visualiser/component/Visual
 import TelemetryOverview from './TelemetryOverview.vue'
 import TelemetryStepsView from './TelemetryStepsView.vue'
 import TelemetryPlanView from './TelemetryPlanView.vue'
+import TelemetryFormulaGroupView from './TelemetryFormulaGroupView.vue'
 
 const { t } = useI18n()
 
 const props = defineProps<{
-    parseResult: QueryTelemetryParseResult
+    parseResult: QueryTelemetryParseResult,
+    /**
+     * Open tabs and filters of this query result's telemetry.
+     */
+    state: QueryTelemetryVisualiserState
 }>()
 
 const telemetry = computed<VisualisedQueryTelemetry | undefined>(() => {
@@ -51,13 +62,9 @@ const partialSelectionNote = computed<string | undefined>(() => {
 })
 
 const overviewTab: TelemetryTab = TelemetryTab.overview()
-const tabs = ref<TelemetryTab[]>([overviewTab])
-const activeTabKey = ref<string>(overviewTab.key)
-
-watch(telemetry, () => {
-    tabs.value = [overviewTab]
-    activeTabKey.value = overviewTab.key
-})
+const tabs: Ref<TelemetryTab[]> = props.state.tabs
+const activeTabKey: Ref<string> = props.state.activeTabKey
+const hideNotComputed: Ref<boolean> = props.state.hideNotComputed
 
 const activeTab = computed<TelemetryTab>(() =>
     tabs.value.find(it => it.key === activeTabKey.value) ?? overviewTab
@@ -74,12 +81,19 @@ const openStepIds = computed<ReadonlySet<string>>(() =>
     new Set(tabs.value.map(it => it.stepId).filter((it): it is string => it != undefined))
 )
 
-function openTab(kind: TelemetryTabKind, stepId: string): void {
-    const tab: TelemetryTab = new TelemetryTab(kind, stepId)
+function openTab(kind: TelemetryTabKind, stepId: string, group?: VisualisedFormulaPlanNode): void {
+    const tab: TelemetryTab = new TelemetryTab(kind, stepId, group)
     if (!tabs.value.some(it => it.key === tab.key)) {
         tabs.value = [...tabs.value, tab]
     }
     activeTabKey.value = tab.key
+}
+
+function openGroup(group: VisualisedFormulaPlanNode): void {
+    const stepId: string | undefined = activeTab.value.stepId
+    if (stepId != undefined) {
+        openTab(TelemetryTabKind.Group, stepId, group)
+    }
 }
 
 function closeTab(tab: TelemetryTab): void {
@@ -128,13 +142,18 @@ function tabTitle(tab: TelemetryTab): string {
             return t('resultVisualizer.queryTelemetryVisualiser.tab.steps', { title: tabStepTitle(tab) })
         case TelemetryTabKind.Plan:
             return t('resultVisualizer.queryTelemetryVisualiser.tab.plan', { title: tabStepTitle(tab) })
+        case TelemetryTabKind.Group:
+            return t('resultVisualizer.queryTelemetryVisualiser.tab.group', {
+                count: tab.group?.count ?? 0,
+                title: tab.group?.description ?? ''
+            })
         default:
             return t('resultVisualizer.queryTelemetryVisualiser.tab.overview')
     }
 }
 
 function tabColor(tab: TelemetryTab): string | undefined {
-    if (tab.kind === TelemetryTabKind.Plan) {
+    if (tab.kind === TelemetryTabKind.Plan || tab.kind === TelemetryTabKind.Group) {
         return 'rgb(var(--v-theme-primary-lightest))'
     }
     const step: VisualisedTelemetryStep | undefined = tabStep(tab)
@@ -205,8 +224,17 @@ function tabColor(tab: TelemetryTab): string | undefined {
                 <TelemetryPlanView
                     v-else-if="activeTab.kind === TelemetryTabKind.Plan && activeStep != undefined"
                     :key="activeTab.key"
+                    v-model:hide-not-computed="hideNotComputed"
                     :telemetry="telemetry"
                     :step="activeStep"
+                    @open-group="openGroup"
+                />
+                <TelemetryFormulaGroupView
+                    v-else-if="activeTab.kind === TelemetryTabKind.Group && activeStep != undefined && activeTab.group != undefined"
+                    :key="activeTab.key"
+                    :telemetry="telemetry"
+                    :step="activeStep"
+                    :group="activeTab.group"
                 />
             </div>
         </template>

@@ -84,6 +84,23 @@ export enum Command {
     GraphQLConsole_Result_ResultVisualizer = 'graphQLConsole.result.resultVisualizer',
     GraphQLConsole_Result_TogglePanel = 'graphQLConsole.result.togglePanel',
 
+    // REST console
+
+    RestConsole_ExecuteQuery = 'restConsole.executeQuery',
+    RestConsole_ExecuteQueryWithTelemetry = 'restConsole.executeQueryWithTelemetry',
+    RestConsole_ShareTab = 'restConsole.shareTab',
+
+    RestConsole_Query_RequestEditor = 'restConsole.query.requestEditor',
+    RestConsole_Query_History = 'restConsole.query.history',
+    RestConsole_Query_OpenApiViewer = 'restConsole.query.openApiViewer',
+    RestConsole_Query_Prettify = 'restConsole.query.prettify',
+    RestConsole_Query_Minify = 'restConsole.query.minify',
+    RestConsole_Query_TogglePanel = 'restConsole.query.togglePanel',
+
+    RestConsole_Result_RawResultViewer = 'restConsole.result.rawResultViewer',
+    RestConsole_Result_ResultVisualizer = 'restConsole.result.resultVisualizer',
+    RestConsole_Result_TogglePanel = 'restConsole.result.togglePanel',
+
     // Schema viewer
 
     SchemaViewer_ShareTab = 'schemaViewer.shareTab',
