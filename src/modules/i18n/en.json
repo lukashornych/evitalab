@@ -1098,8 +1098,7 @@
     "parameter": {
       "noParameters": "This endpoint has no parameters.",
       "unset": "unset",
-      "arrayPlaceholder": "Type and press Enter",
-      "dateTimePlaceholder": "2026-10-20T15:00:00+02:00"
+      "arrayPlaceholder": "Type and press Enter"
     },
     "validation": {
       "missing": "The parameter is required.",

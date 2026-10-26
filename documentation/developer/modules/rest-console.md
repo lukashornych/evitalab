@@ -87,7 +87,7 @@ preview suppress the name.
 | `enum` (incl. `$ref`ed `CatalogCurrency`, `PriceContentMode`, `Scope`, …) | `Enum` | select, clearable when optional |
 | `boolean` | `Boolean` | tri-state toggle `unset` / `true` / `false` |
 | `integer` (`int32`/`int64`) / `number` | `Integer` / `Number` | text field with numeric validation |
-| `string` + `format: date-time` | `DateTime` | text field with an ISO 8601 placeholder and validation |
+| `string` + `format: date-time` | `DateTime` | `VDateTimeInput` (picker wizard or typed text), sent as ISO 8601 with offset |
 | array of locales / of enums / of anything else | `LocaleArray` / `EnumArray` / `StringArray` | multi-select chips / free-text chips combobox |
 | anything else | `String` | text field, raw type shown |
 

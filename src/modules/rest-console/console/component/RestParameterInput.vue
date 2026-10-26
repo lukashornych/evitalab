@@ -6,6 +6,8 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { List as ImmutableList } from 'immutable'
+import { DateTime } from 'luxon'
+import VDateTimeInput from '@/modules/base/component/VDateTimeInput.vue'
 import { RestParameter } from '@/modules/rest-console/console/model/RestParameter'
 import { RestParameterKind } from '@/modules/rest-console/console/model/RestParameterKind'
 import type { RestParameterValue } from '@/modules/rest-console/console/model/RestParameterValue'
@@ -42,11 +44,12 @@ const selectItems = computed<string[]>(() => {
 
 const stringValue = computed<string>(() => typeof props.modelValue === 'string' ? props.modelValue : '')
 const arrayValue = computed<string[]>(() => Array.isArray(props.modelValue) ? [...props.modelValue] : [])
+const dateTimeValue = computed<DateTime | undefined>(() => {
+    const dateTime: DateTime = DateTime.fromISO(stringValue.value, { setZone: true })
+    return dateTime.isValid ? dateTime : undefined
+})
 
 const placeholder = computed<string | undefined>(() => {
-    if (kind.value === RestParameterKind.DateTime) {
-        return props.parameter.example ?? t('restConsole.parameter.dateTimePlaceholder')
-    }
     if (kind.value === RestParameterKind.StringArray) {
         return t('restConsole.parameter.arrayPlaceholder')
     }
@@ -68,6 +71,10 @@ function updateString(value: string | null | undefined): void {
 function updateArray(value: string[] | null | undefined): void {
     const items: string[] = (value ?? []).map(it => String(it)).filter(it => it.trim().length > 0)
     emit('update:modelValue', items.length === 0 ? undefined : items)
+}
+
+function updateDateTime(value: DateTime | undefined): void {
+    emit('update:modelValue', value == undefined ? undefined : value.toISO({ suppressMilliseconds: true })!)
 }
 
 function updateBoolean(value: string | null | undefined): void {
@@ -134,6 +141,16 @@ function updateBoolean(value: string | null | undefined): void {
         variant="outlined"
         hide-details="auto"
         @update:model-value="updateArray"
+    />
+
+    <VDateTimeInput
+        v-else-if="kind === RestParameterKind.DateTime"
+        :model-value="dateTimeValue"
+        :clearable="!parameter.required"
+        density="compact"
+        variant="outlined"
+        hide-details="auto"
+        @update:model-value="updateDateTime"
     />
 
     <VTextField

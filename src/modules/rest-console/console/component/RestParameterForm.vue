@@ -107,7 +107,7 @@ function updateValue(parameter: RestParameter, value: RestParameterValue | undef
 
     &__grid {
         display: grid;
-        grid-template-columns: minmax(8rem, 14rem) minmax(0, 1fr);
+        grid-template-columns: minmax(8rem, max-content) minmax(0, 1fr);
         gap: 0.5rem 1rem;
         align-items: start;
     }
@@ -117,11 +117,11 @@ function updateValue(parameter: RestParameter, value: RestParameterValue | undef
         flex-direction: column;
         padding-top: 0.25rem;
         min-width: 0;
-        overflow-wrap: anywhere;
     }
 
     &__name-text {
         font-family: monospace;
+        white-space: nowrap;
     }
 }
 </style>
