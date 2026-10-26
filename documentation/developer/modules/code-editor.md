@@ -111,8 +111,16 @@ The printer depends only on the exported parser plus the lezer cursor API, so it
 
 ### GraphQL
 
-`formatGraphQL.ts` is a thin wrapper: prettify is `print(parse(source))`, minify is
-`stripIgnoredCharacters(source)`, both from `graphql@16` (already a dependency).
+`formatGraphQL.ts` wraps `graphql@16` (already a dependency): prettify is `print(parse(source))`, minify is
+`stripIgnoredCharacters(source)`.
+
+The reference printer renders input objects on a single line (`filterBy: {and: [{…}, {…}]}`), which makes
+evitaDB queries unreadable. Before printing, an AST pass (`expandArgumentValues`) therefore pre-renders the
+arguments of every field and directive that holds a non-empty input object: objects are expanded one field
+per line, lists are expanded only when they hold objects or lists (`[1, 2]` stays inline), and the
+arguments are then placed one per line. `print()` has no hook for values, so the rendered argument list is
+folded into the node's `name` (printed verbatim) and `arguments` are emptied; the enclosing selection set
+indents the embedded line breaks. Arguments with scalar values only keep the printer's default layout.
 
 > **Prettify is lossy, by design.** `print()` works on the parsed document, which carries no comments,
 > so `#` comments are dropped, and an anonymous `query { … }` is rewritten into the shorthand `{ … }`.
