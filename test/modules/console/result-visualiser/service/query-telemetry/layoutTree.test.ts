@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { layoutTree, type TreeLayout } from '@/modules/console/result-visualiser/service/query-telemetry/layoutTree'
+import { layoutGrid, layoutTree, type TreeLayout } from '@/modules/console/result-visualiser/service/query-telemetry/layoutTree'
 import { visualiseFormulaPlan } from '@/modules/console/result-visualiser/service/query-telemetry/visualiseFormulaPlan'
 import {
     visualiseQueryTelemetry
@@ -73,5 +73,24 @@ describe('Tree layout', () => {
         expect(layout.width).toBe((leaves.length - 1) * 268 + 256)
         expect(layout.height).toBe(6 * 122 + 88)
         layout.edges.forEach(edge => expect(edge.to.y - edge.from.y).toBe(122))
+    })
+})
+
+describe('Grid layout', () => {
+    test('Should place nodes row by row in a roughly square grid without edges', () => {
+        const layout: TreeLayout<number> = layoutGrid([1, 2, 3, 4, 5], { w: 100, h: 100, gap: 10 })
+
+        expect(layout.edges).toHaveLength(0)
+        expect(layout.nodes.map(it => [it.x, it.y])).toEqual([[0, 0], [110, 0], [220, 0], [0, 110], [110, 110]])
+        expect(layout.width).toBe(320)
+        expect(layout.height).toBe(210)
+    })
+
+    test('Should lay out an empty list as an empty grid', () => {
+        const layout: TreeLayout<number> = layoutGrid([], { w: 100, h: 100, gap: 10 })
+
+        expect(layout.nodes).toHaveLength(0)
+        expect(layout.width).toBe(0)
+        expect(layout.height).toBe(0)
     })
 })

@@ -30,6 +30,19 @@ console/
 | `service/FacetSummaryResultParser.ts`, `HierarchyResultParser.ts`, `AttributeHistogramsResultParser.ts`, `PriceHistogramResultParser.ts`, `ReferenceSummaryResultParser.ts`, `QueryTelemetryResultParser.ts` | Abstract per-type parsers; each console subclasses them |
 | `service/utils/` | Shared helpers — `representativeAttributes.ts`, `representativeTitle.ts`, `schemaMatching.ts`, `impactFormatting.ts` |
 
+### View state
+
+`ResultVisualiser` is rendered with `v-if` while the console shows the visualiser, so switching to the raw result
+and back remounts it. Its view state therefore lives in `model/ResultVisualiserState.ts`, which each console creates
+once at setup (it lives as long as the console tab, it is not persisted) and passes as the `state` prop: the selected
+query and visualiser type, and per query name a `QueryTelemetryVisualiserState` (open telemetry tabs, active tab,
+the Plan tab's not-computed filter). `ResultVisualiser` calls `state.bindResult(result)` on every result; a result
+other than the bound one (identity) drops the per-query states. A console must therefore hand over a **stable**
+result object: the GraphQL console parses its result JSON in a `computed` — parsing it inline in the template gave
+the visualiser a new result on every re-render of the console (e.g. after a workspace tab switch) and reset the
+telemetry tabs. The selection watches of `ResultVisualiser` leave the restored selection alone until the result is
+analyzed.
+
 ### Visualiser types
 
 Five families, each with its own components and `Visualised*` models
@@ -40,7 +53,7 @@ Five families, each with its own components and `Visualised*` models
 | **Facet summary** | `FacetSummaryVisualiser`, `FacetGroupStatisticsVisualiser`, `FacetStatisticsVisualiser`, `ReferenceFacetGroupStatisticsVisualiser` | `VisualisedFacetSummary`, `VisualisedFacetGroupStatistics`, `VisualisedFacetStatistics` |
 | **Hierarchy** | `HierarchyVisualiser`, `NamedHierarchiesVisualiser`, `NamedHierarchyVisualiser`, `HierarchyTreeNode`, `HierarchyTreeNodeTitle` | `VisualisedHierarchyResult`, `VisualisedNamedHierarchy`, `VisualisedHierarchyTreeNode` |
 | **Histogram** | `HistogramVisualiser`, `AttributeHistogramsVisualiser`, `PriceHistogramVisualiser`, `HistogramChart`, `HistogramRange`, `HistogramInfo`, plus the shared `VisualiserNote` | `VisualisedHistogram`, `VisualisedHistogramBucket`, `VisualisedAttributeHistograms` |
-| **Query telemetry** | `QueryTelemetryVisualiser`, `TelemetryOverview`, `PhaseShareBar`, `TelemetryFlamegraph`, `TelemetryQueryMetrics`, `TelemetryGraphCanvas`, `TelemetryStepsView`, `TelemetryStepCard`, `TelemetryPlanView`, `FormulaPlanCard` | `VisualisedQueryTelemetry`, `VisualisedTelemetryStep`, `TelemetryAlternativeVerdict`, `TelemetryPhaseShare`, `VisualisedFormulaPlan`, `VisualisedFormulaPlanNode`, `TelemetryTab`, over `QueryTelemetryParseResult` (`ParsedQueryTelemetry` / `PartialQueryTelemetrySelection`) and the driver's `QueryTelemetry` |
+| **Query telemetry** | `QueryTelemetryVisualiser`, `TelemetryOverview`, `PhaseShareBar`, `TelemetryFlamegraph`, `TelemetryQueryMetrics`, `TelemetryGraphCanvas`, `TelemetryStepsView`, `TelemetryStepCard`, `TelemetryPlanView`, `FormulaPlanCard`, `TelemetryFormulaGroupView` | `VisualisedQueryTelemetry`, `VisualisedTelemetryStep`, `TelemetryAlternativeVerdict`, `TelemetryPhaseShare`, `VisualisedFormulaPlan`, `VisualisedFormulaPlanNode`, `TelemetryTab`, `QueryTelemetryVisualiserState`, over `QueryTelemetryParseResult` (`ParsedQueryTelemetry` / `PartialQueryTelemetrySelection`) and the driver's `QueryTelemetry` |
 | **Reference summary** | `ReferenceSummaryVisualiser`, `ReferenceGroupStatisticsVisualiser`, `ReferenceGroupStatisticsListVisualiser`, plus its own `FacetStatisticsVisualiser` / `HistogramStatisticsVisualiser` | `VisualisedReferenceSummary`, `VisualisedReferenceGroupStatistics`, and its own `VisualisedFacetStatistics` / `VisualisedHistogramStatistics` |
 
 Note the facet-summary and reference-summary families each have a `FacetStatisticsVisualiser` and a
@@ -137,23 +150,32 @@ Narrow with `instanceof`. `ResultVisualiser.vue` passes the parse result to `Que
 - **Phase share** (`TelemetryPhaseShare`) is computed from specific nodes, never by summing prefixes: planning = the
   root's planning children, fetching = fetching steps directly under the root or under its execution children,
   execution = the rest of the root's execution children, root = whatever remains.
-- `visualiseFormulaPlan(stepId, executed, plan)` → `VisualisedFormulaPlan` (`root`, `executed`, `formulaCount`,
-  `sharedCount`). Runs of ≥ 3 consecutive childless siblings with equal `description` and no `refTo` collapse into
-  one group node (`members`, `count`, summed numbers; a sum is `undefined` unless every member has the value);
-  a back-reference's `refKey` points to the group when its target was collapsed. `VisualisedFormulaPlanNode.state` is
-  `FormulaPlanNodeState` `computed` / `ranNotPriced` / `notComputed`.
+- `visualiseFormulaPlan(stepId, executed, plan, hideNotComputed = false)` → `VisualisedFormulaPlan` (`root`,
+  `executed`, `formulaCount`, `sharedCount`, `hiddenCount`). Runs of ≥ 3 consecutive childless siblings with equal
+  `description` and no `refTo` collapse into one group node of **similar** formulas — equal description, but each
+  member keeps its own instance, hash and numbers (`members`, `count`, summed numbers; a sum is `undefined` unless
+  every member has the value); a back-reference's `refKey` points to the group when its target was collapsed. With
+  `hideNotComputed`, children with neither `actualCost` nor `resultCount` (back-references excepted) are dropped with
+  their subtree *before* runs are detected, so groups are built from computed members only and their key
+  (`#<first id>×<count>`) may differ from the unfiltered one; the root is always kept, `formulaCount` still counts the
+  plan as sent. `visualiseFormulaGroupMembers(group)` turns a group's members into standalone leaf nodes.
+  `VisualisedFormulaPlanNode.state` is `FormulaPlanNodeState` `computed` / `ranNotPriced` / `notComputed`.
 - `layoutTree(root, options)` (`service/query-telemetry/layoutTree.ts`) is the layout of both node-link views: fixed
   card size, `orientation` `TB` or `LR`, pre-order pass stacking leaves on the cross axis, parents centred on their
   children; nodes for which `isRef` holds are not placed but become `ref` edges to the node whose `nodeId` equals
-  `refTarget`. No dependency.
+  `refTarget`. No dependency. `layoutGrid(nodes, { w, h, gap })` in the same file lays unrelated nodes out row by row in
+  a roughly square grid without edges, as a `TB` `TreeLayout`, for the same canvas.
 
 ##### Components (`component/query-telemetry/`)
 
-- `QueryTelemetryVisualiser` (prop `parseResult`) — the tab shell. Raw `VTabs` strip and a `v-if` body switch, never
-  `VWindow` (the workspace's `.v-window` rule would leak in). Tab identity is `TelemetryTab(kind, stepId)` with
-  `kind` `overview` / `steps` / `plan`; opening an open identity activates it, the Overview is pinned, the other
-  tabs close with a button or a middle click, as workspace tabs do (closing the active one activates its left neighbour), and the list resets to Overview
-  when a new result arrives. Tab titles use the short step label; when two open tabs of the same kind would read the
+- `QueryTelemetryVisualiser` (props `parseResult`, `state`) — the tab shell. Raw `VTabs` strip and a `v-if` body switch, never
+  `VWindow` (the workspace's `.v-window` rule would leak in). Tab identity is `TelemetryTab(kind, stepId, group?)` with
+  `kind` `overview` / `steps` / `plan` / `group` (a Group tab also carries the clicked group node, members included,
+  and its key); opening an open identity activates it, the Overview is pinned, the other
+  tabs close with a button or a middle click, as workspace tabs do (closing the active one activates its left neighbour). The tab list,
+  the active tab and the not-computed filter come from the `state` prop (`QueryTelemetryVisualiserState`, see
+  [view state](#view-state)), so they survive switching the visualiser type, the raw/visualiser view and workspace
+  tabs, and reset to Overview only when a new result arrives. Tab titles use the short step label; when two open tabs of the same kind would read the
   same (top-level vs nested `FILTER`), the parent's label is prepended (`Steps · NESTED_QUERY › FILTER`, i18n
   `tab.nestedTitle`). A `PartialQueryTelemetrySelection` renders a `VisualiserNote` naming the missing fields.
   The root declares the phase palette as CSS custom properties (below).
@@ -168,12 +190,13 @@ Narrow with `instanceof`. `ResultVisualiser.vue` passes the parse result to `Que
   measured (all labels show until then); every block is at least 8 px wide so that a µs-long step (e.g. `PLANNING_SORT`) stays findable, blocks with a plan at least 22 px (a widened block near the right end is shifted left so that it never
   overflows the rows: `left = max(0, min(start%, 100% − width))`) and carry an `mdi-file-tree-outline` button (emits `openPlan`, stops propagation); a click
   (or Enter) emits `openSteps`; steps with an open tab are outlined in `primary-lightest`. Emits carry the step id.
-- `TelemetryGraphCanvas` (generic; props `layout`, `nodeKey`, `refEdgeTooltip?`; slots `toolbar`, `card`) — shared
+- `TelemetryGraphCanvas` (generic; props `layout`, `nodeKey`, `refEdgeTooltip?`; slots `toolbar`, `actions?` (right of the toolbar, before the zoom buttons), `card`) — shared
   pan/zoom canvas: SVG edges (refs dashed with an arrowhead) under absolutely positioned HTML cards, drag and wheel pan,
   Ctrl + wheel zoom around the cursor, `+`/`−`/fit buttons, fit on open never above 1× and never below 0.5× (a larger
   graph is panned instead, the fit tooltip says so); the wheel never scrolls the pane. A `ResizeObserver` fits again
   when the canvas is resized, unless the user zoomed or panned since the last fit (the fit button resets that). Text
-  selection is off while dragging.
+  selection is off while dragging. A press turns into a drag (and captures the pointer) only after the pointer moved
+  4 px, so a click still reaches the card under it; the click that ends a drag is swallowed in the capture phase.
 - `TelemetryStepsView` → `TelemetryStepCard` (props `step`, `root`, `telemetryRootId`; emits `openPlan`) — top-down
   subtree of the tab's step under a read-only path caption and the pluralised `N step(s) · duration`. Cards are
   256 × 88 px (`layoutTree` gap 34 / 12) with one row each for the short label (also on the tab's root card; the full
@@ -185,8 +208,15 @@ Narrow with `instanceof`. `ResultVisualiser.vue` passes the parse result to `Que
 - `TelemetryPlanView` → `FormulaPlanCard` (props `node`, `executed`, `prefetched`) — left-to-right plan
   (cards 272 × 64 px, `layoutTree` gap 60 / 14: description (ellipsised) and state chip on the first row,
   `est · act · rows` on the second) with collapsed leaf runs (dashed, `×N` badge above the top edge), state chip, caption `… — executed plan` / `… — candidate plan` and
-  `N formulas · M shared`; candidate plans and not-computed formulas are dimmed; the tooltip explains why a formula
-  of the executed plan was not computed (prefetch vs short circuit).
+  `N formulas · M shared` (`· N not computed hidden` when filtered); candidate plans and not-computed formulas are
+  dimmed; the tooltip explains why a formula of the executed plan was not computed (prefetch vs short circuit). A
+  group card is a button (click, Enter or Space, emits `openGroup`) that opens a Group tab. The executed plan that has a
+  not-computed formula gets an outlined *Not computed* filter chip (a one-chip `VChipGroup`, selected = shown, the
+  default) in the canvas's `actions` slot (right of the toolbar, before the zoom buttons), bound to
+  `v-model:hide-not-computed`; a candidate plan never has it, as nothing in it was computed.
+- `TelemetryFormulaGroupView` (props `telemetry`, `step`, `group`) — the members of one group as individual
+  `FormulaPlanCard`s on the canvas laid out by `layoutGrid`, under the caption `… — N similar formulas of <step>`, the
+  group's summed numbers and a note that the members share only their description.
 
 ##### Phase palette
 

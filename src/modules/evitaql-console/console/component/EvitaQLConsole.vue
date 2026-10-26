@@ -43,6 +43,7 @@ import {
 import type { EvitaQLConsoleHistoryRecord } from '@/modules/evitaql-console/console/history/model/EvitaQLConsoleHistoryRecord'
 import VPreviewEditor from '@/modules/code-editor/component/VPreviewEditor.vue'
 import ResultVisualiser from '@/modules/console/result-visualiser/component/ResultVisualiser.vue'
+import { ResultVisualiserState } from '@/modules/console/result-visualiser/model/ResultVisualiserState'
 import { Command } from '@/modules/keymap/model/Command'
 import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
 import VTabToolbarActionGroup from '@/modules/base/component/VTabToolbarActionGroup.vue'
@@ -173,6 +174,8 @@ const resultExtensions: Extension[] = [json()]
 const resultVisualiserRef = ref<
     InstanceType<typeof ResultVisualiser> | undefined
 >()
+// lives as long as the console tab, so that the visualiser keeps its view when it is remounted
+const resultVisualiserState: ResultVisualiserState = new ResultVisualiserState()
 
 const loading = ref<boolean>(false)
 const executeQueryVariants: ExecuteQueryVariant[] = [{
@@ -504,6 +507,7 @@ if (props.params.executeOnOpen) {
                                             :visualiser-service="visualiserService"
                                             :input-query="enteredQueryCode || ''"
                                             :result="result"
+                                            :state="resultVisualiserState"
                                         />
                                     </VWindowItem>
                                 </VWindow>

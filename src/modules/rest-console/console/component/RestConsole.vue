@@ -36,6 +36,7 @@ import VPreviewEditor from '@/modules/code-editor/component/VPreviewEditor.vue'
 import { minifyJson, prettifyJson } from '@/modules/code-editor/service/formatJson'
 import { DocumentFormattingMode } from '@/modules/code-editor/model/DocumentFormattingMode'
 import ResultVisualiser from '@/modules/console/result-visualiser/component/ResultVisualiser.vue'
+import { ResultVisualiserState } from '@/modules/console/result-visualiser/model/ResultVisualiserState'
 import {
     QueryTelemetryInjectionError
 } from '@/modules/console/exception/QueryTelemetryInjectionError'
@@ -303,6 +304,8 @@ const parsedResult = computed<ParsedRestResult | undefined>(() => {
 const resultCode = computed<string>(() => parsedResult.value?.prettyText ?? response.value?.bodyText ?? '')
 
 const resultVisualiserRef = ref<InstanceType<typeof ResultVisualiser> | undefined>()
+// lives as long as the console tab, so that the visualiser keeps its view when it is remounted
+const resultVisualiserState: ResultVisualiserState = new ResultVisualiserState()
 const supportsVisualisation: boolean = !systemInstance
 const visualisedResult = computed<unknown>(() => {
     if (!supportsVisualisation || response.value == undefined || !response.value.successful ||
@@ -983,6 +986,7 @@ function focusResultVisualiser(): void {
                                                 :visualiser-service="visualiserService"
                                                 :input-query="executedOperation.pathTemplate"
                                                 :result="visualisedResult"
+                                                :state="resultVisualiserState"
                                             />
                                             <VMissingDataIndicator
                                                 v-else

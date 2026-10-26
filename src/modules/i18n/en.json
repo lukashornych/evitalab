@@ -1270,6 +1270,7 @@
         "overview": "Overview",
         "steps": "Steps · {title}",
         "plan": "Plan · {title}",
+        "group": "Similar ×{count} · {title}",
         "nestedTitle": "{parent} › {title}"
       },
       "button": {
@@ -1338,11 +1339,15 @@
         "estimatedCost": "Estimated cost",
         "actualCost": "Actual cost",
         "resultCount": "Rows",
-        "collapsed": "{count} identical leaves collapsed into one node",
+        "collapsed": "{count} similar formulas (same description, own numbers) grouped into one node. Click to list them one by one.",
         "reference": "(reference)",
         "legendTreeEdge": "Tree edge",
         "legendRefEdge": "refTo: shared formula, computed once",
-        "legendCollapsed": "Dashed card = collapsed run of identical leaves",
+        "legendCollapsed": "Dashed card = group of similar formulas, click to list them",
+        "showNotComputed": "Not computed",
+        "hiddenCount": "· {count} not computed hidden",
+        "groupCaption": "{title} — {count} similar formulas of {step}",
+        "groupNote": "Same description, but each formula has its own instance, structural hash and numbers.",
         "refEdge": "Reused: computed once, referenced again here",
         "state": {
           "computed": "Computed",
@@ -1368,6 +1373,7 @@
         "skippedPrefetched": "Skipped: the filter ran over prefetched entities.",
         "skippedShortCircuited": "Short-circuited branch, never evaluated.",
         "candidateNotComputed": "Candidate plan: nothing was computed.",
+        "showNotComputed": "Show formulas that were not computed (short-circuited or prefetched branches).",
         "partialSelection": "The query telemetry cannot be visualised because the query does not select {fields} in `extraResults.queryTelemetry`. Add them to the selection and run the query again."
       }
     }

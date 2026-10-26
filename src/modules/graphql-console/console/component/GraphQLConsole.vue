@@ -45,6 +45,7 @@ import {
 import type { GraphQLConsoleHistoryRecord } from '@/modules/graphql-console/console/history/model/GraphQLConsoleHistoryRecord'
 import VPreviewEditor from '@/modules/code-editor/component/VPreviewEditor.vue'
 import ResultVisualiser from '@/modules/console/result-visualiser/component/ResultVisualiser.vue'
+import { ResultVisualiserState } from '@/modules/console/result-visualiser/model/ResultVisualiserState'
 import { Command } from '@/modules/keymap/model/Command'
 import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
 import VTabToolbarActionGroup from '@/modules/base/component/VTabToolbarActionGroup.vue'
@@ -197,6 +198,20 @@ const resultStatus = ref<ConsoleResultStatus>()
 const resultExtensions: Extension[] = [json()]
 
 const resultVisualiserRef = ref<InstanceType<typeof ResultVisualiser> | undefined>()
+// parsed once per result, so that re-rendering the console does not hand the visualiser a new result
+const visualisedResult = computed<unknown>(() => {
+    if (!resultCode.value) {
+        return undefined
+    }
+    try {
+        return JSON.parse(resultCode.value)
+    } catch (e) {
+        console.error('GraphQL result is not JSON, it cannot be visualised', e)
+        return undefined
+    }
+})
+// lives as long as the console tab, so that the visualiser keeps its view when it is remounted
+const resultVisualiserState: ResultVisualiserState = new ResultVisualiserState()
 const supportsVisualisation = computed<boolean>(() => {
     return props.params.dataPointer.instanceType === GraphQLInstanceType.Data
 })
@@ -655,7 +670,8 @@ function focusResultVisualiser(): void {
                                             :catalog-pointer="params.dataPointer"
                                             :visualiser-service="visualiserService"
                                             :input-query="lastAppliedQueryCode || ''"
-                                            :result="resultCode == undefined || !resultCode ? undefined : JSON.parse(resultCode)"
+                                            :result="visualisedResult"
+                                            :state="resultVisualiserState"
                                         />
                                     </VWindowItem>
                                 </VWindow>

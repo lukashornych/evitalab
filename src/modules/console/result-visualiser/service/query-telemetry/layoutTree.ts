@@ -149,3 +149,46 @@ export function layoutTree<T>(root: T, options: TreeLayoutOptions<T>): TreeLayou
         height: Math.max(0, ...nodes.map(it => it.y + it.h))
     }
 }
+
+/**
+ * Inputs of {@link layoutGrid}.
+ */
+export interface GridLayoutOptions {
+    /**
+     * Card width in px.
+     */
+    readonly w: number
+    /**
+     * Card height in px.
+     */
+    readonly h: number
+    /**
+     * Gap between neighbouring cards in both directions.
+     */
+    readonly gap: number
+}
+
+/**
+ * Lays out unrelated nodes as a grid of fixed-size cards, row by row in the given order, without edges. The column
+ * count is chosen so that the grid is roughly square. Produces a {@link TreeLayout} so that it can be drawn by the
+ * same canvas as the trees (with the `TB` orientation).
+ */
+export function layoutGrid<T>(nodes: readonly T[], options: GridLayoutOptions): TreeLayout<T> {
+    const { w, h, gap } = options
+    const columns: number = Math.max(1, Math.ceil(Math.sqrt(nodes.length * (h + gap) / (w + gap))))
+    const laidOut: LaidOutNode<T>[] = nodes.map((node, index) => ({
+        node,
+        depth: 0,
+        x: (index % columns) * (w + gap),
+        y: Math.floor(index / columns) * (h + gap),
+        w,
+        h
+    }))
+    return {
+        orientation: 'TB',
+        nodes: laidOut,
+        edges: [],
+        width: Math.max(0, ...laidOut.map(it => it.x + it.w)),
+        height: Math.max(0, ...laidOut.map(it => it.y + it.h))
+    }
+}

@@ -5,7 +5,8 @@
  * nothing has to be measured). Dragging pans, the wheel pans, Ctrl + wheel zooms around the cursor; the wheel never
  * scrolls the page. The graph is fitted on open and on the fit button, never scaled above 1× nor below
  * {@link minFitScale} (a larger graph is panned instead). A resized canvas is fitted again unless the user has zoomed
- * or panned since the last fit. Text selection is suppressed while dragging.
+ * or panned since the last fit. Text selection is suppressed while dragging. A drag starts only once the pointer moves
+ * by {@link dragThreshold} px, so a plain click still reaches the card under it; the click ending a drag does not.
  */
 import { computed, nextTick, onMounted, onUnmounted, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -24,6 +25,10 @@ const minScale: number = 0.05
  */
 const minFitScale: number = 0.5
 const maxScale: number = 4
+/**
+ * Distance in px the pointer has to move with the button pressed before the press turns into a drag.
+ */
+const dragThreshold: number = 4
 
 const { t } = useI18n()
 
@@ -40,7 +45,11 @@ const props = defineProps<{
 }>()
 defineSlots<{
     card(props: { node: T, laidOut: LaidOutNode<T> }): unknown,
-    toolbar(): unknown
+    toolbar(): unknown,
+    /**
+     * Controls placed on the right of the toolbar, before the zoom buttons.
+     */
+    actions?(): unknown
 }>()
 
 const markerId: string = `telemetry-graph-arrow-${useId()}`
@@ -50,6 +59,14 @@ const scale = ref<number>(1)
 const translateX = ref<number>(fitPadding)
 const translateY = ref<number>(fitPadding)
 const dragOrigin = ref<{ x: number, y: number } | undefined>()
+/**
+ * Where the primary button was pressed, until it is released.
+ */
+let pressOrigin: { x: number, y: number } | undefined = undefined
+/**
+ * The press being released was a drag, so the click it produces is swallowed.
+ */
+let dragJustEnded: boolean = false
 /**
  * The user zoomed or panned since the last fit, so a resize keeps their view.
  */
@@ -141,16 +158,26 @@ function handleWheel(event: WheelEvent): void {
 }
 
 function handlePointerDown(event: PointerEvent): void {
+    dragJustEnded = false
     if (event.button !== 0 || (event.target instanceof Element && event.target.closest('button, a, .v-btn') != undefined)) {
         return
     }
-    dragOrigin.value = { x: event.clientX - translateX.value, y: event.clientY - translateY.value }
-    canvasRef.value?.setPointerCapture(event.pointerId)
+    pressOrigin = { x: event.clientX, y: event.clientY }
 }
 
 function handlePointerMove(event: PointerEvent): void {
     if (dragOrigin.value == undefined) {
-        return
+        // the button was released outside the canvas before the press turned into a drag
+        if (event.buttons === 0) {
+            pressOrigin = undefined
+            return
+        }
+        if (pressOrigin == undefined ||
+            Math.hypot(event.clientX - pressOrigin.x, event.clientY - pressOrigin.y) < dragThreshold) {
+            return
+        }
+        dragOrigin.value = { x: pressOrigin.x - translateX.value, y: pressOrigin.y - translateY.value }
+        canvasRef.value?.setPointerCapture(event.pointerId)
     }
     translateX.value = event.clientX - dragOrigin.value.x
     translateY.value = event.clientY - dragOrigin.value.y
@@ -158,11 +185,20 @@ function handlePointerMove(event: PointerEvent): void {
 }
 
 function handlePointerUp(event: PointerEvent): void {
+    pressOrigin = undefined
     if (dragOrigin.value == undefined) {
         return
     }
     dragOrigin.value = undefined
+    dragJustEnded = true
     canvasRef.value?.releasePointerCapture(event.pointerId)
+}
+
+function handleClickCapture(event: MouseEvent): void {
+    if (dragJustEnded) {
+        dragJustEnded = false
+        event.stopPropagation()
+    }
 }
 
 onMounted(() => {
@@ -188,6 +224,7 @@ watch(() => props.layout, scheduleFit)
             <div class="telemetry-graph__caption">
                 <slot name="toolbar" />
             </div>
+            <slot name="actions" />
             <div class="telemetry-graph__zoom">
                 <VBtn icon density="compact" variant="text" @click="zoomCentered(zoomStep)">
                     <VIcon>mdi-plus</VIcon>
@@ -212,6 +249,7 @@ watch(() => props.layout, scheduleFit)
             @pointermove="handlePointerMove"
             @pointerup="handlePointerUp"
             @pointercancel="handlePointerUp"
+            @click.capture="handleClickCapture"
         >
             <div class="telemetry-graph__world" :style="{ transform }">
                 <svg

@@ -6,19 +6,27 @@ import {
 } from '@/modules/console/result-visualiser/model/query-telemetry/VisualisedFormulaPlanNode'
 
 /**
- * Minimal number of consecutive identical childless siblings collapsed into one group node.
+ * Minimal number of consecutive similar childless siblings collapsed into one group node.
  */
 export const minCollapsedRunLength: number = 3
 
 /**
  * Prepares a formula plan for the Plan tab. Runs of at least {@link minCollapsedRunLength} consecutive childless
  * siblings with an equal description and no `refTo` (typically hundreds of `1 primary keys` leaves under one `OR`)
- * are collapsed into one group node carrying the member count and the summed numbers; back-references keep pointing
- * at the right node, the group included.
+ * are collapsed into one group node of similar formulas carrying the member count and the summed numbers;
+ * back-references keep pointing at the right node, the group included.
+ *
+ * With `hideNotComputed`, formulas that neither ran nor were priced are dropped with their subtree before the runs are
+ * detected (the root and back-references are always kept), so a group consists of computed members only.
  */
-export function visualiseFormulaPlan(stepId: string, executed: boolean, plan: FormulaPlan): VisualisedFormulaPlan {
+export function visualiseFormulaPlan(stepId: string,
+                                     executed: boolean,
+                                     plan: FormulaPlan,
+                                     hideNotComputed: boolean = false): VisualisedFormulaPlan {
+    const isVisible = (node: FormulaPlan): boolean =>
+        !hideNotComputed || node.refTo != undefined || node.actualCost != undefined || node.resultCount != undefined
     const runs: FormulaPlan[][] = []
-    collectRuns(plan, runs)
+    collectRuns(plan, isVisible, runs)
     const groupKeyOfMember: Map<number, string> = new Map()
     runs.forEach(run => {
         const key: string = groupKey(run)
@@ -27,22 +35,35 @@ export function visualiseFormulaPlan(stepId: string, executed: boolean, plan: Fo
 
     let formulaCount: number = 0
     let sharedCount: number = 0
-    const count = (node: FormulaPlan): void => {
+    let hiddenCount: number = 0
+    const count = (node: FormulaPlan, hidden: boolean): void => {
         formulaCount++
         if (node.refTo != undefined) {
             sharedCount++
         }
-        node.children.forEach(count)
+        if (hidden) {
+            hiddenCount++
+        }
+        node.children.forEach(child => count(child, hidden || !isVisible(child)))
     }
-    count(plan)
+    count(plan, false)
 
     return new VisualisedFormulaPlan(
         stepId,
         executed,
-        visualiseNode(plan, groupKeyOfMember),
+        visualiseNode(plan, isVisible, groupKeyOfMember),
         formulaCount,
-        sharedCount
+        sharedCount,
+        hiddenCount
     )
+}
+
+/**
+ * Turns the members of a group of similar formulas into standalone leaf nodes, in plan order, for the tab that lists
+ * them one by one.
+ */
+export function visualiseFormulaGroupMembers(group: VisualisedFormulaPlanNode): List<VisualisedFormulaPlanNode> {
+    return group.members.map(member => visualiseNode(member, () => true, new Map()))
 }
 
 function isCollapsible(node: FormulaPlan): boolean {
@@ -56,7 +77,10 @@ function groupKey(run: FormulaPlan[]): string {
 /**
  * Splits the children of every node into runs of collapsible siblings with equal descriptions.
  */
-function forEachRun(node: FormulaPlan, onRun: (run: FormulaPlan[]) => void, onSingle: (child: FormulaPlan) => void): void {
+function forEachRun(node: FormulaPlan,
+                    isVisible: (node: FormulaPlan) => boolean,
+                    onRun: (run: FormulaPlan[]) => void,
+                    onSingle: (child: FormulaPlan) => void): void {
     let run: FormulaPlan[] = []
     const flush = (): void => {
         if (run.length >= minCollapsedRunLength) {
@@ -66,7 +90,7 @@ function forEachRun(node: FormulaPlan, onRun: (run: FormulaPlan[]) => void, onSi
         }
         run = []
     }
-    node.children.forEach(child => {
+    node.children.filter(isVisible).forEach(child => {
         if (isCollapsible(child) && run.length > 0 && run[0]?.description === child.description) {
             run.push(child)
             return
@@ -81,16 +105,19 @@ function forEachRun(node: FormulaPlan, onRun: (run: FormulaPlan[]) => void, onSi
     flush()
 }
 
-function collectRuns(node: FormulaPlan, runs: FormulaPlan[][]): void {
-    forEachRun(node, run => runs.push(run), child => collectRuns(child, runs))
+function collectRuns(node: FormulaPlan, isVisible: (node: FormulaPlan) => boolean, runs: FormulaPlan[][]): void {
+    forEachRun(node, isVisible, run => runs.push(run), child => collectRuns(child, isVisible, runs))
 }
 
-function visualiseNode(node: FormulaPlan, groupKeyOfMember: ReadonlyMap<number, string>): VisualisedFormulaPlanNode {
+function visualiseNode(node: FormulaPlan,
+                       isVisible: (node: FormulaPlan) => boolean,
+                       groupKeyOfMember: ReadonlyMap<number, string>): VisualisedFormulaPlanNode {
     const children: VisualisedFormulaPlanNode[] = []
     forEachRun(
         node,
+        isVisible,
         run => children.push(visualiseGroup(run)),
-        child => children.push(visualiseNode(child, groupKeyOfMember))
+        child => children.push(visualiseNode(child, isVisible, groupKeyOfMember))
     )
     return new VisualisedFormulaPlanNode(
         `#${node.id}`,

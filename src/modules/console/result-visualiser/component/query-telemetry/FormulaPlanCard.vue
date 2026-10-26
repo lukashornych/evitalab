@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
  * Card of one formula in the Plan tab: the description with the state chip on the first row, `est · act · rows` on
- * the second; only the description is ellipsised. A collapsed run of
- * identical leaves is dashed with a `×N` badge. Candidate plans and formulas that were not computed are dimmed; the
+ * the second; only the description is ellipsised. A group of similar
+ * leaves is dashed with a `×N` badge and emits `openGroup` on click or Enter. Candidate plans and formulas that were not computed are dimmed; the
  * tooltip carries the instance id, the structural hash, the numbers and why a formula of the executed plan was not
  * computed.
  */
@@ -27,6 +27,15 @@ const props = defineProps<{
      */
     prefetched: boolean | undefined
 }>()
+const emit = defineEmits<{
+    (e: 'openGroup'): void
+}>()
+
+function openGroup(): void {
+    if (props.node.isGroup) {
+        emit('openGroup')
+    }
+}
 
 const state = computed<FormulaPlanNodeState>(() => props.node.state)
 const dimmed = computed<boolean>(() => !props.executed || state.value === FormulaPlanNodeState.NotComputed)
@@ -67,6 +76,11 @@ const stateExplanation = computed<string | undefined>(() => {
                 'formula-plan-card--dimmed': dimmed
             }
         ]"
+        :role="node.isGroup ? 'button' : undefined"
+        :tabindex="node.isGroup ? 0 : undefined"
+        @click="openGroup"
+        @keydown.enter="openGroup"
+        @keydown.space.prevent="openGroup"
     >
         <span v-if="node.isGroup" class="formula-plan-card__count">×{{ node.count }}</span>
         <span class="formula-plan-card__header">
@@ -144,6 +158,12 @@ const stateExplanation = computed<string | undefined>(() => {
     &--group {
         border-style: dashed;
         border-color: $gray-light;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            border-color: $primary-lightest;
+        }
     }
 
     &--dimmed {
