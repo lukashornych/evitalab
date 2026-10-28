@@ -7,9 +7,11 @@ export enum ConnectionMenuItemType {
     TrafficRecordings = 'trafficRecordings',
     JfrRecordings = 'jfrRecordings',
     GraphQLSystemAPIConsole = 'graphQLSystemApiConsole',
+    RestSystemAPIConsole = 'restSystemApiConsole',
 
     ManageSubheader = 'manageSubheader',
     Reload = 'reload',
+    ClearLocalCache = 'clearLocalCache',
 
     ModifySubheader = 'modifySubheader',
     Edit = 'edit',

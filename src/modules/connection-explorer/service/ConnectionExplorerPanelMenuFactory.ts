@@ -14,13 +14,20 @@ import { ServerViewerTabDefinition } from '@/modules/server-viewer/model/ServerV
 import { WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
 import { ServerViewerTabFactory } from '@/modules/server-viewer/service/ServerViewerTabFactory'
 import { GraphQLInstanceType } from '@/modules/graphql-console/console/model/GraphQLInstanceType'
+import { systemCatalogName } from '@/modules/graphql-console/console/model/GraphQLConsoleDataPointer'
 import { TaskViewerTabFactory } from '@/modules/task-viewer/services/TaskViewerTabFactory'
 import { TrafficRecordingsViewerTabFactory } from '@/modules/traffic-viewer/service/TrafficRecordingsViewerTabFactory'
 import { GraphQLConsoleTabFactory } from '@/modules/graphql-console/console/workspace/service/GraphQLConsoleTabFactory'
+import type { RestConsoleTabFactory } from '@/modules/rest-console/console/workspace/service/RestConsoleTabFactory'
+import { RestConsoleTabDefinition } from '@/modules/rest-console/console/workspace/model/RestConsoleTabDefinition'
+import { restSystemCatalogName } from '@/modules/rest-console/console/model/RestConsoleDataPointer'
+import { RestInstanceType } from '@/modules/database-driver/connector/rest/model/RestInstanceType'
 import { BackupViewerTabFactory } from '@/modules/backup-viewer/service/BackupViewerTabFactory'
 import { ServerStatus } from '@/modules/database-driver/request-response/status/ServerStatus'
 import { ApiType } from '@/modules/database-driver/request-response/status/ApiType'
 import { EvitaClient } from '@/modules/database-driver/EvitaClient'
+import { CacheInvalidationReason } from '@/modules/database-driver/cache/CacheInvalidationReason'
+import { requestOutageReport } from '@/modules/database-driver/model/serverConnectivity'
 import type { InjectionKey } from 'vue'
 import { mandatoryInject } from '@/utils/reactivity'
 import { JfrViewerTabFactory } from '@/modules/jfr-viewer/service/JfrViewerTabFactory'
@@ -44,6 +51,7 @@ export class ConnectionExplorerPanelMenuFactory extends MenuFactory<ConnectionMe
     private readonly trafficRecordingsViewerTabFactory: TrafficRecordingsViewerTabFactory
     private readonly jfrViewerTabFactory: JfrViewerTabFactory
     private readonly graphQLConsoleTabFactory: GraphQLConsoleTabFactory
+    private readonly restConsoleTabFactory: RestConsoleTabFactory
     private readonly backupViewerTabFactory: BackupViewerTabFactory
 
     constructor(
@@ -54,6 +62,7 @@ export class ConnectionExplorerPanelMenuFactory extends MenuFactory<ConnectionMe
         trafficRecordingsViewerTabFactory: TrafficRecordingsViewerTabFactory,
         jfrViewerTabFactory: JfrViewerTabFactory,
         graphQLConsoleTabFactory: GraphQLConsoleTabFactory,
+        restConsoleTabFactory: RestConsoleTabFactory,
         backupViewerTabFactory: BackupViewerTabFactory
     ) {
         super()
@@ -64,20 +73,35 @@ export class ConnectionExplorerPanelMenuFactory extends MenuFactory<ConnectionMe
         this.trafficRecordingsViewerTabFactory = trafficRecordingsViewerTabFactory
         this.jfrViewerTabFactory = jfrViewerTabFactory
         this.graphQLConsoleTabFactory = graphQLConsoleTabFactory
+        this.restConsoleTabFactory = restConsoleTabFactory
         this.backupViewerTabFactory = backupViewerTabFactory
     }
 
+    /**
+     * Builds the connection menu.
+     *
+     * The action callbacks have to be declared **optional and validated here**, even though they are required
+     * in practice: `MenuFactory.createItems()` is abstract with no parameters, so an override may only add
+     * parameters the compiler considers optional. The guards below therefore stand in for the type system —
+     * and they fire eagerly, because `createItems` runs while the panel is being set up, so a forgotten
+     * callback fails immediately and visibly instead of when the user clicks the item.
+     */
     async createItems(
         serverStatus?: ServerStatus,
         createCatalogCallback?: () => void,
         reloadStartedCallback?: () => void,
-        reloadFinishedCallback?: () => void
+        reloadFinishedCallback?: () => void,
+        clearLocalCacheCallback?: () => void
     ): Promise<Map<ConnectionMenuItemType, MenuItem<ConnectionMenuItemType>>> {
         if (createCatalogCallback == undefined) {
             throw new Error('createCatalogCallback is not defined!')
         }
+        if (clearLocalCacheCallback == undefined) {
+            throw new Error('clearLocalCacheCallback is not defined!')
+        }
 
         const graphQlEnabled: boolean = serverStatus != undefined && serverStatus.apiEnabled(ApiType.GraphQL)
+        const restEnabled: boolean = serverStatus != undefined && serverStatus.apiEnabled(ApiType.Rest)
         const observabilityEnabled: boolean = serverStatus != undefined && serverStatus.apiEnabled(ApiType.Observability)
         const serverReady: boolean = serverStatus != undefined
         const serverWritable: boolean = serverReady && !serverStatus!.readOnly
@@ -138,11 +162,25 @@ export class ConnectionExplorerPanelMenuFactory extends MenuFactory<ConnectionMe
             () =>
                 this.workspaceService.createTab(
                     this.graphQLConsoleTabFactory.createNew(
-                        'system', // todo lho: this is not needed
+                        systemCatalogName,
                         GraphQLInstanceType.System
                     )
                 ),
             graphQlEnabled
+        )
+        this.createMenuAction(
+            items,
+            ConnectionMenuItemType.RestSystemAPIConsole,
+            RestConsoleTabDefinition.icon(),
+            this.getItemTitle,
+            () =>
+                this.workspaceService.createTab(
+                    this.restConsoleTabFactory.createNew(
+                        restSystemCatalogName,
+                        RestInstanceType.System
+                    )
+                ),
+            restEnabled
         )
 
         this.createMenuSubheader(
@@ -159,13 +197,24 @@ export class ConnectionExplorerPanelMenuFactory extends MenuFactory<ConnectionMe
                 if (reloadStartedCallback != undefined) {
                     reloadStartedCallback()
                 }
-                this.evitaClient.clearCache()
+                // the user explicitly asked for fresh data, so a failure must be reported even if the ongoing
+                // outage already was - otherwise pressing Reload against a down server does nothing visible
+                requestOutageReport()
+                this.evitaClient.clearCache(CacheInvalidationReason.MemoryOnly)
                     .then(() => {
                         if (reloadFinishedCallback != undefined) {
                             reloadFinishedCallback()
                         }
                     })
             }
+        )
+
+        this.createMenuAction(
+            items,
+            ConnectionMenuItemType.ClearLocalCache,
+            'mdi-database-remove-outline',
+            this.getItemTitle,
+            () => clearLocalCacheCallback()
         )
 
         this.createMenuSubheader(

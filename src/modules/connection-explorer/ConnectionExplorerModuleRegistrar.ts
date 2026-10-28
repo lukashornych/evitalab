@@ -34,6 +34,10 @@ import {
     graphQLConsoleTabFactoryInjectionKey
 } from '@/modules/graphql-console/console/workspace/service/GraphQLConsoleTabFactory'
 import {
+    RestConsoleTabFactory,
+    restConsoleTabFactoryInjectionKey
+} from '@/modules/rest-console/console/workspace/service/RestConsoleTabFactory'
+import {
     BackupViewerTabFactory,
     backupViewerTabFactoryInjectionKey
 } from '@/modules/backup-viewer/service/BackupViewerTabFactory'
@@ -42,6 +46,10 @@ import {
     CatalogItemMenuFactory,
     catalogItemMenuFactoryInjectionKey
 } from '@/modules/connection-explorer/service/CatalogItemMenuFactory'
+import {
+    CatalogViewerTabFactory,
+    catalogViewerTabFactoryInjectionKey
+} from '@/modules/catalog-viewer/service/CatalogViewerTabFactory'
 import {
     EvitaQLConsoleTabFactory,
     evitaQLConsoleTabFactoryInjectionKey
@@ -66,6 +74,7 @@ import {
     type MutationHistoryViewerTabFactory,
     mutationHistoryViewerTabFactoryInjectionKey
 } from '@/modules/history-viewer/service/MutationHistoryViewerTabFactory.ts'
+import { LabStorage, labStorageInjectionKey } from '@/modules/storage/LabStorage'
 
 export class ConnectionExplorerModuleRegistrar implements ModuleRegistrar {
 
@@ -78,14 +87,20 @@ export class ConnectionExplorerModuleRegistrar implements ModuleRegistrar {
         const trafficRecordingsViewerTabFactory: TrafficRecordingsViewerTabFactory = builder.inject(trafficRecordingsViewerTabFactoryInjectionKey)
         const jfrViewerTabFactory: JfrViewerTabFactory = builder.inject(jfrViewerTabFactoryInjectionKey)
         const graphQLConsoleTabFactory: GraphQLConsoleTabFactory = builder.inject(graphQLConsoleTabFactoryInjectionKey)
+        const restConsoleTabFactory: RestConsoleTabFactory = builder.inject(restConsoleTabFactoryInjectionKey)
         const backupViewerTabFactory: BackupViewerTabFactory = builder.inject(backupViewerTabFactoryInjectionKey)
         const evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory = builder.inject(evitaQLConsoleTabFactoryInjectionKey)
         const schemaViewerTabFactory: SchemaViewerTabFactory = builder.inject(schemaViewerTabFactoryInjectionKey)
         const trafficRecordHistoryViewerTabFactory: TrafficRecordHistoryViewerTabFactory = builder.inject(trafficRecordHistoryViewerTabFactoryInjectionKey)
         const mutationHistoryViewerTabFactory: MutationHistoryViewerTabFactory = builder.inject(mutationHistoryViewerTabFactoryInjectionKey)
+        const catalogViewerTabFactory: CatalogViewerTabFactory = builder.inject(catalogViewerTabFactoryInjectionKey)
         const toaster: Toaster = builder.inject(toasterInjectionKey)
+        const labStorage: LabStorage = builder.inject(labStorageInjectionKey)
 
-        const connectionExplorerService: ConnectionExplorerService = new ConnectionExplorerService(evitaClient)
+        const connectionExplorerService: ConnectionExplorerService = new ConnectionExplorerService(
+            evitaClient,
+            labStorage
+        )
         const connectionExplorerPanelMenuFactory: ConnectionExplorerPanelMenuFactory = new ConnectionExplorerPanelMenuFactory(
             evitaClient,
             workspaceService,
@@ -94,15 +109,18 @@ export class ConnectionExplorerModuleRegistrar implements ModuleRegistrar {
             trafficRecordingsViewerTabFactory,
             jfrViewerTabFactory,
             graphQLConsoleTabFactory,
+            restConsoleTabFactory,
             backupViewerTabFactory
         )
         const catalogItemMenuFactory: CatalogItemMenuFactory = new CatalogItemMenuFactory(
             workspaceService,
             evitaQLConsoleTabFactory,
             graphQLConsoleTabFactory,
+            restConsoleTabFactory,
             schemaViewerTabFactory,
             trafficRecordHistoryViewerTabFactory,
-            mutationHistoryViewerTabFactory
+            mutationHistoryViewerTabFactory,
+            catalogViewerTabFactory
         )
         const collectionItemMenuFactory: CollectionItemMenuFactory = new CollectionItemMenuFactory(
             workspaceService,

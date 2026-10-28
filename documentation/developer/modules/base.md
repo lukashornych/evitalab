@@ -11,7 +11,7 @@ no injectable services — everything in it is imported directly.
 | Directory | What's in it |
 |-----------|--------------|
 | `component/` | The `V*` component library (27 components) — see [UI components](../ui-components.md) for the full catalog and when to use which |
-| `exception/` | `LabError.ts` (base class every evitaLab error derives from), `UnexpectedError.ts`, `InitializationError.ts` |
+| `exception/` | `LabError.ts` (base class every evitaLab error derives from), `UnexpectedError.ts`, `InitializationError.ts`, `ErrorSummary.ts` (the serializable flattening of an error — see [`error-viewer`](error-viewer.md)) |
 | `model/dialog/` | `DangerousConfirmType` — controls whether a confirm button asks a second time |
 | `model/menu/` | `MenuItem`, `MenuAction`, `MenuSubheader` — the menu model that `MenuFactory` subclasses build |
 | `model/properties-table/` | `Property`, `PropertyValue` and the special value types rendered by `VPropertiesTable`: `ExtendedValue`, `KeywordValue`, `MultiValueFlagValue`, `NotApplicableValue`, `PlaceholderValue`, `ProgressValue`, `RangeValue` |
@@ -37,7 +37,7 @@ Grouped by what they are for (details in [UI components](../ui-components.md)):
   `VMissingDataIndicator`, `VLoadingCircular`, `VListItemDivider`, `VCardTitleWithActions`,
   `VDateTimeInput` (combined date-time input with manual text entry and a picker wizard, see
   [UI components — date & time](../ui-components.md#date--time)), `VTimeOffsetPicker`,
-  `VExecuteQueryButton`.
+  `VExecuteQueryButton` (optionally a split button with `variants`, typed by `model/ExecuteQueryVariant.ts`).
 
 ## Related
 

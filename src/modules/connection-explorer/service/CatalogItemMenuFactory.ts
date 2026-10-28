@@ -20,6 +20,9 @@ import { i18n } from '@/vue-plugins/i18n'
 import { mandatoryInject } from '@/utils/reactivity'
 import { WorkspaceService } from '@/modules/workspace/service/WorkspaceService'
 import { GraphQLConsoleTabFactory } from '@/modules/graphql-console/console/workspace/service/GraphQLConsoleTabFactory'
+import type { RestConsoleTabFactory } from '@/modules/rest-console/console/workspace/service/RestConsoleTabFactory'
+import { RestConsoleTabDefinition } from '@/modules/rest-console/console/workspace/model/RestConsoleTabDefinition'
+import { RestInstanceType } from '@/modules/database-driver/connector/rest/model/RestInstanceType'
 import { EvitaQLConsoleTabFactory } from '@/modules/evitaql-console/console/workspace/service/EvitaQLConsoleTabFactory'
 import { SchemaViewerTabFactory } from '@/modules/schema-viewer/viewer/workspace/service/SchemaViewerTabFactory'
 import {
@@ -28,6 +31,10 @@ import {
 import { CatalogState } from '@/modules/database-driver/request-response/CatalogState.ts'
 import type { MutationHistoryViewerTabFactory } from '@/modules/history-viewer/service/MutationHistoryViewerTabFactory.ts'
 import { MutationHistoryViewerTabDefinition } from '@/modules/history-viewer/model/MutationHistoryViewerTabDefinition.ts'
+import {
+    CatalogViewerTabDefinition
+} from '@/modules/catalog-viewer/model/CatalogViewerTabDefinition'
+import type { CatalogViewerTabFactory } from '@/modules/catalog-viewer/service/CatalogViewerTabFactory'
 
 export const catalogItemMenuFactoryInjectionKey: symbol = Symbol('catalogItemMenuFactoryInjectionKey')
 
@@ -43,25 +50,31 @@ export class CatalogItemMenuFactory extends MenuFactory<CatalogMenuItemType> {
     private readonly workspaceService: WorkspaceService
     private readonly evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory
     private readonly graphQLConsoleTabFactory: GraphQLConsoleTabFactory
+    private readonly restConsoleTabFactory: RestConsoleTabFactory
     private readonly schemaViewerTabFactory: SchemaViewerTabFactory
     private readonly trafficRecordHistoryViewerTabFactory: TrafficRecordHistoryViewerTabFactory
     private readonly mutationHistoryViewerTabFactory: MutationHistoryViewerTabFactory
+    private readonly catalogViewerTabFactory: CatalogViewerTabFactory
 
     constructor(
         workspaceService: WorkspaceService,
         evitaQLConsoleTabFactory: EvitaQLConsoleTabFactory,
         graphQLConsoleTabFactory: GraphQLConsoleTabFactory,
+        restConsoleTabFactory: RestConsoleTabFactory,
         schemaViewerTabFactory: SchemaViewerTabFactory,
         trafficRecordHistoryViewerTabFactory: TrafficRecordHistoryViewerTabFactory,
-        mutationHistoryViewerTabFactory: MutationHistoryViewerTabFactory
+        mutationHistoryViewerTabFactory: MutationHistoryViewerTabFactory,
+        catalogViewerTabFactory: CatalogViewerTabFactory
     ) {
         super()
         this.workspaceService = workspaceService
         this.evitaQLConsoleTabFactory = evitaQLConsoleTabFactory
         this.graphQLConsoleTabFactory = graphQLConsoleTabFactory
+        this.restConsoleTabFactory = restConsoleTabFactory
         this.schemaViewerTabFactory = schemaViewerTabFactory
         this.trafficRecordHistoryViewerTabFactory = trafficRecordHistoryViewerTabFactory
         this.mutationHistoryViewerTabFactory = mutationHistoryViewerTabFactory
+        this.catalogViewerTabFactory = catalogViewerTabFactory
     }
 
     async createItems(
@@ -96,6 +109,7 @@ export class CatalogItemMenuFactory extends MenuFactory<CatalogMenuItemType> {
         if (immutableCatalogCallback == undefined) throw new Error('Missing mutateCatalogCallback')
 
         const graphQlEnabled: boolean = serverStatus != undefined && serverStatus.apiEnabled(ApiType.GraphQL)
+        const restEnabled: boolean = serverStatus != undefined && serverStatus.apiEnabled(ApiType.Rest)
         const serverWritable: boolean = serverStatus != undefined && !serverStatus.readOnly && !catalog.readOnly
         const baseEnabledFunctions: boolean = !catalog.unusable && state === CatalogState.Alive
         const deactivated: boolean = state === CatalogState.Inactive
@@ -103,6 +117,20 @@ export class CatalogItemMenuFactory extends MenuFactory<CatalogMenuItemType> {
         const items: Map<CatalogMenuItemType, MenuItem<CatalogMenuItemType>> = new Map()
 
 
+
+        this.createMenuAction(
+            items,
+            CatalogMenuItemType.CatalogPreview,
+            CatalogViewerTabDefinition.icon(),
+            this.getItemTitle,
+            () => {
+                this.workspaceService.createTab(
+                    this.catalogViewerTabFactory.createNew(catalog.name)
+                )
+            },
+            // statistics render for a corrupted catalog too - that is exactly when someone opens this screen
+            !deactivated
+        )
 
         this.createMenuAction(
             items,
@@ -148,6 +176,21 @@ export class CatalogItemMenuFactory extends MenuFactory<CatalogMenuItemType> {
         )
         this.createMenuAction(
             items,
+            CatalogMenuItemType.RestAPIConsole,
+            RestConsoleTabDefinition.icon(),
+            this.getItemTitle,
+            () => {
+                this.workspaceService.createTab(
+                    this.restConsoleTabFactory.createNew(
+                        catalog.name,
+                        RestInstanceType.Catalog
+                    )
+                )
+            },
+            baseEnabledFunctions && restEnabled
+        )
+        this.createMenuAction(
+            items,
             CatalogMenuItemType.ViewSchema,
             SchemaViewerTabDefinition.icon(),
             this.getItemTitle,
@@ -174,7 +217,7 @@ export class CatalogItemMenuFactory extends MenuFactory<CatalogMenuItemType> {
             this.getItemTitle
         )
 
-        this.createMenuAction( // todo pfi: update order of thi current item
+        this.createMenuAction(
             items,
             CatalogMenuItemType.MutationHistoryViewer,
             MutationHistoryViewerTabDefinition.icon(),
@@ -186,7 +229,6 @@ export class CatalogItemMenuFactory extends MenuFactory<CatalogMenuItemType> {
             },
             baseEnabledFunctions
         )
-
 
         this.createMenuSubheader(
             items,

@@ -7,7 +7,9 @@ renderer. Contributes `TabType.EntityViewer`.
 - **Provides:** `entityViewerServiceInjectionKey`, `entityViewerTabFactoryInjectionKey`,
   `codeDetailRendererMenuFactoryInjectionKey`, `markdownDetailRendererMenuFactoryInjectionKey`,
   `entityGridCellMenuFactoryInjectionKey`
-- **Injects:** `evitaClientInjectionKey`, `workspaceServiceInjectionKey`
+- **Injects:** `evitaClientInjectionKey`, `connectionServiceInjectionKey`,
+  `workspaceServiceInjectionKey`, `tabFactoryRegistryInjectionKey`,
+  `mutationHistoryViewerTabFactoryInjectionKey`
 
 ## Layout
 
@@ -25,6 +27,28 @@ Everything sits under `viewer/`:
 | `history/` | `FilterByHistoryKey`/`Record`, `OrderByHistoryKey`/`Record` |
 | `keymap/scopes.ts` | The viewer's shortcut scopes |
 | `workspace/` | `EntityViewerTabDefinition`, params/data DTOs, `EntityViewerTabFactory` |
+
+## Initialization, errors & retry
+
+`EntityViewer.vue` follows the tab framework's
+[init contract](../workspace-and-tabs.md#loading-errors--retry). `initialize()` holds the whole init chain —
+data locales → property descriptors → descriptor index → grid headers → sort pruning → property preselection —
+and is called from both `onBeforeMount` and the exposed `retry()`. Any rejection becomes
+`emit('error', asError(e))`, so a failed init offers *Try again* instead of spinning forever.
+
+The chain stays a `.then()` promise chain on purpose: making the setup async breaks the component in
+combination with the dynamic `<component>` rendering the tab framework uses.
+
+Two consequences of `initialize()` being re-runnable:
+
+- **`executeOnOpen` re-runs on retry** — a retried tab behaves exactly like a freshly opened one, matching the
+  GraphQL console.
+- **Nothing may accumulate across runs.** `constructEntityPropertyDescriptorIndex()` rebuilds the property
+  display order into a fresh array and replaces `sortedEntityPropertyKeys`; appending to it would grow the
+  order on every retry and on every schema change.
+
+`retry()` is exposed rather than relying on the remount fallback, because the entity-schema change callback is
+registered at setup top level and released in `onUnmounted`, which `KeepAlive` never runs on a `:key` bump.
 
 ## Toolbar
 
@@ -239,6 +263,19 @@ referenced entity, or the referenced group (`referencedGroupType`) when that ref
 item rows show `{referenced entity PK} / {referenced group PK}`. The group primary key is carried on
 `EntityReferenceValue.groupPrimaryKey`, populated only for managed group types — evitaQL reads it from
 the reference's group reference by default, GraphQL fetches `groupEntity { primaryKey }`.
+
+### Human-readable values
+
+The type-driven formatting lives on the values themselves (`EntityPropertyValue.toPrettyPrintString()`,
+which delegates to `getPrettyPrintableString()` of the driver's data types), not in the renderers. Grid
+cells print that string bare; `MarkdownDetailRenderer` only *decorates* it — an icon plus a code span
+(`📅 \`7/27/26, 10:32:08 AM GMT+2\``), a fenced block for JSON/XML strings and complex objects, a plain
+paragraph for prose. The renderer used to carry its own `Intl` formatters, which let the two views drift
+apart for the same value; changing the shared format now moves both at once.
+
+Note that `EntityViewerService.formatEntityPropertyValue` is a **different axis** — it formats a value in
+a *code language* (raw / JSON / XML) for the code detail renderer, and is deliberately not where the
+human-readable formatting belongs.
 
 ## Note for automated UI testing
 

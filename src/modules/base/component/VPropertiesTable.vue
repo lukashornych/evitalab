@@ -15,24 +15,26 @@ withDefaults(defineProps<{
 <template>
     <table class="properties-table">
         <caption v-if="title != undefined" class="text-high-emphasis text-left">{{ title }}</caption>
-        <tr
-            v-for="property in properties"
-            :key="property.name"
-            :class="['properties-table__row', { 'properties-table__row--dense': dense }]"
-        >
-            <td class="text-medium-emphasis properties-table__label">
-                <span>{{ property.name }}</span>
-                <span v-if="property.description">
-                    <VIcon icon="mdi-information-outline" size="small" />
-                    <VTooltip activator="parent">
-                        <span>{{ property.description }}</span>
-                    </VTooltip>
-                </span>
-            </td>
-            <td>
-                <VPropertiesTableValue :property="property" :property-value="property.value" />
-            </td>
-        </tr>
+        <tbody>
+            <tr
+                v-for="property in properties"
+                :key="property.name"
+                :class="['properties-table__row', { 'properties-table__row--dense': dense }]"
+            >
+                <td class="text-medium-emphasis properties-table__label">
+                    <span>{{ property.name }}</span>
+                    <span v-if="property.description" class="properties-table__help">
+                        <VIcon icon="mdi-information-outline" size="small" />
+                        <VTooltip activator="parent">
+                            <span>{{ property.description }}</span>
+                        </VTooltip>
+                    </span>
+                </td>
+                <td>
+                    <VPropertiesTableValue :property="property" :property-value="property.value" />
+                </td>
+            </tr>
+        </tbody>
     </table>
 </template>
 
@@ -43,6 +45,12 @@ withDefaults(defineProps<{
     flex-direction: column;
     gap: 0.5rem;
     padding: 0.5rem;
+
+    // the table is only a flex container here; the tbody required by the HTML spec must not become
+    // a flex item itself, otherwise the rows lose their full width and mutual spacing
+    tbody {
+        display: contents;
+    }
 
     // a uniform row height keeps chip rows and plain text rows on the same vertical rhythm; dense tables
     // trade that rhythm for space on purpose
@@ -57,10 +65,17 @@ withDefaults(defineProps<{
         align-items: center;
     }
 
+    // the help icon annotates the label text and is laid out in its flow, not as a flex item beside it: a flex
+    // sibling gets pushed to the right edge of the label column as soon as the name wraps onto a second line,
+    // which reads as an icon belonging to the value rather than to the label
     &__label {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
+        display: block;
+    }
+
+    &__help {
+        display: inline-flex;
+        vertical-align: middle;
+        margin-left: 0.25rem;
     }
 
     &__row--dense {

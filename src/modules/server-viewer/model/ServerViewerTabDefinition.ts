@@ -1,4 +1,5 @@
 import { TabDefinition } from '@/modules/workspace/tab/model/TabDefinition'
+import { TabType } from '@/modules/workspace/tab/model/TabType'
 import { VoidTabData } from '@/modules/workspace/tab/model/void/VoidTabData'
 import { ServerViewerTabParams } from './ServerViewerTabParams'
 import { markRaw } from 'vue'
@@ -17,7 +18,11 @@ export class ServerViewerTabDefinition extends TabDefinition<ServerViewerTabPara
         )
     }
 
+    get tabType(): TabType {
+        return TabType.ServerViewer
+    }
+
     static icon(): string {
-        return 'mdi-database-outline'
+        return 'mdi-server-outline'
     }
 }

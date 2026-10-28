@@ -14,18 +14,20 @@ Typical inner structure of a module:
 <module>/
 ├── <Module>ModuleRegistrar.ts   # optional, only when the module provides/injects DI services
 ├── component/                   # Vue components of the module
-├── model/                       # domain model — classes, types, enums (immutable where possible)
-├── service/                     # business logic
+├── composable/                  # optional — Vue composables (`useX`) that own reactive state for a component tree
+├── model/                       # the module's vocabulary — types, enums, constant data
+├── exception/                   # error types, and error classification — nothing else
+├── service/                     # behavior over the model — injectable services and plain functions
 └── workspace/                   # tab integration (TabDefinition, TabParams, TabData, factory)
     ├── model/
     └── service/
 ```
 
-**`model/` holds data, `service/` holds behavior.** Being injectable is not what makes something a
-service — a stateless pure function that transforms a query is business logic and belongs in
-`service/` just as much as a DI-registered class does. Only the classes and types the logic operates
-*on* belong in `model/`. A module may therefore have a `service/` folder and no `ModuleRegistrar` at
-all.
+Which of those directories a given file belongs in is a convention, not an index entry — see
+[guidelines — where a file goes](../guidelines.md#where-a-file-goes) for the rule and its rationale.
+One consequence worth stating here, next to the registrars: because being injectable is *not* what
+makes something a service, a module may have a `service/` folder and no `ModuleRegistrar` at all —
+`code-editor/service/` is entirely plain functions.
 
 **This page is an index.** Each module has its own page under `documentation/developer/modules/`,
 named after its directory in `src/modules/` — that is where the detail lives. When you change a
@@ -40,18 +42,20 @@ of their own.
 |--------|---------|
 | [`base`](base.md) | Foundation for everything else — the `V*` component library, base error types, shared dialog/menu/properties-table/tree-view models |
 | [`code-editor`](code-editor.md) | CodeMirror 6 editor wrappers and the status-bar integration extension |
-| [`console`](console.md) | Shared infrastructure for query consoles — result visualisation (facet summary, hierarchy, histograms, reference summary) |
+| [`console`](console.md) | Shared infrastructure for query consoles — result visualisation (facet summary, hierarchy, histograms, reference summary, query telemetry) and the shared run-with-telemetry error |
 | [`viewer-support`](viewer-support.md) | Shared helpers for server-data viewers — `CatalogPointer`, `VDownloadServerFileButton`, `useAutoReload` |
 | [`history-component`](history-component.md) | Reusable UI for displaying execution history lists |
 
 ## Generic modules
 
-Core evitaLab infrastructure. All of them are registered first in `src/modules/modules.ts`.
+Core evitaLab infrastructure. `config`, `storage`, `connection`, `database-driver` and `workspace`
+are registered first in `src/modules/modules.ts`; `notification` sits among the feature modules
+because it needs the error viewer's tab factory.
 
 | Module | Purpose |
 |--------|---------|
 | [`config`](config.md) | Runtime configuration — run mode, read-only flag, playground mode, URL system properties |
-| [`storage`](storage.md) | Persistent client-side storage (`LabStorage` over browser local storage) |
+| [`storage`](storage.md) | Persistent client-side storage (`LabStorage` over local storage, `LabServerDataCache` over IndexedDB) |
 | [`connection`](connection.md) | Connection to an evitaDB server — the `Connection` model and how the active one is resolved |
 | [`database-driver`](database-driver.md) | All communication with evitaDB (`EvitaClient` and friends, `DataCacheRefresher`) — deep-dive: [database driver](../database-driver.md) |
 | [`workspace`](workspace.md) | Overall UI structure: tabs, panels, status bar — deep-dive: [workspace & tabs](../workspace-and-tabs.md) |
@@ -68,10 +72,13 @@ User-facing features. Each one typically contributes one or more tab types and/o
 |--------|---------|
 | [`welcome-screen`](welcome-screen.md) | Landing screen (standalone mode), including its own Pinia store |
 | [`connection-explorer`](connection-explorer.md) | Left panel tree — catalogs and collections, plus their management actions |
+| [`symbol-search`](symbol-search.md) | Application-wide symbol search (`Ctrl+K`) over the schema items of all catalogs |
 | [`entity-viewer`](entity-viewer.md) | Grid-based entity browser, in evitaQL or GraphQL, incl. the references detail sidepanel |
 | [`evitaql-console`](evitaql-console.md) | Console tab for executing evitaQL queries |
 | [`graphql-console`](graphql-console.md) | Console tab for executing GraphQL queries (data / schema / system APIs) |
+| [`rest-console`](rest-console.md) | Console tab for calling REST API operations (catalog / system APIs) — endpoint picker from the OpenAPI specification, generated parameter form, OpenAPI-aware body completion |
 | [`schema-viewer`](schema-viewer.md) | Browsing schemas with deep-linkable schema paths and representative flags |
+| [`catalog-viewer`](catalog-viewer.md) | Catalog preview — statistics, drill-down and degraded-state handling for one catalog |
 | [`server-viewer`](server-viewer.md) | Server status/details view, and the poll other modules depend on |
 | [`server-file-viewer`](server-file-viewer.md) | Listing and downloading files exposed by the server |
 | [`backup-viewer`](backup-viewer.md) | Catalog backup & restore management |
@@ -85,8 +92,24 @@ User-facing features. Each one typically contributes one or more tab types and/o
 ## Module dependency rules
 
 - Feature modules may depend on abstract and generic modules; avoid dependencies between feature
-  modules (known exception: `EvitaClient.queryCatalogUsingGraphQL()` references
-  `graphql-console`'s `GraphQLInstanceType`).
+  modules. Known exceptions: `EvitaClient.queryCatalogUsingGraphQL()` references
+  `graphql-console`'s `GraphQLInstanceType` (the REST counterpart, `RestInstanceType`, deliberately lives in
+  `database-driver` instead); `traffic-viewer`'s record visualisers open both console
+  tabs; `entity-viewer`'s `EntityGridCellMenuFactory` opens a `history-viewer` tab;
+  `connection-explorer` likewise injects `rest-console`'s tab factory, so `rest-console` is registered
+  before it; `catalog-viewer` links out through the `entity-viewer`, `schema-viewer` and `history-viewer` tab
+  factories (plus `schema-viewer`'s schema pointers) and reads catalog versions through
+  `history-viewer`'s `MutationHistoryRequest`; `connection-explorer` injects `catalog-viewer`'s tab
+  factory to open the catalog preview, which is why `catalog-viewer` is registered before it in
+  `modules.ts`; `symbol-search` opens tabs through the `catalog-viewer`, `schema-viewer`, `evitaql-console`,
+  `graphql-console`, `rest-console` and `entity-viewer` factories (plus `schema-viewer`'s schema pointers) and its components
+  are placed by `workspace` (main views, status bar) and `connection-explorer` (panel header).
+- Generic modules must not import feature modules. Where the framework needs feature-provided
+  behaviour (building a tab of any type, opening a demo snippet), the feature module contributes it
+  into a registry the generic module owns — see
+  [architecture — contribution points](../architecture.md#contribution-points).
+- A registrar consuming another module's tab factory must be ordered after it in `modules.ts`.
+  `connection-explorer` needs thirteen of them and is therefore registered last.
 - Abstract modules must not depend on feature modules.
 - The `base` module must not depend on any other module.
 - Cross-module access goes through injected services, never by reaching into another module's

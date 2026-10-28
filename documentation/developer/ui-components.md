@@ -21,7 +21,11 @@ The single dark theme defines the palette: `background`/`surface`/`primary` (`#1
 `primary-dark` (`#131323`), `primary-light` (`#23355C`), `primary-lightest` (`#21BFE3` — the
 accent), `gray-light` (`#A5ACBC`), plus `warning`/`error`. Component defaults (compact density,
 solo-filled inputs, plain chips, no ripple, tooltip styling) are set globally — don't repeat them
-per component. Global SCSS lives in `src/styles/` (Vuetify SASS settings in `settings.scss`).
+per component. Global SCSS lives in `src/styles/` (Vuetify SASS settings in `settings.scss`) — which
+is also where every Vuetify table gets its between-cell separators (`table.scss`, see
+[design language](design-language.md#tables)) and where the chip variants get the interaction
+affordances that make the variant a statement about clickability (`chip.scss`, see
+[design language](design-language.md#chips-the-variant-is-a-promise-about-interaction)).
 Icons are [Material Design Icons](https://pictogrammers.com/library/mdi/) (`mdi-*` strings).
 
 ## Dialogs
@@ -32,6 +36,10 @@ Icons are [Material Design Icons](https://pictogrammers.com/library/mdi/) (`mdi-
 | `VFormDialog` | Dialogs containing a form. Built-in Vuetify form + validation handling, submit state, reset support. Key props: `modelValue`, `changed?`, `dangerous?` (red confirm), `confirmButtonIcon?`, `confirm: () => Promise<boolean>`, `reset?` |
 | `VConfirmDialog` | Simple confirm prompts (`modelValue`, `confirmIcon`) |
 | `VConfirmDialogButton`, `VRejectDialogButton`, `VCancelDialogButton`, `VAlternativeActionDialogButton` | Standardized dialog action buttons |
+
+Even a command palette uses `VLabDialog`: the [symbol search](modules/symbol-search.md) is a `VLabDialog`
+with a fixed body height, so it does not jump while the result count changes. Listeners for `VDialog` events
+`VLabDialog` does not declare (`@after-enter`, `@after-leave`) fall through to its `VDialog` root.
 
 Convention: a dialog component wraps its trigger via the activator slot, owns its open state via
 `modelValue`, performs its action in `confirm` returning `true`/`false` for success, and reports
@@ -54,8 +62,8 @@ guards against this repository-wide — see [testing](testing.md#slot-names).
 | `VTabToolbarActionGroup` | Groups related actions inside the toolbar's append slot and closes them with a vertical separator; place before the ungrouped actions |
 | `VTabToolbarTitle` | Title rendering inside the toolbar |
 | `VTabMainActionButton` | Primary action button of a tab (`prependIcon`, `loading?`, `disabled?`) |
-| `VExecuteQueryButton` | Query execution button; integrates with keymap (`command` prop shows the shortcut) — use together with query editors |
-| `VSideTabs` | Vertical tab strip on the left/right edge of a tab window (`side: 'left' | 'right'`). Two independent models: `v-model` = which view is displayed (always set), `v-model:visible` = whether the panel the strip controls is on screen. With `collapsible`, clicking the active tab collapses the panel (`update:visible = false`) while keeping the remembered view; clicking any tab of a collapsed panel restores it. The strip hides Vuetify's slider, so the active view is indicated **only** by its icon turning `primary-lightest` — that colouring is a global rule in `settings.scss` keyed off Vuetify's `v-tab--selected`, guarded by `test/styles/activeTabClass.test.ts` because a Vuetify upgrade already renamed that class once. While the panel is collapsed no tab is highlighted |
+| `VExecuteQueryButton` | Query execution button; integrates with keymap (`command` prop shows the shortcut) — use together with query editors. Optional `variants: ExecuteQueryVariant[]` (`base/model/ExecuteQueryVariant.ts`, `{ command, title }`) turns it into a **split button**: the primary Run button stays as is (emits `click`), an attached chevron (`VBtn` + `VMenu`, tooltip "More run options", disabled while `loading`) lists one `VListItem` per variant, each wrapped in a `div` that activates a `VActionTooltip` of its command (title + shortcut chip), and a pick emits `variant` with the variant's `command`. Without `variants` the rendered DOM is unchanged. The chevron is always present when variants are passed, so the Run button never shifts. Used by the evitaQL, GraphQL and REST consoles for *Run with telemetry* |
+| `VSideTabs` | Vertical tab strip on the left/right edge of a tab window (`side: 'left' | 'right'`). Two independent models: `v-model` = which view is displayed (always set), `v-model:visible` = whether the panel the strip controls is on screen. With `collapsible`, clicking the active tab collapses the panel (`update:visible = false`) while keeping the remembered view; clicking any tab of a collapsed panel restores it. The active view is indicated by its icon turning `primary-lightest` — a global rule in `settings.scss` keyed off Vuetify's `v-tab--selected`, guarded by `test/styles/activeTabClass.test.ts` because a Vuetify upgrade already renamed that class once — and by Vuetify's slider on the strip's outer edge (Vuetify anchors the vertical slider to the tab's left edge, so the `--right` strip mirrors it to the right; the tabs fill the strip's content box rather than its full `3rem`, otherwise they overflow the strip border and clip that slider). While the panel is collapsed no tab is highlighted and no slider is drawn |
 
 All tab windows must fill the available space (the tab component stretches to 100 % of the tab
 area).
@@ -66,9 +74,9 @@ area).
 |-----------|---------|
 | `VPropertiesTable` | Key-value listing of object properties (`title?`, `properties: Property[]`, `dense?`). Property model in `modules/base/model/properties-table/` supports typed values (`VPropertiesTableValue*`) |
 | `VMarkdown` | Rendering markdown (`source` prop; markdown-it + highlight.js + DOMPurify) |
-| `VTreeViewItem` / `VTreeViewEmptyItem` | Tree menu structures (openable/loading states, flags, item actions) |
+| `VTreeViewItem` / `VTreeViewEmptyItem` | Tree menu structures (openable/loading states, flags, item actions). `openableByArrowOnly` reserves expanding for the leading arrow and reports its click as `click:open`, freeing the row click for a meaning of its own — the catalog row uses it to open the catalog preview |
 | `VListItemDivider` | Divider between list items in **every** non-menu list |
-| `VListItemLazyIterator` | Client-side "load next" paging for long lists (`items`, `page`, `pageSize`) — use to keep the DOM small |
+| `VListItemLazyIterator` | Client-side "load next" paging for long lists (`items: List<T>`, `page`, `pageSize`) — use to keep the DOM small. `items` takes an Immutable `List` only; it used to accept a plain array as well and branch on the shape at runtime |
 | `VExpansionPanelLazyIterator` | Same paging pattern for expansion panels |
 | `VMissingDataIndicator` | Placeholder when there is nothing to show (icon + message) |
 | `VLoadingCircular` | Loading spinner |
@@ -79,7 +87,10 @@ area).
 
 `Property(name, value, description?)` is one row. The optional `description` renders a muted
 `mdi-information-outline` icon with a tooltip after the row label — use it for row-level help, not for
-explaining a single value. Per-value affordances live on the value objects instead:
+explaining a single value. The icon sits **in the label's text flow**, not as a flex item beside it,
+so that a name too long for the fixed label column keeps the icon next to its last word instead of
+having it pushed to the column's right edge, where it reads as belonging to the value.
+Per-value affordances live on the value objects instead:
 
 | Want | Use |
 |---|---|
@@ -143,6 +154,30 @@ registered). For combined date-time input use the custom `VDateTimeInput` (retur
   component guessing one**. While focused the field shows the canonical ISO form (editable),
   unfocused it shows the localized pretty form. Unparsable input and `min`/`max` violations are
   reported as field errors and leave the model untouched.
+
+### Hand-rolled clear icons
+
+A field whose model Vuetify's own `clearable` cannot handle (a wrapper over a non-trivial value, such as
+`VDateTimeInput` or `traffic-viewer`'s `VLabelSelect`) renders the clear icon itself in `#append-inner`.
+Two things belong on it:
+
+```vue
+<template #append-inner>
+    <VIcon v-if="clearable && model != undefined" @mousedown.prevent @click="clear">
+        mdi-close-circle
+    </VIcon>
+</template>
+```
+
+- **Gate visibility on the value, never on focus.** `#append-inner` hands the slot an `isFocused` flag,
+  and gating the icon on it makes the affordance unreachable: the mousedown that would hit the icon
+  arrives while the field is still unfocused, so the icon is not there yet.
+- **`@mousedown.prevent`** keeps the field from losing focus (or, for a wrapper that opens a menu from
+  its root, from toggling that menu) before the click resolves. Add `.stop` to the click as well when the
+  field itself is a `VMenu` activator, otherwise clearing also opens the menu.
+
+Honour the component's own `clearable` prop in the condition — a wrapper that ignores it silently offers
+a clear button the caller did not ask for.
 
 ## Viewer helpers
 

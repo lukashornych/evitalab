@@ -43,6 +43,7 @@ import {
 import type { EvitaQLConsoleHistoryRecord } from '@/modules/evitaql-console/console/history/model/EvitaQLConsoleHistoryRecord'
 import VPreviewEditor from '@/modules/code-editor/component/VPreviewEditor.vue'
 import ResultVisualiser from '@/modules/console/result-visualiser/component/ResultVisualiser.vue'
+import { ResultVisualiserState } from '@/modules/console/result-visualiser/model/ResultVisualiserState'
 import { Command } from '@/modules/keymap/model/Command'
 import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
 import VTabToolbarActionGroup from '@/modules/base/component/VTabToolbarActionGroup.vue'
@@ -63,12 +64,16 @@ import {
 } from '@/modules/evitaql-console/console/workspace/model/EvitaQLConsoleTabDefinition'
 import { EvitaResponse } from '@/modules/database-driver/request-response/data/EvitaResponse'
 import { minifyEvitaQL, prettifyEvitaQL } from '@/modules/code-editor/service/formatEvitaQL'
-import { minifyJson, prettifyJson } from '@/modules/code-editor/service/formatJson'
 import { DocumentFormattingMode } from '@/modules/code-editor/model/DocumentFormattingMode'
+import { injectQueryTelemetry } from '@/modules/evitaql-console/console/service/injectQueryTelemetry'
+import { QueryTelemetryInjectionError } from '@/modules/console/exception/QueryTelemetryInjectionError'
+import type { ExecuteQueryVariant } from '@/modules/base/model/ExecuteQueryVariant'
+import ResultStatusBar from '@/modules/console/result-status/component/ResultStatusBar.vue'
+import type { ConsoleResultStatus } from '@/modules/console/result-status/model/ConsoleResultStatus'
+import type { EvitaQLQueryResult } from '@/modules/evitaql-console/console/model/EvitaQLQueryResult'
 
 enum EditorTabType {
     Query = 'query',
-    Variables = 'variables',
     History = 'history',
 }
 
@@ -134,12 +139,6 @@ const queryCode = ref<string>(
 )
 const queryExtensions: Extension[] = [evitaQL()]
 
-const variablesEditorRef = ref<InstanceType<typeof VQueryEditor> | undefined>()
-const variablesCode = ref<string>(
-    props.data.variables ? props.data.variables : '{\n  \n}'
-)
-const variablesExtensions: Extension[] = [json()]
-
 const historyRef = ref<InstanceType<typeof EvitaQLConsoleHistory> | undefined>()
 const historyKey = computed<EvitaQLConsoleHistoryKey>(() =>
     createEvitaQLConsoleHistoryKey(props.params.dataPointer)
@@ -151,7 +150,6 @@ const historyRecords = computed<EvitaQLConsoleHistoryRecord[]>(() => {
 })
 function pickHistoryRecord(record: EvitaQLConsoleHistoryRecord): void {
     queryCode.value = record[1] || ''
-    variablesCode.value = record[2] || ''
     editorTab.value = EditorTabType.Query
     queryPanelVisible.value = true
 }
@@ -170,16 +168,23 @@ const rawResultEditorRef = ref<
     InstanceType<typeof VPreviewEditor> | undefined
 >()
 const result = ref<EvitaResponse>()
+const resultStatus = ref<ConsoleResultStatus>()
 const resultExtensions: Extension[] = [json()]
 
 const resultVisualiserRef = ref<
     InstanceType<typeof ResultVisualiser> | undefined
 >()
+// lives as long as the console tab, so that the visualiser keeps its view when it is remounted
+const resultVisualiserState: ResultVisualiserState = new ResultVisualiserState()
 
 const loading = ref<boolean>(false)
+const executeQueryVariants: ExecuteQueryVariant[] = [{
+    command: Command.EvitaQLConsole_ExecuteQueryWithTelemetry,
+    title: t('common.button.runWithTelemetry')
+}]
 
 const currentData = computed<EvitaQLConsoleTabData>(() => {
-    return new EvitaQLConsoleTabData(queryCode.value, variablesCode.value)
+    return new EvitaQLConsoleTabData(queryCode.value)
 })
 watch(currentData, (data) => {
     emit('update:data', data)
@@ -188,27 +193,21 @@ watch(currentData, (data) => {
 const formattingAvailable = computed<boolean>(() =>
     queryPanelVisible.value &&
     focusedPanel.value === 'query' &&
-    (editorTab.value === EditorTabType.Query || editorTab.value === EditorTabType.Variables)
+    editorTab.value === EditorTabType.Query
 )
 
 /**
- * Reformats the editor the caret sits in — the query with the evitaQL printer, the variables as JSON.
- * The new document is assigned to the bound model, which resets the caret to the document start.
+ * Reformats the query with the evitaQL printer. The new document is assigned to the bound model, which
+ * resets the caret to the document start.
  */
 async function formatFocusedEditor(mode: DocumentFormattingMode): Promise<void> {
     if (!formattingAvailable.value) {
         return
     }
     try {
-        if (editorTab.value === EditorTabType.Query) {
-            queryCode.value = mode === DocumentFormattingMode.Prettify
-                ? prettifyEvitaQL(queryCode.value)
-                : minifyEvitaQL(queryCode.value)
-        } else {
-            variablesCode.value = mode === DocumentFormattingMode.Prettify
-                ? prettifyJson(variablesCode.value)
-                : minifyJson(variablesCode.value)
-        }
+        queryCode.value = mode === DocumentFormattingMode.Prettify
+            ? prettifyEvitaQL(queryCode.value)
+            : minifyEvitaQL(queryCode.value)
     } catch (e) {
         await toaster.error(
             t('evitaQLConsole.notification.failedToFormatDocument'),
@@ -219,7 +218,8 @@ async function formatFocusedEditor(mode: DocumentFormattingMode): Promise<void> 
 
 onMounted(() => {
     // register console specific keyboard shortcuts
-    keymap.bind(Command.EvitaQLConsole_ExecuteQuery, props.id, executeQuery)
+    keymap.bind(Command.EvitaQLConsole_ExecuteQuery, props.id, () => executeQuery())
+    keymap.bind(Command.EvitaQLConsole_ExecuteQueryWithTelemetry, props.id, () => executeQuery(true))
     keymap.bind(Command.EvitaQLConsole_ShareTab, props.id, () =>
         shareTabButtonRef.value?.share()
     )
@@ -227,11 +227,6 @@ onMounted(() => {
         editorTab.value = EditorTabType.Query
         queryPanelVisible.value = true
         focusQueryEditor()
-    })
-    keymap.bind(Command.EvitaQLConsole_Query_VariablesEditor, props.id, () => {
-        editorTab.value = EditorTabType.Variables
-        queryPanelVisible.value = true
-        focusVariablesEditor()
     })
     keymap.bind(Command.EvitaQLConsole_Query_History, props.id, () => {
         editorTab.value = EditorTabType.History
@@ -270,9 +265,9 @@ onMounted(() => {
 onUnmounted(() => {
     // unregister console specific keyboard shortcuts
     keymap.unbind(Command.EvitaQLConsole_ExecuteQuery, props.id)
+    keymap.unbind(Command.EvitaQLConsole_ExecuteQueryWithTelemetry, props.id)
     keymap.unbind(Command.EvitaQLConsole_ShareTab, props.id)
     keymap.unbind(Command.EvitaQLConsole_Query_QueryEditor, props.id)
-    keymap.unbind(Command.EvitaQLConsole_Query_VariablesEditor, props.id)
     keymap.unbind(Command.EvitaQLConsole_Query_History, props.id)
     keymap.unbind(Command.EvitaQLConsole_Query_Prettify, props.id)
     keymap.unbind(Command.EvitaQLConsole_Query_Minify, props.id)
@@ -282,14 +277,29 @@ onUnmounted(() => {
     keymap.unbind(Command.EvitaQLConsole_Result_TogglePanel, props.id)
 })
 
-async function executeQuery(): Promise<void> {
+/**
+ * Executes the query from the editor. With `withTelemetry`, a copy of the query extended with the query telemetry
+ * requirement is sent instead, while the editor content and the history record keep the query as written.
+ */
+async function executeQuery(withTelemetry: boolean = false): Promise<void> {
+    const executedQueryCode: string = queryCode.value
+    let sentQueryCode: string = executedQueryCode
+    if (withTelemetry) {
+        try {
+            sentQueryCode = injectQueryTelemetry(executedQueryCode)
+        } catch (e) {
+            if (!(e instanceof QueryTelemetryInjectionError)) {
+                await toaster.error(t('evitaQLConsole.notification.couldNotExecuteQuery'), asError(e))
+                return
+            }
+            await toaster.warning(t('evitaQLConsole.notification.queryTelemetryNotInjected'))
+        }
+    }
+
     try {
         workspaceService.addTabHistoryRecord(
             historyKey.value,
-            createEvitaQLConsoleHistoryRecord(
-                queryCode.value,
-                variablesCode.value
-            )
+            createEvitaQLConsoleHistoryRecord(executedQueryCode)
         )
     } catch (e) {
         await toaster.error(
@@ -300,13 +310,14 @@ async function executeQuery(): Promise<void> {
 
     loading.value = true
     try {
-        result.value = await evitaQLConsoleService.executeEvitaQLQuery(
+        const queryResult: EvitaQLQueryResult = await evitaQLConsoleService.executeEvitaQLQuery(
             props.params.dataPointer,
-            queryCode.value,
-            // JSON.parse(variablesCode.value) // todo lho support
+            sentQueryCode
         )
+        result.value = queryResult.response
+        resultStatus.value = queryResult.status
         loading.value = false
-        enteredQueryCode.value = queryCode.value
+        enteredQueryCode.value = executedQueryCode
 
         if (firstResultPending) {
             firstResultPending = false
@@ -317,7 +328,9 @@ async function executeQuery(): Promise<void> {
             focusRawResultEditor()
         }
     } catch (error) {
-        await toaster.error('Could not execute query', asError(error)) // todo lho i18n
+        // a status of an earlier result must not sit next to the error
+        resultStatus.value = undefined
+        await toaster.error(t('evitaQLConsole.notification.couldNotExecuteQuery'), asError(error))
         loading.value = false
     }
 }
@@ -328,10 +341,6 @@ async function executeQuery(): Promise<void> {
 function focusQueryEditor(): void {
     focusedPanel.value = 'query'
     setTimeout(() => queryEditorRef.value?.focus())
-}
-function focusVariablesEditor(): void {
-    focusedPanel.value = 'query'
-    setTimeout(() => variablesEditorRef.value?.focus())
 }
 function focusHistory(): void {
     focusedPanel.value = 'query'
@@ -393,7 +402,9 @@ if (props.params.executeOnOpen) {
                     :command="Command.EvitaQLConsole_ExecuteQuery"
                     :loading="loading"
                     :title="t('common.button.run')"
-                    @click="executeQuery"
+                    :variants="executeQueryVariants"
+                    @click="executeQuery()"
+                    @variant="executeQuery(true)"
                     >
                 </VExecuteQueryButton>
             </template>
@@ -413,16 +424,6 @@ if (props.params.executeOnOpen) {
                             :command="Command.EvitaQLConsole_Query_QueryEditor"
                         >
                             {{ t('evitaQLConsole.tooltip.queryEditorView') }}
-                        </VActionTooltip>
-                    </VTab>
-                    <VTab :value="EditorTabType.Variables">
-                        <VIcon>mdi-variable</VIcon>
-                        <VActionTooltip
-                            :command="
-                                Command.EvitaQLConsole_Query_VariablesEditor
-                            "
-                        >
-                            {{ t('evitaQLConsole.tooltip.variablesEditorView') }}
                         </VActionTooltip>
                     </VTab>
                     <VTab :value="EditorTabType.History">
@@ -461,14 +462,6 @@ if (props.params.executeOnOpen) {
                                 />
                             </VWindowItem>
 
-                            <VWindowItem :value="EditorTabType.Variables">
-                                <VQueryEditor
-                                    ref="variablesEditorRef"
-                                    v-model="variablesCode"
-                                    :additional-extensions="variablesExtensions"
-                                />
-                            </VWindowItem>
-
                             <VWindowItem :value="EditorTabType.History">
                                 <EvitaQLConsoleHistory
                                     ref="historyRef"
@@ -489,31 +482,37 @@ if (props.params.executeOnOpen) {
                         ]"
                         @focusin="focusedPanel = 'result'"
                     >
-                        <VWindow v-model="resultTab" direction="vertical">
-                            <VWindowItem :value="ResultTabType.Raw">
-                                <VPreviewEditor
-                                    v-if="resultTab === ResultTabType.Raw"
-                                    ref="rawResultEditorRef"
-                                    :model-value="rawResult"
-                                    :placeholder="
-                                        t('evitaQLConsole.placeholder.results')
-                                    "
-                                    read-only
-                                    :additional-extensions="resultExtensions"
-                                />
-                            </VWindowItem>
+                        <div class="evitaql-editor-result">
+                            <ResultStatusBar v-if="resultStatus != undefined" :status="resultStatus" />
+                            <div class="evitaql-editor-result__views">
+                                <VWindow v-model="resultTab" direction="vertical">
+                                    <VWindowItem :value="ResultTabType.Raw">
+                                        <VPreviewEditor
+                                            v-if="resultTab === ResultTabType.Raw"
+                                            ref="rawResultEditorRef"
+                                            :model-value="rawResult"
+                                            :placeholder="
+                                                t('evitaQLConsole.placeholder.results')
+                                            "
+                                            read-only
+                                            :additional-extensions="resultExtensions"
+                                        />
+                                    </VWindowItem>
 
-                            <VWindowItem :value="ResultTabType.Visualiser">
-                                <ResultVisualiser
-                                    v-if="resultTab === ResultTabType.Visualiser"
-                                    ref="resultVisualiserRef"
-                                    :catalog-pointer="params.dataPointer"
-                                    :visualiser-service="visualiserService"
-                                    :input-query="enteredQueryCode || ''"
-                                    :result="result"
-                                />
-                            </VWindowItem>
-                        </VWindow>
+                                    <VWindowItem :value="ResultTabType.Visualiser">
+                                        <ResultVisualiser
+                                            v-if="resultTab === ResultTabType.Visualiser"
+                                            ref="resultVisualiserRef"
+                                            :catalog-pointer="params.dataPointer"
+                                            :visualiser-service="visualiserService"
+                                            :input-query="enteredQueryCode || ''"
+                                            :result="result"
+                                            :state="resultVisualiserState"
+                                        />
+                                    </VWindowItem>
+                                </VWindow>
+                            </div>
+                        </div>
                     </Pane>
                 </Splitpanes>
 
@@ -648,5 +647,17 @@ if (props.params.executeOnOpen) {
 .evitaql-editor-result-sections {
     display: flex;
     width: 3rem;
+}
+.evitaql-editor-result {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    // the result views fill what the status bar leaves; the absolutely positioned window is anchored here
+    &__views {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+    }
 }
 </style>

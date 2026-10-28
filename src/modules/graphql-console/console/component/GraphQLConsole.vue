@@ -45,6 +45,7 @@ import {
 import type { GraphQLConsoleHistoryRecord } from '@/modules/graphql-console/console/history/model/GraphQLConsoleHistoryRecord'
 import VPreviewEditor from '@/modules/code-editor/component/VPreviewEditor.vue'
 import ResultVisualiser from '@/modules/console/result-visualiser/component/ResultVisualiser.vue'
+import { ResultVisualiserState } from '@/modules/console/result-visualiser/model/ResultVisualiserState'
 import { Command } from '@/modules/keymap/model/Command'
 import VTabToolbar from '@/modules/base/component/VTabToolbar.vue'
 import VTabToolbarActionGroup from '@/modules/base/component/VTabToolbarActionGroup.vue'
@@ -66,6 +67,15 @@ import {
 import { minifyGraphQL, prettifyGraphQL } from '@/modules/code-editor/service/formatGraphQL'
 import { minifyJson, prettifyJson } from '@/modules/code-editor/service/formatJson'
 import { DocumentFormattingMode } from '@/modules/code-editor/model/DocumentFormattingMode'
+import { injectQueryTelemetry } from '@/modules/graphql-console/console/service/injectQueryTelemetry'
+import {
+    QueryTelemetryInjectionError,
+    QueryTelemetryInjectionFailureReason
+} from '@/modules/console/exception/QueryTelemetryInjectionError'
+import type { ExecuteQueryVariant } from '@/modules/base/model/ExecuteQueryVariant'
+import ResultStatusBar from '@/modules/console/result-status/component/ResultStatusBar.vue'
+import type { ConsoleResultStatus } from '@/modules/console/result-status/model/ConsoleResultStatus'
+import type { GraphQLQueryResult } from '@/modules/graphql-console/console/model/GraphQLQueryResult'
 
 enum EditorTabType {
     Query = 'query',
@@ -78,12 +88,6 @@ enum ResultTabType {
     Raw = 'raw',
     Visualiser = 'visualiser'
 }
-
-/**
- * Upper bound for the initial GraphQL schema introspection. On expiry the request is aborted and the tab
- * switches to its error/retry state instead of showing the loading screen indefinitely.
- */
-const schemaLoadTimeoutMs = 15_000
 
 const keymap: Keymap = useKeymap()
 const graphQLConsoleService: GraphQLConsoleService = useGraphQLConsoleService()
@@ -149,7 +153,11 @@ const graphQLSchemaChangeCallbackId = graphQLConsoleService.registerGraphQLSchem
 const reloadingSchema = ref<boolean>(false)
 
 const queryEditorRef = ref<InstanceType<typeof VQueryEditor> | undefined>()
-const queryCode = ref<string>(props.data.query ? props.data.query : t('graphQLConsole.placeholder.writeQuery', { catalogName: props.params.dataPointer.catalogName }))
+// the System instance is not bound to a catalog, it only carries a placeholder catalog name for keying purposes
+const queryPlaceholder: string = props.params.dataPointer.instanceType === GraphQLInstanceType.System
+    ? t('graphQLConsole.placeholder.writeSystemQuery')
+    : t('graphQLConsole.placeholder.writeQuery', { catalogName: props.params.dataPointer.catalogName })
+const queryCode = ref<string>(props.data.query ? props.data.query : queryPlaceholder)
 // GraphQL language support is swapped in place through a CodeMirror compartment so the
 // editor's extensions array reference stays stable; reassigning it would force the editor
 // to fully remount on every schema (re)load.
@@ -186,14 +194,39 @@ const schemaExtensions: Extension[] = [graphql()]
 const lastAppliedQueryCode = ref<string>('')
 const rawResultEditorRef = ref<InstanceType<typeof VPreviewEditor> | undefined>()
 const resultCode = ref<string>('')
+const resultStatus = ref<ConsoleResultStatus>()
 const resultExtensions: Extension[] = [json()]
 
 const resultVisualiserRef = ref<InstanceType<typeof ResultVisualiser> | undefined>()
+// parsed once per result, so that re-rendering the console does not hand the visualiser a new result
+const visualisedResult = computed<unknown>(() => {
+    if (!resultCode.value) {
+        return undefined
+    }
+    try {
+        return JSON.parse(resultCode.value)
+    } catch (e) {
+        console.error('GraphQL result is not JSON, it cannot be visualised', e)
+        return undefined
+    }
+})
+// lives as long as the console tab, so that the visualiser keeps its view when it is remounted
+const resultVisualiserState: ResultVisualiserState = new ResultVisualiserState()
 const supportsVisualisation = computed<boolean>(() => {
     return props.params.dataPointer.instanceType === GraphQLInstanceType.Data
 })
 
 const loading = ref<boolean>(false)
+// only the catalog data API has the query* fields that can return query telemetry
+const executeQueryVariants = computed<ExecuteQueryVariant[] | undefined>(() => {
+    if (!supportsVisualisation.value) {
+        return undefined
+    }
+    return [{
+        command: Command.GraphQLConsole_ExecuteQueryWithTelemetry,
+        title: t('common.button.runWithTelemetry')
+    }]
+})
 const initialized = ref<boolean>(false)
 
 const currentData = computed<GraphQLConsoleTabData>(() => {
@@ -232,8 +265,8 @@ async function formatFocusedEditor(mode: DocumentFormattingMode): Promise<void> 
     }
 }
 
-async function loadGraphQLSchema(signal?: AbortSignal): Promise<void> {
-    const schema: GraphQLSchema = await graphQLConsoleService.getGraphQLSchema(props.params.dataPointer, signal)
+async function loadGraphQLSchema(): Promise<void> {
+    const schema: GraphQLSchema = await graphQLConsoleService.getGraphQLSchema(props.params.dataPointer)
     graphQLSchema.value = schema
     queryLanguageExtension = graphql(schema)
     applyQueryLanguage()
@@ -257,12 +290,12 @@ function applyQueryLanguage(): void {
 watch(queryEditorView, () => applyQueryLanguage())
 
 /**
- * Loads the GraphQL schema (bounded by a request timeout) and marks the tab ready. On any failure —
- * including a timed-out/aborted introspection — reports the error to the tab framework so it can offer
- * a retry, instead of leaving the tab stuck behind the loading screen. Reused by both mount and retry.
+ * Loads the GraphQL schema and marks the tab ready. On any failure — including the introspection exceeding
+ * the driver's default call deadline — reports the error to the tab framework so it can offer a retry,
+ * instead of leaving the tab stuck behind the loading screen. Reused by both mount and retry.
  */
 function initialize(): void {
-    loadGraphQLSchema(AbortSignal.timeout(schemaLoadTimeoutMs))
+    loadGraphQLSchema()
         .then(() => {
             initialized.value = true
             emit('ready')
@@ -279,7 +312,8 @@ function initialize(): void {
 async function refreshGraphQLSchema(): Promise<void> {
     reloadingSchema.value = true
     try {
-        // invalidate the cached schema; the registered change callback performs the actual reload
+        // re-introspects first; only when the schema really changed does the registered change callback
+        // perform the actual reload, so a failed reload leaves the console with the schema it had
         await graphQLConsoleService.refreshGraphQLSchema(props.params.dataPointer)
     } catch (error) {
         await toaster.error(t('graphQLConsole.notification.failedToReloadSchema'), asError(error))
@@ -293,7 +327,8 @@ onBeforeMount(() => {
 })
 onMounted(() => {
     // register console specific keyboard shortcuts
-    keymap.bind(Command.GraphQLConsole_ExecuteQuery, props.id, executeQuery)
+    keymap.bind(Command.GraphQLConsole_ExecuteQuery, props.id, () => executeQuery())
+    keymap.bind(Command.GraphQLConsole_ExecuteQueryWithTelemetry, props.id, () => executeQuery(true))
     keymap.bind(Command.GraphQLConsole_ShareTab, props.id, () => shareTabButtonRef.value?.share())
     keymap.bind(Command.GraphQLConsole_Query_QueryEditor, props.id, () => {
         editorTab.value = EditorTabType.Query
@@ -348,6 +383,7 @@ onUnmounted(() => {
 
     // unregister console specific keyboard shortcuts
     keymap.unbind(Command.GraphQLConsole_ExecuteQuery, props.id)
+    keymap.unbind(Command.GraphQLConsole_ExecuteQueryWithTelemetry, props.id)
     keymap.unbind(Command.GraphQLConsole_ShareTab, props.id)
     keymap.unbind(Command.GraphQLConsole_Query_QueryEditor, props.id)
     keymap.unbind(Command.GraphQLConsole_Query_VariablesEditor, props.id)
@@ -361,18 +397,42 @@ onUnmounted(() => {
     keymap.unbind(Command.GraphQLConsole_Result_TogglePanel, props.id)
 })
 
-async function executeQuery(): Promise<void> {
+/**
+ * Executes the query from the editor. With `withTelemetry`, a copy of the query extended with the query telemetry
+ * selection is sent instead, while the editor content and the history record keep the query as written.
+ */
+async function executeQuery(withTelemetry: boolean = false): Promise<void> {
+    const executedQueryCode: string = queryCode.value
+    let sentQueryCode: string = executedQueryCode
+    if (withTelemetry) {
+        try {
+            sentQueryCode = injectQueryTelemetry(executedQueryCode)
+        } catch (e) {
+            if (!(e instanceof QueryTelemetryInjectionError)) {
+                await toaster.error(t('graphQLConsole.notification.couldNotExecuteQuery'), asError(e))
+                return
+            }
+            await toaster.warning(
+                e.reason === QueryTelemetryInjectionFailureReason.NoTarget
+                    ? t('graphQLConsole.notification.queryTelemetryNoQueryField')
+                    : t('graphQLConsole.notification.queryTelemetryNotInjected')
+            )
+        }
+    }
+
     try {
-        workspaceService.addTabHistoryRecord(historyKey.value, createGraphQLConsoleHistoryRecord(queryCode.value, variablesCode.value))
+        workspaceService.addTabHistoryRecord(historyKey.value, createGraphQLConsoleHistoryRecord(executedQueryCode, variablesCode.value))
     } catch (e) {
         await toaster.error(t('graphQLConsole.notification.failedToSaveQueryToHistory'), asError(e))
     }
 
     loading.value = true
     try {
-        resultCode.value = await graphQLConsoleService.executeGraphQLQuery(props.params.dataPointer, queryCode.value, JSON.parse(variablesCode.value))
+        const queryResult: GraphQLQueryResult = await graphQLConsoleService.executeGraphQLQuery(props.params.dataPointer, sentQueryCode, JSON.parse(variablesCode.value))
+        resultCode.value = queryResult.resultJson
+        resultStatus.value = queryResult.status
         loading.value = false
-        lastAppliedQueryCode.value = queryCode.value
+        lastAppliedQueryCode.value = executedQueryCode
 
         if (firstResultPending) {
             firstResultPending = false
@@ -384,7 +444,9 @@ async function executeQuery(): Promise<void> {
         }
     } catch (error) {
         loading.value = false
-        await toaster.error('Could not execute query', asError(error)) // todo lho i18n
+        // a status of an earlier result must not sit next to the error
+        resultStatus.value = undefined
+        await toaster.error(t('graphQLConsole.notification.couldNotExecuteQuery'), asError(error))
     }
 }
 
@@ -464,17 +526,6 @@ function focusResultVisualiser(): void {
                     :command="Command.GraphQLConsole_ShareTab"
                 />
 
-                <!-- TODO implement -->
-<!--                <VBtn-->
-<!--                    icon-->
-<!--                    density="compact"-->
-<!--                >-->
-<!--                    <VIcon>mdi-information-outline</VIcon>-->
-<!--                    <VTooltip activator="parent">-->
-<!--                        {{ t('graphQLConsole.button.instanceDetails') }}-->
-<!--                    </VTooltip>-->
-<!--                </VBtn>-->
-
                 <VBtn :loading="reloadingSchema" icon density="compact" @click="refreshGraphQLSchema()">
                     <VIcon>mdi-refresh</VIcon>
                     <VActionTooltip activator="parent">
@@ -484,9 +535,11 @@ function focusResultVisualiser(): void {
 
                 <VExecuteQueryButton
                     :loading="loading"
-                    @click="executeQuery"
+                    @click="executeQuery()"
+                    @variant="executeQuery(true)"
                     :title="t('common.button.run')"
-                    :command="Command.GraphQLConsole_ExecuteQuery">
+                    :command="Command.GraphQLConsole_ExecuteQuery"
+                    :variants="executeQueryVariants">
                 </VExecuteQueryButton>
             </template>
         </VTabToolbar>
@@ -592,32 +645,38 @@ function focusResultVisualiser(): void {
                         ]"
                         @focusin="focusedPanel = 'result'"
                     >
-                        <VWindow
-                            v-model="resultTab"
-                            direction="vertical"
-                        >
-                            <VWindowItem :value="ResultTabType.Raw">
-                                <VPreviewEditor
-                                    v-if="resultTab === ResultTabType.Raw"
-                                    ref="rawResultEditorRef"
-                                    v-model="resultCode"
-                                    :placeholder="t('graphQLConsole.placeholder.results')"
-                                    read-only
-                                    :additional-extensions="resultExtensions"
-                                />
-                            </VWindowItem>
+                        <div class="graphql-editor-result">
+                            <ResultStatusBar v-if="resultStatus != undefined" :status="resultStatus" />
+                            <div class="graphql-editor-result__views">
+                                <VWindow
+                                    v-model="resultTab"
+                                    direction="vertical"
+                                >
+                                    <VWindowItem :value="ResultTabType.Raw">
+                                        <VPreviewEditor
+                                            v-if="resultTab === ResultTabType.Raw"
+                                            ref="rawResultEditorRef"
+                                            v-model="resultCode"
+                                            :placeholder="t('graphQLConsole.placeholder.results')"
+                                            read-only
+                                            :additional-extensions="resultExtensions"
+                                        />
+                                    </VWindowItem>
 
-                            <VWindowItem v-if="supportsVisualisation" :value="ResultTabType.Visualiser">
-                                <ResultVisualiser
-                                    v-if="resultTab === ResultTabType.Visualiser"
-                                    ref="resultVisualiserRef"
-                                    :catalog-pointer="params.dataPointer"
-                                    :visualiser-service="visualiserService"
-                                    :input-query="lastAppliedQueryCode || ''"
-                                    :result="resultCode == undefined || !resultCode ? undefined : JSON.parse(resultCode)"
-                                />
-                            </VWindowItem>
-                        </VWindow>
+                                    <VWindowItem v-if="supportsVisualisation" :value="ResultTabType.Visualiser">
+                                        <ResultVisualiser
+                                            v-if="resultTab === ResultTabType.Visualiser"
+                                            ref="resultVisualiserRef"
+                                            :catalog-pointer="params.dataPointer"
+                                            :visualiser-service="visualiserService"
+                                            :input-query="lastAppliedQueryCode || ''"
+                                            :result="visualisedResult"
+                                            :state="resultVisualiserState"
+                                        />
+                                    </VWindowItem>
+                                </VWindow>
+                            </div>
+                        </div>
                     </Pane>
                 </Splitpanes>
 
@@ -743,5 +802,17 @@ function focusResultVisualiser(): void {
 .graphql-editor-query-sections, .graphql-editor-result-sections {
     display: flex;
     width: 3rem;
+}
+.graphql-editor-result {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    // the result views fill what the status bar leaves; the absolutely positioned window is anchored here
+    &__views {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+    }
 }
 </style>

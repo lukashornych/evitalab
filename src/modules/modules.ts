@@ -5,6 +5,7 @@ import { EntityViewerModuleRegistrar } from '@/modules/entity-viewer/EntityViewe
 import { ErrorViewerModuleRegistrar } from '@/modules/error-viewer/ErrorViewerModuleRegistrar'
 import { EvitaQLConsoleModuleRegistrar } from '@/modules/evitaql-console/EvitaQLConsoleModuleRegistrar'
 import { GraphQLConsoleModuleRegistrar } from '@/modules/graphql-console/GraphQLConsoleModuleRegistrar'
+import { RestConsoleModuleRegistrar } from '@/modules/rest-console/RestConsoleModuleRegistrar'
 import { NotificationModuleRegistrar } from '@/modules/notification/NotificationModuleRegistrar'
 import { SchemaViewerModuleRegistrar } from '@/modules/schema-viewer/SchemaViewerModuleRegistrar'
 import { ConfigModuleRegistrar } from '@/modules/config/ConfigModuleRegistrar'
@@ -18,8 +19,10 @@ import { JfrViewerModuleRegistrar } from '@/modules/jfr-viewer/JfrViewerModuleRe
 import { ServerFileViewerModuleRegistrar } from '@/modules/server-file-viewer/ServerFileViewerModuleRegistrar'
 import { TrafficViewerModuleRegistrar } from '@/modules/traffic-viewer/TrafficViewerModuleRegistrar'
 import { ConnectionExplorerModuleRegistrar } from '@/modules/connection-explorer/ConnectionExplorerModuleRegistrar'
+import { CatalogViewerModuleRegistrar } from '@/modules/catalog-viewer/CatalogViewerModuleRegistrar'
 import { DatabaseDriverModuleRegistrar } from '@/modules/database-driver/DatabaseDriverModuleRegistrar'
 import { MutationHistoryViewerModuleRegistrar } from '@/modules/history-viewer/MutationHistoryViewerModuleRegistrar.ts'
+import { SymbolSearchModuleRegistrar } from '@/modules/symbol-search/SymbolSearchModuleRegistrar'
 
 /**
  * Registers all modules during startup.
@@ -31,22 +34,26 @@ export const modules: ModuleRegistrar[] = [
     new ConnectionModuleRegistrar(),
     new DatabaseDriverModuleRegistrar(),
     new WorkspaceModuleRegistrar(),
-    new NotificationModuleRegistrar(),
 
-    // UI feature modules
-    new ConnectionExplorerModuleRegistrar(),
+    // UI feature modules; each of them contributes its tab factory into the workspace tab factory
+    // registry, therefore modules consuming tab factories of other modules must be registered after them
     new KeymapModuleRegistrar(),
     new WelcomeScreenModuleRegistrar(),
     new ErrorViewerModuleRegistrar(),
+    new NotificationModuleRegistrar(),
     new EvitaQLConsoleModuleRegistrar(),
     new GraphQLConsoleModuleRegistrar(),
-    new EntityViewerModuleRegistrar(),
+    new RestConsoleModuleRegistrar(),
     new SchemaViewerModuleRegistrar(),
+    new MutationHistoryViewerModuleRegistrar(),
+    new EntityViewerModuleRegistrar(),
     new ServerViewerModuleRegistrar(),
+    new CatalogViewerModuleRegistrar(),
     new ServerFileViewerModuleRegistrar(),
     new BackupViewerModuleRegistrar(),
     new TaskViewerModuleRegistrar(),
     new JfrViewerModuleRegistrar(),
     new TrafficViewerModuleRegistrar(),
-    new MutationHistoryViewerModuleRegistrar()
+    new SymbolSearchModuleRegistrar(),
+    new ConnectionExplorerModuleRegistrar()
 ]

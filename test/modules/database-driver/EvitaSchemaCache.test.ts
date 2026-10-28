@@ -1,6 +1,8 @@
 import { describe, test, expect, vi } from 'vitest'
 import { EvitaSchemaCache } from '../../../src/modules/database-driver/EvitaSchemaCache'
 import { EntitySchema } from '../../../src/modules/database-driver/request-response/schema/EntitySchema'
+import { CacheInvalidationReason } from '../../../src/modules/database-driver/cache/CacheInvalidationReason'
+import { CatalogSchema } from '../../../src/modules/database-driver/request-response/schema/CatalogSchema'
 
 // the cache only stores and hands back what the accessor returns, so a stub is enough here
 function entitySchema(name: string): EntitySchema {
@@ -9,6 +11,24 @@ function entitySchema(name: string): EntitySchema {
 
 describe('EvitaSchemaCache entity schema change notification', () => {
 
+    test('a catalog listener re-reading the catalog schema does not break the entity schema cascade', async () => {
+        // an open catalog schema tab (or the symbol index) reloads the catalog schema from its callback, which
+        // puts the catalog schema back into the cache before the cascade to the entity schemas walks its keys
+        const cache = new EvitaSchemaCache()
+        const catalogAccessor = vi.fn(async () => ({ name: 'evita' }) as unknown as CatalogSchema)
+        cache.registerCatalogSchemaChangedCallback(async () => {
+            await cache.getLatestCatalogSchema(catalogAccessor)
+        })
+        const entityCallback = vi.fn(async () => {})
+        cache.registerEntitySchemaChangedCallback('Product', entityCallback)
+        await cache.getLatestEntitySchema('Product', async () => entitySchema('Product'))
+
+        await cache.removeLatestCatalogSchema(CacheInvalidationReason.ChangeEvidence)
+
+        expect(catalogAccessor).toHaveBeenCalledTimes(1)
+        expect(entityCallback).toHaveBeenCalledTimes(1)
+    })
+
     test('a listener is notified even when its schema is not currently cached', async () => {
         // this is the state an open tab is in right after a previous change evicted its schema and the
         // reload has not completed yet; a change arriving in that window must still reach the listener
@@ -16,7 +36,7 @@ describe('EvitaSchemaCache entity schema change notification', () => {
         const callback = vi.fn(async () => {})
         cache.registerEntitySchemaChangedCallback('Product', callback)
 
-        await cache.removeLatestCatalogSchema()
+        await cache.removeLatestCatalogSchema(CacheInvalidationReason.ChangeEvidence)
 
         expect(callback).toHaveBeenCalledTimes(1)
     })
@@ -30,7 +50,7 @@ describe('EvitaSchemaCache entity schema change notification', () => {
         await cache.getLatestEntitySchema('Product', accessor)
         expect(accessor).toHaveBeenCalledTimes(1)
 
-        await cache.removeLatestCatalogSchema()
+        await cache.removeLatestCatalogSchema(CacheInvalidationReason.ChangeEvidence)
 
         expect(callback).toHaveBeenCalledTimes(1)
         // the schema is gone from the cache, so the next read fetches again
@@ -43,7 +63,7 @@ describe('EvitaSchemaCache entity schema change notification', () => {
         const accessor = vi.fn(async () => entitySchema('Category'))
         await cache.getLatestEntitySchema('Category', accessor)
 
-        await cache.removeLatestCatalogSchema()
+        await cache.removeLatestCatalogSchema(CacheInvalidationReason.ChangeEvidence)
 
         await cache.getLatestEntitySchema('Category', accessor)
         expect(accessor).toHaveBeenCalledTimes(2)
@@ -60,7 +80,7 @@ describe('EvitaSchemaCache entity schema change notification', () => {
         await cache.getLatestEntitySchema('Product', productAccessor)
         await cache.getLatestEntitySchema('Category', categoryAccessor)
 
-        await cache.removeLatestEntitySchema('Product')
+        await cache.removeLatestEntitySchema(CacheInvalidationReason.ChangeEvidence, 'Product')
 
         expect(productCallback).toHaveBeenCalledTimes(1)
         expect(categoryCallback).not.toHaveBeenCalled()
@@ -80,7 +100,7 @@ describe('EvitaSchemaCache entity schema change notification', () => {
         const productCallback = vi.fn(async () => {})
         cache.registerEntitySchemaChangedCallback('Product', productCallback)
 
-        await cache.removeLatestCatalogSchema()
+        await cache.removeLatestCatalogSchema(CacheInvalidationReason.ChangeEvidence)
 
         // the listener is notified once, not once per cache key
         expect(productCallback).toHaveBeenCalledTimes(1)
@@ -98,7 +118,7 @@ describe('EvitaSchemaCache entity schema change notification', () => {
         const productCallback = vi.fn(async () => {})
         cache.registerEntitySchemaChangedCallback('Product', productCallback)
 
-        await cache.removeLatestEntitySchema('Product')
+        await cache.removeLatestEntitySchema(CacheInvalidationReason.ChangeEvidence, 'Product')
 
         expect(productCallback).toHaveBeenCalledTimes(1)
         // the targeted eviction of an uncached type must not evict Category
@@ -112,8 +132,48 @@ describe('EvitaSchemaCache entity schema change notification', () => {
         const id = cache.registerEntitySchemaChangedCallback('Product', callback)
         cache.unregisterEntitySchemaChangedCallback('Product', id)
 
-        await cache.removeLatestCatalogSchema()
+        await cache.removeLatestCatalogSchema(CacheInvalidationReason.ChangeEvidence)
 
         expect(callback).not.toHaveBeenCalled()
     })
 })
+
+describe('EvitaSchemaCache callback dispatch', () => {
+
+    test('a catalog listener re-registering itself mid-dispatch does not make later listeners miss the change', async () => {
+        const cache = new EvitaSchemaCache()
+        let selfId: string = ''
+        const self = async (): Promise<void> => {
+            cache.unregisterCatalogSchemaChangedCallback(selfId)
+            selfId = cache.registerCatalogSchemaChangedCallback(self)
+        }
+        selfId = cache.registerCatalogSchemaChangedCallback(self)
+        const tabA = vi.fn(async () => {})
+        const tabB = vi.fn(async () => {})
+        cache.registerCatalogSchemaChangedCallback(tabA)
+        cache.registerCatalogSchemaChangedCallback(tabB)
+
+        await cache.removeLatestCatalogSchema(CacheInvalidationReason.MemoryOnly)
+
+        expect(tabA).toHaveBeenCalledTimes(1)
+        expect(tabB).toHaveBeenCalledTimes(1)
+    })
+
+    test('an entity listener unregistering itself mid-dispatch does not make later listeners miss the change', async () => {
+        const cache = new EvitaSchemaCache()
+        let selfId: string = ''
+        selfId = cache.registerEntitySchemaChangedCallback('Product', async () => {
+            cache.unregisterEntitySchemaChangedCallback('Product', selfId)
+        })
+        const tabA = vi.fn(async () => {})
+        const tabB = vi.fn(async () => {})
+        cache.registerEntitySchemaChangedCallback('Product', tabA)
+        cache.registerEntitySchemaChangedCallback('Product', tabB)
+
+        await cache.removeLatestEntitySchema(CacheInvalidationReason.MemoryOnly, 'Product')
+
+        expect(tabA).toHaveBeenCalledTimes(1)
+        expect(tabB).toHaveBeenCalledTimes(1)
+    })
+})
+

@@ -5,6 +5,8 @@ export enum Command {
     // system
 
     System_Keymap = 'system.keymap',
+    System_ManageMenu = 'system.manageMenu',
+    System_SymbolSearch = 'system.symbolSearch',
 
     System_Panels_Connection = 'system.panels.connection',
 
@@ -51,10 +53,10 @@ export enum Command {
     // evitaQL console
 
     EvitaQLConsole_ExecuteQuery = 'evitaQLConsole.executeQuery',
+    EvitaQLConsole_ExecuteQueryWithTelemetry = 'evitaQLConsole.executeQueryWithTelemetry',
     EvitaQLConsole_ShareTab = 'evitaQLConsole.shareTab',
 
     EvitaQLConsole_Query_QueryEditor = 'evitaQLConsole.query.queryEditor',
-    EvitaQLConsole_Query_VariablesEditor = 'evitaQLConsole.query.variablesEditor',
     EvitaQLConsole_Query_History = 'evitaQLConsole.query.history',
     EvitaQLConsole_Query_Prettify = 'evitaQLConsole.query.prettify',
     EvitaQLConsole_Query_Minify = 'evitaQLConsole.query.minify',
@@ -67,6 +69,7 @@ export enum Command {
     // GraphQL console
 
     GraphQLConsole_ExecuteQuery = 'graphQLConsole.executeQuery',
+    GraphQLConsole_ExecuteQueryWithTelemetry = 'graphQLConsole.executeQueryWithTelemetry',
     GraphQLConsole_ShareTab = 'graphQLConsole.shareTab',
 
     GraphQLConsole_Query_QueryEditor = 'graphQLConsole.query.queryEditor',
@@ -80,6 +83,23 @@ export enum Command {
     GraphQLConsole_Result_RawResultViewer = 'graphQLConsole.result.rawResultViewer',
     GraphQLConsole_Result_ResultVisualizer = 'graphQLConsole.result.resultVisualizer',
     GraphQLConsole_Result_TogglePanel = 'graphQLConsole.result.togglePanel',
+
+    // REST console
+
+    RestConsole_ExecuteQuery = 'restConsole.executeQuery',
+    RestConsole_ExecuteQueryWithTelemetry = 'restConsole.executeQueryWithTelemetry',
+    RestConsole_ShareTab = 'restConsole.shareTab',
+
+    RestConsole_Query_RequestEditor = 'restConsole.query.requestEditor',
+    RestConsole_Query_History = 'restConsole.query.history',
+    RestConsole_Query_OpenApiViewer = 'restConsole.query.openApiViewer',
+    RestConsole_Query_Prettify = 'restConsole.query.prettify',
+    RestConsole_Query_Minify = 'restConsole.query.minify',
+    RestConsole_Query_TogglePanel = 'restConsole.query.togglePanel',
+
+    RestConsole_Result_RawResultViewer = 'restConsole.result.rawResultViewer',
+    RestConsole_Result_ResultVisualizer = 'restConsole.result.resultVisualizer',
+    RestConsole_Result_TogglePanel = 'restConsole.result.togglePanel',
 
     // Schema viewer
 
@@ -97,5 +117,12 @@ export enum Command {
     MutationHistoryViewer_ShareTab = 'mutationHistoryViewer.shareTab',
     MutationHistoryViewer_ReloadRecordHistory = 'mutationHistoryViewer.reloadRecordHistory',
     MutationHistoryViewer_MoveStartPointer = 'mutationHistoryViewer.moveStartPointer',
-    MutationHistoryViewer_ApplyFilter = 'mutationHistoryViewer.applyFilter'
+    MutationHistoryViewer_ApplyFilter = 'mutationHistoryViewer.applyFilter',
+
+    // Catalog viewer
+
+    CatalogViewer_ShareTab = 'catalogViewer.shareTab',
+    CatalogViewer_Reload = 'catalogViewer.reload',
+
+    ErrorViewer_ShareTab = 'errorViewer.shareTab'
 }

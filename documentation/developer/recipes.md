@@ -67,18 +67,46 @@ Using `evitaql-console` as the reference implementation
 3. **Data** — `MyTabData implements TabData<MyTabDataDto>` for user-editable content (may be an
    empty class if the tab has none).
 4. **Definition** — `MyTabDefinition extends TabDefinition<MyTabParams, MyTabData>`, passing
-   title, `mdi-*` icon and `markRaw(MyTabComponent)` to the super constructor.
-5. **Factory** — injectable `MyTabFactory` with `createNew(...)` and
-   `restoreFromJson(paramsDto, dataDto)`; provide it in your module registrar. Restored tabs must
-   not auto-execute queries.
+   title, `mdi-*` icon and `markRaw(MyTabComponent)` to the super constructor, and implementing the
+   abstract `tabType` accessor:
+
+   ```ts
+   get tabType(): TabType {
+       return TabType.MyTab
+   }
+   ```
+5. **Factory** — injectable `MyTabFactory implements TabFactory`, declaring `tabType`, `restorable`
+   and (only when the tab was ever serialized under a different id) `legacyTabTypeIds`, with
+   `restoreFromJson(paramsDto, dataDto?)` and a feature-specific `createNew(...)` on top. Restored
+   tabs must not auto-execute queries.
 6. **Component** — accepts `TabComponentProps<MyTabParams, MyTabData>`, emits `'ready'` and
    `'update:data'`, exposes `path()` (see
    [workspace & tabs](workspace-and-tabs.md#tab-component-contract)); fills all available space
    and uses `VTabToolbar`.
-7. **Wire restore & sharing** — add your `TabType` to the switches in
-   `WorkspaceService.restoreTabsFromLastSession()` / `storeOpenedTabs()` and (if shareable) to
-   `SharedTabResolver`.
-8. **Open it** from wherever appropriate:
+7. **Init & retry** — if the tab blocks its content on a server call, put that call into a single
+   `initialize()` invoked from both `onBeforeMount` and an exposed `retry()`, `emit('ready')` on
+   success and `emit('error', asError(e))` on any rejection — never a toast, or the tab renders with
+   no data and no way out. Always expose `retry()`; the `:key` remount fallback does not run
+   `onUnmounted` under `KeepAlive` and would leak setup-level registrations. Needs no timeout of its
+   own — every driver call is already bounded. See
+   [loading, errors & retry](workspace-and-tabs.md#loading-errors--retry).
+8. **Register in your module registrar** — provide the factory under its injection key so
+   components can create tabs, and contribute it into the `TabFactoryRegistry` so the workspace can
+   restore and share them:
+
+   ```ts
+   const tabFactoryRegistry: TabFactoryRegistry = builder.inject(tabFactoryRegistryInjectionKey)
+
+   const myTabFactory: MyTabFactory = new MyTabFactory(connectionService)
+   builder.provide(myTabFactoryInjectionKey, myTabFactory)
+   tabFactoryRegistry.register(myTabFactory)
+   ```
+
+   Nothing inside the `workspace` module is edited — persistence, restore and share links resolve
+   the tab through the registry, and `TabFactoryRegistry.validate()` fails the bootstrap if the
+   contribution is forgotten. If another module's registrar needs your factory, make sure it is
+   ordered after yours in `modules.ts`.
+9. **Open it** from wherever appropriate:
 
 ```ts
 workspaceService.createTab(myTabFactory.createNew(...))
@@ -158,6 +186,10 @@ await evitaClient.updateCatalog(
 Details, caching and change callbacks: [database driver](database-driver.md). Component-level
 calls must be wrapped in try-catch with `toaster.error` feedback.
 
+If the call depends on an evitaDB API that only a newer server has (new constraint, argument, field,
+endpoint, regenerated gRPC types), raise the supported-server floor in `.evitadbrc` in the same change —
+see [evitaDB server — versioning](evitadb-server.md#versioning).
+
 ## Add execution history to a tab
 
 ```ts
@@ -210,6 +242,7 @@ send one.
 | `entityViewer` | `catalogName`, `entityType` | `queryLanguage` (`evitaql`/`graphql`), `filterBy`, `orderBy`, `dataLocale`, `displayedProperties[]`, `pageSize`, `pageNumber`, `selectedLayers[]` |
 | `evitaQLConsole` | `catalogName` | `query`, `variables` |
 | `graphQLConsole` | `catalogName`, `instanceType` (`system`/`data`/`schema`) | `query`, `variables` |
+| `restConsole` | `catalogName`, `instanceType` (`catalog`/`system`) | `operationId` (of the variant, e.g. `queryProductLocalized`), `locale`, `parameters` (`{ name: value \| [values] }`), `body` |
 | `schemaViewer` | `schemaPointer: { type, params }` | — |
 | `mutationHistoryViewer` | `catalogName` | (complex; omit for external links) |
 | `trafficRecordHistoryViewer` | `catalogName` | (complex; omit for external links) |
@@ -220,9 +253,13 @@ send one.
 `catalogName` / `entityType` / `referenceName` / `attributeName` / `associatedDataName` that the
 type needs (see `SchemaViewerTabFactory.restoreTabParamsFromSerializable`).
 
-The tab types `data-grid`, `dataGrid`, `evitaql-console`, `graphql-console` and `schema-viewer` are
-still accepted by `SharedTabResolver` for backward compatibility — **deprecated**, new integrations
-must use the values above.
+The table lists the tab types worth deep-linking into. Technically `SharedTabResolver` accepts any
+`TabType` whose factory is `restorable`, which today means all of them — the server / task / backup /
+JFR viewers simply carry no parameters worth linking.
+
+The tab types `data-grid`, `dataGrid`, `evitaql-console`, `graphql-console`, `schema-viewer` and
+`serverStatus` are still accepted for backward compatibility — **deprecated**, new integrations must
+use the values above.
 
 **Worked examples** (unpadded base64url):
 
@@ -280,4 +317,5 @@ The payload can also be pasted without a URL into a running instance via the tab
 - [ ] `yarn lint` — run it and don't add new violations (the gate is not yet at zero, so it is not part of CI yet).
 - [ ] New classes/components have JSDoc; user-facing strings are localized.
 - [ ] `documentation/developer/` updated (module catalog, UI components, recipes as applicable).
+- [ ] `.evitadbrc` raised if the change depends on a newer evitaDB API ([versioning](evitadb-server.md#versioning)).
 - [ ] Conventional-commit messages; feature branch off `dev`.
